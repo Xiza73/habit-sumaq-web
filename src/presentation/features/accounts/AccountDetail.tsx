@@ -81,10 +81,10 @@ export function AccountDetail({ accountId }: AccountDetailProps) {
       </button>
 
       <div className="rounded-xl border border-border bg-card p-6">
-        <div className="flex items-start justify-between">
+        <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="flex items-center gap-4">
             <div
-              className="flex size-14 items-center justify-center rounded-xl"
+              className="flex size-14 shrink-0 items-center justify-center rounded-xl"
               style={{ backgroundColor: account.color ? `${account.color}20` : undefined }}
             >
               <Icon className="size-7" style={{ color: account.color ?? undefined }} />
@@ -97,7 +97,7 @@ export function AccountDetail({ accountId }: AccountDetailProps) {
             </div>
           </div>
 
-          <div className="flex gap-2">
+          <div className="flex shrink-0 gap-2">
             <button
               type="button"
               onClick={() => setEditOpen(true)}
