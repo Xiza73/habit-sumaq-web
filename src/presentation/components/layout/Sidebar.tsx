@@ -1,0 +1,86 @@
+'use client';
+
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { useTranslations } from 'next-intl';
+
+import { ArrowLeftRight, CreditCard, FolderTree, type LucideIcon, Settings } from 'lucide-react';
+
+import { useUIStore } from '@/core/application/stores/ui.store';
+
+import { cn } from '@/lib/utils';
+
+interface NavItem {
+  href: string;
+  labelKey: string;
+  icon: LucideIcon;
+}
+
+const NAV_ITEMS: NavItem[] = [
+  { href: '/accounts', labelKey: 'accounts', icon: CreditCard },
+  { href: '/categories', labelKey: 'categories', icon: FolderTree },
+  { href: '/transactions', labelKey: 'transactions', icon: ArrowLeftRight },
+  { href: '/settings', labelKey: 'settings', icon: Settings },
+];
+
+export function Sidebar() {
+  const pathname = usePathname();
+  const t = useTranslations('navigation');
+  const sidebarOpen = useUIStore((s) => s.sidebarOpen);
+  const setSidebarOpen = useUIStore((s) => s.setSidebarOpen);
+
+  return (
+    <>
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-black/50 md:hidden"
+          onClick={() => setSidebarOpen(false)}
+          onKeyDown={(e) => {
+            if (e.key === 'Escape') setSidebarOpen(false);
+          }}
+          role="button"
+          tabIndex={0}
+          aria-label="Close sidebar"
+        />
+      )}
+
+      <aside
+        className={cn(
+          'fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-r border-border bg-sidebar transition-transform duration-200 md:relative md:translate-x-0',
+          sidebarOpen ? 'translate-x-0' : '-translate-x-full',
+        )}
+      >
+        <div className="flex h-16 items-center gap-3 border-b border-border px-6">
+          <div className="flex size-8 items-center justify-center rounded-lg bg-primary text-sm font-bold text-primary-foreground">
+            S
+          </div>
+          <span className="text-lg font-semibold">Habit Sumaq</span>
+        </div>
+
+        <nav className="flex-1 space-y-1 p-3">
+          {NAV_ITEMS.map((item) => {
+            const isActive = pathname.startsWith(item.href);
+            const Icon = item.icon;
+
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                onClick={() => setSidebarOpen(false)}
+                className={cn(
+                  'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
+                  isActive
+                    ? 'bg-sidebar-primary/10 text-sidebar-primary'
+                    : 'text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground',
+                )}
+              >
+                <Icon className="size-5" />
+                {t(item.labelKey)}
+              </Link>
+            );
+          })}
+        </nav>
+      </aside>
+    </>
+  );
+}

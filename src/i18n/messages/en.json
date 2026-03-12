@@ -16,6 +16,7 @@
   },
   "auth": {
     "loginWithGoogle": "Sign in with Google",
+    "loginSubtitle": "Personal finance and habits",
     "logout": "Sign out",
     "sessionExpired": "Your session has expired. Please sign in again."
   },

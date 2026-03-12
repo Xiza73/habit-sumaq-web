@@ -16,6 +16,7 @@
   },
   "auth": {
     "loginWithGoogle": "Entrar com Google",
+    "loginSubtitle": "Finanças pessoais e hábitos",
     "logout": "Sair",
     "sessionExpired": "Sua sessão expirou. Faça login novamente."
   },
