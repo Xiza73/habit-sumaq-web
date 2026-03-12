@@ -3,7 +3,8 @@
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 
-import { Eye, EyeOff, Loader2, Plus } from 'lucide-react';
+import { Eye, EyeOff, Plus } from 'lucide-react';
+import { toast } from 'sonner';
 
 import {
   useAccounts,
@@ -17,6 +18,7 @@ import { ApiError } from '@/infrastructure/api/api-error';
 import { ConfirmDialog } from '@/presentation/components/feedback/ConfirmDialog';
 
 import { AccountCard } from './AccountCard';
+import { AccountCardSkeleton } from './AccountCardSkeleton';
 import { AccountForm } from './AccountForm';
 
 export function AccountList() {
@@ -44,14 +46,25 @@ export function AccountList() {
   }
 
   function handleArchive(account: Account) {
-    archiveMutation.mutate(account.id);
+    archiveMutation.mutate(account.id, {
+      onSuccess: (updated) => {
+        toast.success(
+          updated.isArchived
+            ? t('archiveAccount')
+            : t('unarchiveAccount', { defaultValue: 'Desarchivar' }),
+        );
+      },
+    });
   }
 
   function handleDeleteConfirm() {
     if (!deletingAccount) return;
     setDeleteError(null);
     deleteMutation.mutate(deletingAccount.id, {
-      onSuccess: () => setDeletingAccount(null),
+      onSuccess: () => {
+        setDeletingAccount(null);
+        toast.success(t('deleteAccount'));
+      },
       onError: (error) => {
         if (error instanceof ApiError && error.code === 'ACC_003') {
           setDeleteError(tErrors('ACC_003'));
@@ -64,8 +77,16 @@ export function AccountList() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center py-12">
-        <Loader2 className="size-6 animate-spin text-muted-foreground" />
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <div className="h-8 w-32 animate-pulse rounded bg-muted" />
+          <div className="h-10 w-36 animate-pulse rounded-lg bg-muted" />
+        </div>
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <AccountCardSkeleton />
+          <AccountCardSkeleton />
+          <AccountCardSkeleton />
+        </div>
       </div>
     );
   }

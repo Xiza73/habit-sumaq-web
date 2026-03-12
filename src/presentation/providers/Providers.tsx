@@ -1,5 +1,7 @@
 'use client';
 
+import { Toaster } from 'sonner';
+
 import { QueryProvider } from './QueryProvider';
 import { ThemeProvider } from './ThemeProvider';
 
@@ -10,7 +12,17 @@ interface ProvidersProps {
 export function Providers({ children }: ProvidersProps) {
   return (
     <QueryProvider>
-      <ThemeProvider>{children}</ThemeProvider>
+      <ThemeProvider>
+        {children}
+        <Toaster
+          position="bottom-right"
+          toastOptions={{
+            className: 'font-sans',
+          }}
+          richColors
+          closeButton
+        />
+      </ThemeProvider>
     </QueryProvider>
   );
 }

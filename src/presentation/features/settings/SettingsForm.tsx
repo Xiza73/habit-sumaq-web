@@ -7,6 +7,7 @@ import { useTheme } from 'next-themes';
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
 
 import { useUpdateUserSettings, useUserSettings } from '@/core/application/hooks/use-user-settings';
 import {
@@ -50,6 +51,7 @@ export function SettingsForm() {
     updateSettings.mutate(values, {
       onSuccess: (updated) => {
         setTheme(updated.theme);
+        toast.success(tCommon('save'));
 
         if (updated.language !== locale) {
           document.cookie = `NEXT_LOCALE=${updated.language};path=/;max-age=31536000`;
@@ -151,10 +153,6 @@ export function SettingsForm() {
         {updateSettings.isPending && <Loader2 className="mr-2 size-4 animate-spin" />}
         {tCommon('save')}
       </button>
-
-      {updateSettings.isSuccess && (
-        <p className="text-sm text-success">{t('saved', { defaultValue: '✓' })}</p>
-      )}
     </form>
   );
 }

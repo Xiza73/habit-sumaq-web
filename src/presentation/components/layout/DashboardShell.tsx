@@ -1,6 +1,7 @@
 'use client';
 
 import { Header } from './Header';
+import { MobileNav } from './MobileNav';
 import { Sidebar } from './Sidebar';
 
 interface DashboardShellProps {
@@ -13,8 +14,9 @@ export function DashboardShell({ children }: DashboardShellProps) {
       <Sidebar />
       <div className="flex flex-1 flex-col">
         <Header />
-        <main className="flex-1 p-6">{children}</main>
+        <main className="flex-1 p-4 pb-20 md:p-6 md:pb-6">{children}</main>
       </div>
+      <MobileNav />
     </div>
   );
 }

@@ -4,7 +4,7 @@ import { getLocale, getMessages } from 'next-intl/server';
 
 import { Providers } from '@/presentation/providers/Providers';
 
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 
 import './globals.css';
 
@@ -19,8 +19,32 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'Habit Sumaq',
-  description: 'Empieza hoy un buen hábito',
+  title: {
+    default: 'Habit Sumaq',
+    template: '%s | Habit Sumaq',
+  },
+  description: 'Empieza hoy un buen hábito — Finanzas personales y hábitos',
+  manifest: '/manifest.json',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'default',
+    title: 'Habit Sumaq',
+  },
+  formatDetection: {
+    telephone: false,
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#ffffff' },
+    { media: '(prefers-color-scheme: dark)', color: '#0a0a0a' },
+  ],
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  viewportFit: 'cover',
 };
 
 export default async function RootLayout({
