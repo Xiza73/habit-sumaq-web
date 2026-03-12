@@ -52,8 +52,18 @@
   "categories": {
     "title": "Categorías",
     "createCategory": "Nueva categoría",
+    "editCategory": "Editar categoría",
+    "deleteCategory": "Eliminar categoría",
+    "name": "Nombre",
+    "type": "Tipo",
+    "color": "Color",
     "income": "Ingresos",
-    "expense": "Gastos"
+    "expense": "Gastos",
+    "emptyState": "No tienes categorías. Crea tu primera categoría para comenzar.",
+    "emptyStateFiltered": "No hay categorías de este tipo.",
+    "deleteConfirm": "¿Estás seguro de que quieres eliminar esta categoría?",
+    "cannotDeleteDefault": "Las categorías por defecto no se pueden eliminar.",
+    "default": "Por defecto"
   },
   "transactions": {
     "title": "Transacciones",
@@ -98,6 +108,10 @@
     "ACC_002": "Ya tienes una cuenta con ese nombre",
     "ACC_003": "No se puede eliminar: la cuenta tiene transacciones activas",
     "ACC_004": "No tienes acceso a esta cuenta",
+    "CAT_001": "Categoría no encontrada",
+    "CAT_002": "Ya tienes una categoría con ese nombre para este tipo",
+    "CAT_003": "No tienes acceso a esta categoría",
+    "CAT_004": "No se puede eliminar una categoría por defecto",
     "TXN_003": "Saldo insuficiente",
     "TXN_004": "No puedes transferir a la misma cuenta",
     "TXN_005": "Las cuentas tienen monedas diferentes",

@@ -52,8 +52,18 @@
   "categories": {
     "title": "Categories",
     "createCategory": "New category",
+    "editCategory": "Edit category",
+    "deleteCategory": "Delete category",
+    "name": "Name",
+    "type": "Type",
+    "color": "Color",
     "income": "Income",
-    "expense": "Expenses"
+    "expense": "Expenses",
+    "emptyState": "You don't have any categories. Create your first one to get started.",
+    "emptyStateFiltered": "No categories of this type.",
+    "deleteConfirm": "Are you sure you want to delete this category?",
+    "cannotDeleteDefault": "Default categories cannot be deleted.",
+    "default": "Default"
   },
   "transactions": {
     "title": "Transactions",
@@ -98,6 +108,10 @@
     "ACC_002": "You already have an account with that name",
     "ACC_003": "Cannot delete: account has active transactions",
     "ACC_004": "You don't have access to this account",
+    "CAT_001": "Category not found",
+    "CAT_002": "You already have a category with that name for this type",
+    "CAT_003": "You don't have access to this category",
+    "CAT_004": "Default categories cannot be deleted",
     "TXN_003": "Insufficient balance",
     "TXN_004": "Cannot transfer to the same account",
     "TXN_005": "Accounts have different currencies",
