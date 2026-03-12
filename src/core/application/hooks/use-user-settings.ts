@@ -13,7 +13,7 @@ export const userSettingsKeys = {
 export function useUserSettings() {
   return useQuery({
     queryKey: userSettingsKeys.detail(),
-    queryFn: userSettingsApi.getSettings,
+    queryFn: () => userSettingsApi.getSettings(),
   });
 }
 
