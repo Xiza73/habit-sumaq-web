@@ -68,6 +68,8 @@
   "transactions": {
     "title": "Transactions",
     "createTransaction": "New transaction",
+    "editTransaction": "Edit transaction",
+    "deleteTransaction": "Delete transaction",
     "types": {
       "INCOME": "Income",
       "EXPENSE": "Expense",
@@ -80,11 +82,32 @@
       "SETTLED": "Settled"
     },
     "settle": "Settle",
+    "settleDebt": "Settle debt",
+    "settleLoan": "Settle loan",
     "amount": "Amount",
     "date": "Date",
     "description": "Description",
     "reference": "Reference",
-    "destinationAccount": "Destination account"
+    "destinationAccount": "Destination account",
+    "account": "Account",
+    "category": "Category",
+    "type": "Type",
+    "allTypes": "All types",
+    "allAccounts": "All accounts",
+    "allCategories": "All categories",
+    "allStatuses": "All statuses",
+    "dateFrom": "From",
+    "dateTo": "To",
+    "filters": "Filters",
+    "clearFilters": "Clear filters",
+    "emptyState": "You don't have any transactions. Create your first one to get started.",
+    "emptyStateFiltered": "No transactions match these filters.",
+    "deleteConfirm": "Are you sure you want to delete this transaction?",
+    "deleteDebtWarning": "This will also delete all associated settlements.",
+    "settleAccount": "Payment account",
+    "settleAmount": "Amount to settle",
+    "remaining": "Remaining",
+    "noDescription": "No description"
   },
   "settings": {
     "title": "Settings",

@@ -68,6 +68,8 @@
   "transactions": {
     "title": "Transacciones",
     "createTransaction": "Nueva transacción",
+    "editTransaction": "Editar transacción",
+    "deleteTransaction": "Eliminar transacción",
     "types": {
       "INCOME": "Ingreso",
       "EXPENSE": "Gasto",
@@ -80,11 +82,32 @@
       "SETTLED": "Liquidada"
     },
     "settle": "Liquidar",
+    "settleDebt": "Liquidar deuda",
+    "settleLoan": "Liquidar préstamo",
     "amount": "Monto",
     "date": "Fecha",
     "description": "Descripción",
     "reference": "Referencia",
-    "destinationAccount": "Cuenta destino"
+    "destinationAccount": "Cuenta destino",
+    "account": "Cuenta",
+    "category": "Categoría",
+    "type": "Tipo",
+    "allTypes": "Todos los tipos",
+    "allAccounts": "Todas las cuentas",
+    "allCategories": "Todas las categorías",
+    "allStatuses": "Todos los estados",
+    "dateFrom": "Desde",
+    "dateTo": "Hasta",
+    "filters": "Filtros",
+    "clearFilters": "Limpiar filtros",
+    "emptyState": "No tienes transacciones. Crea tu primera transacción para comenzar.",
+    "emptyStateFiltered": "No hay transacciones con estos filtros.",
+    "deleteConfirm": "¿Estás seguro de que quieres eliminar esta transacción?",
+    "deleteDebtWarning": "Esto también eliminará todas las liquidaciones asociadas.",
+    "settleAccount": "Cuenta de pago",
+    "settleAmount": "Monto a liquidar",
+    "remaining": "Pendiente",
+    "noDescription": "Sin descripción"
   },
   "settings": {
     "title": "Configuración",
