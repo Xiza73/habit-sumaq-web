@@ -58,6 +58,8 @@ export function CategoryForm({
   });
 
   useEffect(() => {
+    if (!open) return;
+
     if (category) {
       form.reset({
         name: category.name,
@@ -73,7 +75,7 @@ export function CategoryForm({
         icon: null,
       });
     }
-  }, [category, defaultType, form]);
+  }, [open, category, defaultType, form]);
 
   function handleSubmit(values: CreateCategoryInput) {
     if (isEditing && category) {

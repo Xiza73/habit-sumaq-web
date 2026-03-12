@@ -54,6 +54,8 @@ export function AccountForm({ open, account, onClose }: AccountFormProps) {
   });
 
   useEffect(() => {
+    if (!open) return;
+
     if (account) {
       form.reset({
         name: account.name,
@@ -73,7 +75,7 @@ export function AccountForm({ open, account, onClose }: AccountFormProps) {
         icon: null,
       });
     }
-  }, [account, form]);
+  }, [open, account, form]);
 
   function handleSubmit(values: CreateAccountInput) {
     if (isEditing && account) {

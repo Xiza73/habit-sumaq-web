@@ -81,6 +81,8 @@ export function TransactionForm({
   });
 
   useEffect(() => {
+    if (!open) return;
+
     if (transaction) {
       form.reset({
         accountId: transaction.accountId,
@@ -104,7 +106,7 @@ export function TransactionForm({
         reference: null,
       });
     }
-  }, [transaction, defaultAccountId, form, today]);
+  }, [open, transaction, defaultAccountId, form, today]);
 
   function handleSubmit(values: CreateTransactionInput) {
     if (isEditing && transaction) {
