@@ -45,10 +45,10 @@ export function TransactionCard({
 
   return (
     <div className="group relative flex items-center gap-3 rounded-xl border border-border bg-card p-4 transition-shadow hover:shadow-md">
-      {/* Mobile: whole card is tappable */}
+      {/* Touch devices: whole card is tappable */}
       <button
         type="button"
-        className="absolute inset-0 z-0 md:hidden"
+        className="absolute inset-0 z-0 hover-device-hidden"
         onClick={() => setMenuOpen(!menuOpen)}
         aria-label="Transaction actions"
       />
@@ -99,8 +99,8 @@ export function TransactionCard({
         </p>
       </div>
 
-      {/* Desktop: 3-dot button appears in flow only on hover */}
-      <div className="hidden w-0 shrink-0 overflow-hidden transition-all group-hover:w-7 md:block">
+      {/* Hover devices: 3-dot button appears in flow only on hover */}
+      <div className="hidden w-0 shrink-0 overflow-hidden transition-all group-hover:w-7 hover-device-block">
         <button
           type="button"
           onClick={() => setMenuOpen(!menuOpen)}

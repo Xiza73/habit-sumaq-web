@@ -217,4 +217,14 @@
   .pt-safe {
     padding-top: env(safe-area-inset-top, 0px);
   }
+  .hover-device-hidden {
+    @media (hover: hover) {
+      display: none;
+    }
+  }
+  .hover-device-block {
+    @media (hover: hover) {
+      display: block;
+    }
+  }
 }
