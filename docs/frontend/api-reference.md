@@ -94,13 +94,13 @@ Obtiene la configuración del usuario autenticado. Si no existe, se crea automá
 
 Actualiza parcialmente la configuración. Solo se modifican los campos enviados.
 
-| Campo | Tipo | Notas |
-|---|---|---|
-| `language` | Language | Ver [enums.md](enums.md#language) |
-| `theme` | Theme | Ver [enums.md](enums.md#theme) |
-| `defaultCurrency` | Currency | Ver [enums.md](enums.md#currency) |
-| `dateFormat` | DateFormat | Ver [enums.md](enums.md#dateformat) |
-| `startOfWeek` | StartOfWeek | Ver [enums.md](enums.md#startofweek) |
+| Campo             | Tipo        | Notas                                |
+| ----------------- | ----------- | ------------------------------------ |
+| `language`        | Language    | Ver [enums.md](enums.md#language)    |
+| `theme`           | Theme       | Ver [enums.md](enums.md#theme)       |
+| `defaultCurrency` | Currency    | Ver [enums.md](enums.md#currency)    |
+| `dateFormat`      | DateFormat  | Ver [enums.md](enums.md#dateformat)  |
+| `startOfWeek`     | StartOfWeek | Ver [enums.md](enums.md#startofweek) |
 
 Todos los campos son opcionales. Si no existe configuración previa, se crea antes de aplicar los cambios.
 
@@ -129,26 +129,27 @@ Todos los campos son opcionales. Si no existe configuración previa, se crea ant
 
 Crea una nueva cuenta.
 
-| Campo | Tipo | Requerido | Notas |
-|---|---|---|---|
-| `name` | string | sí | Máx 100 chars. Único por usuario |
-| `type` | AccountType | sí | Ver [enums.md](enums.md#accounttype) |
-| `currency` | Currency | sí | Ver [enums.md](enums.md#currency) |
-| `initialBalance` | number | no | Default `0`. Mín `0` |
-| `color` | string \| null | no | Máx 7 chars (hex: `#FF5733`) |
-| `icon` | string \| null | no | Máx 50 chars |
+| Campo            | Tipo           | Requerido | Notas                                |
+| ---------------- | -------------- | --------- | ------------------------------------ |
+| `name`           | string         | sí        | Máx 100 chars. Único por usuario     |
+| `type`           | AccountType    | sí        | Ver [enums.md](enums.md#accounttype) |
+| `currency`       | Currency       | sí        | Ver [enums.md](enums.md#currency)    |
+| `initialBalance` | number         | no        | Default `0`. Mín `0`                 |
+| `color`          | string \| null | no        | Máx 7 chars (hex: `#FF5733`)         |
+| `icon`           | string \| null | no        | Máx 50 chars                         |
 
 **Response:** `201` — `AccountResponseDto`
 
 **Errores:**
+
 - `409` — Ya existe una cuenta con ese nombre
 
 ### `GET /accounts`
 
 Lista las cuentas del usuario.
 
-| Query param | Tipo | Descripción |
-|---|---|---|
+| Query param       | Tipo    | Descripción                           |
+| ----------------- | ------- | ------------------------------------- |
 | `includeArchived` | boolean | Si `true`, incluye cuentas archivadas |
 
 **Response:** `200` — `AccountResponseDto[]`
@@ -158,6 +159,7 @@ Lista las cuentas del usuario.
 Obtiene una cuenta por UUID.
 
 **Errores:**
+
 - `403` — La cuenta pertenece a otro usuario
 - `404` — Cuenta no encontrada
 
@@ -165,15 +167,16 @@ Obtiene una cuenta por UUID.
 
 Actualiza nombre, color e ícono.
 
-| Campo | Tipo | Notas |
-|---|---|---|
-| `name` | string | Máx 100 chars |
-| `color` | string \| null | Máx 7 chars |
-| `icon` | string \| null | Máx 50 chars |
+| Campo   | Tipo           | Notas         |
+| ------- | -------------- | ------------- |
+| `name`  | string         | Máx 100 chars |
+| `color` | string \| null | Máx 7 chars   |
+| `icon`  | string \| null | Máx 50 chars  |
 
 > **Nota:** `type` y `currency` no son editables.
 
 **Errores:**
+
 - `404` — Cuenta no encontrada
 - `409` — Nombre ya en uso
 
@@ -186,6 +189,7 @@ Archiva o desarchiva una cuenta. No recibe body.
 Soft delete. Falla si la cuenta tiene transacciones activas.
 
 **Errores:**
+
 - `404` — Cuenta no encontrada
 - `409` — La cuenta tiene transacciones activas
 
@@ -198,7 +202,7 @@ Soft delete. Falla si la cuenta tiene transacciones activas.
   "name": "Mi cuenta",
   "type": "checking",
   "currency": "PEN",
-  "balance": 1500.50,
+  "balance": 1500.5,
   "color": "#4CAF50",
   "icon": "wallet",
   "isArchived": false,
@@ -215,25 +219,26 @@ Soft delete. Falla si la cuenta tiene transacciones activas.
 
 Crea una categoría.
 
-| Campo | Tipo | Requerido | Notas |
-|---|---|---|---|
-| `name` | string | sí | Máx 100 chars. Único por usuario + tipo |
-| `type` | CategoryType | sí | `INCOME` o `EXPENSE`. No editable después |
-| `color` | string \| null | no | Máx 7 chars |
-| `icon` | string \| null | no | Máx 50 chars |
+| Campo   | Tipo           | Requerido | Notas                                     |
+| ------- | -------------- | --------- | ----------------------------------------- |
+| `name`  | string         | sí        | Máx 100 chars. Único por usuario + tipo   |
+| `type`  | CategoryType   | sí        | `INCOME` o `EXPENSE`. No editable después |
+| `color` | string \| null | no        | Máx 7 chars                               |
+| `icon`  | string \| null | no        | Máx 50 chars                              |
 
 **Response:** `201` — `CategoryResponseDto`
 
 **Errores:**
+
 - `409` — Ya existe una categoría con ese nombre y tipo
 
 ### `GET /categories`
 
 Lista categorías del usuario (incluye las por defecto).
 
-| Query param | Tipo | Descripción |
-|---|---|---|
-| `type` | CategoryType | Filtrar por `INCOME` o `EXPENSE` |
+| Query param | Tipo         | Descripción                      |
+| ----------- | ------------ | -------------------------------- |
+| `type`      | CategoryType | Filtrar por `INCOME` o `EXPENSE` |
 
 **Response:** `200` — `CategoryResponseDto[]`
 
@@ -242,6 +247,7 @@ Lista categorías del usuario (incluye las por defecto).
 Obtiene una categoría por UUID.
 
 **Errores:**
+
 - `403` — Pertenece a otro usuario
 - `404` — No encontrada
 
@@ -250,6 +256,7 @@ Obtiene una categoría por UUID.
 Actualiza nombre, color e ícono. El tipo (`INCOME`/`EXPENSE`) **no es editable**.
 
 **Errores:**
+
 - `404` — No encontrada
 - `409` — Nombre ya en uso para este tipo
 
@@ -258,6 +265,7 @@ Actualiza nombre, color e ícono. El tipo (`INCOME`/`EXPENSE`) **no es editable*
 Soft delete. Las categorías por defecto (`isDefault=true`) no se pueden eliminar.
 
 **Errores:**
+
 - `404` — No encontrada
 - `409` — No se pueden eliminar categorías por defecto
 
@@ -285,30 +293,31 @@ Soft delete. Las categorías por defecto (`isDefault=true`) no se pueden elimina
 
 Crea una transacción.
 
-| Campo | Tipo | Requerido | Notas |
-|---|---|---|---|
-| `accountId` | UUID | sí | Cuenta origen |
-| `categoryId` | UUID \| null | no | Categoría asociada |
-| `type` | TransactionType | sí | Ver [enums.md](enums.md#transactiontype) |
-| `amount` | number | sí | Mín `0.01`, máx 2 decimales |
-| `description` | string \| null | no | Máx 255 chars |
-| `date` | ISO 8601 | sí | Fecha de la transacción |
-| `destinationAccountId` | UUID \| null | condicional | **Requerido** para TRANSFER |
-| `reference` | string \| null | condicional | **Requerido** para DEBT/LOAN. Máx 255 chars |
+| Campo                  | Tipo            | Requerido   | Notas                                       |
+| ---------------------- | --------------- | ----------- | ------------------------------------------- |
+| `accountId`            | UUID            | sí          | Cuenta origen                               |
+| `categoryId`           | UUID \| null    | no          | Categoría asociada                          |
+| `type`                 | TransactionType | sí          | Ver [enums.md](enums.md#transactiontype)    |
+| `amount`               | number          | sí          | Mín `0.01`, máx 2 decimales                 |
+| `description`          | string \| null  | no          | Máx 255 chars                               |
+| `date`                 | ISO 8601        | sí          | Fecha de la transacción                     |
+| `destinationAccountId` | UUID \| null    | condicional | **Requerido** para TRANSFER                 |
+| `reference`            | string \| null  | condicional | **Requerido** para DEBT/LOAN. Máx 255 chars |
 
 **Comportamiento por tipo:**
 
-| Tipo | Efecto en balance | Campos especiales |
-|---|---|---|
-| INCOME | `+amount` en `accountId` | — |
-| EXPENSE | `−amount` en `accountId` | — |
-| TRANSFER | `−amount` en origen, `+amount` en destino | `destinationAccountId` requerido |
-| DEBT | Sin efecto | `reference` requerido. Crea con `status=PENDING` |
-| LOAN | Sin efecto | `reference` requerido. Crea con `status=PENDING` |
+| Tipo     | Efecto en balance                         | Campos especiales                                |
+| -------- | ----------------------------------------- | ------------------------------------------------ |
+| INCOME   | `+amount` en `accountId`                  | —                                                |
+| EXPENSE  | `−amount` en `accountId`                  | —                                                |
+| TRANSFER | `−amount` en origen, `+amount` en destino | `destinationAccountId` requerido                 |
+| DEBT     | Sin efecto                                | `reference` requerido. Crea con `status=PENDING` |
+| LOAN     | Sin efecto                                | `reference` requerido. Crea con `status=PENDING` |
 
 **Response:** `201` — `TransactionResponseDto`
 
 **Errores:**
+
 - `404` — Cuenta origen o destino no encontrada
 - `422` — Monedas distintas (TRANSFER), misma cuenta (TRANSFER), falta reference (DEBT/LOAN)
 
@@ -316,14 +325,15 @@ Crea una transacción.
 
 Liquida parcial o totalmente una deuda/préstamo.
 
-| Campo | Tipo | Requerido | Notas |
-|---|---|---|---|
-| `accountId` | UUID | sí | Cuenta de pago (DEBT) o cobro (LOAN) |
-| `amount` | number | sí | Mín `0.01`, máx 2 decimales. Debe ser ≤ `remainingAmount` |
-| `description` | string \| null | no | Si se omite se genera automáticamente |
-| `date` | ISO 8601 | no | Si se omite usa fecha actual |
+| Campo         | Tipo           | Requerido | Notas                                                     |
+| ------------- | -------------- | --------- | --------------------------------------------------------- |
+| `accountId`   | UUID           | sí        | Cuenta de pago (DEBT) o cobro (LOAN)                      |
+| `amount`      | number         | sí        | Mín `0.01`, máx 2 decimales. Debe ser ≤ `remainingAmount` |
+| `description` | string \| null | no        | Si se omite se genera automáticamente                     |
+| `date`        | ISO 8601       | no        | Si se omite usa fecha actual                              |
 
 **Comportamiento:**
+
 - DEBT → crea un **EXPENSE** que debita la cuenta
 - LOAN → crea un **INCOME** que acredita la cuenta
 - Reduce `remainingAmount` del DEBT/LOAN original
@@ -332,6 +342,7 @@ Liquida parcial o totalmente una deuda/préstamo.
 **Response:** `201` — la transacción de liquidación (`TransactionResponseDto`)
 
 **Errores:**
+
 - `404` — Transacción o cuenta no encontrada
 - `409` — Ya fue liquidada completamente (`SETTLED`)
 - `422` — No es DEBT/LOAN, o monto excede saldo pendiente
@@ -340,14 +351,14 @@ Liquida parcial o totalmente una deuda/préstamo.
 
 Lista transacciones del usuario, ordenadas por fecha descendente.
 
-| Query param | Tipo | Descripción |
-|---|---|---|
-| `accountId` | UUID | Filtrar por cuenta |
-| `categoryId` | UUID | Filtrar por categoría |
-| `type` | TransactionType | Filtrar por tipo |
-| `status` | TransactionStatus | Filtrar por estado (solo aplica a DEBT/LOAN) |
-| `dateFrom` | ISO 8601 | Fecha mínima (inclusiva) |
-| `dateTo` | ISO 8601 | Fecha máxima (inclusiva) |
+| Query param  | Tipo              | Descripción                                  |
+| ------------ | ----------------- | -------------------------------------------- |
+| `accountId`  | UUID              | Filtrar por cuenta                           |
+| `categoryId` | UUID              | Filtrar por categoría                        |
+| `type`       | TransactionType   | Filtrar por tipo                             |
+| `status`     | TransactionStatus | Filtrar por estado (solo aplica a DEBT/LOAN) |
+| `dateFrom`   | ISO 8601          | Fecha mínima (inclusiva)                     |
+| `dateTo`     | ISO 8601          | Fecha máxima (inclusiva)                     |
 
 **Response:** `200` — `TransactionResponseDto[]`
 
@@ -356,6 +367,7 @@ Lista transacciones del usuario, ordenadas por fecha descendente.
 Obtiene una transacción por UUID.
 
 **Errores:**
+
 - `403` — Pertenece a otro usuario
 - `404` — No encontrada
 
@@ -363,17 +375,18 @@ Obtiene una transacción por UUID.
 
 Actualiza campos editables. El `type` **no es editable**.
 
-| Campo | Tipo | Notas |
-|---|---|---|
-| `categoryId` | UUID \| null | — |
-| `amount` | number | Mín `0.01`. Recalcula balance automáticamente |
-| `description` | string \| null | Máx 255 chars |
-| `date` | ISO 8601 | — |
-| `reference` | string \| null | Máx 255 chars |
+| Campo         | Tipo           | Notas                                         |
+| ------------- | -------------- | --------------------------------------------- |
+| `categoryId`  | UUID \| null   | —                                             |
+| `amount`      | number         | Mín `0.01`. Recalcula balance automáticamente |
+| `description` | string \| null | Máx 255 chars                                 |
+| `date`        | ISO 8601       | —                                             |
+| `reference`   | string \| null | Máx 255 chars                                 |
 
 > **Restricción:** Las transacciones DEBT/LOAN con `status=SETTLED` **no se pueden modificar**.
 
 **Errores:**
+
 - `404` — No encontrada
 - `409` — No se puede modificar una transacción liquidada (SETTLED)
 
@@ -382,10 +395,12 @@ Actualiza campos editables. El `type` **no es editable**.
 Soft delete. Revierte el efecto en balance.
 
 **Comportamiento especial:**
+
 - Si es **DEBT/LOAN**: elimina todas las liquidaciones asociadas y revierte sus balances
 - Si es una **liquidación** (tiene `relatedTransactionId`): revierte el `remainingAmount` del DEBT/LOAN original (puede cambiar de SETTLED a PENDING)
 
 **Errores:**
+
 - `403` — Pertenece a otro usuario
 - `404` — No encontrada
 
@@ -398,7 +413,7 @@ Soft delete. Revierte el efecto en balance.
   "accountId": "uuid",
   "categoryId": "uuid | null",
   "type": "EXPENSE",
-  "amount": 50.00,
+  "amount": 50.0,
   "description": "Almuerzo",
   "date": "2026-01-15T12:00:00.000Z",
   "destinationAccountId": null,
@@ -417,10 +432,10 @@ Soft delete. Revierte el efecto en balance.
 {
   "id": "uuid-debt",
   "type": "DEBT",
-  "amount": 100.00,
+  "amount": 100.0,
   "reference": "Juan Pérez",
   "status": "PENDING",
-  "remainingAmount": 60.00,
+  "remainingAmount": 60.0,
   "relatedTransactionId": null
 }
 ```
@@ -431,7 +446,7 @@ Soft delete. Revierte el efecto en balance.
 {
   "id": "uuid-settlement",
   "type": "EXPENSE",
-  "amount": 40.00,
+  "amount": 40.0,
   "reference": "Juan Pérez",
   "status": null,
   "remainingAmount": null,

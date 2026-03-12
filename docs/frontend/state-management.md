@@ -4,10 +4,10 @@
 
 ## Principio: Separar Estado de Servidor vs Estado de Cliente
 
-| Tipo | Herramienta | Ejemplos |
-|---|---|---|
-| **Server state** | TanStack Query | Cuentas, categorías, transacciones, user settings |
-| **Client state** | Zustand | Access token, sidebar open/close, modal state, filtros temporales |
+| Tipo             | Herramienta    | Ejemplos                                                          |
+| ---------------- | -------------- | ----------------------------------------------------------------- |
+| **Server state** | TanStack Query | Cuentas, categorías, transacciones, user settings                 |
+| **Client state** | Zustand        | Access token, sidebar open/close, modal state, filtros temporales |
 
 **Regla:** Si el dato viene del backend o necesita sincronizarse con él → TanStack Query. Si es estado puramente local de la UI → Zustand o `useState`.
 
@@ -24,13 +24,13 @@ import { QueryClient } from '@tanstack/react-query';
 export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 5 * 60 * 1000,     // 5 minutos antes de refetch
-      gcTime: 10 * 60 * 1000,       // 10 minutos en cache
-      retry: 1,                      // 1 reintento en error
-      refetchOnWindowFocus: true,    // Refetch al volver a la pestaña
+      staleTime: 5 * 60 * 1000, // 5 minutos antes de refetch
+      gcTime: 10 * 60 * 1000, // 10 minutos en cache
+      retry: 1, // 1 reintento en error
+      refetchOnWindowFocus: true, // Refetch al volver a la pestaña
     },
     mutations: {
-      retry: 0,                      // No reintentar mutaciones
+      retry: 0, // No reintentar mutaciones
     },
   },
 });
@@ -301,7 +301,7 @@ export function useArchiveAccount() {
       const previous = queryClient.getQueryData(accountKeys.list());
 
       queryClient.setQueryData(accountKeys.list(), (old: Account[]) =>
-        old.map((a) => (a.id === id ? { ...a, isArchived: !a.isArchived } : a))
+        old.map((a) => (a.id === id ? { ...a, isArchived: !a.isArchived } : a)),
       );
 
       return { previous };

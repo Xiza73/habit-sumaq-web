@@ -4,12 +4,12 @@
 
 ## Stack
 
-| Herramienta | Propósito |
-|---|---|
-| **Vitest** | Test runner, assertions, mocking |
-| **React Testing Library (RTL)** | Testing de componentes React |
-| **MSW (Mock Service Worker)** | Mock de API en tests de integración |
-| **Playwright** | Tests end-to-end |
+| Herramienta                     | Propósito                           |
+| ------------------------------- | ----------------------------------- |
+| **Vitest**                      | Test runner, assertions, mocking    |
+| **React Testing Library (RTL)** | Testing de componentes React        |
+| **MSW (Mock Service Worker)**   | Mock de API en tests de integración |
+| **Playwright**                  | Tests end-to-end                    |
 
 ---
 
@@ -124,10 +124,13 @@ export const handlers = [
 
   http.post('*/accounts', async ({ request }) => {
     const body = await request.json();
-    return HttpResponse.json({
-      success: true,
-      data: { id: '2', ...body, balance: body.initialBalance ?? 0 },
-    }, { status: 201 });
+    return HttpResponse.json(
+      {
+        success: true,
+        data: { id: '2', ...body, balance: body.initialBalance ?? 0 },
+      },
+      { status: 201 },
+    );
   }),
 ];
 ```
@@ -265,11 +268,11 @@ pnpm test:e2e --ui     # Playwright con interfaz visual
 
 ## Cobertura Mínima
 
-| Capa | Objetivo |
-|---|---|
-| `core/domain/schemas/` | 90%+ |
-| `lib/` | 90%+ |
-| `core/application/stores/` | 80%+ |
-| `infrastructure/adapters/` | 80%+ |
-| `presentation/features/` | 70%+ |
+| Capa                          | Objetivo              |
+| ----------------------------- | --------------------- |
+| `core/domain/schemas/`        | 90%+                  |
+| `lib/`                        | 90%+                  |
+| `core/application/stores/`    | 80%+                  |
+| `infrastructure/adapters/`    | 80%+                  |
+| `presentation/features/`      | 70%+                  |
 | `presentation/components/ui/` | Solo si tienen lógica |

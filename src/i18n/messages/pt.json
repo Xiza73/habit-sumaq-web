@@ -1,0 +1,114 @@
+{
+  "common": {
+    "save": "Salvar",
+    "cancel": "Cancelar",
+    "delete": "Excluir",
+    "edit": "Editar",
+    "create": "Criar",
+    "archive": "Arquivar",
+    "unarchive": "Desarquivar",
+    "confirm": "Confirmar",
+    "loading": "Carregando...",
+    "error": "Ocorreu um erro",
+    "noResults": "Sem resultados",
+    "required": "Este campo é obrigatório",
+    "back": "Voltar"
+  },
+  "auth": {
+    "loginWithGoogle": "Entrar com Google",
+    "logout": "Sair",
+    "sessionExpired": "Sua sessão expirou. Faça login novamente."
+  },
+  "accounts": {
+    "title": "Contas",
+    "createAccount": "Nova conta",
+    "editAccount": "Editar conta",
+    "deleteAccount": "Excluir conta",
+    "archiveAccount": "Arquivar conta",
+    "name": "Nome",
+    "type": "Tipo",
+    "currency": "Moeda",
+    "balance": "Saldo",
+    "initialBalance": "Saldo inicial",
+    "color": "Cor",
+    "icon": "Ícone",
+    "emptyState": "Você não tem contas. Crie sua primeira conta para começar.",
+    "deleteConfirm": "Tem certeza de que deseja excluir esta conta?",
+    "hasTransactions": "Não é possível excluir porque possui transações ativas.",
+    "types": {
+      "checking": "Conta corrente",
+      "savings": "Poupança",
+      "cash": "Dinheiro",
+      "credit_card": "Cartão de crédito",
+      "investment": "Investimentos"
+    },
+    "currencies": {
+      "PEN": "Sol peruano (PEN)",
+      "USD": "Dólar (USD)",
+      "EUR": "Euro (EUR)"
+    }
+  },
+  "categories": {
+    "title": "Categorias",
+    "createCategory": "Nova categoria",
+    "income": "Receitas",
+    "expense": "Despesas"
+  },
+  "transactions": {
+    "title": "Transações",
+    "createTransaction": "Nova transação",
+    "types": {
+      "INCOME": "Receita",
+      "EXPENSE": "Despesa",
+      "TRANSFER": "Transferência",
+      "DEBT": "Dívida",
+      "LOAN": "Empréstimo"
+    },
+    "status": {
+      "PENDING": "Pendente",
+      "SETTLED": "Liquidada"
+    },
+    "settle": "Liquidar",
+    "amount": "Valor",
+    "date": "Data",
+    "description": "Descrição",
+    "reference": "Referência",
+    "destinationAccount": "Conta destino"
+  },
+  "settings": {
+    "title": "Configurações",
+    "language": "Idioma",
+    "theme": "Tema",
+    "defaultCurrency": "Moeda padrão",
+    "dateFormat": "Formato de data",
+    "startOfWeek": "Início da semana",
+    "themes": {
+      "light": "Claro",
+      "dark": "Escuro",
+      "system": "Sistema"
+    },
+    "days": {
+      "monday": "Segunda-feira",
+      "sunday": "Domingo"
+    }
+  },
+  "errors": {
+    "ACC_001": "Conta não encontrada",
+    "ACC_002": "Você já tem uma conta com esse nome",
+    "ACC_003": "Não é possível excluir: a conta possui transações ativas",
+    "ACC_004": "Você não tem acesso a esta conta",
+    "TXN_003": "Saldo insuficiente",
+    "TXN_004": "Não é possível transferir para a mesma conta",
+    "TXN_005": "As contas têm moedas diferentes",
+    "TXN_010": "Esta dívida/empréstimo já foi liquidada",
+    "TXN_011": "Não é possível modificar uma transação liquidada",
+    "TXN_012": "O valor excede o saldo pendente",
+    "generic": "Ocorreu um erro inesperado. Tente novamente."
+  },
+  "navigation": {
+    "accounts": "Contas",
+    "categories": "Categorias",
+    "transactions": "Transações",
+    "settings": "Configurações"
+  }
+}

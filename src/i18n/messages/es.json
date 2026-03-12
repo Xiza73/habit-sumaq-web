@@ -1,34 +1,3 @@
-# Internacionalización (i18n)
-
----
-
-## Stack
-
-- **Librería:** `next-intl` (integración nativa con Next.js App Router)
-- **Idiomas soportados:** Español (`es`), Inglés (`en`), Portugués (`pt`)
-- **Idioma por defecto:** `es`
-- **Fuente del idioma:** Preferencia del usuario en `UserSettings.language`
-
----
-
-## Estructura de Archivos
-
-```
-src/i18n/
-├── config.ts              # Configuración de next-intl
-└── messages/
-    ├── es.json            # Mensajes en español
-    ├── en.json            # Mensajes en inglés
-    └── pt.json            # Mensajes en portugués
-```
-
----
-
-## Estructura de Mensajes
-
-Los mensajes se organizan por namespace, que corresponde al módulo/sección de la app:
-
-```json
 {
   "common": {
     "save": "Guardar",
@@ -42,7 +11,8 @@ Los mensajes se organizan por namespace, que corresponde al módulo/sección de 
     "loading": "Cargando...",
     "error": "Ocurrió un error",
     "noResults": "Sin resultados",
-    "required": "Este campo es requerido"
+    "required": "Este campo es requerido",
+    "back": "Volver"
   },
   "auth": {
     "loginWithGoogle": "Iniciar sesión con Google",
@@ -142,90 +112,3 @@ Los mensajes se organizan por namespace, que corresponde al módulo/sección de 
     "settings": "Configuración"
   }
 }
-```
-
----
-
-## Uso en Componentes
-
-### Server Components
-
-```tsx
-import { useTranslations } from 'next-intl';
-
-function AccountsPage() {
-  const t = useTranslations('accounts');
-
-  return (
-    <div>
-      <h1>{t('title')}</h1>
-      <button>{t('createAccount')}</button>
-    </div>
-  );
-}
-```
-
-### Client Components
-
-```tsx
-'use client';
-import { useTranslations } from 'next-intl';
-
-function AccountForm({ onSuccess }: AccountFormProps) {
-  const t = useTranslations('accounts');
-  const tCommon = useTranslations('common');
-
-  return (
-    <form>
-      <label>{t('name')}</label>
-      <input placeholder={t('name')} />
-      <button type="submit">{tCommon('save')}</button>
-    </form>
-  );
-}
-```
-
-### Interpolación y Pluralización
-
-```json
-{
-  "accounts": {
-    "count": "Tienes {count, plural, =0 {ninguna cuenta} one {# cuenta} other {# cuentas}}"
-  }
-}
-```
-
-```tsx
-t('count', { count: accounts.length });
-```
-
-### Mensajes de error de API
-
-```typescript
-import { useTranslations } from 'next-intl';
-
-function useErrorMessage() {
-  const t = useTranslations('errors');
-
-  return function getErrorMessage(code?: string): string {
-    if (!code) return t('generic');
-    // Intenta buscar el código; si no existe, usa el genérico
-    try {
-      return t(code);
-    } catch {
-      return t('generic');
-    }
-  };
-}
-```
-
----
-
-## Reglas
-
-1. **Nunca hardcodear texto visible** en el JSX. Todo pasa por `useTranslations()`.
-2. **Namespaces claros.** Un namespace por módulo/sección.
-3. **Keys descriptivas en inglés.** La key es `createAccount`, no `btn1` ni `texto_crear`.
-4. **Mensajes de error mapeados por código.** Usar los error codes del backend como keys en el namespace `errors`.
-5. **Formato de fechas/montos** se maneja con helpers en `lib/format.ts`, no con i18n directamente. Pero el formato base viene de `UserSettings.dateFormat`.
-6. **Mantener los 3 idiomas sincronizados.** Al agregar una key en `es.json`, agregarla también en `en.json` y `pt.json`.

@@ -6,34 +6,34 @@
 
 ### Archivos y Carpetas
 
-| Tipo | Convención | Ejemplo |
-|---|---|---|
-| Componentes React | PascalCase | `AccountCard.tsx` |
-| Hooks | camelCase con prefijo `use` | `use-accounts.ts` |
-| Archivos de utilidad | kebab-case | `http-client.ts` |
-| Schemas Zod | kebab-case con sufijo `.schema` | `account.schema.ts` |
-| API clients | kebab-case con sufijo `.api` | `accounts.api.ts` |
-| Adapters | kebab-case con sufijo `.adapter` | `account.adapter.ts` |
-| Stores Zustand | kebab-case con sufijo `.store` | `auth.store.ts` |
-| Enums/constantes | kebab-case con sufijo `.enums` | `account.enums.ts` |
-| Tests | mismo nombre + `.test` | `AccountCard.test.tsx` |
-| i18n messages | kebab-case por idioma | `es.json`, `en.json` |
+| Tipo                 | Convención                       | Ejemplo                |
+| -------------------- | -------------------------------- | ---------------------- |
+| Componentes React    | PascalCase                       | `AccountCard.tsx`      |
+| Hooks                | camelCase con prefijo `use`      | `use-accounts.ts`      |
+| Archivos de utilidad | kebab-case                       | `http-client.ts`       |
+| Schemas Zod          | kebab-case con sufijo `.schema`  | `account.schema.ts`    |
+| API clients          | kebab-case con sufijo `.api`     | `accounts.api.ts`      |
+| Adapters             | kebab-case con sufijo `.adapter` | `account.adapter.ts`   |
+| Stores Zustand       | kebab-case con sufijo `.store`   | `auth.store.ts`        |
+| Enums/constantes     | kebab-case con sufijo `.enums`   | `account.enums.ts`     |
+| Tests                | mismo nombre + `.test`           | `AccountCard.test.tsx` |
+| i18n messages        | kebab-case por idioma            | `es.json`, `en.json`   |
 
 ### Variables y Funciones
 
-| Tipo | Convención | Ejemplo |
-|---|---|---|
-| Variables | camelCase | `accountBalance` |
-| Funciones | camelCase | `formatCurrency()` |
-| Componentes React | PascalCase | `function AccountCard()` |
-| Hooks | camelCase con `use` | `useAccounts()` |
-| Constantes | UPPER_SNAKE_CASE | `MAX_ACCOUNT_NAME_LENGTH` |
-| Enums (as const) | PascalCase objeto, UPPER_SNAKE para valores | `AccountType.CHECKING` |
-| Tipos/Interfaces | PascalCase | `interface Account {}` |
-| Generics | letra mayúscula descriptiva | `<TData>`, `<TError>` |
-| Props interfaces | PascalCase con sufijo `Props` | `interface AccountCardProps {}` |
-| Event handlers | `on` + Verbo + Sustantivo | `onCreateAccount`, `onDeleteItem` |
-| Boolean variables | prefijo `is`/`has`/`can`/`should` | `isLoading`, `hasError`, `canDelete` |
+| Tipo              | Convención                                  | Ejemplo                              |
+| ----------------- | ------------------------------------------- | ------------------------------------ |
+| Variables         | camelCase                                   | `accountBalance`                     |
+| Funciones         | camelCase                                   | `formatCurrency()`                   |
+| Componentes React | PascalCase                                  | `function AccountCard()`             |
+| Hooks             | camelCase con `use`                         | `useAccounts()`                      |
+| Constantes        | UPPER_SNAKE_CASE                            | `MAX_ACCOUNT_NAME_LENGTH`            |
+| Enums (as const)  | PascalCase objeto, UPPER_SNAKE para valores | `AccountType.CHECKING`               |
+| Tipos/Interfaces  | PascalCase                                  | `interface Account {}`               |
+| Generics          | letra mayúscula descriptiva                 | `<TData>`, `<TError>`                |
+| Props interfaces  | PascalCase con sufijo `Props`               | `interface AccountCardProps {}`      |
+| Event handlers    | `on` + Verbo + Sustantivo                   | `onCreateAccount`, `onDeleteItem`    |
+| Boolean variables | prefijo `is`/`has`/`can`/`should`           | `isLoading`, `hasError`, `canDelete` |
 
 ### API & Query Keys
 
@@ -116,14 +116,22 @@ export default AccountForm;
 
 ```tsx
 // Bien — operador ternario para simple
-{isLoading ? <Skeleton /> : <AccountList accounts={data} />}
+{
+  isLoading ? <Skeleton /> : <AccountList accounts={data} />;
+}
 
 // Bien — && para mostrar/ocultar (asegurarse de que el lado izquierdo sea boolean)
-{hasAccounts && <AccountList accounts={data} />}
+{
+  hasAccounts && <AccountList accounts={data} />;
+}
 
 // Mal — && con número (puede renderizar "0")
-{accounts.length && <AccountList />}  // ❌
-{accounts.length > 0 && <AccountList />}  // ✅
+{
+  accounts.length && <AccountList />;
+} // ❌
+{
+  accounts.length > 0 && <AccountList />;
+} // ✅
 ```
 
 ### Error Handling en API calls
@@ -206,7 +214,7 @@ const buttonVariants = cva(
       variant: 'default',
       size: 'md',
     },
-  }
+  },
 );
 ```
 
@@ -218,11 +226,11 @@ const buttonVariants = cva(
 
 ```typescript
 // Siempre usar alias @/ en lugar de rutas relativas profundas
-import { Button } from '@/presentation/components/ui/Button';  // ✅
-import { Button } from '../../../../components/ui/Button';      // ❌
+import { Button } from '@/presentation/components/ui/Button'; // ✅
+import { Button } from '../../../../components/ui/Button'; // ❌
 
 // Rutas relativas solo dentro del mismo módulo/carpeta
-import { formatAmount } from './helpers';  // ✅ (mismo directorio)
+import { formatAmount } from './helpers'; // ✅ (mismo directorio)
 ```
 
 ---

@@ -49,60 +49,60 @@ El color principal de Habit Sumaq es un **verde esmeralda** que evoca crecimient
 
 #### Superficies y Texto
 
-| Token | Uso | Claro | Oscuro |
-|---|---|---|---|
-| `background` | Fondo principal de la app | `oklch(0.98 0.005 260)` | `oklch(0.13 0.02 260)` |
-| `foreground` | Texto principal | `oklch(0.15 0.02 260)` | `oklch(0.93 0.01 260)` |
-| `card` | Fondo de cards y paneles | `oklch(1.0 0 0)` | `oklch(0.17 0.015 260)` |
-| `card-foreground` | Texto dentro de cards | `oklch(0.15 0.02 260)` | `oklch(0.93 0.01 260)` |
-| `muted` | Fondos sutiles, hover states | `oklch(0.95 0.005 260)` | `oklch(0.20 0.015 260)` |
-| `muted-foreground` | Texto secundario, placeholders | `oklch(0.55 0.01 260)` | `oklch(0.60 0.01 260)` |
+| Token              | Uso                            | Claro                   | Oscuro                  |
+| ------------------ | ------------------------------ | ----------------------- | ----------------------- |
+| `background`       | Fondo principal de la app      | `oklch(0.98 0.005 260)` | `oklch(0.13 0.02 260)`  |
+| `foreground`       | Texto principal                | `oklch(0.15 0.02 260)`  | `oklch(0.93 0.01 260)`  |
+| `card`             | Fondo de cards y paneles       | `oklch(1.0 0 0)`        | `oklch(0.17 0.015 260)` |
+| `card-foreground`  | Texto dentro de cards          | `oklch(0.15 0.02 260)`  | `oklch(0.93 0.01 260)`  |
+| `muted`            | Fondos sutiles, hover states   | `oklch(0.95 0.005 260)` | `oklch(0.20 0.015 260)` |
+| `muted-foreground` | Texto secundario, placeholders | `oklch(0.55 0.01 260)`  | `oklch(0.60 0.01 260)`  |
 
 #### Bordes y Separadores
 
-| Token | Uso | Claro | Oscuro |
-|---|---|---|---|
+| Token    | Uso                                | Claro                   | Oscuro                  |
+| -------- | ---------------------------------- | ----------------------- | ----------------------- |
 | `border` | Bordes de inputs, cards, divisores | `oklch(0.90 0.005 260)` | `oklch(0.25 0.015 260)` |
-| `input` | Borde de inputs en reposo | `oklch(0.88 0.005 260)` | `oklch(0.27 0.015 260)` |
-| `ring` | Outline de focus | `oklch(0.55 0.15 160)` | `oklch(0.65 0.15 160)` |
+| `input`  | Borde de inputs en reposo          | `oklch(0.88 0.005 260)` | `oklch(0.27 0.015 260)` |
+| `ring`   | Outline de focus                   | `oklch(0.55 0.15 160)`  | `oklch(0.65 0.15 160)`  |
 
 #### Colores de Acción (Primary)
 
-| Token | Uso | Claro | Oscuro |
-|---|---|---|---|
-| `primary` | Botones principales, links, CTAs | `oklch(0.50 0.15 160)` | `oklch(0.65 0.15 160)` |
-| `primary-foreground` | Texto sobre primary | `oklch(1.0 0 0)` | `oklch(0.10 0.02 160)` |
-| `primary-hover` | Hover de botones primary | `oklch(0.45 0.15 160)` | `oklch(0.60 0.15 160)` |
+| Token                | Uso                              | Claro                  | Oscuro                 |
+| -------------------- | -------------------------------- | ---------------------- | ---------------------- |
+| `primary`            | Botones principales, links, CTAs | `oklch(0.50 0.15 160)` | `oklch(0.65 0.15 160)` |
+| `primary-foreground` | Texto sobre primary              | `oklch(1.0 0 0)`       | `oklch(0.10 0.02 160)` |
+| `primary-hover`      | Hover de botones primary         | `oklch(0.45 0.15 160)` | `oklch(0.60 0.15 160)` |
 
 #### Colores Secundarios
 
-| Token | Uso | Claro | Oscuro |
-|---|---|---|---|
-| `secondary` | Botones secundarios, badges | `oklch(0.93 0.01 260)` | `oklch(0.22 0.015 260)` |
-| `secondary-foreground` | Texto sobre secondary | `oklch(0.20 0.02 260)` | `oklch(0.90 0.01 260)` |
+| Token                  | Uso                         | Claro                  | Oscuro                  |
+| ---------------------- | --------------------------- | ---------------------- | ----------------------- |
+| `secondary`            | Botones secundarios, badges | `oklch(0.93 0.01 260)` | `oklch(0.22 0.015 260)` |
+| `secondary-foreground` | Texto sobre secondary       | `oklch(0.20 0.02 260)` | `oklch(0.90 0.01 260)`  |
 
 #### Colores de Estado
 
-| Token | Uso | Claro | Oscuro |
-|---|---|---|---|
-| `success` | Ingresos, acciones exitosas | `oklch(0.55 0.15 145)` | `oklch(0.65 0.15 145)` |
-| `success-foreground` | Texto sobre success | `oklch(1.0 0 0)` | `oklch(0.10 0.02 145)` |
-| `warning` | Alertas, estados pendientes | `oklch(0.70 0.15 85)` | `oklch(0.75 0.12 85)` |
-| `warning-foreground` | Texto sobre warning | `oklch(0.20 0.05 85)` | `oklch(0.15 0.05 85)` |
-| `destructive` | Gastos, errores, eliminar | `oklch(0.55 0.2 25)` | `oklch(0.65 0.18 25)` |
-| `destructive-foreground` | Texto sobre destructive | `oklch(1.0 0 0)` | `oklch(0.10 0.02 25)` |
-| `info` | Información, tooltips | `oklch(0.55 0.12 240)` | `oklch(0.65 0.12 240)` |
-| `info-foreground` | Texto sobre info | `oklch(1.0 0 0)` | `oklch(0.10 0.02 240)` |
+| Token                    | Uso                         | Claro                  | Oscuro                 |
+| ------------------------ | --------------------------- | ---------------------- | ---------------------- |
+| `success`                | Ingresos, acciones exitosas | `oklch(0.55 0.15 145)` | `oklch(0.65 0.15 145)` |
+| `success-foreground`     | Texto sobre success         | `oklch(1.0 0 0)`       | `oklch(0.10 0.02 145)` |
+| `warning`                | Alertas, estados pendientes | `oklch(0.70 0.15 85)`  | `oklch(0.75 0.12 85)`  |
+| `warning-foreground`     | Texto sobre warning         | `oklch(0.20 0.05 85)`  | `oklch(0.15 0.05 85)`  |
+| `destructive`            | Gastos, errores, eliminar   | `oklch(0.55 0.2 25)`   | `oklch(0.65 0.18 25)`  |
+| `destructive-foreground` | Texto sobre destructive     | `oklch(1.0 0 0)`       | `oklch(0.10 0.02 25)`  |
+| `info`                   | Información, tooltips       | `oklch(0.55 0.12 240)` | `oklch(0.65 0.12 240)` |
+| `info-foreground`        | Texto sobre info            | `oklch(1.0 0 0)`       | `oklch(0.10 0.02 240)` |
 
 #### Colores de Dominio (Finanzas)
 
-| Token | Uso | Claro | Oscuro |
-|---|---|---|---|
-| `income` | Ingresos, préstamos cobrados | `oklch(0.55 0.15 145)` | `oklch(0.65 0.15 145)` |
-| `expense` | Gastos, deudas pagadas | `oklch(0.55 0.2 25)` | `oklch(0.65 0.18 25)` |
+| Token      | Uso                          | Claro                  | Oscuro                 |
+| ---------- | ---------------------------- | ---------------------- | ---------------------- |
+| `income`   | Ingresos, préstamos cobrados | `oklch(0.55 0.15 145)` | `oklch(0.65 0.15 145)` |
+| `expense`  | Gastos, deudas pagadas       | `oklch(0.55 0.2 25)`   | `oklch(0.65 0.18 25)`  |
 | `transfer` | Transferencias entre cuentas | `oklch(0.55 0.12 240)` | `oklch(0.65 0.12 240)` |
-| `debt` | Deudas pendientes | `oklch(0.60 0.15 50)` | `oklch(0.68 0.12 50)` |
-| `loan` | Préstamos pendientes | `oklch(0.55 0.12 290)` | `oklch(0.65 0.12 290)` |
+| `debt`     | Deudas pendientes            | `oklch(0.60 0.15 50)`  | `oklch(0.68 0.12 50)`  |
+| `loan`     | Préstamos pendientes         | `oklch(0.55 0.12 290)` | `oklch(0.65 0.12 290)` |
 
 ---
 
@@ -112,18 +112,18 @@ Los usuarios pueden elegir un color para sus cuentas y categorías. Ofrecer esta
 
 ```typescript
 export const PRESET_COLORS = [
-  { name: 'emerald',  value: '#10b981' },
-  { name: 'blue',     value: '#3b82f6' },
-  { name: 'violet',   value: '#8b5cf6' },
-  { name: 'rose',     value: '#f43f5e' },
-  { name: 'amber',    value: '#f59e0b' },
-  { name: 'cyan',     value: '#06b6d4' },
-  { name: 'pink',     value: '#ec4899' },
-  { name: 'lime',     value: '#84cc16' },
-  { name: 'orange',   value: '#f97316' },
-  { name: 'slate',    value: '#64748b' },
-  { name: 'teal',     value: '#14b8a6' },
-  { name: 'indigo',   value: '#6366f1' },
+  { name: 'emerald', value: '#10b981' },
+  { name: 'blue', value: '#3b82f6' },
+  { name: 'violet', value: '#8b5cf6' },
+  { name: 'rose', value: '#f43f5e' },
+  { name: 'amber', value: '#f59e0b' },
+  { name: 'cyan', value: '#06b6d4' },
+  { name: 'pink', value: '#ec4899' },
+  { name: 'lime', value: '#84cc16' },
+  { name: 'orange', value: '#f97316' },
+  { name: 'slate', value: '#64748b' },
+  { name: 'teal', value: '#14b8a6' },
+  { name: 'indigo', value: '#6366f1' },
 ] as const;
 ```
 

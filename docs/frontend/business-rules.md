@@ -29,13 +29,13 @@ Reglas que el frontend debe conocer para construir la UI correctamente y preveni
 
 ### Tipos y su efecto
 
-| Tipo | Efecto en balance | Requiere |
-|---|---|---|
-| `INCOME` | Suma a la cuenta | — |
-| `EXPENSE` | Resta de la cuenta | — |
+| Tipo       | Efecto en balance               | Requiere               |
+| ---------- | ------------------------------- | ---------------------- |
+| `INCOME`   | Suma a la cuenta                | —                      |
+| `EXPENSE`  | Resta de la cuenta              | —                      |
 | `TRANSFER` | Resta de origen, suma a destino | `destinationAccountId` |
-| `DEBT` | **Ninguno** | `reference` |
-| `LOAN` | **Ninguno** | `reference` |
+| `DEBT`     | **Ninguno**                     | `reference`            |
+| `LOAN`     | **Ninguno**                     | `reference`            |
 
 ### Reglas generales
 

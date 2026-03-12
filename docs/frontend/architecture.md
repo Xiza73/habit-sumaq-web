@@ -162,6 +162,7 @@ lib/ → NO importa de ninguna capa (utilidades puras)
 ```
 
 ### Regla de oro
+
 > **Un componente de UI nunca llama a `fetch` ni conoce URLs de API.** Toda comunicación pasa por `infrastructure/api/` y se consume vía hooks de `core/application/hooks/`.
 
 ---
@@ -169,6 +170,7 @@ lib/ → NO importa de ninguna capa (utilidades puras)
 ## Flujo de Datos Típico
 
 ### Lectura (Server Component)
+
 ```
 page.tsx (Server Component)
   → import { getAccounts } from '@/infrastructure/api/accounts.api'
@@ -176,6 +178,7 @@ page.tsx (Server Component)
 ```
 
 ### Lectura (Client Component)
+
 ```
 AccountList.tsx ("use client")
   → useAccounts() (TanStack Query hook en core/application/hooks/)
@@ -185,6 +188,7 @@ AccountList.tsx ("use client")
 ```
 
 ### Escritura (Formulario)
+
 ```
 AccountForm.tsx ("use client")
   → useForm() con schema Zod (core/domain/schemas/)
@@ -199,28 +203,33 @@ AccountForm.tsx ("use client")
 ## Convenciones por Capa
 
 ### `app/` — Routing Layer
+
 - Solo contiene `page.tsx`, `layout.tsx`, `loading.tsx`, `error.tsx`, `not-found.tsx`.
 - Las pages son **thin**: obtienen datos y delegan renderizado a componentes de `presentation/`.
 - Usar Route Groups `(nombre)` para agrupar rutas sin afectar la URL.
 - Auth guard se implementa en el layout del grupo protegido.
 
 ### `core/domain/` — Domain Layer
+
 - **Cero imports** de React, Next.js o librerías externas (excepto Zod para schemas).
 - Entities son `interface` de TypeScript. Representan lo que el backend devuelve.
 - Schemas Zod validan input del usuario (formularios), no responses del API.
 - Enums son objetos `as const` con tipos derivados.
 
 ### `core/application/` — Application Layer
+
 - TanStack Query hooks encapsulan query keys, stale times y mutaciones.
 - Zustand stores manejan estado puramente de cliente (auth tokens, UI state como sidebar open/close).
 - Use cases contienen lógica de negocio que involucra múltiples entidades o pasos.
 
 ### `infrastructure/` — Infrastructure Layer
+
 - `http-client.ts` es el único punto que conoce `fetch`, `baseURL` y manejo de tokens.
 - Cada archivo `.api.ts` expone funciones para un recurso (`getAll`, `getById`, `create`, `update`, `delete`).
 - Adapters transforman DTOs del backend a entities del dominio si hay diferencias.
 
 ### `presentation/` — Presentation Layer
+
 - `components/ui/` son primitivos genéricos (no conocen el dominio).
 - `components/forms/` conectan UI primitivos con React Hook Form.
 - `features/` contiene componentes que sí conocen el dominio (muestran cuentas, transacciones, etc.).
@@ -231,15 +240,18 @@ AccountForm.tsx ("use client")
 ## App Router: Server vs Client Components
 
 ### Server Components (por defecto)
+
 - Pages y layouts que solo renderizan datos.
 - Componentes que no necesitan estado, efectos ni event handlers.
 - Pueden hacer `await` directamente a funciones de `infrastructure/api/`.
 
 ### Client Components (`"use client"`)
+
 - Formularios interactivos.
 - Componentes con `useState`, `useEffect`, `onClick`, etc.
 - Componentes que usan hooks de TanStack Query o Zustand.
 - Sidebar/nav con toggle.
 
 ### Regla práctica
+
 > Empieza como Server Component. Solo agrega `"use client"` cuando necesites interactividad. Mueve la interactividad al componente hijo más pequeño posible.

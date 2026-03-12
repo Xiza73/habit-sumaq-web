@@ -25,25 +25,26 @@ El backend ya está implementado como una API REST (NestJS). Este proyecto es ex
 
 Antes de implementar cualquier feature, consulta los documentos relevantes:
 
-| Documento | Ruta | Descripción |
-|---|---|---|
-| Arquitectura | [architecture.md](docs/frontend/architecture.md) | Clean Architecture adaptada a Next.js App Router |
-| Temas y Paletas | [themes.md](docs/frontend/themes.md) | Paletas de color para modo claro y oscuro |
-| Convenciones | [conventions.md](docs/frontend/conventions.md) | Naming, estructura de archivos, patrones de código |
-| Plan de Implementación | [implementation-plan.md](docs/frontend/implementation-plan.md) | Fases y orden de desarrollo |
-| Testing | [testing.md](docs/frontend/testing.md) | Estrategia de testing por capa |
-| State Management | [state-management.md](docs/frontend/state-management.md) | Manejo de estado y data fetching |
-| i18n | [i18n.md](docs/frontend/i18n.md) | Estrategia de internacionalización |
-| Reglas de Negocio | [business-rules.md](docs/frontend/business-rules.md) | Reglas que la UI debe respetar |
-| API Reference | [api-reference.md](docs/frontend/api-reference.md) | Endpoints, DTOs y contratos |
-| Enums | [enums.md](docs/frontend/enums.md) | Valores válidos para cada campo |
-| Códigos de Error | [error-codes.md](docs/frontend/error-codes.md) | Mapeo de códigos a mensajes de UI |
+| Documento              | Ruta                                                           | Descripción                                        |
+| ---------------------- | -------------------------------------------------------------- | -------------------------------------------------- |
+| Arquitectura           | [architecture.md](docs/frontend/architecture.md)               | Clean Architecture adaptada a Next.js App Router   |
+| Temas y Paletas        | [themes.md](docs/frontend/themes.md)                           | Paletas de color para modo claro y oscuro          |
+| Convenciones           | [conventions.md](docs/frontend/conventions.md)                 | Naming, estructura de archivos, patrones de código |
+| Plan de Implementación | [implementation-plan.md](docs/frontend/implementation-plan.md) | Fases y orden de desarrollo                        |
+| Testing                | [testing.md](docs/frontend/testing.md)                         | Estrategia de testing por capa                     |
+| State Management       | [state-management.md](docs/frontend/state-management.md)       | Manejo de estado y data fetching                   |
+| i18n                   | [i18n.md](docs/frontend/i18n.md)                               | Estrategia de internacionalización                 |
+| Reglas de Negocio      | [business-rules.md](docs/frontend/business-rules.md)           | Reglas que la UI debe respetar                     |
+| API Reference          | [api-reference.md](docs/frontend/api-reference.md)             | Endpoints, DTOs y contratos                        |
+| Enums                  | [enums.md](docs/frontend/enums.md)                             | Valores válidos para cada campo                    |
+| Códigos de Error       | [error-codes.md](docs/frontend/error-codes.md)                 | Mapeo de códigos a mensajes de UI                  |
 
 ---
 
 ## Reglas Generales
 
 ### Idioma
+
 - **Código** (variables, funciones, componentes, tipos): siempre en **inglés**.
 - **Textos de UI** (labels, mensajes, placeholders): siempre via **i18n**, nunca hardcodeados.
 - **Comentarios**: en inglés. Solo cuando el código no es autoexplicativo.
@@ -51,6 +52,7 @@ Antes de implementar cualquier feature, consulta los documentos relevantes:
 - **Commits**: en inglés, formato Conventional Commits (`feat:`, `fix:`, `refactor:`, etc.).
 
 ### TypeScript
+
 - **Strict mode** obligatorio. No usar `any` — preferir `unknown` y narrowing.
 - Usar `interface` para shapes de objetos. Usar `type` para uniones, intersecciones y utilidades.
 - No usar `enum` de TypeScript — usar `as const` objects con tipo derivado.
@@ -58,6 +60,7 @@ Antes de implementar cualquier feature, consulta los documentos relevantes:
 - Exportar tipos junto a donde se usan; no crear archivos `types.ts` genéricos a nivel global.
 
 ### Componentes React
+
 - **Funciones nombradas** (`function Component()`) — no arrow functions para componentes.
 - **Un componente por archivo**. El archivo lleva el nombre del componente en PascalCase.
 - Hooks personalizados en archivos separados con prefijo `use`.
@@ -66,6 +69,7 @@ Antes de implementar cualquier feature, consulta los documentos relevantes:
 - Props destructuradas directamente en la firma de la función.
 
 ### Estilos
+
 - **Tailwind CSS 4** como sistema principal. No CSS modules ni styled-components.
 - Usar **CSS variables** de Tailwind para theming (modo claro/oscuro).
 - Clases utilitarias en el JSX. Para componentes reutilizables con variantes, usar `cva` (class-variance-authority).
@@ -73,6 +77,7 @@ Antes de implementar cualquier feature, consulta los documentos relevantes:
 - No usar `!important`. Si hay conflictos, revisar la especificidad.
 
 ### Imports y Módulos
+
 - Usar el alias `@/` que apunta a la raíz del proyecto.
 - Orden de imports (enforced por ESLint):
   1. React / Next.js
@@ -82,6 +87,7 @@ Antes de implementar cualquier feature, consulta los documentos relevantes:
   5. Estilos
 
 ### API y Data Fetching
+
 - Toda comunicación con el backend pasa por la capa `infrastructure/api/`.
 - Los **Server Components** pueden hacer fetch directamente usando los servicios de infraestructura.
 - Los **Client Components** usan TanStack Query hooks definidos en `application/hooks/`.
@@ -89,18 +95,21 @@ Antes de implementar cualquier feature, consulta los documentos relevantes:
 - Los tokens se manejan automáticamente vía un wrapper de fetch con refresh silencioso.
 
 ### Formularios
+
 - Usar React Hook Form + Zod para todo formulario.
 - Los schemas Zod de validación viven en `domain/schemas/`.
 - Validar en frontend **antes** de enviar al backend. Mostrar errores inline por campo.
 - Tras submit exitoso, invalidar queries relevantes de TanStack Query.
 
 ### Git & Branching
+
 - Rama principal: `main`.
 - Ramas de feature: `feat/<module>/<description>` (ej: `feat/accounts/create-form`).
 - Ramas de fix: `fix/<module>/<description>`.
 - Commits atómicos. Un commit = un cambio lógico.
 
 ### Seguridad
+
 - Nunca almacenar tokens en localStorage. El access token vive en memoria (Zustand); el refresh token es HttpOnly cookie.
 - Sanitizar inputs del usuario antes de renderizar.
 - No exponer variables de entorno del servidor al cliente (solo `NEXT_PUBLIC_*`).
