@@ -45,6 +45,14 @@ export function TransactionCard({
 
   return (
     <div className="group relative flex items-center gap-3 rounded-xl border border-border bg-card p-4 transition-shadow hover:shadow-md">
+      {/* Mobile: whole card is tappable */}
+      <button
+        type="button"
+        className="absolute inset-0 z-0 md:hidden"
+        onClick={() => setMenuOpen(!menuOpen)}
+        aria-label="Transaction actions"
+      />
+
       <div
         className={`flex size-10 shrink-0 items-center justify-center rounded-lg bg-muted ${colorClass}`}
       >
@@ -91,7 +99,8 @@ export function TransactionCard({
         </p>
       </div>
 
-      <div className="absolute right-3 top-3">
+      {/* Desktop: 3-dot button appears in flow only on hover */}
+      <div className="hidden w-0 shrink-0 overflow-hidden transition-all group-hover:w-7 md:block">
         <button
           type="button"
           onClick={() => setMenuOpen(!menuOpen)}
@@ -100,61 +109,62 @@ export function TransactionCard({
         >
           <MoreVertical className="size-4" />
         </button>
+      </div>
 
-        {menuOpen && (
-          <>
-            <div
-              className="fixed inset-0 z-10"
-              onClick={() => setMenuOpen(false)}
-              onKeyDown={(e) => {
-                if (e.key === 'Escape') setMenuOpen(false);
-              }}
-              role="button"
-              tabIndex={0}
-              aria-label="Close menu"
-            />
-            <div className="absolute right-0 top-full z-20 mt-1 w-48 rounded-lg border border-border bg-popover py-1 shadow-lg">
-              {canEdit && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setMenuOpen(false);
-                    onEdit(transaction);
-                  }}
-                  className="flex w-full items-center gap-2 px-3 py-2 text-sm hover:bg-muted"
-                >
-                  <Pencil className="size-4" />
-                  {t('editTransaction')}
-                </button>
-              )}
-              {canSettle && onSettle && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setMenuOpen(false);
-                    onSettle(transaction);
-                  }}
-                  className="flex w-full items-center gap-2 px-3 py-2 text-sm hover:bg-muted"
-                >
-                  <HandCoins className="size-4" />
-                  {t('settle')}
-                </button>
-              )}
+      {/* Actions dropdown */}
+      {menuOpen && (
+        <>
+          <div
+            className="fixed inset-0 z-10"
+            onClick={() => setMenuOpen(false)}
+            onKeyDown={(e) => {
+              if (e.key === 'Escape') setMenuOpen(false);
+            }}
+            role="button"
+            tabIndex={0}
+            aria-label="Close menu"
+          />
+          <div className="absolute right-4 top-full z-20 mt-1 w-48 rounded-lg border border-border bg-popover py-1 shadow-lg md:right-0">
+            {canEdit && (
               <button
                 type="button"
                 onClick={() => {
                   setMenuOpen(false);
-                  onDelete(transaction);
+                  onEdit(transaction);
                 }}
-                className="flex w-full items-center gap-2 px-3 py-2 text-sm text-destructive hover:bg-muted"
+                className="flex w-full items-center gap-2 px-3 py-2 text-sm hover:bg-muted"
               >
-                <Trash2 className="size-4" />
-                {t('deleteTransaction')}
+                <Pencil className="size-4" />
+                {t('editTransaction')}
               </button>
-            </div>
-          </>
-        )}
-      </div>
+            )}
+            {canSettle && onSettle && (
+              <button
+                type="button"
+                onClick={() => {
+                  setMenuOpen(false);
+                  onSettle(transaction);
+                }}
+                className="flex w-full items-center gap-2 px-3 py-2 text-sm hover:bg-muted"
+              >
+                <HandCoins className="size-4" />
+                {t('settle')}
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={() => {
+                setMenuOpen(false);
+                onDelete(transaction);
+              }}
+              className="flex w-full items-center gap-2 px-3 py-2 text-sm text-destructive hover:bg-muted"
+            >
+              <Trash2 className="size-4" />
+              {t('deleteTransaction')}
+            </button>
+          </div>
+        </>
+      )}
     </div>
   );
 }
