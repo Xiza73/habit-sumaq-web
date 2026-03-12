@@ -119,8 +119,9 @@ Antes de implementar cualquier feature, consulta los documentos relevantes:
 ## Variables de Entorno
 
 ```env
-NEXT_PUBLIC_API_URL=http://localhost:3000    # URL del backend
-NEXT_PUBLIC_APP_URL=http://localhost:3001    # URL del frontend
+PORT=3001                                       # Puerto del frontend
+NEXT_PUBLIC_API_URL=http://localhost:3000        # URL del backend
+NEXT_PUBLIC_APP_URL=http://localhost:${PORT}     # URL del frontend (usa PORT)
 ```
 
 ---

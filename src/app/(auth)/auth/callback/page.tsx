@@ -14,7 +14,7 @@ function CallbackHandler() {
 
   useEffect(() => {
     async function handleCallback() {
-      const accessToken = searchParams.get('accessToken');
+      const accessToken = searchParams.get('token');
 
       if (!accessToken) {
         router.replace('/login');
