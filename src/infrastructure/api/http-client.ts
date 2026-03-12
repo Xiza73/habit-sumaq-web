@@ -71,6 +71,10 @@ class HttpClient {
     }
   }
 
+  async tryRefresh(): Promise<boolean> {
+    return this.handleTokenRefresh();
+  }
+
   private async refreshToken(): Promise<boolean> {
     try {
       const response = await fetch(`${this.baseURL}/auth/refresh`, {
