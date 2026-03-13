@@ -112,14 +112,26 @@ export function TransactionForm({
     }
   }, [open, transaction, defaultAccountId, form, today]);
 
+  function emptyToNull(value: string | null | undefined): string | null {
+    return value === '' ? null : (value ?? null);
+  }
+
   function handleSubmit(values: CreateTransactionInput) {
+    const cleaned = {
+      ...values,
+      categoryId: emptyToNull(values.categoryId),
+      description: emptyToNull(values.description),
+      destinationAccountId: emptyToNull(values.destinationAccountId),
+      reference: emptyToNull(values.reference),
+    };
+
     if (isEditing && transaction) {
       const updateData: UpdateTransactionInput = {
-        categoryId: values.categoryId,
-        amount: values.amount,
-        description: values.description,
-        date: values.date,
-        reference: values.reference,
+        categoryId: cleaned.categoryId,
+        amount: cleaned.amount,
+        description: cleaned.description,
+        date: cleaned.date,
+        reference: cleaned.reference,
       };
       updateMutation.mutate(
         { id: transaction.id, data: updateData },
@@ -132,7 +144,7 @@ export function TransactionForm({
         },
       );
     } else {
-      createMutation.mutate(values, {
+      createMutation.mutate(cleaned, {
         onSuccess: () => {
           toast.success(t('createTransaction'));
           onClose();

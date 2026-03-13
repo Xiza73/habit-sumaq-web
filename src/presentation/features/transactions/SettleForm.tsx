@@ -61,8 +61,12 @@ export function SettleForm({
 
   function handleSubmit(values: SettleTransactionInput) {
     if (!transaction) return;
+    const cleaned = {
+      ...values,
+      description: values.description === '' ? null : (values.description ?? null),
+    };
     settleMutation.mutate(
-      { id: transaction.id, data: values },
+      { id: transaction.id, data: cleaned },
       {
         onSuccess: () => {
           toast.success(t('settle'));
