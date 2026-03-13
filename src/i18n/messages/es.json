@@ -180,6 +180,7 @@
     "deleteConfirm": "¿Estás seguro de que quieres eliminar este hábito?",
     "deleteWarning": "Esto también eliminará todo el historial de registros.",
     "logNote": "Nota",
+    "history": "Historial",
     "days": "{count, plural, one {# día} other {# días}}",
     "weeks": "{count, plural, one {# semana} other {# semanas}}"
   },
