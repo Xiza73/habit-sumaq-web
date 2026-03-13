@@ -28,10 +28,17 @@ interface SettleFormProps {
   open: boolean;
   transaction: Transaction | null;
   currency: Currency;
+  defaultAccountId?: string;
   onClose: () => void;
 }
 
-export function SettleForm({ open, transaction, currency, onClose }: SettleFormProps) {
+export function SettleForm({
+  open,
+  transaction,
+  currency,
+  defaultAccountId,
+  onClose,
+}: SettleFormProps) {
   const t = useTranslations('transactions');
   const tCommon = useTranslations('common');
   const tErrors = useTranslations('errors');
@@ -43,7 +50,7 @@ export function SettleForm({ open, transaction, currency, onClose }: SettleFormP
   const form = useForm<SettleTransactionInput>({
     resolver: zodResolver(settleTransactionSchema),
     defaultValues: {
-      accountId: '',
+      accountId: defaultAccountId ?? '',
       amount: transaction?.remainingAmount ?? 0,
       description: null,
       date: today,

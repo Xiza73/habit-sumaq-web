@@ -128,7 +128,7 @@ export function TransactionCard({
           <div
             className={cn(
               'absolute right-4 top-full z-20 mt-1 w-48 rounded-lg border border-border bg-popover py-1 shadow-lg md:right-0',
-              isLast && 'top-1/2 -translate-y-1/2 md:top-full md:translate-y-0',
+              isLast && 'top-1/2 -translate-y-1/2',
             )}
           >
             {canEdit && (

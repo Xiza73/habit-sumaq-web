@@ -399,14 +399,18 @@ Actualiza campos editables. El `type` **no es editable**.
 | `date`        | ISO 8601       | —                                             |
 | `reference`   | string \| null | Máx 255 chars                                 |
 
-> **Restricción:** Las transacciones DEBT/LOAN con `status=SETTLED` **no se pueden modificar**.
+> **Restricción:** Las transacciones DEBT/LOAN con `status=SETTLED` solo permiten editar el `amount`. Otros campos no son editables mientras esté liquidada.
 >
 > **Restricción:** Al editar el monto de un DEBT/LOAN, el nuevo monto no puede ser menor que lo ya liquidado (pagos realizados). Ejemplo: deuda de 50 con pago de 40 → monto mínimo permitido es 40.
+>
+> **Transiciones de estado automáticas:**
+> - Si al reducir el monto el `remainingAmount` llega a 0, la transacción pasa a `SETTLED`.
+> - Si se aumenta el monto de una transacción `SETTLED`, vuelve a `PENDING` con el nuevo `remainingAmount`.
 
 **Errores:**
 
 - `404` — No encontrada
-- `409` — No se puede modificar una transacción liquidada (SETTLED)
+- `409` — No se puede modificar campos no-monto en transacción liquidada (`TXN_011`)
 - `422` — El nuevo monto es menor que lo ya liquidado (`TXN_013`)
 
 ### `DELETE /transactions/:id`

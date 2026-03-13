@@ -184,6 +184,7 @@ export function TransactionList({ accountId }: TransactionListProps) {
           open={!!settlingTransaction}
           transaction={settlingTransaction}
           currency={getCurrency(settlingTransaction)}
+          defaultAccountId={accountId}
           onClose={() => setSettlingTransaction(null)}
         />
       )}
