@@ -18,7 +18,9 @@ import {
 
 import { ApiError } from '@/infrastructure/api/api-error';
 
+import { Input } from '@/presentation/components/ui/Input';
 import { Modal } from '@/presentation/components/ui/Modal';
+import { Select } from '@/presentation/components/ui/Select';
 
 import { formatCurrency } from '@/lib/format';
 
@@ -94,11 +96,7 @@ export function SettleForm({ open, transaction, currency, onClose }: SettleFormP
           <label htmlFor="settle-account" className="text-sm font-medium">
             {t('settleAccount')}
           </label>
-          <select
-            id="settle-account"
-            {...form.register('accountId')}
-            className="flex h-10 w-full rounded-md border border-border bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          >
+          <Select id="settle-account" {...form.register('accountId')}>
             <option value="">{t('allAccounts')}</option>
             {accounts
               ?.filter((a) => !a.isArchived)
@@ -107,7 +105,7 @@ export function SettleForm({ open, transaction, currency, onClose }: SettleFormP
                   {account.name} ({account.currency})
                 </option>
               ))}
-          </select>
+          </Select>
           {form.formState.errors.accountId && (
             <p className="text-xs text-destructive">{form.formState.errors.accountId.message}</p>
           )}
@@ -118,14 +116,13 @@ export function SettleForm({ open, transaction, currency, onClose }: SettleFormP
             <label htmlFor="settle-amount" className="text-sm font-medium">
               {t('settleAmount')}
             </label>
-            <input
+            <Input
               id="settle-amount"
               type="number"
               step="0.01"
               min="0.01"
               max={transaction?.remainingAmount ?? undefined}
               {...form.register('amount', { valueAsNumber: true })}
-              className="flex h-10 w-full rounded-md border border-border bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             />
             {form.formState.errors.amount && (
               <p className="text-xs text-destructive">{form.formState.errors.amount.message}</p>
@@ -136,12 +133,7 @@ export function SettleForm({ open, transaction, currency, onClose }: SettleFormP
             <label htmlFor="settle-date" className="text-sm font-medium">
               {t('date')}
             </label>
-            <input
-              id="settle-date"
-              type="date"
-              {...form.register('date')}
-              className="flex h-10 w-full rounded-md border border-border bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            />
+            <Input id="settle-date" type="date" {...form.register('date')} />
           </div>
         </div>
 
@@ -149,11 +141,10 @@ export function SettleForm({ open, transaction, currency, onClose }: SettleFormP
           <label htmlFor="settle-description" className="text-sm font-medium">
             {t('description')}
           </label>
-          <input
+          <Input
             id="settle-description"
             type="text"
             {...form.register('description')}
-            className="flex h-10 w-full rounded-md border border-border bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             placeholder={t('description')}
           />
         </div>

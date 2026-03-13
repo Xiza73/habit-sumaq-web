@@ -23,7 +23,9 @@ import {
 
 import { ApiError } from '@/infrastructure/api/api-error';
 
+import { Input } from '@/presentation/components/ui/Input';
 import { Modal } from '@/presentation/components/ui/Modal';
+import { Select } from '@/presentation/components/ui/Select';
 
 interface TransactionFormProps {
   open: boolean;
@@ -170,18 +172,13 @@ export function TransactionForm({
           <label htmlFor="txn-type" className="text-sm font-medium">
             {t('type')}
           </label>
-          <select
-            id="txn-type"
-            {...form.register('type')}
-            disabled={isEditing}
-            className="flex h-10 w-full rounded-md border border-border bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-          >
+          <Select id="txn-type" {...form.register('type')} disabled={isEditing}>
             <option value="EXPENSE">{t('types.EXPENSE')}</option>
             <option value="INCOME">{t('types.INCOME')}</option>
             <option value="TRANSFER">{t('types.TRANSFER')}</option>
             <option value="DEBT">{t('types.DEBT')}</option>
             <option value="LOAN">{t('types.LOAN')}</option>
-          </select>
+          </Select>
         </div>
 
         <div className="grid grid-cols-2 gap-4">
@@ -189,13 +186,12 @@ export function TransactionForm({
             <label htmlFor="txn-amount" className="text-sm font-medium">
               {t('amount')}
             </label>
-            <input
+            <Input
               id="txn-amount"
               type="number"
               step="0.01"
               min="0.01"
               {...form.register('amount', { valueAsNumber: true })}
-              className="flex h-10 w-full rounded-md border border-border bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             />
             {form.formState.errors.amount && (
               <p className="text-xs text-destructive">{form.formState.errors.amount.message}</p>
@@ -206,12 +202,7 @@ export function TransactionForm({
             <label htmlFor="txn-date" className="text-sm font-medium">
               {t('date')}
             </label>
-            <input
-              id="txn-date"
-              type="date"
-              {...form.register('date')}
-              className="flex h-10 w-full rounded-md border border-border bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            />
+            <Input id="txn-date" type="date" {...form.register('date')} />
           </div>
         </div>
 
@@ -219,12 +210,7 @@ export function TransactionForm({
           <label htmlFor="txn-account" className="text-sm font-medium">
             {t('account')}
           </label>
-          <select
-            id="txn-account"
-            {...form.register('accountId')}
-            disabled={isEditing}
-            className="flex h-10 w-full rounded-md border border-border bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-          >
+          <Select id="txn-account" {...form.register('accountId')} disabled={isEditing}>
             <option value="">{t('allAccounts')}</option>
             {accounts
               ?.filter((a) => !a.isArchived)
@@ -233,7 +219,7 @@ export function TransactionForm({
                   {account.name} ({account.currency})
                 </option>
               ))}
-          </select>
+          </Select>
           {form.formState.errors.accountId && (
             <p className="text-xs text-destructive">{form.formState.errors.accountId.message}</p>
           )}
@@ -244,12 +230,7 @@ export function TransactionForm({
             <label htmlFor="txn-dest" className="text-sm font-medium">
               {t('destinationAccount')}
             </label>
-            <select
-              id="txn-dest"
-              {...form.register('destinationAccountId')}
-              disabled={isEditing}
-              className="flex h-10 w-full rounded-md border border-border bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-            >
+            <Select id="txn-dest" {...form.register('destinationAccountId')} disabled={isEditing}>
               <option value="">{t('allAccounts')}</option>
               {destinationAccounts
                 ?.filter((a) => !a.isArchived)
@@ -258,7 +239,7 @@ export function TransactionForm({
                     {account.name} ({account.currency})
                   </option>
                 ))}
-            </select>
+            </Select>
             {form.formState.errors.destinationAccountId && (
               <p className="text-xs text-destructive">
                 {form.formState.errors.destinationAccountId.message}
@@ -272,18 +253,14 @@ export function TransactionForm({
             <label htmlFor="txn-category" className="text-sm font-medium">
               {t('category')}
             </label>
-            <select
-              id="txn-category"
-              {...form.register('categoryId')}
-              className="flex h-10 w-full rounded-md border border-border bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            >
+            <Select id="txn-category" {...form.register('categoryId')}>
               <option value="">{t('allCategories')}</option>
               {categories?.map((category) => (
                 <option key={category.id} value={category.id}>
                   {category.name}
                 </option>
               ))}
-            </select>
+            </Select>
           </div>
         )}
 
@@ -292,18 +269,14 @@ export function TransactionForm({
             <label htmlFor="txn-category-edit" className="text-sm font-medium">
               {t('category')}
             </label>
-            <select
-              id="txn-category-edit"
-              {...form.register('categoryId')}
-              className="flex h-10 w-full rounded-md border border-border bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            >
+            <Select id="txn-category-edit" {...form.register('categoryId')}>
               <option value="">{t('allCategories')}</option>
               {categories?.map((category) => (
                 <option key={category.id} value={category.id}>
                   {category.name}
                 </option>
               ))}
-            </select>
+            </Select>
           </div>
         )}
 
@@ -312,11 +285,10 @@ export function TransactionForm({
             <label htmlFor="txn-reference" className="text-sm font-medium">
               {t('reference')}
             </label>
-            <input
+            <Input
               id="txn-reference"
               type="text"
               {...form.register('reference')}
-              className="flex h-10 w-full rounded-md border border-border bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               placeholder={t('reference')}
             />
             {form.formState.errors.reference && (
@@ -329,11 +301,10 @@ export function TransactionForm({
           <label htmlFor="txn-description" className="text-sm font-medium">
             {t('description')}
           </label>
-          <input
+          <Input
             id="txn-description"
             type="text"
             {...form.register('description')}
-            className="flex h-10 w-full rounded-md border border-border bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             placeholder={t('description')}
           />
         </div>

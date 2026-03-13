@@ -18,7 +18,9 @@ import {
 
 import { ApiError } from '@/infrastructure/api/api-error';
 
+import { Input } from '@/presentation/components/ui/Input';
 import { Modal } from '@/presentation/components/ui/Modal';
+import { Select } from '@/presentation/components/ui/Select';
 
 function ColorPreview({ control }: { control: Control<CreateCategoryInput> }) {
   const color = useWatch({ control, name: 'color' });
@@ -122,11 +124,10 @@ export function CategoryForm({
           <label htmlFor="cat-name" className="text-sm font-medium">
             {t('name')}
           </label>
-          <input
+          <Input
             id="cat-name"
             type="text"
             {...form.register('name')}
-            className="flex h-10 w-full rounded-md border border-border bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             placeholder={t('name')}
           />
           {form.formState.errors.name && (
@@ -138,15 +139,10 @@ export function CategoryForm({
           <label htmlFor="cat-type" className="text-sm font-medium">
             {t('type')}
           </label>
-          <select
-            id="cat-type"
-            {...form.register('type')}
-            disabled={isEditing}
-            className="flex h-10 w-full rounded-md border border-border bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-          >
+          <Select id="cat-type" {...form.register('type')} disabled={isEditing}>
             <option value="INCOME">{t('income')}</option>
             <option value="EXPENSE">{t('expense')}</option>
-          </select>
+          </Select>
         </div>
 
         <div className="space-y-2">

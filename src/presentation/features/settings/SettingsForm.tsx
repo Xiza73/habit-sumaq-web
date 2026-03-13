@@ -15,6 +15,8 @@ import {
   updateUserSettingsSchema,
 } from '@/core/domain/schemas/user-settings.schema';
 
+import { Select } from '@/presentation/components/ui/Select';
+
 export function SettingsForm() {
   const t = useTranslations('settings');
   const tCommon = useTranslations('common');
@@ -75,74 +77,54 @@ export function SettingsForm() {
         <label htmlFor="language" className="text-sm font-medium">
           {t('language')}
         </label>
-        <select
-          id="language"
-          {...form.register('language')}
-          className="flex h-10 w-full rounded-md border border-border bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-        >
+        <Select id="language" {...form.register('language')}>
           <option value="es">Español</option>
           <option value="en">English</option>
           <option value="pt">Português</option>
-        </select>
+        </Select>
       </div>
 
       <div className="space-y-2">
         <label htmlFor="theme" className="text-sm font-medium">
           {t('theme')}
         </label>
-        <select
-          id="theme"
-          {...form.register('theme')}
-          className="flex h-10 w-full rounded-md border border-border bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-        >
+        <Select id="theme" {...form.register('theme')}>
           <option value="light">{t('themes.light')}</option>
           <option value="dark">{t('themes.dark')}</option>
           <option value="system">{t('themes.system')}</option>
-        </select>
+        </Select>
       </div>
 
       <div className="space-y-2">
         <label htmlFor="defaultCurrency" className="text-sm font-medium">
           {t('defaultCurrency')}
         </label>
-        <select
-          id="defaultCurrency"
-          {...form.register('defaultCurrency')}
-          className="flex h-10 w-full rounded-md border border-border bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-        >
+        <Select id="defaultCurrency" {...form.register('defaultCurrency')}>
           <option value="PEN">Sol peruano (PEN)</option>
           <option value="USD">US Dollar (USD)</option>
           <option value="EUR">Euro (EUR)</option>
-        </select>
+        </Select>
       </div>
 
       <div className="space-y-2">
         <label htmlFor="dateFormat" className="text-sm font-medium">
           {t('dateFormat')}
         </label>
-        <select
-          id="dateFormat"
-          {...form.register('dateFormat')}
-          className="flex h-10 w-full rounded-md border border-border bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-        >
+        <Select id="dateFormat" {...form.register('dateFormat')}>
           <option value="DD/MM/YYYY">DD/MM/YYYY (15/03/2026)</option>
           <option value="MM/DD/YYYY">MM/DD/YYYY (03/15/2026)</option>
           <option value="YYYY-MM-DD">YYYY-MM-DD (2026-03-15)</option>
-        </select>
+        </Select>
       </div>
 
       <div className="space-y-2">
         <label htmlFor="startOfWeek" className="text-sm font-medium">
           {t('startOfWeek')}
         </label>
-        <select
-          id="startOfWeek"
-          {...form.register('startOfWeek')}
-          className="flex h-10 w-full rounded-md border border-border bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-        >
+        <Select id="startOfWeek" {...form.register('startOfWeek')}>
           <option value="monday">{t('days.monday')}</option>
           <option value="sunday">{t('days.sunday')}</option>
-        </select>
+        </Select>
       </div>
 
       <button

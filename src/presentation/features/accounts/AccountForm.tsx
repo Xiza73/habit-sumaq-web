@@ -18,7 +18,9 @@ import {
 
 import { ApiError } from '@/infrastructure/api/api-error';
 
+import { Input } from '@/presentation/components/ui/Input';
 import { Modal } from '@/presentation/components/ui/Modal';
+import { Select } from '@/presentation/components/ui/Select';
 
 function ColorPreview({ control }: { control: Control<CreateAccountInput> }) {
   const color = useWatch({ control, name: 'color' });
@@ -118,11 +120,10 @@ export function AccountForm({ open, account, onClose }: AccountFormProps) {
           <label htmlFor="name" className="text-sm font-medium">
             {t('name')}
           </label>
-          <input
+          <Input
             id="name"
             type="text"
             {...form.register('name')}
-            className="flex h-10 w-full rounded-md border border-border bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             placeholder={t('name')}
           />
           {form.formState.errors.name && (
@@ -135,34 +136,24 @@ export function AccountForm({ open, account, onClose }: AccountFormProps) {
             <label htmlFor="type" className="text-sm font-medium">
               {t('type')}
             </label>
-            <select
-              id="type"
-              {...form.register('type')}
-              disabled={isEditing}
-              className="flex h-10 w-full rounded-md border border-border bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-            >
+            <Select id="type" {...form.register('type')} disabled={isEditing}>
               <option value="checking">{t('types.checking')}</option>
               <option value="savings">{t('types.savings')}</option>
               <option value="cash">{t('types.cash')}</option>
               <option value="credit_card">{t('types.credit_card')}</option>
               <option value="investment">{t('types.investment')}</option>
-            </select>
+            </Select>
           </div>
 
           <div className="space-y-2">
             <label htmlFor="currency" className="text-sm font-medium">
               {t('currency')}
             </label>
-            <select
-              id="currency"
-              {...form.register('currency')}
-              disabled={isEditing}
-              className="flex h-10 w-full rounded-md border border-border bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-            >
+            <Select id="currency" {...form.register('currency')} disabled={isEditing}>
               <option value="PEN">{t('currencies.PEN')}</option>
               <option value="USD">{t('currencies.USD')}</option>
               <option value="EUR">{t('currencies.EUR')}</option>
-            </select>
+            </Select>
           </div>
         </div>
 
@@ -171,13 +162,12 @@ export function AccountForm({ open, account, onClose }: AccountFormProps) {
             <label htmlFor="initialBalance" className="text-sm font-medium">
               {t('initialBalance')}
             </label>
-            <input
+            <Input
               id="initialBalance"
               type="number"
               step="0.01"
               min="0"
               {...form.register('initialBalance', { valueAsNumber: true })}
-              className="flex h-10 w-full rounded-md border border-border bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             />
           </div>
         )}
