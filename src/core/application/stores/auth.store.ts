@@ -5,7 +5,8 @@ import { type User } from '@/core/domain/entities/user';
 const TOKEN_COOKIE = 'access_token';
 
 function persistToken(token: string) {
-  document.cookie = `${TOKEN_COOKIE}=${token}; path=/; SameSite=Lax; max-age=86400`;
+  const secure = window.location.protocol === 'https:' ? '; Secure' : '';
+  document.cookie = `${TOKEN_COOKIE}=${token}; path=/; SameSite=Lax; max-age=86400${secure}`;
 }
 
 function removeToken() {
