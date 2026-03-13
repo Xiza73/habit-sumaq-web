@@ -143,6 +143,7 @@
     "TXN_010": "Esta deuda/préstamo ya fue liquidada",
     "TXN_011": "No se puede modificar una transacción liquidada",
     "TXN_012": "El monto excede el saldo pendiente",
+    "TXN_013": "El nuevo monto no puede ser menor que lo ya liquidado",
     "generic": "Ocurrió un error inesperado. Intenta de nuevo."
   },
   "navigation": {

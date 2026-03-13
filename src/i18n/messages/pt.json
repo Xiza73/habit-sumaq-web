@@ -143,6 +143,7 @@
     "TXN_010": "Esta dívida/empréstimo já foi liquidada",
     "TXN_011": "Não é possível modificar uma transação liquidada",
     "TXN_012": "O valor excede o saldo pendente",
+    "TXN_013": "O novo valor não pode ser menor que o já liquidado",
     "generic": "Ocorreu um erro inesperado. Tente novamente."
   },
   "navigation": {

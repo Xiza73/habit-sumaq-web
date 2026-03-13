@@ -52,8 +52,8 @@ export function CategoryList() {
         toast.success(t('deleteCategory'));
       },
       onError: (error) => {
-        if (error instanceof ApiError && error.code === 'CAT_004') {
-          setDeleteError(tErrors('CAT_004'));
+        if (error instanceof ApiError && error.code && tErrors.has(error.code)) {
+          setDeleteError(tErrors(error.code as 'CAT_004'));
         } else {
           setDeleteError(tErrors('generic'));
         }

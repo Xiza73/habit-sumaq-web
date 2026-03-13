@@ -143,6 +143,7 @@
     "TXN_010": "This debt/loan has already been settled",
     "TXN_011": "Cannot modify a settled transaction",
     "TXN_012": "Amount exceeds the pending balance",
+    "TXN_013": "New amount cannot be less than what has already been settled",
     "generic": "An unexpected error occurred. Please try again."
   },
   "navigation": {

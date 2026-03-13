@@ -69,13 +69,8 @@ export function SettleForm({
           onClose();
         },
         onError: (error) => {
-          if (error instanceof ApiError && error.code) {
-            const knownCodes = ['TXN_010', 'TXN_012'];
-            if (knownCodes.includes(error.code)) {
-              toast.error(tErrors(error.code as 'TXN_010'));
-            } else {
-              toast.error(tErrors('generic'));
-            }
+          if (error instanceof ApiError && error.code && tErrors.has(error.code)) {
+            toast.error(tErrors(error.code as 'TXN_010'));
           } else {
             toast.error(tErrors('generic'));
           }

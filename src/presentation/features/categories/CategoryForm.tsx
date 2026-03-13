@@ -110,6 +110,12 @@ export function CategoryForm({
   function handleError(error: Error) {
     if (error instanceof ApiError && error.code === 'CAT_002') {
       form.setError('name', { message: tErrors('CAT_002') });
+    } else {
+      toast.error(
+        error instanceof ApiError && error.code && tErrors.has(error.code)
+          ? tErrors(error.code as 'CAT_002')
+          : tErrors('generic'),
+      );
     }
   }
 
@@ -124,12 +130,7 @@ export function CategoryForm({
           <label htmlFor="cat-name" className="text-sm font-medium">
             {t('name')}
           </label>
-          <Input
-            id="cat-name"
-            type="text"
-            {...form.register('name')}
-            placeholder={t('name')}
-          />
+          <Input id="cat-name" type="text" {...form.register('name')} placeholder={t('name')} />
           {form.formState.errors.name && (
             <p className="text-xs text-destructive">{form.formState.errors.name.message}</p>
           )}

@@ -66,8 +66,8 @@ export function AccountList() {
         toast.success(t('deleteAccount'));
       },
       onError: (error) => {
-        if (error instanceof ApiError && error.code === 'ACC_003') {
-          setDeleteError(tErrors('ACC_003'));
+        if (error instanceof ApiError && error.code && tErrors.has(error.code)) {
+          setDeleteError(tErrors(error.code as 'ACC_003'));
         } else {
           setDeleteError(tErrors('generic'));
         }

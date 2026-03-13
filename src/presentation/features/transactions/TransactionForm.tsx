@@ -143,21 +143,8 @@ export function TransactionForm({
   }
 
   function handleError(error: Error) {
-    if (error instanceof ApiError && error.code) {
-      const knownCodes = [
-        'TXN_003',
-        'TXN_004',
-        'TXN_005',
-        'TXN_006',
-        'TXN_007',
-        'TXN_008',
-        'TXN_011',
-      ];
-      if (knownCodes.includes(error.code)) {
-        toast.error(tErrors(error.code as 'TXN_003'));
-      } else {
-        toast.error(tErrors('generic'));
-      }
+    if (error instanceof ApiError && error.code && tErrors.has(error.code)) {
+      toast.error(tErrors(error.code as 'TXN_003'));
     } else {
       toast.error(tErrors('generic'));
     }
