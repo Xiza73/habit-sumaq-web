@@ -83,6 +83,34 @@ Reglas que el frontend debe conocer para construir la UI correctamente y preveni
 
 ---
 
+## Hábitos
+
+1. **Nombre único por usuario.** No pueden existir dos hábitos activos con el mismo nombre.
+2. **`targetCount` ≥ 1.** La cantidad objetivo debe ser al menos 1.
+3. **Un log por hábito por fecha.** Si se envía un log para una fecha que ya tiene registro, se actualiza (upsert).
+4. **No se pueden registrar logs en fechas futuras.**
+5. **No se pueden registrar logs en hábitos archivados.** Desarchivar primero.
+6. **`completed` se calcula automáticamente:** `count >= habit.targetCount`.
+7. **Archivar ≠ eliminar.** Un hábito archivado mantiene su historial pero no aparece en el resumen diario.
+8. **Eliminar un hábito elimina todos sus logs asociados.**
+
+### Estadísticas (computadas por el backend)
+
+| Campo            | Descripción                                                   |
+| ---------------- | ------------------------------------------------------------- |
+| `currentStreak`  | Períodos consecutivos completados hasta hoy (o desde ayer si hoy no está completado) |
+| `longestStreak`  | Máximo streak en los últimos 30 días                          |
+| `completionRate` | Porcentaje de días (daily) o semanas (weekly) completados en los últimos 30 días |
+| `todayLog`       | Log de hoy, `null` si no existe                               |
+
+### Vista diaria (`GET /habits/daily`)
+
+- Solo muestra hábitos activos (no archivados).
+- Incluye stats y el log de hoy para cada hábito.
+- Ideal como pantalla principal para check-in diario.
+
+---
+
 ## Monedas y balance
 
 1. **Las transferencias requieren misma moneda.** Si cuenta A es PEN y cuenta B es USD, no se puede transferir entre ellas.
