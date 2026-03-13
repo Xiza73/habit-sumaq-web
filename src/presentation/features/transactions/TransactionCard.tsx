@@ -10,10 +10,12 @@ import { type Currency } from '@/core/domain/enums/account.enums';
 
 import { formatCurrency, getOnlyDateFromApi } from '@/lib/format';
 import { TRANSACTION_TYPE_COLORS, TRANSACTION_TYPE_ICONS } from '@/lib/transaction-icons';
+import { cn } from '@/lib/utils';
 
 interface TransactionCardProps {
   transaction: Transaction;
   currency: Currency;
+  isLast?: boolean;
   onEdit: (transaction: Transaction) => void;
   onDelete: (transaction: Transaction) => void;
   onSettle?: (transaction: Transaction) => void;
@@ -22,6 +24,7 @@ interface TransactionCardProps {
 export function TransactionCard({
   transaction,
   currency,
+  isLast,
   onEdit,
   onDelete,
   onSettle,
@@ -122,7 +125,12 @@ export function TransactionCard({
             tabIndex={0}
             aria-label="Close menu"
           />
-          <div className="absolute right-4 top-full z-20 mt-1 w-48 rounded-lg border border-border bg-popover py-1 shadow-lg md:right-0">
+          <div
+            className={cn(
+              'absolute right-4 top-full z-20 mt-1 w-48 rounded-lg border border-border bg-popover py-1 shadow-lg md:right-0',
+              isLast && 'top-1/2 -translate-y-1/2 md:top-full md:translate-y-0',
+            )}
+          >
             {canEdit && (
               <button
                 type="button"

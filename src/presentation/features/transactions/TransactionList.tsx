@@ -135,11 +135,12 @@ export function TransactionList({ accountId }: TransactionListProps) {
         </div>
       ) : (
         <div className="space-y-3">
-          {transactions.map((transaction) => (
+          {transactions.map((transaction, index) => (
             <TransactionCard
               key={transaction.id}
               transaction={transaction}
               currency={getCurrency(transaction)}
+              isLast={index === transactions.length - 1}
               onEdit={handleEdit}
               onDelete={setDeletingTransaction}
               onSettle={setSettlingTransaction}
