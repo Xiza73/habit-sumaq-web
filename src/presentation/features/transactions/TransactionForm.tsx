@@ -287,7 +287,7 @@ export function TransactionForm({
           </div>
         )}
 
-        {isEditing && (
+        {isEditing && (selectedType === 'INCOME' || selectedType === 'EXPENSE') && (
           <div className="space-y-2">
             <label htmlFor="txn-category-edit" className="text-sm font-medium">
               {t('category')}
