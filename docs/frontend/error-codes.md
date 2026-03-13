@@ -64,6 +64,7 @@ Cuando una operación falla, la respuesta incluye un `error.code` con un identif
 | `TXN_010` | 409  | Ya fue liquidada completamente         | POST settle en transacción con `status=SETTLED` |
 | `TXN_011` | 409  | No se puede modificar una tx liquidada | PATCH en DEBT/LOAN con `status=SETTLED`         |
 | `TXN_012` | 422  | El monto excede el saldo pendiente     | POST settle con `amount > remainingAmount`      |
+| `TXN_013` | 422  | Monto menor que lo ya liquidado        | PATCH amount en DEBT/LOAN por debajo de pagos   |
 
 ### Generales
 

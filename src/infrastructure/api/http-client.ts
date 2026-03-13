@@ -4,6 +4,18 @@ import { env } from '@/infrastructure/config/env';
 
 import { ApiError } from './api-error';
 
+export interface PaginationMeta {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+}
+
+export interface PaginatedResponse<T> {
+  data: T;
+  meta: PaginationMeta;
+}
+
 interface ApiResponse<T> {
   success: boolean;
   data: T;
@@ -12,6 +24,7 @@ interface ApiResponse<T> {
     code: string;
     details?: Array<{ field: string; message: string }>;
   } | null;
+  meta?: PaginationMeta | null;
 }
 
 class HttpClient {
@@ -97,8 +110,47 @@ class HttpClient {
     }
   }
 
+  async requestWithMeta<T>(endpoint: string, options?: RequestInit): Promise<PaginatedResponse<T>> {
+    const token = useAuthStore.getState().accessToken;
+
+    const response = await fetch(`${this.baseURL}${endpoint}`, {
+      ...options,
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token && { Authorization: `Bearer ${token}` }),
+        ...options?.headers,
+      },
+    });
+
+    if (response.status === 401) {
+      const refreshed = await this.handleTokenRefresh();
+      if (refreshed) {
+        return this.requestWithMeta<T>(endpoint, options);
+      }
+      useAuthStore.getState().clearAuth();
+      window.location.href = '/login';
+      throw new ApiError('Session expired', 'AUT_001');
+    }
+
+    const json = (await response.json()) as ApiResponse<T>;
+
+    if (!json.success) {
+      throw new ApiError(json.message, json.error?.code, json.error?.details);
+    }
+
+    return {
+      data: json.data,
+      meta: json.meta ?? { page: 1, limit: 20, total: 0, totalPages: 0 },
+    };
+  }
+
   get<T>(endpoint: string): Promise<T> {
     return this.request<T>(endpoint, { method: 'GET' });
+  }
+
+  getWithMeta<T>(endpoint: string): Promise<PaginatedResponse<T>> {
+    return this.requestWithMeta<T>(endpoint, { method: 'GET' });
   }
 
   post<T>(endpoint: string, body?: unknown): Promise<T> {

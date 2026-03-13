@@ -6,7 +6,7 @@ import {
   type UpdateTransactionInput,
 } from '@/core/domain/schemas/transaction.schema';
 
-import { httpClient } from './http-client';
+import { httpClient, type PaginatedResponse } from './http-client';
 
 function buildQuery(filters: TransactionFilters): string {
   const params = new URLSearchParams();
@@ -16,13 +16,15 @@ function buildQuery(filters: TransactionFilters): string {
   if (filters.status) params.set('status', filters.status);
   if (filters.dateFrom) params.set('dateFrom', filters.dateFrom);
   if (filters.dateTo) params.set('dateTo', filters.dateTo);
+  if (filters.page) params.set('page', String(filters.page));
+  if (filters.limit) params.set('limit', String(filters.limit));
   const query = params.toString();
   return query ? `?${query}` : '';
 }
 
 export const transactionsApi = {
-  getAll(filters: TransactionFilters = {}): Promise<Transaction[]> {
-    return httpClient.get<Transaction[]>(`/transactions${buildQuery(filters)}`);
+  getAll(filters: TransactionFilters = {}): Promise<PaginatedResponse<Transaction[]>> {
+    return httpClient.getWithMeta<Transaction[]>(`/transactions${buildQuery(filters)}`);
   },
 
   getById(id: string): Promise<Transaction> {

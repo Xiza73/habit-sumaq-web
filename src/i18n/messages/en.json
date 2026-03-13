@@ -12,7 +12,9 @@
     "error": "An error occurred",
     "noResults": "No results",
     "required": "This field is required",
-    "back": "Back"
+    "back": "Back",
+    "paginationTotal": "{total, plural, one {# result} other {# results}}",
+    "paginationPage": "{page} of {totalPages}"
   },
   "auth": {
     "loginWithGoogle": "Sign in with Google",

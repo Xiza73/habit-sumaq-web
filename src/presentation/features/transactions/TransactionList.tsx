@@ -13,6 +13,7 @@ import { type Currency } from '@/core/domain/enums/account.enums';
 import { type TransactionFilters as Filters } from '@/core/domain/schemas/transaction.schema';
 
 import { ConfirmDialog } from '@/presentation/components/feedback/ConfirmDialog';
+import { Pagination } from '@/presentation/components/ui/Pagination';
 
 import { SettleForm } from './SettleForm';
 import { TransactionCard } from './TransactionCard';
@@ -29,19 +30,27 @@ export function TransactionList({ accountId }: TransactionListProps) {
   const tErrors = useTranslations('errors');
 
   const [filters, setFilters] = useState<Filters>(accountId ? { accountId } : {});
+  const [page, setPage] = useState(1);
   const [showFilters, setShowFilters] = useState(false);
   const [formOpen, setFormOpen] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
   const [deletingTransaction, setDeletingTransaction] = useState<Transaction | null>(null);
   const [settlingTransaction, setSettlingTransaction] = useState<Transaction | null>(null);
 
-  const { data: transactions, isLoading } = useTransactions(filters);
+  const { data: paginatedData, isLoading } = useTransactions({ ...filters, page });
+  const transactions = paginatedData?.data;
+  const meta = paginatedData?.meta;
   const { data: accounts } = useAccounts(false);
   const deleteMutation = useDeleteTransaction();
 
   function getCurrency(txn: Transaction): Currency {
     const account = accounts?.find((a) => a.id === txn.accountId);
     return account?.currency ?? 'PEN';
+  }
+
+  function handleFiltersChange(newFilters: Filters) {
+    setFilters(newFilters);
+    setPage(1);
   }
 
   function handleEdit(transaction: Transaction) {
@@ -115,7 +124,7 @@ export function TransactionList({ accountId }: TransactionListProps) {
         </div>
       </div>
 
-      {showFilters && <TransactionFilters filters={filters} onChange={setFilters} />}
+      {showFilters && <TransactionFilters filters={filters} onChange={handleFiltersChange} />}
 
       {!transactions?.length ? (
         <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-border py-16 text-center">
@@ -134,19 +143,22 @@ export function TransactionList({ accountId }: TransactionListProps) {
           )}
         </div>
       ) : (
-        <div className="space-y-3">
-          {transactions.map((transaction, index) => (
-            <TransactionCard
-              key={transaction.id}
-              transaction={transaction}
-              currency={getCurrency(transaction)}
-              isLast={index === transactions.length - 1}
-              onEdit={handleEdit}
-              onDelete={setDeletingTransaction}
-              onSettle={setSettlingTransaction}
-            />
-          ))}
-        </div>
+        <>
+          <div className="space-y-3">
+            {transactions.map((transaction, index) => (
+              <TransactionCard
+                key={transaction.id}
+                transaction={transaction}
+                currency={getCurrency(transaction)}
+                isLast={index === transactions.length - 1}
+                onEdit={handleEdit}
+                onDelete={setDeletingTransaction}
+                onSettle={setSettlingTransaction}
+              />
+            ))}
+          </div>
+          {meta && <Pagination meta={meta} onPageChange={setPage} />}
+        </>
       )}
 
       <TransactionForm

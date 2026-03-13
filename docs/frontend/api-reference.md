@@ -349,10 +349,12 @@ Liquida parcial o totalmente una deuda/préstamo.
 
 ### `GET /transactions`
 
-Lista transacciones del usuario, ordenadas por fecha descendente.
+Lista transacciones del usuario paginadas, ordenadas por fecha descendente.
 
 | Query param  | Tipo              | Descripción                                  |
 | ------------ | ----------------- | -------------------------------------------- |
+| `page`       | number            | Página (base 1, default: `1`)                |
+| `limit`      | number            | Items por página (default: `20`, máx: `100`) |
 | `accountId`  | UUID              | Filtrar por cuenta                           |
 | `categoryId` | UUID              | Filtrar por categoría                        |
 | `type`       | TransactionType   | Filtrar por tipo                             |
@@ -360,7 +362,21 @@ Lista transacciones del usuario, ordenadas por fecha descendente.
 | `dateFrom`   | ISO 8601          | Fecha mínima (inclusiva)                     |
 | `dateTo`     | ISO 8601          | Fecha máxima (inclusiva)                     |
 
-**Response:** `200` — `TransactionResponseDto[]`
+**Response:** `200` — `TransactionResponseDto[]` con `meta` de paginación
+
+```json
+{
+  "success": true,
+  "data": [ ... ],
+  "message": "Transacciones obtenidas exitosamente",
+  "meta": {
+    "page": 1,
+    "limit": 20,
+    "total": 45,
+    "totalPages": 3
+  }
+}
+```
 
 ### `GET /transactions/:id`
 
@@ -384,11 +400,14 @@ Actualiza campos editables. El `type` **no es editable**.
 | `reference`   | string \| null | Máx 255 chars                                 |
 
 > **Restricción:** Las transacciones DEBT/LOAN con `status=SETTLED` **no se pueden modificar**.
+>
+> **Restricción:** Al editar el monto de un DEBT/LOAN, el nuevo monto no puede ser menor que lo ya liquidado (pagos realizados). Ejemplo: deuda de 50 con pago de 40 → monto mínimo permitido es 40.
 
 **Errores:**
 
 - `404` — No encontrada
 - `409` — No se puede modificar una transacción liquidada (SETTLED)
+- `422` — El nuevo monto es menor que lo ya liquidado (`TXN_013`)
 
 ### `DELETE /transactions/:id`
 

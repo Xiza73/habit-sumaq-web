@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import {
   type CreateTransactionInput,
@@ -23,6 +23,7 @@ export function useTransactions(filters: TransactionFilters = {}) {
   return useQuery({
     queryKey: transactionKeys.list(filters),
     queryFn: () => transactionsApi.getAll(filters),
+    placeholderData: keepPreviousData,
   });
 }
 
