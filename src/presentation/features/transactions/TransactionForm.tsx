@@ -27,6 +27,8 @@ import { Input } from '@/presentation/components/ui/Input';
 import { Modal } from '@/presentation/components/ui/Modal';
 import { Select } from '@/presentation/components/ui/Select';
 
+import { getTodayLocaleDate } from '@/lib/format';
+
 interface TransactionFormProps {
   open: boolean;
   transaction?: Transaction | null;
@@ -50,7 +52,7 @@ export function TransactionForm({
   const updateMutation = useUpdateTransaction();
   const isPending = createMutation.isPending || updateMutation.isPending;
 
-  const today = new Date().toISOString().split('T')[0];
+  const today = getTodayLocaleDate();
 
   const form = useForm<CreateTransactionInput>({
     resolver: zodResolver(createTransactionSchema),

@@ -8,7 +8,7 @@ import { HandCoins, MoreVertical, Pencil, Trash2 } from 'lucide-react';
 import { type Transaction } from '@/core/domain/entities/transaction';
 import { type Currency } from '@/core/domain/enums/account.enums';
 
-import { formatCurrency } from '@/lib/format';
+import { formatCurrency, getOnlyDateFromApi } from '@/lib/format';
 import { TRANSACTION_TYPE_COLORS, TRANSACTION_TYPE_ICONS } from '@/lib/transaction-icons';
 
 interface TransactionCardProps {
@@ -94,9 +94,7 @@ export function TransactionCard({
           {amountPrefix}
           {formatCurrency(transaction.amount, currency)}
         </p>
-        <p className="text-xs text-muted-foreground">
-          {new Date(transaction.date).toLocaleDateString()}
-        </p>
+        <p className="text-xs text-muted-foreground">{getOnlyDateFromApi(transaction.date)}</p>
       </div>
 
       {/* Hover devices: 3-dot button appears in flow only on hover */}
