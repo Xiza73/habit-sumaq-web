@@ -4,7 +4,7 @@ Desarrollo progresivo por fases. Cada fase produce un incremento funcional y tes
 
 ---
 
-## Fase 0 — Fundación (Scaffolding)
+## Fase 0 — Fundación (Scaffolding) ✅
 
 **Objetivo:** Configurar la base del proyecto antes de cualquier feature.
 
@@ -27,7 +27,7 @@ Desarrollo progresivo por fases. Cada fase produce un incremento funcional y tes
 
 ---
 
-## Fase 1 — Autenticación
+## Fase 1 — Autenticación ✅
 
 **Objetivo:** Login con Google OAuth, manejo de sesión, guards de rutas.
 
@@ -48,7 +48,7 @@ Desarrollo progresivo por fases. Cada fase produce un incremento funcional y tes
 
 ---
 
-## Fase 2 — Settings de Usuario
+## Fase 2 — Settings de Usuario ✅
 
 **Objetivo:** El usuario puede configurar sus preferencias (idioma, tema, moneda, formato de fecha).
 
@@ -67,7 +67,7 @@ Desarrollo progresivo por fases. Cada fase produce un incremento funcional y tes
 
 ---
 
-## Fase 3 — Módulo de Cuentas (MVP Core)
+## Fase 3 — Módulo de Cuentas (MVP Core) ✅
 
 **Objetivo:** CRUD completo de cuentas financieras.
 
@@ -93,7 +93,7 @@ Desarrollo progresivo por fases. Cada fase produce un incremento funcional y tes
 
 ---
 
-## Fase 4 — Módulo de Categorías
+## Fase 4 — Módulo de Categorías ✅
 
 **Objetivo:** CRUD de categorías de ingreso/gasto.
 
@@ -110,7 +110,7 @@ Desarrollo progresivo por fases. Cada fase produce un incremento funcional y tes
 
 ---
 
-## Fase 5 — Módulo de Transacciones
+## Fase 5 — Módulo de Transacciones ✅
 
 **Objetivo:** CRUD completo de transacciones con todos los tipos.
 
@@ -133,7 +133,7 @@ Desarrollo progresivo por fases. Cada fase produce un incremento funcional y tes
 
 ---
 
-## Fase 6 — Pulido y UX
+## Fase 6 — Pulido y UX ✅
 
 **Objetivo:** Refinar la experiencia general.
 
@@ -154,9 +154,11 @@ Desarrollo progresivo por fases. Cada fase produce un incremento funcional y tes
 
 ---
 
-## Fase 7 — Módulo de Hábitos (Habit Tracker)
+## Fase 7 — Módulo de Hábitos (Habit Tracker) 🚧 EN DESARROLLO
 
 **Objetivo:** Seguimiento de hábitos diarios/semanales con check-in, streaks y estadísticas.
+
+> **Pre-requisito (7.0):** Reestructurar la navegación para soportar múltiples módulos (Finanzas + Hábitos) antes de implementar las vistas del módulo.
 
 | #    | Tarea                                  | Detalle                                                         |
 | ---- | -------------------------------------- | --------------------------------------------------------------- |

@@ -43,6 +43,10 @@ src/
 │   │   │   └── page.tsx
 │   │   ├── transactions/
 │   │   │   └── page.tsx
+│   │   ├── habits/
+│   │   │   ├── page.tsx          # Vista diaria / check-in
+│   │   │   └── [id]/
+│   │   │       └── page.tsx      # Detalle de hábito (stats, historial)
 │   │   └── settings/
 │   │       └── page.tsx
 │   ├── layout.tsx                # Root layout (providers, fonts, metadata)
@@ -54,16 +58,19 @@ src/
 │   │   │   ├── account.ts        # Account, AccountType, Currency
 │   │   │   ├── category.ts
 │   │   │   ├── transaction.ts
+│   │   │   ├── habit.ts          # Habit, HabitLog, HabitWithStats
 │   │   │   ├── user.ts
 │   │   │   └── user-settings.ts
 │   │   ├── schemas/              # Schemas Zod para validación de formularios
 │   │   │   ├── account.schema.ts
 │   │   │   ├── category.schema.ts
-│   │   │   └── transaction.schema.ts
+│   │   │   ├── transaction.schema.ts
+│   │   │   └── habit.schema.ts
 │   │   └── enums/                # Constantes as const (no TS enums)
 │   │       ├── account.enums.ts
 │   │       ├── category.enums.ts
 │   │       ├── transaction.enums.ts
+│   │       ├── habit.enums.ts
 │   │       └── common.enums.ts
 │   │
 │   └── application/              # Capa de aplicación — orquesta dominio + infra
@@ -71,6 +78,7 @@ src/
 │       │   ├── use-accounts.ts
 │       │   ├── use-categories.ts
 │       │   ├── use-transactions.ts
+│       │   ├── use-habits.ts
 │       │   └── use-user-settings.ts
 │       ├── stores/               # Zustand stores (client state)
 │       │   ├── auth.store.ts
@@ -84,6 +92,7 @@ src/
 │   │   ├── accounts.api.ts       # Funciones para /accounts endpoints
 │   │   ├── categories.api.ts
 │   │   ├── transactions.api.ts
+│   │   ├── habits.api.ts         # CRUD + logs + daily
 │   │   ├── auth.api.ts
 │   │   └── user-settings.api.ts
 │   ├── adapters/                 # Transformaciones API ↔ Domain
@@ -124,6 +133,12 @@ src/
 │   │   ├── transactions/
 │   │   │   ├── TransactionList.tsx
 │   │   │   └── TransactionFilters.tsx
+│   │   ├── habits/
+│   │   │   ├── HabitCard.tsx
+│   │   │   ├── HabitList.tsx
+│   │   │   ├── HabitForm.tsx
+│   │   │   ├── HabitDetail.tsx
+│   │   │   └── HabitProgress.tsx
 │   │   └── settings/
 │   │       └── SettingsForm.tsx
 │   ├── hooks/                    # Hooks de UI (no de datos)

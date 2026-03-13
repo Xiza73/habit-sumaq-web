@@ -144,12 +144,51 @@
     "TXN_011": "Cannot modify a settled transaction",
     "TXN_012": "Amount exceeds the pending balance",
     "TXN_013": "New amount cannot be less than what has already been settled",
+    "HAB_001": "Habit not found",
+    "HAB_002": "You already have a habit with that name",
+    "HAB_003": "Cannot log: habit is archived",
+    "HAB_004": "Cannot log a future date",
+    "HAB_005": "Target count must be at least 1",
+    "HAB_006": "You don't have access to this habit",
     "generic": "An unexpected error occurred. Please try again."
   },
+  "habits": {
+    "title": "Habits",
+    "createHabit": "New habit",
+    "editHabit": "Edit habit",
+    "deleteHabit": "Delete habit",
+    "archiveHabit": "Archive habit",
+    "name": "Name",
+    "description": "Description",
+    "frequency": "Frequency",
+    "targetCount": "Target count",
+    "color": "Color",
+    "icon": "Icon",
+    "streak": "Streak",
+    "currentStreak": "Current streak",
+    "longestStreak": "Best streak",
+    "completionRate": "Completion rate",
+    "todayProgress": "Today's progress",
+    "completed": "Completed",
+    "notCompleted": "Not completed",
+    "checkIn": "Check in",
+    "frequencies": {
+      "DAILY": "Daily",
+      "WEEKLY": "Weekly"
+    },
+    "emptyState": "You don't have any habits. Create your first one to get started.",
+    "deleteConfirm": "Are you sure you want to delete this habit?",
+    "deleteWarning": "This will also delete the entire log history.",
+    "logNote": "Note",
+    "days": "{count, plural, one {# day} other {# days}}",
+    "weeks": "{count, plural, one {# week} other {# weeks}}"
+  },
   "navigation": {
+    "finances": "Finances",
     "accounts": "Accounts",
     "categories": "Categories",
     "transactions": "Transactions",
+    "habits": "Habits",
     "settings": "Settings"
   }
 }
