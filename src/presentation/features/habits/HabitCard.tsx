@@ -139,6 +139,7 @@ export function HabitCard({ habit, onCheckIn, onEdit, onArchive, onDelete }: Hab
           <button
             type="button"
             onClick={() => onCheckIn(habit)}
+            disabled={isCompleted}
             className={cn(
               'flex size-9 items-center justify-center rounded-full transition-colors',
               isCompleted

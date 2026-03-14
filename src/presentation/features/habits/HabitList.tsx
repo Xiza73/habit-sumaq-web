@@ -55,6 +55,8 @@ export function HabitList() {
   }
 
   function handleCheckIn(habit: HabitWithStats) {
+    const todayCount = habit.todayLog?.count ?? 0;
+    if (todayCount >= habit.targetCount) return;
     const today = getTodayLocaleDate();
     const newCount = (habit.todayLog?.count ?? 0) + 1;
 

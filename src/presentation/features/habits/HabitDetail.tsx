@@ -45,6 +45,8 @@ export function HabitDetail({ habitId }: HabitDetailProps) {
 
   function handleCheckIn() {
     if (!habit) return;
+    const todayCount = habit.todayLog?.count ?? 0;
+    if (todayCount >= habit.targetCount) return;
     const today = getTodayLocaleDate();
     const newCount = (habit.todayLog?.count ?? 0) + 1;
 
@@ -160,7 +162,7 @@ export function HabitDetail({ habitId }: HabitDetailProps) {
               <button
                 type="button"
                 onClick={handleCheckIn}
-                disabled={logMutation.isPending}
+                disabled={isCompleted || logMutation.isPending}
                 className={cn(
                   'flex size-12 items-center justify-center rounded-full transition-colors',
                   isCompleted
