@@ -173,6 +173,7 @@
     "completed": "Completed",
     "notCompleted": "Not completed",
     "checkIn": "Check in",
+    "undoCheckIn": "Undo check in",
     "frequencies": {
       "DAILY": "Daily",
       "WEEKLY": "Weekly"

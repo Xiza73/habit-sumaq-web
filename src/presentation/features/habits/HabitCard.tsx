@@ -9,6 +9,7 @@ import {
   ArchiveRestore,
   Check,
   Flame,
+  Minus,
   MoreVertical,
   Pencil,
   Plus,
@@ -23,12 +24,20 @@ import { cn } from '@/lib/utils';
 interface HabitCardProps {
   habit: HabitWithStats;
   onCheckIn: (habit: HabitWithStats) => void;
+  onUndo: (habit: HabitWithStats) => void;
   onEdit: (habit: HabitWithStats) => void;
   onArchive: (habit: HabitWithStats) => void;
   onDelete: (habit: HabitWithStats) => void;
 }
 
-export function HabitCard({ habit, onCheckIn, onEdit, onArchive, onDelete }: HabitCardProps) {
+export function HabitCard({
+  habit,
+  onCheckIn,
+  onUndo,
+  onEdit,
+  onArchive,
+  onDelete,
+}: HabitCardProps) {
   const t = useTranslations('habits');
   const tCommon = useTranslations('common');
   const [menuOpen, setMenuOpen] = useState(false);
@@ -137,20 +146,32 @@ export function HabitCard({ habit, onCheckIn, onEdit, onArchive, onDelete }: Hab
         </div>
 
         {!habit.isArchived && (
-          <button
-            type="button"
-            onClick={() => onCheckIn(habit)}
-            disabled={isCompleted}
-            className={cn(
-              'flex size-9 items-center justify-center rounded-full transition-colors',
-              isCompleted
-                ? 'bg-income/20 text-income'
-                : 'border border-border text-muted-foreground hover:border-primary hover:text-primary',
+          <div className="flex items-center gap-1.5">
+            {todayCount > 0 && (
+              <button
+                type="button"
+                onClick={() => onUndo(habit)}
+                className="flex size-7 items-center justify-center rounded-full border border-border text-muted-foreground transition-colors hover:border-destructive hover:text-destructive"
+                aria-label={t('undoCheckIn')}
+              >
+                <Minus className="size-3" />
+              </button>
             )}
-            aria-label={t('checkIn')}
-          >
-            {isCompleted ? <Check className="size-4" /> : <Plus className="size-4" />}
-          </button>
+            <button
+              type="button"
+              onClick={() => onCheckIn(habit)}
+              disabled={isCompleted}
+              className={cn(
+                'flex size-9 items-center justify-center rounded-full transition-colors',
+                isCompleted
+                  ? 'bg-income/20 text-income'
+                  : 'border border-border text-muted-foreground hover:border-primary hover:text-primary',
+              )}
+              aria-label={t('checkIn')}
+            >
+              {isCompleted ? <Check className="size-4" /> : <Plus className="size-4" />}
+            </button>
+          </div>
         )}
       </div>
 

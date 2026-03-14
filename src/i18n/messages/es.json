@@ -173,6 +173,7 @@
     "completed": "Completado",
     "notCompleted": "No completado",
     "checkIn": "Registrar",
+    "undoCheckIn": "Deshacer registro",
     "frequencies": {
       "DAILY": "Diario",
       "WEEKLY": "Semanal"

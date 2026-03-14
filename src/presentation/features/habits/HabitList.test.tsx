@@ -24,6 +24,8 @@ const mockHabits: HabitWithStats[] = [
     currentStreak: 5,
     longestStreak: 15,
     completionRate: 0.8,
+    periodCount: 6,
+    periodCompleted: false,
     todayLog: {
       id: 'log-1',
       habitId: '1',
@@ -50,6 +52,8 @@ const mockHabits: HabitWithStats[] = [
     currentStreak: 3,
     longestStreak: 10,
     completionRate: 0.6,
+    periodCount: 0,
+    periodCompleted: false,
     todayLog: null,
   },
 ];

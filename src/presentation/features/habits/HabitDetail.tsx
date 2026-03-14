@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 
-import { ArrowLeft, Check, Flame, Loader2, Plus, Target, TrendingUp } from 'lucide-react';
+import { ArrowLeft, Check, Flame, Loader2, Minus, Plus, Target, TrendingUp } from 'lucide-react';
 
 import {
   useArchiveHabit,
@@ -53,6 +53,24 @@ export function HabitDetail({ habitId }: HabitDetailProps) {
 
     logMutation.mutate(
       { habitId: habit.id, data: { date: today, count: newCount } },
+      {
+        onError: (error) => {
+          if (error instanceof ApiError && error.code && tErrors.has(error.code)) {
+            // error handled by toast in mutation
+          }
+        },
+      },
+    );
+  }
+
+  function handleUndo() {
+    if (!habit) return;
+    const todayCount = habit.todayLog?.count ?? 0;
+    if (todayCount <= 0) return;
+    const today = getTodayLocaleDate();
+
+    logMutation.mutate(
+      { habitId: habit.id, data: { date: today, count: todayCount - 1 } },
       {
         onError: (error) => {
           if (error instanceof ApiError && error.code && tErrors.has(error.code)) {
@@ -163,26 +181,39 @@ export function HabitDetail({ habitId }: HabitDetailProps) {
               </p>
             </div>
             {!habit.isArchived && (
-              <button
-                type="button"
-                onClick={handleCheckIn}
-                disabled={isCompleted || logMutation.isPending}
-                className={cn(
-                  'flex size-12 items-center justify-center rounded-full transition-colors',
-                  isCompleted
-                    ? 'bg-income/20 text-income'
-                    : 'border-2 border-primary text-primary hover:bg-primary/10',
+              <div className="flex items-center gap-2">
+                {todayCount > 0 && (
+                  <button
+                    type="button"
+                    onClick={handleUndo}
+                    disabled={logMutation.isPending}
+                    className="flex size-10 items-center justify-center rounded-full border-2 border-border text-muted-foreground transition-colors hover:border-destructive hover:text-destructive"
+                    aria-label={t('undoCheckIn')}
+                  >
+                    <Minus className="size-4" />
+                  </button>
                 )}
-                aria-label={t('checkIn')}
-              >
-                {logMutation.isPending ? (
-                  <Loader2 className="size-5 animate-spin" />
-                ) : isCompleted ? (
-                  <Check className="size-5" />
-                ) : (
-                  <Plus className="size-5" />
-                )}
-              </button>
+                <button
+                  type="button"
+                  onClick={handleCheckIn}
+                  disabled={isCompleted || logMutation.isPending}
+                  className={cn(
+                    'flex size-12 items-center justify-center rounded-full transition-colors',
+                    isCompleted
+                      ? 'bg-income/20 text-income'
+                      : 'border-2 border-primary text-primary hover:bg-primary/10',
+                  )}
+                  aria-label={t('checkIn')}
+                >
+                  {logMutation.isPending ? (
+                    <Loader2 className="size-5 animate-spin" />
+                  ) : isCompleted ? (
+                    <Check className="size-5" />
+                  ) : (
+                    <Plus className="size-5" />
+                  )}
+                </button>
+              </div>
             )}
           </div>
           <div className="mt-3 h-2 overflow-hidden rounded-full bg-muted">

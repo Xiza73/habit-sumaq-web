@@ -75,6 +75,25 @@ export function HabitList() {
     );
   }
 
+  function handleUndo(habit: HabitWithStats) {
+    const todayCount = habit.todayLog?.count ?? 0;
+    if (todayCount <= 0) return;
+    const today = getTodayLocaleDate();
+
+    logMutation.mutate(
+      { habitId: habit.id, data: { date: today, count: todayCount - 1 } },
+      {
+        onError: (error) => {
+          if (error instanceof ApiError && error.code && tErrors.has(error.code)) {
+            toast.error(tErrors(error.code as 'HAB_003'));
+          } else {
+            toast.error(tErrors('generic'));
+          }
+        },
+      },
+    );
+  }
+
   function handleArchive(habit: HabitWithStats) {
     archiveMutation.mutate(habit.id, {
       onSuccess: (updated) => {
@@ -163,6 +182,7 @@ export function HabitList() {
               key={habit.id}
               habit={habit}
               onCheckIn={handleCheckIn}
+              onUndo={handleUndo}
               onEdit={handleEdit}
               onArchive={handleArchive}
               onDelete={setDeletingHabit}

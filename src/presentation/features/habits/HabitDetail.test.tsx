@@ -23,6 +23,8 @@ const mockHabit: HabitWithStats = {
   currentStreak: 5,
   longestStreak: 15,
   completionRate: 0.8,
+  periodCount: 6,
+  periodCompleted: false,
   todayLog: {
     id: 'log-1',
     habitId: '1',
