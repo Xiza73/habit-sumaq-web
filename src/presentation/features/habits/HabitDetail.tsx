@@ -240,8 +240,8 @@ export function HabitDetail({ habitId }: HabitDetailProps) {
             {habit.currentStreak}{' '}
             <span className="text-sm font-normal text-muted-foreground">
               {habit.frequency === 'DAILY'
-                ? t('days', { count: habit.currentStreak })
-                : t('weeks', { count: habit.currentStreak })}
+                ? t('days', { count: habit.currentStreak }).split(' ')[1]
+                : t('weeks', { count: habit.currentStreak }).split(' ')[1]}
             </span>
           </p>
         </div>
@@ -255,8 +255,8 @@ export function HabitDetail({ habitId }: HabitDetailProps) {
             {habit.longestStreak}{' '}
             <span className="text-sm font-normal text-muted-foreground">
               {habit.frequency === 'DAILY'
-                ? t('days', { count: habit.longestStreak })
-                : t('weeks', { count: habit.longestStreak })}
+                ? t('days', { count: habit.longestStreak }).split(' ')[1]
+                : t('weeks', { count: habit.longestStreak }).split(' ')[1]}
             </span>
           </p>
         </div>
