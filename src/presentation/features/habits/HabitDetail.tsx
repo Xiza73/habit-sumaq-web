@@ -18,6 +18,7 @@ import { ApiError } from '@/infrastructure/api/api-error';
 
 import { ConfirmDialog } from '@/presentation/components/feedback/ConfirmDialog';
 
+import { getTodayLocaleDate } from '@/lib/format';
 import { cn } from '@/lib/utils';
 
 import { HabitForm } from './HabitForm';
@@ -44,7 +45,7 @@ export function HabitDetail({ habitId }: HabitDetailProps) {
 
   function handleCheckIn() {
     if (!habit) return;
-    const today = new Date().toISOString().split('T')[0];
+    const today = getTodayLocaleDate();
     const newCount = (habit.todayLog?.count ?? 0) + 1;
 
     logMutation.mutate(
