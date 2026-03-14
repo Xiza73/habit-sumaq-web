@@ -184,7 +184,9 @@
     "logNote": "Note",
     "history": "History",
     "days": "{count, plural, one {# day} other {# days}}",
-    "weeks": "{count, plural, one {# week} other {# weeks}}"
+    "weeks": "{count, plural, one {# week} other {# weeks}}",
+    "less": "Less",
+    "more": "More"
   },
   "navigation": {
     "finances": "Finances",

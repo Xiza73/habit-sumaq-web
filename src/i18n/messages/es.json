@@ -184,7 +184,9 @@
     "logNote": "Nota",
     "history": "Historial",
     "days": "{count, plural, one {# día} other {# días}}",
-    "weeks": "{count, plural, one {# semana} other {# semanas}}"
+    "weeks": "{count, plural, one {# semana} other {# semanas}}",
+    "less": "Menos",
+    "more": "Más"
   },
   "navigation": {
     "finances": "Finanzas",

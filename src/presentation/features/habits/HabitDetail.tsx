@@ -22,6 +22,7 @@ import { getTodayLocaleDate } from '@/lib/format';
 import { cn } from '@/lib/utils';
 
 import { HabitForm } from './HabitForm';
+import { HabitHeatmap } from './HabitHeatmap';
 
 interface HabitDetailProps {
   habitId: string;
@@ -34,7 +35,7 @@ export function HabitDetail({ habitId }: HabitDetailProps) {
   const tErrors = useTranslations('errors');
 
   const { data: habit, isLoading } = useHabit(habitId);
-  const { data: logsData } = useHabitLogs(habitId, { limit: 30 });
+  const { data: logsData } = useHabitLogs(habitId, { limit: 130 });
   const archiveMutation = useArchiveHabit();
   const deleteMutation = useDeleteHabit();
   const logMutation = useLogHabit();
@@ -272,41 +273,8 @@ export function HabitDetail({ habitId }: HabitDetailProps) {
         </div>
       </div>
 
-      {/* Log history */}
-      {logs.length > 0 && (
-        <div className="rounded-xl border border-border bg-card">
-          <div className="border-b border-border px-6 py-4">
-            <h2 className="font-semibold">{t('history')}</h2>
-          </div>
-          <div className="divide-y divide-border">
-            {logs.map((log) => (
-              <div key={log.id} className="flex items-center justify-between px-6 py-3">
-                <div className="flex items-center gap-3">
-                  <div
-                    className={cn(
-                      'flex size-8 items-center justify-center rounded-full',
-                      log.completed ? 'bg-income/20 text-income' : 'bg-muted text-muted-foreground',
-                    )}
-                  >
-                    {log.completed ? (
-                      <Check className="size-4" />
-                    ) : (
-                      <span className="text-xs tabular-nums">{log.count}</span>
-                    )}
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium">{log.date}</p>
-                    {log.note && <p className="text-xs text-muted-foreground">{log.note}</p>}
-                  </div>
-                </div>
-                <span className="text-sm tabular-nums text-muted-foreground">
-                  {log.count}/{habit.targetCount}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
+      {/* Heatmap */}
+      <HabitHeatmap logs={logs} targetCount={habit.targetCount} color={habit.color} />
 
       <HabitForm open={editOpen} habit={habit} onClose={() => setEditOpen(false)} />
 
