@@ -84,7 +84,7 @@ export function HabitHeatmap({ logs, targetCount, color }: HabitHeatmapProps) {
   const logMap = useMemo(() => {
     const map = new Map<string, HabitLog>();
     for (const log of logs) {
-      map.set(log.date, log);
+      map.set(log.date.slice(0, 10), log);
     }
     return map;
   }, [logs]);
@@ -135,7 +135,7 @@ export function HabitHeatmap({ logs, targetCount, color }: HabitHeatmapProps) {
     return { grid: weeksArr, monthLabels: months };
   }, [locale, weeks]);
 
-  const baseColor = color ?? 'hsl(var(--primary))';
+  const baseColor = color ?? 'var(--primary)';
 
   const dayLabels = useMemo(() => {
     const days: string[] = [];
