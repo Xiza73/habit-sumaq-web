@@ -154,7 +154,9 @@ export function HabitDetail({ habitId }: HabitDetailProps) {
         <div className="mt-6 border-t border-border pt-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-muted-foreground">{t('todayProgress')}</p>
+              <p className="text-sm text-muted-foreground">
+                {habit.frequency === 'WEEKLY' ? t('weeklyProgress') : t('todayProgress')}
+              </p>
               <p className="mt-1 text-3xl font-bold tabular-nums">
                 {periodCount}
                 <span className="text-lg text-muted-foreground">/{habit.targetCount}</span>

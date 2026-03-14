@@ -169,6 +169,7 @@
     "longestStreak": "Mejor racha",
     "completionRate": "Tasa de completitud",
     "todayProgress": "Progreso de hoy",
+    "weeklyProgress": "Progreso semanal",
     "completed": "Completado",
     "notCompleted": "No completado",
     "checkIn": "Registrar",

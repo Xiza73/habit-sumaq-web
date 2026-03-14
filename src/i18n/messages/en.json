@@ -169,6 +169,7 @@
     "longestStreak": "Best streak",
     "completionRate": "Completion rate",
     "todayProgress": "Today's progress",
+    "weeklyProgress": "Weekly progress",
     "completed": "Completed",
     "notCompleted": "Not completed",
     "checkIn": "Check in",
