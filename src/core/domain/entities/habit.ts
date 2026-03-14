@@ -30,4 +30,6 @@ export interface HabitWithStats extends Habit {
   longestStreak: number;
   completionRate: number;
   todayLog: HabitLog | null;
+  periodCount: number;
+  periodCompleted: boolean;
 }

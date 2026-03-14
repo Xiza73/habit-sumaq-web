@@ -34,8 +34,9 @@ export function HabitCard({ habit, onCheckIn, onEdit, onArchive, onDelete }: Hab
   const [menuOpen, setMenuOpen] = useState(false);
 
   const todayCount = habit.todayLog?.count ?? 0;
-  const isCompleted = todayCount >= habit.targetCount;
-  const progress = Math.min(todayCount / habit.targetCount, 1);
+  const periodCount = habit.periodCount ?? todayCount;
+  const isCompleted = habit.periodCompleted ?? periodCount >= habit.targetCount;
+  const progress = Math.min(periodCount / habit.targetCount, 1);
 
   return (
     <div className="group relative rounded-xl border border-border bg-card p-5 transition-shadow hover:shadow-md">
@@ -131,7 +132,7 @@ export function HabitCard({ habit, onCheckIn, onEdit, onArchive, onDelete }: Hab
             <span className="tabular-nums">{habit.currentStreak}</span>
           </div>
           <span className="text-xs tabular-nums text-muted-foreground">
-            {todayCount}/{habit.targetCount}
+            {periodCount}/{habit.targetCount}
           </span>
         </div>
 

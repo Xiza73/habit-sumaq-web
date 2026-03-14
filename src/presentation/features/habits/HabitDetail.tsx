@@ -45,10 +45,11 @@ export function HabitDetail({ habitId }: HabitDetailProps) {
 
   function handleCheckIn() {
     if (!habit) return;
+    if (habit.periodCompleted) return;
     const todayCount = habit.todayLog?.count ?? 0;
     if (todayCount >= habit.targetCount) return;
     const today = getTodayLocaleDate();
-    const newCount = (habit.todayLog?.count ?? 0) + 1;
+    const newCount = todayCount + 1;
 
     logMutation.mutate(
       { habitId: habit.id, data: { date: today, count: newCount } },
@@ -89,8 +90,9 @@ export function HabitDetail({ habitId }: HabitDetailProps) {
   }
 
   const todayCount = habit.todayLog?.count ?? 0;
-  const isCompleted = todayCount >= habit.targetCount;
-  const progress = Math.min(todayCount / habit.targetCount, 1);
+  const periodCount = habit.periodCount ?? todayCount;
+  const isCompleted = habit.periodCompleted ?? periodCount >= habit.targetCount;
+  const progress = Math.min(periodCount / habit.targetCount, 1);
   const completionPercent = Math.round(habit.completionRate * 100);
   const logs = logsData?.data ?? [];
 
@@ -154,7 +156,7 @@ export function HabitDetail({ habitId }: HabitDetailProps) {
             <div>
               <p className="text-sm text-muted-foreground">{t('todayProgress')}</p>
               <p className="mt-1 text-3xl font-bold tabular-nums">
-                {todayCount}
+                {periodCount}
                 <span className="text-lg text-muted-foreground">/{habit.targetCount}</span>
               </p>
             </div>

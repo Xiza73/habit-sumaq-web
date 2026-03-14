@@ -614,11 +614,19 @@ Historial de logs paginados.
     "note": null,
     "createdAt": "2026-03-13T10:00:00.000Z",
     "updatedAt": "2026-03-13T10:00:00.000Z"
-  }
+  },
+  "periodCount": 6,
+  "periodCompleted": false
 }
 ```
 
-> **Nota:** `currentStreak`, `longestStreak`, `completionRate` y `todayLog` solo están presentes en los endpoints que devuelven stats (`GET /habits`, `GET /habits/daily`, `GET /habits/:id`). En `POST` y `PATCH` no se incluyen.
+> **Nota:** `currentStreak`, `longestStreak`, `completionRate`, `todayLog`, `periodCount` y `periodCompleted` solo están presentes en los endpoints que devuelven stats (`GET /habits`, `GET /habits/daily`, `GET /habits/:id`). En `POST` y `PATCH` no se incluyen.
+>
+> **`periodCount`**: Conteo acumulado en el período actual. Para hábitos DAILY es el count de hoy; para WEEKLY es la suma de counts de la semana actual (lunes a domingo ISO).
+>
+> **`periodCompleted`**: `true` si `periodCount >= targetCount`. Permite saber si la meta del período ya se cumplió, especialmente útil para hábitos semanales donde `todayLog` puede no existir pero la semana ya está completa.
+>
+> **Límite de count**: Al registrar un log, el `count` se limita automáticamente al `targetCount` del hábito. Si se envía un valor mayor, se guarda `targetCount`.
 
 ### Respuesta de log (`HabitLogResponseDto`)
 
