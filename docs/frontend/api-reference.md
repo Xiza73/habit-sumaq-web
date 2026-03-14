@@ -476,3 +476,169 @@ Soft delete. Revierte el efecto en balance.
   "relatedTransactionId": "uuid-debt"
 }
 ```
+
+---
+
+## Habits
+
+### `POST /habits`
+
+Crea un nuevo hábito.
+
+| Campo         | Tipo              | Requerido | Notas                                         |
+| ------------- | ----------------- | --------- | --------------------------------------------- |
+| `name`        | string            | sí        | Máx 100 chars. Único por usuario              |
+| `frequency`   | HabitFrequency    | sí        | `DAILY` o `WEEKLY`                            |
+| `description` | string \| null    | no        | Máx 500 chars                                 |
+| `targetCount` | number            | no        | Default `1`. Mín `1`. Cantidad objetivo       |
+| `color`       | string \| null    | no        | Máx 7 chars (hex: `#2196F3`)                  |
+| `icon`        | string \| null    | no        | Máx 50 chars                                  |
+
+**Response:** `201` — `HabitResponseDto`
+
+**Errores:**
+
+- `409` — Ya existe un hábito con ese nombre
+
+### `GET /habits`
+
+Lista hábitos del usuario con estadísticas (streak, completionRate, todayLog).
+
+| Query param       | Tipo    | Descripción                         |
+| ----------------- | ------- | ----------------------------------- |
+| `includeArchived` | boolean | Si `true`, incluye hábitos archivados |
+
+**Response:** `200` — `HabitResponseDto[]` (con stats)
+
+### `GET /habits/daily`
+
+Resumen diario: solo hábitos activos (no archivados) con su log de hoy y estadísticas. Ideal para la vista principal.
+
+**Response:** `200` — `HabitResponseDto[]` (con stats)
+
+### `GET /habits/:id`
+
+Obtiene un hábito por UUID con estadísticas completas.
+
+**Errores:**
+
+- `403` — El hábito pertenece a otro usuario
+- `404` — Hábito no encontrado
+
+### `PATCH /habits/:id`
+
+Actualiza campos del hábito. Solo se modifican los campos enviados.
+
+| Campo         | Tipo              | Notas                          |
+| ------------- | ----------------- | ------------------------------ |
+| `name`        | string            | Máx 100 chars                  |
+| `description` | string \| null    | Máx 500 chars                  |
+| `frequency`   | HabitFrequency    | `DAILY` o `WEEKLY`             |
+| `targetCount` | number            | Mín `1`                        |
+| `color`       | string \| null    | Máx 7 chars                    |
+| `icon`        | string \| null    | Máx 50 chars                   |
+
+**Errores:**
+
+- `404` — Hábito no encontrado
+- `409` — Nombre ya en uso
+
+### `PATCH /habits/:id/archive`
+
+Archiva o desarchiva un hábito. No recibe body. Alterna el estado.
+
+### `DELETE /habits/:id`
+
+Soft delete. Elimina el hábito y todos sus logs asociados.
+
+**Errores:**
+
+- `404` — Hábito no encontrado
+
+### `POST /habits/:id/logs`
+
+Registra o actualiza el log de un hábito para una fecha. Si ya existe un log para esa fecha, lo actualiza (upsert).
+
+| Campo  | Tipo           | Requerido | Notas                             |
+| ------ | -------------- | --------- | --------------------------------- |
+| `date` | string         | sí        | Formato `YYYY-MM-DD`. No futura  |
+| `count`| number         | sí        | Mín `0`. Cantidad realizada       |
+| `note` | string \| null | no        | Máx 500 chars                     |
+
+`completed` se calcula automáticamente: `count >= habit.targetCount`.
+
+**Response:** `201` — `HabitLogResponseDto`
+
+**Errores:**
+
+- `404` — Hábito no encontrado
+- `422` — Hábito archivado o fecha futura
+
+### `GET /habits/:id/logs`
+
+Historial de logs paginados.
+
+| Query param | Tipo   | Descripción                                  |
+| ----------- | ------ | -------------------------------------------- |
+| `dateFrom`  | string | Fecha mínima (`YYYY-MM-DD`)                  |
+| `dateTo`    | string | Fecha máxima (`YYYY-MM-DD`)                  |
+| `page`      | number | Página (base 1, default: `1`)                |
+| `limit`     | number | Items por página (default: `20`, máx: `100`) |
+
+**Response:** `200` — `HabitLogResponseDto[]` con `meta` de paginación
+
+### Respuesta de hábito (`HabitResponseDto`)
+
+```json
+{
+  "id": "uuid",
+  "userId": "uuid",
+  "name": "Tomar 8 vasos de agua",
+  "description": "Beber al menos 8 vasos al día",
+  "frequency": "DAILY",
+  "targetCount": 8,
+  "color": "#2196F3",
+  "icon": "water",
+  "isArchived": false,
+  "createdAt": "2026-01-01T00:00:00.000Z",
+  "updatedAt": "2026-01-01T00:00:00.000Z",
+  "currentStreak": 5,
+  "longestStreak": 15,
+  "completionRate": 0.8,
+  "todayLog": {
+    "id": "uuid",
+    "habitId": "uuid",
+    "date": "2026-03-13",
+    "count": 6,
+    "completed": false,
+    "note": null,
+    "createdAt": "2026-03-13T10:00:00.000Z",
+    "updatedAt": "2026-03-13T10:00:00.000Z"
+  },
+  "periodCount": 6,
+  "periodCompleted": false
+}
+```
+
+> **Nota:** `currentStreak`, `longestStreak`, `completionRate`, `todayLog`, `periodCount` y `periodCompleted` solo están presentes en los endpoints que devuelven stats (`GET /habits`, `GET /habits/daily`, `GET /habits/:id`). En `POST` y `PATCH` no se incluyen.
+>
+> **`periodCount`**: Conteo acumulado en el período actual. Para hábitos DAILY es el count de hoy; para WEEKLY es la suma de counts de la semana actual (lunes a domingo ISO).
+>
+> **`periodCompleted`**: `true` si `periodCount >= targetCount`. Permite saber si la meta del período ya se cumplió, especialmente útil para hábitos semanales donde `todayLog` puede no existir pero la semana ya está completa.
+>
+> **Límite de count**: Al registrar un log, el `count` se limita automáticamente al `targetCount` del hábito. Si se envía un valor mayor, se guarda `targetCount`.
+
+### Respuesta de log (`HabitLogResponseDto`)
+
+```json
+{
+  "id": "uuid",
+  "habitId": "uuid",
+  "date": "2026-03-13",
+  "count": 5,
+  "completed": false,
+  "note": "Buen día",
+  "createdAt": "2026-03-13T10:00:00.000Z",
+  "updatedAt": "2026-03-13T10:00:00.000Z"
+}
+```

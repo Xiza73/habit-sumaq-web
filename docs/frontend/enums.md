@@ -92,6 +92,19 @@ Para tipos INCOME, EXPENSE y TRANSFER, el campo `status` es siempre `null`.
 
 ---
 
+## HabitFrequency
+
+Frecuencia del hábito. Define cada cuánto se espera que el usuario lo complete.
+
+| Valor    | Descripción                                        |
+| -------- | -------------------------------------------------- |
+| `DAILY`  | Se completa cada día                               |
+| `WEEKLY` | Se completa X veces por semana                     |
+
+**Uso:** campo `frequency` en `POST /habits` y `PATCH /habits/:id`.
+
+---
+
 ## Language
 
 Idioma de la interfaz del usuario.

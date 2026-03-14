@@ -4,7 +4,7 @@ Desarrollo progresivo por fases. Cada fase produce un incremento funcional y tes
 
 ---
 
-## Fase 0 — Fundación (Scaffolding)
+## Fase 0 — Fundación (Scaffolding) ✅
 
 **Objetivo:** Configurar la base del proyecto antes de cualquier feature.
 
@@ -27,7 +27,7 @@ Desarrollo progresivo por fases. Cada fase produce un incremento funcional y tes
 
 ---
 
-## Fase 1 — Autenticación
+## Fase 1 — Autenticación ✅
 
 **Objetivo:** Login con Google OAuth, manejo de sesión, guards de rutas.
 
@@ -48,7 +48,7 @@ Desarrollo progresivo por fases. Cada fase produce un incremento funcional y tes
 
 ---
 
-## Fase 2 — Settings de Usuario
+## Fase 2 — Settings de Usuario ✅
 
 **Objetivo:** El usuario puede configurar sus preferencias (idioma, tema, moneda, formato de fecha).
 
@@ -67,7 +67,7 @@ Desarrollo progresivo por fases. Cada fase produce un incremento funcional y tes
 
 ---
 
-## Fase 3 — Módulo de Cuentas (MVP Core)
+## Fase 3 — Módulo de Cuentas (MVP Core) ✅
 
 **Objetivo:** CRUD completo de cuentas financieras.
 
@@ -93,7 +93,7 @@ Desarrollo progresivo por fases. Cada fase produce un incremento funcional y tes
 
 ---
 
-## Fase 4 — Módulo de Categorías
+## Fase 4 — Módulo de Categorías ✅
 
 **Objetivo:** CRUD de categorías de ingreso/gasto.
 
@@ -110,7 +110,7 @@ Desarrollo progresivo por fases. Cada fase produce un incremento funcional y tes
 
 ---
 
-## Fase 5 — Módulo de Transacciones
+## Fase 5 — Módulo de Transacciones ✅
 
 **Objetivo:** CRUD completo de transacciones con todos los tipos.
 
@@ -133,7 +133,7 @@ Desarrollo progresivo por fases. Cada fase produce un incremento funcional y tes
 
 ---
 
-## Fase 6 — Pulido y UX
+## Fase 6 — Pulido y UX ✅
 
 **Objetivo:** Refinar la experiencia general.
 
@@ -154,11 +154,36 @@ Desarrollo progresivo por fases. Cada fase produce un incremento funcional y tes
 
 ---
 
+## Fase 7 — Módulo de Hábitos (Habit Tracker) 🚧 EN DESARROLLO
+
+**Objetivo:** Seguimiento de hábitos diarios/semanales con check-in, streaks y estadísticas.
+
+> **Pre-requisito (7.0):** Reestructurar la navegación para soportar múltiples módulos (Finanzas + Hábitos) antes de implementar las vistas del módulo.
+
+| #    | Tarea                                  | Detalle                                                         |
+| ---- | -------------------------------------- | --------------------------------------------------------------- |
+| 7.1  | Crear `Habit` entity + enums + schemas | Tipos, `HabitFrequency`, schemas Zod de creación/edición/log    |
+| 7.2  | Crear `habits.api.ts` + hooks          | API client (CRUD + log + daily) y TanStack Query hooks          |
+| 7.3  | Crear page `/habits`                   | Vista diaria con check-in: lista de hábitos + botón de marcar   |
+| 7.4  | Crear `HabitCard` component            | Card con nombre, ícono, color, progreso (count/target), streak  |
+| 7.5  | Crear `HabitForm` component            | Formulario de creación/edición con frequency, targetCount, etc. |
+| 7.6  | Implementar check-in diario           | Tap para incrementar count, upsert log del día                  |
+| 7.7  | Implementar vista de detalle          | Page `/habits/:id` con stats, historial de logs, calendario     |
+| 7.8  | Implementar archivar/desarchivar       | Toggle con confirmación                                         |
+| 7.9  | Implementar eliminar hábito            | Confirmación con aviso de eliminación de logs                   |
+| 7.10 | Crear componente de streak/progress    | Visual de racha actual y tasa de completitud                    |
+| 7.11 | Integrar en sidebar/nav                | Agregar "Hábitos" a la navegación principal                     |
+| 7.12 | Tests                                  | Unit tests de componentes, integration tests de check-in flow   |
+
+**Entregable:** Módulo de hábitos completo con check-in diario, streaks, historial y estadísticas.
+
+---
+
 ## Módulos Futuros (fuera del MVP)
 
-Estos módulos se planificarán después de completar las fases 0–6:
+Estos módulos se planificarán después de completar las fases anteriores:
 
-- **Daily Planner:** Planificación de gastos diarios, metas de ahorro.
-- **Schedule:** Transacciones recurrentes, recordatorios.
 - **Reportes:** Gráficos de gastos por categoría, tendencias mensuales.
 - **Presupuestos:** Límites por categoría con alertas.
+- **Vinculación hábitos ↔ finanzas:** Hábitos financieros vinculados a transacciones.
+- **Schedule:** Transacciones recurrentes, recordatorios.

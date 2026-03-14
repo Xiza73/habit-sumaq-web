@@ -4,7 +4,14 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 
-import { ArrowLeftRight, CreditCard, FolderTree, type LucideIcon, Settings } from 'lucide-react';
+import {
+  ArrowLeftRight,
+  CreditCard,
+  FolderTree,
+  type LucideIcon,
+  Settings,
+  Target,
+} from 'lucide-react';
 
 import { useUIStore } from '@/core/application/stores/ui.store';
 
@@ -16,18 +23,55 @@ interface NavItem {
   icon: LucideIcon;
 }
 
-const NAV_ITEMS: NavItem[] = [
-  { href: '/accounts', labelKey: 'accounts', icon: CreditCard },
-  { href: '/categories', labelKey: 'categories', icon: FolderTree },
-  { href: '/transactions', labelKey: 'transactions', icon: ArrowLeftRight },
-  { href: '/settings', labelKey: 'settings', icon: Settings },
+interface NavSection {
+  titleKey: string | null;
+  items: NavItem[];
+}
+
+const NAV_SECTIONS: NavSection[] = [
+  {
+    titleKey: 'finances',
+    items: [
+      { href: '/accounts', labelKey: 'accounts', icon: CreditCard },
+      { href: '/categories', labelKey: 'categories', icon: FolderTree },
+      { href: '/transactions', labelKey: 'transactions', icon: ArrowLeftRight },
+    ],
+  },
+  {
+    titleKey: null,
+    items: [{ href: '/habits', labelKey: 'habits', icon: Target }],
+  },
 ];
+
+const BOTTOM_ITEMS: NavItem[] = [{ href: '/settings', labelKey: 'settings', icon: Settings }];
 
 export function Sidebar() {
   const pathname = usePathname();
   const t = useTranslations('navigation');
   const sidebarOpen = useUIStore((s) => s.sidebarOpen);
   const setSidebarOpen = useUIStore((s) => s.setSidebarOpen);
+
+  function renderNavLink(item: NavItem) {
+    const isActive = pathname.startsWith(item.href);
+    const Icon = item.icon;
+
+    return (
+      <Link
+        key={item.href}
+        href={item.href}
+        onClick={() => setSidebarOpen(false)}
+        className={cn(
+          'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
+          isActive
+            ? 'bg-sidebar-primary/10 text-sidebar-primary'
+            : 'text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground',
+        )}
+      >
+        <Icon className="size-5" />
+        {t(item.labelKey)}
+      </Link>
+    );
+  }
 
   return (
     <>
@@ -57,29 +101,20 @@ export function Sidebar() {
           <span className="text-lg font-semibold">Habit Sumaq</span>
         </div>
 
-        <nav className="flex-1 space-y-1 p-3">
-          {NAV_ITEMS.map((item) => {
-            const isActive = pathname.startsWith(item.href);
-            const Icon = item.icon;
-
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                onClick={() => setSidebarOpen(false)}
-                className={cn(
-                  'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
-                  isActive
-                    ? 'bg-sidebar-primary/10 text-sidebar-primary'
-                    : 'text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground',
-                )}
-              >
-                <Icon className="size-5" />
-                {t(item.labelKey)}
-              </Link>
-            );
-          })}
+        <nav className="flex-1 space-y-6 p-3">
+          {NAV_SECTIONS.map((section) => (
+            <div key={section.titleKey ?? section.items[0].href}>
+              {section.titleKey && (
+                <span className="mb-1 block px-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  {t(section.titleKey)}
+                </span>
+              )}
+              <div className="space-y-1">{section.items.map(renderNavLink)}</div>
+            </div>
+          ))}
         </nav>
+
+        <div className="border-t border-border p-3">{BOTTOM_ITEMS.map(renderNavLink)}</div>
       </aside>
     </>
   );

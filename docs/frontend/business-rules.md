@@ -83,6 +83,45 @@ Reglas que el frontend debe conocer para construir la UI correctamente y preveni
 
 ---
 
+## Hábitos
+
+1. **Nombre único por usuario.** No pueden existir dos hábitos activos con el mismo nombre.
+2. **`targetCount` ≥ 1.** La cantidad objetivo debe ser al menos 1.
+3. **Un log por hábito por fecha.** Si se envía un log para una fecha que ya tiene registro, se actualiza (upsert).
+4. **No se pueden registrar logs en fechas futuras.**
+5. **No se pueden registrar logs en hábitos archivados.** Desarchivar primero.
+6. **`completed` se calcula automáticamente:** `count >= habit.targetCount`.
+7. **`count` se limita a `targetCount`.** Si se envía un valor mayor, el backend lo guarda como `targetCount`. El frontend debería deshabilitar el check-in cuando `count >= targetCount`.
+8. **Archivar ≠ eliminar.** Un hábito archivado mantiene su historial pero no aparece en el resumen diario.
+9. **Eliminar un hábito elimina todos sus logs asociados.**
+10. **Fechas como string `YYYY-MM-DD`.** El campo `date` de los logs se envía y recibe como string (no como `Date` ni ISO 8601 con hora). Esto evita errores de zona horaria.
+
+### Estadísticas (computadas por el backend)
+
+| Campo             | Descripción                                                   |
+| ----------------- | ------------------------------------------------------------- |
+| `currentStreak`   | Períodos consecutivos completados hasta hoy (o desde ayer si hoy no está completado) |
+| `longestStreak`   | Máximo streak en los últimos 30 días                          |
+| `completionRate`  | Porcentaje de días (daily) o semanas (weekly) completados en los últimos 30 días |
+| `todayLog`        | Log de hoy, `null` si no existe                               |
+| `periodCount`     | Conteo acumulado en el período actual: para DAILY es `todayLog.count`; para WEEKLY es la suma de counts de la semana (lunes a domingo) |
+| `periodCompleted` | `true` si `periodCount >= targetCount`. Indica si la meta del período ya se cumplió |
+
+### Progreso por período
+
+- **Hábitos DAILY:** `periodCount` = count de hoy. Equivale a `todayLog?.count ?? 0`.
+- **Hábitos WEEKLY:** `periodCount` = suma de counts de todos los logs de la semana ISO actual (lunes a domingo). Un hábito semanal puede tener `todayLog` null o con count 0 y aún así `periodCompleted = true` si la cuota semanal ya se cumplió en otros días.
+- **Barra de progreso:** usar `Math.min(periodCount / targetCount, 1)` para el cálculo visual.
+- **Check-in habilitado:** permitir check-in solo si `periodCount < targetCount` (para WEEKLY) o `todayLog.count < targetCount` (para DAILY).
+
+### Vista diaria (`GET /habits/daily`)
+
+- Solo muestra hábitos activos (no archivados).
+- Incluye stats, el log de hoy y los campos `periodCount`/`periodCompleted` para cada hábito.
+- Ideal como pantalla principal para check-in diario.
+
+---
+
 ## Monedas y balance
 
 1. **Las transferencias requieren misma moneda.** Si cuenta A es PEN y cuenta B es USD, no se puede transferir entre ellas.

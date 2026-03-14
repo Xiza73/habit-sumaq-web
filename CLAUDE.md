@@ -141,6 +141,10 @@ pnpm test:e2e     # Tests e2e (Playwright)
 
 ## Alcance Actual
 
-El MVP cubre el módulo de **Cuentas** (accounts). Módulos futuros: categorías, transacciones, daily planner, schedule.
+El MVP de **Finanzas** está completo (cuentas, categorías, transacciones) junto con autenticación y settings (Fases 0–6).
+
+**En desarrollo:** Módulo de **Hábitos** (Habit Tracker) — Fase 7.
+
+Módulos futuros (post-MVP): reportes, presupuestos, vinculación hábitos ↔ finanzas, schedule.
 
 Implementar siguiendo el orden definido en [implementation-plan.md](docs/frontend/implementation-plan.md).

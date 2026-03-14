@@ -66,6 +66,17 @@ Cuando una operación falla, la respuesta incluye un `error.code` con un identif
 | `TXN_012` | 422  | El monto excede el saldo pendiente     | POST settle con `amount > remainingAmount`      |
 | `TXN_013` | 422  | Monto menor que lo ya liquidado        | PATCH amount en DEBT/LOAN por debajo de pagos   |
 
+### Hábitos
+
+| Código    | HTTP | Descripción                        | Cuándo ocurre                            |
+| --------- | ---- | ---------------------------------- | ---------------------------------------- |
+| `HAB_001` | 404  | Hábito no encontrado               | GET/PATCH/DELETE con UUID inexistente    |
+| `HAB_002` | 409  | Nombre de hábito ya en uso         | POST/PATCH con nombre duplicado          |
+| `HAB_003` | 422  | Hábito archivado                   | POST log en hábito con `isArchived=true` |
+| `HAB_004` | 422  | Fecha futura                       | POST log con fecha posterior a hoy       |
+| `HAB_005` | 422  | targetCount inválido               | targetCount < 1                          |
+| `HAB_006` | 403  | El hábito pertenece a otro usuario | Acceso a hábito ajeno                    |
+
 ### Generales
 
 | Código    | HTTP | Descripción                       | Cuándo ocurre                              |

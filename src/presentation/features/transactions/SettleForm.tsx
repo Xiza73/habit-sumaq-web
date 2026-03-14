@@ -22,7 +22,7 @@ import { Input } from '@/presentation/components/ui/Input';
 import { Modal } from '@/presentation/components/ui/Modal';
 import { Select } from '@/presentation/components/ui/Select';
 
-import { formatCurrency } from '@/lib/format';
+import { formatCurrency, getTodayLocaleDate } from '@/lib/format';
 
 interface SettleFormProps {
   open: boolean;
@@ -45,7 +45,7 @@ export function SettleForm({
   const { data: accounts } = useAccounts(false);
   const settleMutation = useSettleTransaction();
 
-  const today = new Date().toISOString().split('T')[0];
+  const today = getTodayLocaleDate();
 
   const form = useForm<SettleTransactionInput>({
     resolver: zodResolver(settleTransactionSchema),
