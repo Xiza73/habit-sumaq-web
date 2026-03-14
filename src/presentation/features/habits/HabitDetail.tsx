@@ -35,7 +35,7 @@ export function HabitDetail({ habitId }: HabitDetailProps) {
   const tErrors = useTranslations('errors');
 
   const { data: habit, isLoading } = useHabit(habitId);
-  const { data: logsData } = useHabitLogs(habitId, { limit: 130 });
+  const { data: logsData } = useHabitLogs(habitId, { limit: 365 });
   const archiveMutation = useArchiveHabit();
   const deleteMutation = useDeleteHabit();
   const logMutation = useLogHabit();

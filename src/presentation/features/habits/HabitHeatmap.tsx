@@ -1,15 +1,18 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 
 import { type HabitLog } from '@/core/domain/entities/habit';
 
 import { cn } from '@/lib/utils';
 
-const WEEKS = 18;
+const MIN_WEEKS = 10;
+const MAX_WEEKS = 52;
 const CELL_SIZE = 14;
 const CELL_GAP = 3;
+const DAY_LABEL_WIDTH = 24;
+const PADDING = 48; // p-6 * 2
 
 interface HabitHeatmapProps {
   logs: HabitLog[];
@@ -48,14 +51,35 @@ function toDateKey(d: Date): string {
   return `${y}-${m}-${day}`;
 }
 
+function calculateWeeks(containerWidth: number): number {
+  const available = containerWidth - PADDING - DAY_LABEL_WIDTH - 4;
+  const weeks = Math.floor((available + CELL_GAP) / (CELL_SIZE + CELL_GAP));
+  return Math.max(MIN_WEEKS, Math.min(MAX_WEEKS, weeks));
+}
+
 export function HabitHeatmap({ logs, targetCount, color }: HabitHeatmapProps) {
   const t = useTranslations('habits');
   const locale = useLocale();
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [weeks, setWeeks] = useState(MIN_WEEKS);
   const [tooltip, setTooltip] = useState<{
     text: string;
     x: number;
     y: number;
   } | null>(null);
+
+  const updateWeeks = useCallback(() => {
+    if (containerRef.current) {
+      setWeeks(calculateWeeks(containerRef.current.clientWidth));
+    }
+  }, []);
+
+  useEffect(() => {
+    updateWeeks();
+    const observer = new ResizeObserver(updateWeeks);
+    if (containerRef.current) observer.observe(containerRef.current);
+    return () => observer.disconnect();
+  }, [updateWeeks]);
 
   const logMap = useMemo(() => {
     const map = new Map<string, HabitLog>();
@@ -70,23 +94,20 @@ export function HabitHeatmap({ logs, targetCount, color }: HabitHeatmapProps) {
     const todayDay = today.getDay();
     const mondayOffset = todayDay === 0 ? -6 : 1 - todayDay;
 
-    const endOfWeek = new Date(today);
-    endOfWeek.setDate(today.getDate() + (6 + mondayOffset) + (7 - mondayOffset - todayDay));
-
     const currentWeekMonday = new Date(today);
     currentWeekMonday.setDate(today.getDate() + mondayOffset);
 
     const startDate = new Date(currentWeekMonday);
-    startDate.setDate(currentWeekMonday.getDate() - (WEEKS - 1) * 7);
+    startDate.setDate(currentWeekMonday.getDate() - (weeks - 1) * 7);
 
-    const weeks: { date: Date; key: string; isToday: boolean; isFuture: boolean }[][] = [];
+    const weeksArr: { date: Date; key: string; isToday: boolean; isFuture: boolean }[][] = [];
     const months: { label: string; col: number }[] = [];
     const todayKey = toDateKey(today);
 
     let lastMonth = -1;
     const cursor = new Date(startDate);
 
-    for (let w = 0; w < WEEKS; w++) {
+    for (let w = 0; w < weeks; w++) {
       const week: { date: Date; key: string; isToday: boolean; isFuture: boolean }[] = [];
       for (let d = 0; d < 7; d++) {
         const cellDate = new Date(cursor);
@@ -108,11 +129,11 @@ export function HabitHeatmap({ logs, targetCount, color }: HabitHeatmapProps) {
 
         cursor.setDate(cursor.getDate() + 1);
       }
-      weeks.push(week);
+      weeksArr.push(week);
     }
 
-    return { grid: weeks, monthLabels: months };
-  }, [locale]);
+    return { grid: weeksArr, monthLabels: months };
+  }, [locale, weeks]);
 
   const baseColor = color ?? 'hsl(var(--primary))';
 
@@ -127,8 +148,7 @@ export function HabitHeatmap({ logs, targetCount, color }: HabitHeatmapProps) {
     return days;
   }, [locale]);
 
-  const dayLabelWidth = 24;
-  const gridWidth = WEEKS * (CELL_SIZE + CELL_GAP) - CELL_GAP;
+  const gridWidth = weeks * (CELL_SIZE + CELL_GAP) - CELL_GAP;
   const gridHeight = 7 * (CELL_SIZE + CELL_GAP) - CELL_GAP;
   const monthLabelHeight = 20;
 
@@ -153,7 +173,7 @@ export function HabitHeatmap({ logs, targetCount, color }: HabitHeatmapProps) {
   }
 
   return (
-    <div className="rounded-xl border border-border bg-card p-6">
+    <div ref={containerRef} className="rounded-xl border border-border bg-card p-6">
       <div className="mb-4 flex items-center justify-between">
         <h2 className="font-semibold">{t('history')}</h2>
         <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
@@ -175,14 +195,14 @@ export function HabitHeatmap({ logs, targetCount, color }: HabitHeatmapProps) {
 
       <div className="overflow-x-auto">
         <svg
-          width={dayLabelWidth + gridWidth + 4}
+          width={DAY_LABEL_WIDTH + gridWidth + 4}
           height={monthLabelHeight + gridHeight + 4}
           className="relative"
         >
           {monthLabels.map((m, i) => (
             <text
               key={i}
-              x={dayLabelWidth + m.col * (CELL_SIZE + CELL_GAP)}
+              x={DAY_LABEL_WIDTH + m.col * (CELL_SIZE + CELL_GAP)}
               y={12}
               className="fill-muted-foreground text-[10px]"
             >
@@ -213,7 +233,7 @@ export function HabitHeatmap({ logs, targetCount, color }: HabitHeatmapProps) {
               return (
                 <rect
                   key={cell.key}
-                  x={dayLabelWidth + wIdx * (CELL_SIZE + CELL_GAP)}
+                  x={DAY_LABEL_WIDTH + wIdx * (CELL_SIZE + CELL_GAP)}
                   y={monthLabelHeight + dIdx * (CELL_SIZE + CELL_GAP)}
                   width={CELL_SIZE}
                   height={CELL_SIZE}
