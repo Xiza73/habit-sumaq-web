@@ -186,7 +186,9 @@
     "days": "{count, plural, one {# day} other {# days}}",
     "weeks": "{count, plural, one {# week} other {# weeks}}",
     "less": "Less",
-    "more": "More"
+    "more": "More",
+    "today": "Today",
+    "pastDateNotice": "Logging for a past date. Progress shown is for today."
   },
   "navigation": {
     "finances": "Finances",

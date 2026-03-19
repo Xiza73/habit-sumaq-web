@@ -1,9 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
 
-import { Eye, EyeOff, Plus } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Clock, Eye, EyeOff, Plus } from 'lucide-react';
 import { toast } from 'sonner';
 
 import {
@@ -20,10 +20,31 @@ import { ApiError } from '@/infrastructure/api/api-error';
 import { ConfirmDialog } from '@/presentation/components/feedback/ConfirmDialog';
 
 import { getTodayLocaleDate } from '@/lib/format';
+import { cn } from '@/lib/utils';
 
 import { HabitCard } from './HabitCard';
 import { HabitCardSkeleton } from './HabitCardSkeleton';
 import { HabitForm } from './HabitForm';
+
+function formatDateLabel(dateStr: string): string {
+  const [year, month, day] = dateStr.split('-').map(Number);
+  const date = new Date(year, month - 1, day);
+  return date.toLocaleDateString(undefined, {
+    weekday: 'short',
+    month: 'short',
+    day: 'numeric',
+  });
+}
+
+function shiftDate(dateStr: string, days: number): string {
+  const [year, month, day] = dateStr.split('-').map(Number);
+  const date = new Date(year, month - 1, day);
+  date.setDate(date.getDate() + days);
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
 
 export function HabitList() {
   const t = useTranslations('habits');
@@ -34,6 +55,18 @@ export function HabitList() {
   const [editingHabit, setEditingHabit] = useState<HabitWithStats | null>(null);
   const [deletingHabit, setDeletingHabit] = useState<HabitWithStats | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [selectedDate, setSelectedDate] = useState(getTodayLocaleDate);
+  const [currentTime, setCurrentTime] = useState(() => new Date().toLocaleTimeString());
+
+  const today = getTodayLocaleDate();
+  const isToday = selectedDate === today;
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentTime(new Date().toLocaleTimeString());
+    }, 1000);
+    return () => clearInterval(interval);
+  }, []);
 
   const { data: dailyHabits, isLoading: isDailyLoading } = useDailyHabits();
   const { data: allHabits, isLoading: isAllLoading } = useHabits(showArchived);
@@ -43,6 +76,18 @@ export function HabitList() {
 
   const habits = showArchived ? allHabits : dailyHabits;
   const isLoading = showArchived ? isAllLoading : isDailyLoading;
+
+  function handlePrevDay() {
+    setSelectedDate((prev) => shiftDate(prev, -1));
+  }
+
+  function handleNextDay() {
+    if (isToday) return;
+    setSelectedDate((prev) => {
+      const next = shiftDate(prev, 1);
+      return next > today ? today : next;
+    });
+  }
 
   function handleEdit(habit: HabitWithStats) {
     setEditingHabit(habit);
@@ -55,14 +100,13 @@ export function HabitList() {
   }
 
   function handleCheckIn(habit: HabitWithStats) {
-    if (habit.periodCompleted) return;
-    const todayCount = habit.todayLog?.count ?? 0;
-    if (todayCount >= habit.targetCount) return;
-    const today = getTodayLocaleDate();
+    if (isToday && habit.periodCompleted) return;
+    const todayCount = isToday ? (habit.todayLog?.count ?? 0) : 0;
+    if (isToday && todayCount >= habit.targetCount) return;
     const newCount = todayCount + 1;
 
     logMutation.mutate(
-      { habitId: habit.id, data: { date: today, count: newCount } },
+      { habitId: habit.id, data: { date: selectedDate, count: newCount } },
       {
         onError: (error) => {
           if (error instanceof ApiError && error.code && tErrors.has(error.code)) {
@@ -78,10 +122,9 @@ export function HabitList() {
   function handleUndo(habit: HabitWithStats) {
     const todayCount = habit.todayLog?.count ?? 0;
     if (todayCount <= 0) return;
-    const today = getTodayLocaleDate();
 
     logMutation.mutate(
-      { habitId: habit.id, data: { date: today, count: todayCount - 1 } },
+      { habitId: habit.id, data: { date: selectedDate, count: todayCount - 1 } },
       {
         onError: (error) => {
           if (error instanceof ApiError && error.code && tErrors.has(error.code)) {
@@ -161,6 +204,60 @@ export function HabitList() {
             {t('createHabit')}
           </button>
         </div>
+      </div>
+
+      {/* Date navigator */}
+      <div className="flex flex-col gap-2 rounded-xl border border-border bg-card px-4 py-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={handlePrevDay}
+              className="flex size-8 items-center justify-center rounded-lg border border-border text-muted-foreground transition-colors hover:bg-muted"
+              aria-label="Previous day"
+            >
+              <ChevronLeft className="size-4" />
+            </button>
+            <button
+              type="button"
+              onClick={handleNextDay}
+              disabled={isToday}
+              className="flex size-8 items-center justify-center rounded-lg border border-border text-muted-foreground transition-colors hover:bg-muted disabled:opacity-30"
+              aria-label="Next day"
+            >
+              <ChevronRight className="size-4" />
+            </button>
+          </div>
+
+          <div className="text-center">
+            <p className="text-sm font-medium capitalize">
+              {isToday ? t('today') : formatDateLabel(selectedDate)}
+            </p>
+            <p className="font-mono text-xs text-muted-foreground">{selectedDate}</p>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1 font-mono text-xs text-muted-foreground">
+              <Clock className="size-3" />
+              {currentTime}
+            </div>
+            {!isToday && (
+              <button
+                type="button"
+                onClick={() => setSelectedDate(today)}
+                className="rounded-lg bg-primary px-2.5 py-1 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+              >
+                {t('today')}
+              </button>
+            )}
+          </div>
+        </div>
+
+        {!isToday && (
+          <p className={cn('text-center text-xs text-amber-600 dark:text-amber-400')}>
+            {t('pastDateNotice')}
+          </p>
+        )}
       </div>
 
       {!habits?.length ? (
