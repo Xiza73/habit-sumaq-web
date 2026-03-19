@@ -31,9 +31,11 @@ class HttpClient {
   private baseURL: string;
   private isRefreshing = false;
   private refreshPromise: Promise<boolean> | null = null;
+  private readonly timezone: string;
 
   constructor(baseURL: string) {
     this.baseURL = baseURL;
+    this.timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
   }
 
   async request<T>(endpoint: string, options?: RequestInit): Promise<T> {
@@ -44,6 +46,7 @@ class HttpClient {
       credentials: 'include',
       headers: {
         'Content-Type': 'application/json',
+        'X-Timezone': this.timezone,
         ...(token && { Authorization: `Bearer ${token}` }),
         ...options?.headers,
       },
@@ -118,6 +121,7 @@ class HttpClient {
       credentials: 'include',
       headers: {
         'Content-Type': 'application/json',
+        'X-Timezone': this.timezone,
         ...(token && { Authorization: `Bearer ${token}` }),
         ...options?.headers,
       },

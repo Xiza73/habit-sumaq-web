@@ -30,6 +30,7 @@ Antes de implementar cualquier feature, consulta los documentos relevantes:
 | Arquitectura           | [architecture.md](docs/frontend/architecture.md)               | Clean Architecture adaptada a Next.js App Router   |
 | Temas y Paletas        | [themes.md](docs/frontend/themes.md)                           | Paletas de color para modo claro y oscuro          |
 | Convenciones           | [conventions.md](docs/frontend/conventions.md)                 | Naming, estructura de archivos, patrones de código |
+| Linting y Formateo     | [linting.md](docs/frontend/linting.md)                         | ESLint, Prettier, TypeScript strict y reglas       |
 | Plan de Implementación | [implementation-plan.md](docs/frontend/implementation-plan.md) | Fases y orden de desarrollo                        |
 | Testing                | [testing.md](docs/frontend/testing.md)                         | Estrategia de testing por capa                     |
 | State Management       | [state-management.md](docs/frontend/state-management.md)       | Manejo de estado y data fetching                   |
