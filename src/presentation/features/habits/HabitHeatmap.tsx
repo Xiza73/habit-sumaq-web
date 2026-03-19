@@ -66,6 +66,7 @@ export function HabitHeatmap({ logs, targetCount, color }: HabitHeatmapProps) {
     text: string;
     x: number;
     y: number;
+    flippedDown: boolean;
   } | null>(null);
 
   const updateWeeks = useCallback(() => {
@@ -151,6 +152,9 @@ export function HabitHeatmap({ logs, targetCount, color }: HabitHeatmapProps) {
   const gridWidth = weeks * (CELL_SIZE + CELL_GAP) - CELL_GAP;
   const gridHeight = 7 * (CELL_SIZE + CELL_GAP) - CELL_GAP;
   const monthLabelHeight = 20;
+  const svgWidth = DAY_LABEL_WIDTH + gridWidth + 4;
+  const tooltipWidth = 100;
+  const tooltipHeight = 22;
 
   function handleCellHover(
     e: React.MouseEvent<SVGRectElement>,
@@ -165,10 +169,15 @@ export function HabitHeatmap({ logs, targetCount, color }: HabitHeatmapProps) {
       day: 'numeric',
       month: 'short',
     });
+    const rawX = rect.left - parentRect.left + CELL_SIZE / 2;
+    const rawY = rect.top - parentRect.top;
+    const clampedX = Math.max(tooltipWidth / 2, Math.min(rawX, svgWidth - tooltipWidth / 2));
+    const flippedDown = rawY - tooltipHeight - 8 < 0;
     setTooltip({
       text: `${dateStr} · ${count}/${targetCount}`,
-      x: rect.left - parentRect.left + CELL_SIZE / 2,
-      y: rect.top - parentRect.top - 8,
+      x: clampedX,
+      y: flippedDown ? rawY + CELL_SIZE + 8 + tooltipHeight : rawY - 8,
+      flippedDown,
     });
   }
 
@@ -195,7 +204,7 @@ export function HabitHeatmap({ logs, targetCount, color }: HabitHeatmapProps) {
 
       <div className="overflow-x-auto">
         <svg
-          width={DAY_LABEL_WIDTH + gridWidth + 4}
+          width={svgWidth}
           height={monthLabelHeight + gridHeight + 4}
           className="relative"
         >
@@ -258,17 +267,17 @@ export function HabitHeatmap({ logs, targetCount, color }: HabitHeatmapProps) {
           {tooltip && (
             <g>
               <rect
-                x={tooltip.x - 50}
-                y={tooltip.y - 22}
-                width={100}
-                height={22}
+                x={tooltip.x - tooltipWidth / 2}
+                y={tooltip.y - tooltipHeight}
+                width={tooltipWidth}
+                height={tooltipHeight}
                 rx={6}
                 className="fill-popover stroke-border"
                 strokeWidth={1}
               />
               <text
                 x={tooltip.x}
-                y={tooltip.y - 8}
+                y={tooltip.y - tooltipHeight / 2 + 4}
                 textAnchor="middle"
                 className="fill-popover-foreground text-[11px] font-medium"
               >
