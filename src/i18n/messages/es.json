@@ -186,7 +186,9 @@
     "days": "{count, plural, one {# día} other {# días}}",
     "weeks": "{count, plural, one {# semana} other {# semanas}}",
     "less": "Menos",
-    "more": "Más"
+    "more": "Más",
+    "today": "Hoy",
+    "pastDateNotice": "Registrando para una fecha pasada."
   },
   "navigation": {
     "finances": "Finanzas",

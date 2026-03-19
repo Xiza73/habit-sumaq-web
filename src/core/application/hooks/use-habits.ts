@@ -12,7 +12,8 @@ export const habitKeys = {
   all: ['habits'] as const,
   lists: () => [...habitKeys.all, 'list'] as const,
   list: (includeArchived?: boolean) => [...habitKeys.lists(), { includeArchived }] as const,
-  daily: () => [...habitKeys.all, 'daily'] as const,
+  dailyAll: () => [...habitKeys.all, 'daily'] as const,
+  daily: (date?: string) => [...habitKeys.dailyAll(), date] as const,
   details: () => [...habitKeys.all, 'detail'] as const,
   detail: (id: string) => [...habitKeys.details(), id] as const,
   logs: (id: string) => [...habitKeys.all, 'logs', id] as const,
@@ -26,10 +27,10 @@ export function useHabits(includeArchived = false) {
   });
 }
 
-export function useDailyHabits() {
+export function useDailyHabits(date?: string) {
   return useQuery({
-    queryKey: habitKeys.daily(),
-    queryFn: () => habitsApi.getDaily(),
+    queryKey: habitKeys.daily(date),
+    queryFn: () => habitsApi.getDaily(date),
   });
 }
 
@@ -48,7 +49,7 @@ export function useCreateHabit() {
     mutationFn: (data: CreateHabitInput) => habitsApi.create(data),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: habitKeys.lists() });
-      void queryClient.invalidateQueries({ queryKey: habitKeys.daily() });
+      void queryClient.invalidateQueries({ queryKey: habitKeys.dailyAll() });
     },
   });
 }
@@ -61,7 +62,7 @@ export function useUpdateHabit() {
       habitsApi.update(id, data),
     onSuccess: (_, { id }) => {
       void queryClient.invalidateQueries({ queryKey: habitKeys.lists() });
-      void queryClient.invalidateQueries({ queryKey: habitKeys.daily() });
+      void queryClient.invalidateQueries({ queryKey: habitKeys.dailyAll() });
       void queryClient.invalidateQueries({ queryKey: habitKeys.detail(id) });
     },
   });
@@ -74,7 +75,7 @@ export function useArchiveHabit() {
     mutationFn: (id: string) => habitsApi.toggleArchive(id),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: habitKeys.lists() });
-      void queryClient.invalidateQueries({ queryKey: habitKeys.daily() });
+      void queryClient.invalidateQueries({ queryKey: habitKeys.dailyAll() });
     },
   });
 }
@@ -86,7 +87,7 @@ export function useDeleteHabit() {
     mutationFn: (id: string) => habitsApi.delete(id),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: habitKeys.lists() });
-      void queryClient.invalidateQueries({ queryKey: habitKeys.daily() });
+      void queryClient.invalidateQueries({ queryKey: habitKeys.dailyAll() });
     },
   });
 }
@@ -98,7 +99,7 @@ export function useLogHabit() {
     mutationFn: ({ habitId, data }: { habitId: string; data: HabitLogInput }) =>
       habitsApi.createLog(habitId, data),
     onSuccess: (_, { habitId }) => {
-      void queryClient.invalidateQueries({ queryKey: habitKeys.daily() });
+      void queryClient.invalidateQueries({ queryKey: habitKeys.dailyAll() });
       void queryClient.invalidateQueries({ queryKey: habitKeys.lists() });
       void queryClient.invalidateQueries({ queryKey: habitKeys.detail(habitId) });
       void queryClient.invalidateQueries({ queryKey: habitKeys.logs(habitId) });
