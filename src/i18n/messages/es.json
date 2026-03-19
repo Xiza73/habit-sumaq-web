@@ -188,7 +188,7 @@
     "less": "Menos",
     "more": "Más",
     "today": "Hoy",
-    "pastDateNotice": "Registrando para una fecha pasada. El progreso mostrado es el de hoy."
+    "pastDateNotice": "Registrando para una fecha pasada."
   },
   "navigation": {
     "finances": "Finanzas",

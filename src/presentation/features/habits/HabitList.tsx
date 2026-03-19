@@ -68,7 +68,7 @@ export function HabitList() {
     return () => clearInterval(interval);
   }, []);
 
-  const { data: dailyHabits, isLoading: isDailyLoading } = useDailyHabits();
+  const { data: dailyHabits, isLoading: isDailyLoading } = useDailyHabits(selectedDate);
   const { data: allHabits, isLoading: isAllLoading } = useHabits(showArchived);
   const archiveMutation = useArchiveHabit();
   const deleteMutation = useDeleteHabit();
@@ -100,13 +100,12 @@ export function HabitList() {
   }
 
   function handleCheckIn(habit: HabitWithStats) {
-    if (isToday && habit.periodCompleted) return;
-    const todayCount = isToday ? (habit.todayLog?.count ?? 0) : 0;
-    if (isToday && todayCount >= habit.targetCount) return;
-    const newCount = todayCount + 1;
+    if (habit.periodCompleted) return;
+    const currentCount = habit.todayLog?.count ?? 0;
+    if (currentCount >= habit.targetCount) return;
 
     logMutation.mutate(
-      { habitId: habit.id, data: { date: selectedDate, count: newCount } },
+      { habitId: habit.id, data: { date: selectedDate, count: currentCount + 1 } },
       {
         onError: (error) => {
           if (error instanceof ApiError && error.code && tErrors.has(error.code)) {
@@ -120,11 +119,11 @@ export function HabitList() {
   }
 
   function handleUndo(habit: HabitWithStats) {
-    const todayCount = habit.todayLog?.count ?? 0;
-    if (todayCount <= 0) return;
+    const currentCount = habit.todayLog?.count ?? 0;
+    if (currentCount <= 0) return;
 
     logMutation.mutate(
-      { habitId: habit.id, data: { date: selectedDate, count: todayCount - 1 } },
+      { habitId: habit.id, data: { date: selectedDate, count: currentCount - 1 } },
       {
         onError: (error) => {
           if (error instanceof ApiError && error.code && tErrors.has(error.code)) {

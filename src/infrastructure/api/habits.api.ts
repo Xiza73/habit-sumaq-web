@@ -20,8 +20,9 @@ export const habitsApi = {
     return httpClient.get<HabitWithStats[]>(`/habits${query}`);
   },
 
-  getDaily(): Promise<HabitWithStats[]> {
-    return httpClient.get<HabitWithStats[]>('/habits/daily');
+  getDaily(date?: string): Promise<HabitWithStats[]> {
+    const query = date ? `?date=${date}` : '';
+    return httpClient.get<HabitWithStats[]>(`/habits/daily${query}`);
   },
 
   getById(id: string): Promise<HabitWithStats> {
