@@ -218,7 +218,7 @@ export function HabitList() {
       {/* Date navigator */}
       <div className="flex flex-col gap-2 rounded-xl border border-border bg-card px-4 py-3">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
+          <div className="flex flex-1 items-center gap-2">
             <button
               type="button"
               onClick={handlePrevDay}
@@ -245,7 +245,7 @@ export function HabitList() {
             <p className="font-mono text-xs text-muted-foreground">{selectedDate}</p>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex flex-1 items-center justify-end gap-2">
             <LiveClock />
             {!isToday && (
               <button
