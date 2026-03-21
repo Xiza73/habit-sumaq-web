@@ -25,6 +25,10 @@ export const metadata: Metadata = {
   },
   description: 'Empieza hoy un buen hábito — Finanzas personales y hábitos',
   manifest: '/manifest.json',
+  icons: {
+    icon: '/logo/logo_lg.svg',
+    apple: '/logo/logo_lg.png',
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',

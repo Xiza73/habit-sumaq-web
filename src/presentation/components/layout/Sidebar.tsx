@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
@@ -95,9 +96,20 @@ export function Sidebar() {
         )}
       >
         <div className="flex h-16 items-center gap-3 border-b border-border px-6">
-          <div className="flex size-8 items-center justify-center rounded-lg bg-primary text-sm font-bold text-primary-foreground">
-            S
-          </div>
+          <Image
+            src="/logo/logo_lg_dark.svg"
+            alt="Habit Sumaq"
+            width={32}
+            height={32}
+            className="block dark:hidden"
+          />
+          <Image
+            src="/logo/logo_lg.svg"
+            alt="Habit Sumaq"
+            width={32}
+            height={32}
+            className="hidden dark:block"
+          />
           <span className="text-lg font-semibold">Habit Sumaq</span>
         </div>
 
