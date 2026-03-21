@@ -4,6 +4,24 @@ import { useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
 
 import { ChevronLeft, ChevronRight, Clock, Eye, EyeOff, Plus } from 'lucide-react';
+
+function LiveClock() {
+  const [currentTime, setCurrentTime] = useState(() => new Date().toLocaleTimeString());
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentTime(new Date().toLocaleTimeString());
+    }, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <div className="flex items-center gap-1 font-mono text-xs text-muted-foreground">
+      <Clock className="size-3" />
+      {currentTime}
+    </div>
+  );
+}
 import { toast } from 'sonner';
 
 import {
@@ -56,17 +74,9 @@ export function HabitList() {
   const [deletingHabit, setDeletingHabit] = useState<HabitWithStats | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const [selectedDate, setSelectedDate] = useState(getTodayLocaleDate);
-  const [currentTime, setCurrentTime] = useState(() => new Date().toLocaleTimeString());
 
   const today = getTodayLocaleDate();
   const isToday = selectedDate === today;
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentTime(new Date().toLocaleTimeString());
-    }, 1000);
-    return () => clearInterval(interval);
-  }, []);
 
   const { data: dailyHabits, isLoading: isDailyLoading } = useDailyHabits(selectedDate);
   const { data: allHabits, isLoading: isAllLoading } = useHabits(showArchived);
@@ -236,10 +246,7 @@ export function HabitList() {
           </div>
 
           <div className="flex items-center gap-2">
-            <div className="flex items-center gap-1 font-mono text-xs text-muted-foreground">
-              <Clock className="size-3" />
-              {currentTime}
-            </div>
+            <LiveClock />
             {!isToday && (
               <button
                 type="button"
