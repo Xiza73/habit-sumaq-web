@@ -13,27 +13,36 @@ import {
   useHabits,
   useLogHabit,
 } from '@/core/application/hooks/use-habits';
+import { useUserSettings } from '@/core/application/hooks/use-user-settings';
 import { type HabitWithStats } from '@/core/domain/entities/habit';
 
 import { ApiError } from '@/infrastructure/api/api-error';
 
 import { ConfirmDialog } from '@/presentation/components/feedback/ConfirmDialog';
 
-import { getTodayLocaleDate } from '@/lib/format';
+import { formatDate, getTodayLocaleDate } from '@/lib/format';
 import { cn } from '@/lib/utils';
 
 import { HabitCard } from './HabitCard';
 import { HabitCardSkeleton } from './HabitCardSkeleton';
 import { HabitForm } from './HabitForm';
 
-function formatDateLabel(dateStr: string): string {
-  const [year, month, day] = dateStr.split('-').map(Number);
-  const date = new Date(year, month - 1, day);
-  return date.toLocaleDateString(undefined, {
-    weekday: 'short',
-    month: 'short',
-    day: 'numeric',
-  });
+function LiveClock() {
+  const [currentTime, setCurrentTime] = useState(() => new Date().toLocaleTimeString());
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentTime(new Date().toLocaleTimeString());
+    }, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <div className="flex items-center gap-1 font-mono text-xs text-muted-foreground">
+      <Clock className="size-3" />
+      {currentTime}
+    </div>
+  );
 }
 
 function shiftDate(dateStr: string, days: number): string {
@@ -49,6 +58,8 @@ function shiftDate(dateStr: string, days: number): string {
 export function HabitList() {
   const t = useTranslations('habits');
   const tErrors = useTranslations('errors');
+  const { data: settings } = useUserSettings();
+  const dateFormat = settings?.dateFormat ?? 'YYYY-MM-DD';
 
   const [showArchived, setShowArchived] = useState(false);
   const [formOpen, setFormOpen] = useState(false);
@@ -56,17 +67,9 @@ export function HabitList() {
   const [deletingHabit, setDeletingHabit] = useState<HabitWithStats | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const [selectedDate, setSelectedDate] = useState(getTodayLocaleDate);
-  const [currentTime, setCurrentTime] = useState(() => new Date().toLocaleTimeString());
 
   const today = getTodayLocaleDate();
   const isToday = selectedDate === today;
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentTime(new Date().toLocaleTimeString());
-    }, 1000);
-    return () => clearInterval(interval);
-  }, []);
 
   const { data: dailyHabits, isLoading: isDailyLoading } = useDailyHabits(selectedDate);
   const { data: allHabits, isLoading: isAllLoading } = useHabits(showArchived);
@@ -208,7 +211,7 @@ export function HabitList() {
       {/* Date navigator */}
       <div className="flex flex-col gap-2 rounded-xl border border-border bg-card px-4 py-3">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
+          <div className="flex flex-1 items-center gap-2">
             <button
               type="button"
               onClick={handlePrevDay}
@@ -230,16 +233,15 @@ export function HabitList() {
 
           <div className="text-center">
             <p className="text-sm font-medium capitalize">
-              {isToday ? t('today') : formatDateLabel(selectedDate)}
+              {isToday ? t('today') : formatDate(selectedDate, dateFormat)}
             </p>
-            <p className="font-mono text-xs text-muted-foreground">{selectedDate}</p>
+            <p className="font-mono text-xs text-muted-foreground">
+              {formatDate(selectedDate, dateFormat)}
+            </p>
           </div>
 
-          <div className="flex items-center gap-2">
-            <div className="flex items-center gap-1 font-mono text-xs text-muted-foreground">
-              <Clock className="size-3" />
-              {currentTime}
-            </div>
+          <div className="flex flex-1 items-center justify-end gap-2">
+            <LiveClock />
             {!isToday && (
               <button
                 type="button"

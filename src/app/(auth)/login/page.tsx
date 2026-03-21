@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { useTranslations } from 'next-intl';
 
 import { authApi } from '@/infrastructure/api/auth.api';
@@ -15,10 +16,22 @@ export default function LoginPage() {
     <div className="flex min-h-screen items-center justify-center bg-background">
       <div className="flex w-full max-w-sm flex-col items-center gap-8 px-4">
         <div className="flex flex-col items-center gap-3">
-          <div className="flex size-16 items-center justify-center rounded-2xl bg-primary text-2xl font-bold text-primary-foreground">
-            S
-          </div>
-          <h1 className="text-3xl font-bold tracking-tight">Habit Sumaq</h1>
+          <Image
+            src="/logo/logo_base_dark.svg"
+            alt="Habit Sumaq"
+            width={200}
+            height={288}
+            className="block h-auto w-48 dark:hidden"
+            priority
+          />
+          <Image
+            src="/logo/logo_base.svg"
+            alt="Habit Sumaq"
+            width={200}
+            height={288}
+            className="hidden h-auto w-48 dark:block"
+            priority
+          />
           <p className="text-center text-muted-foreground">{t('loginSubtitle')}</p>
         </div>
 

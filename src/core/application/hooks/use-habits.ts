@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
+import { type HabitWithStats } from '@/core/domain/entities/habit';
 import {
   type CreateHabitInput,
   type HabitLogInput,
@@ -98,7 +99,49 @@ export function useLogHabit() {
   return useMutation({
     mutationFn: ({ habitId, data }: { habitId: string; data: HabitLogInput }) =>
       habitsApi.createLog(habitId, data),
-    onSuccess: (_, { habitId }) => {
+    onMutate: async ({ habitId, data }) => {
+      await queryClient.cancelQueries({ queryKey: habitKeys.dailyAll() });
+
+      const dailyKey = habitKeys.daily(data.date);
+      const previousDaily = queryClient.getQueryData<HabitWithStats[]>(dailyKey);
+
+      if (previousDaily) {
+        queryClient.setQueryData<HabitWithStats[]>(dailyKey, (old) =>
+          old?.map((habit) => {
+            if (habit.id !== habitId) return habit;
+
+            const newCount = data.count;
+            const completed = newCount >= habit.targetCount;
+
+            return {
+              ...habit,
+              periodCount: habit.periodCount - (habit.todayLog?.count ?? 0) + newCount,
+              periodCompleted: completed,
+              todayLog: habit.todayLog
+                ? { ...habit.todayLog, count: newCount, completed }
+                : {
+                    id: 'optimistic',
+                    habitId,
+                    date: data.date,
+                    count: newCount,
+                    completed,
+                    note: data.note ?? null,
+                    createdAt: new Date().toISOString(),
+                    updatedAt: new Date().toISOString(),
+                  },
+            };
+          }),
+        );
+      }
+
+      return { previousDaily, dailyKey };
+    },
+    onError: (_, __, context) => {
+      if (context?.previousDaily) {
+        queryClient.setQueryData(context.dailyKey, context.previousDaily);
+      }
+    },
+    onSettled: (_, __, { habitId }) => {
       void queryClient.invalidateQueries({ queryKey: habitKeys.dailyAll() });
       void queryClient.invalidateQueries({ queryKey: habitKeys.lists() });
       void queryClient.invalidateQueries({ queryKey: habitKeys.detail(habitId) });

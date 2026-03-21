@@ -17,11 +17,8 @@ export function formatCurrency(amount: number, currency: Currency): string {
   }).format(amount);
 }
 
-export function formatDate(isoDate: string, dateFormat: DateFormat): string {
-  const date = new Date(isoDate);
-  const day = String(date.getDate()).padStart(2, '0');
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const year = String(date.getFullYear());
+export function formatDate(dateStr: string, dateFormat: DateFormat): string {
+  const [year, month, day] = dateStr.split('-');
 
   switch (dateFormat) {
     case 'DD/MM/YYYY':
