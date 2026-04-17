@@ -63,4 +63,35 @@ export interface TransactionFilters {
   dateTo?: string;
   page?: number;
   limit?: number;
+  /** Substring match — backend applies unaccent + ILIKE on description and reference. */
+  search?: string;
 }
+
+export type DebtsSummaryStatusFilter = 'pending' | 'all' | 'settled';
+
+export interface DebtsSummaryRow {
+  /** Normalized reference (lowercase + unaccented). Grouping key. */
+  reference: string;
+  /** Most-recent spelling of this reference. */
+  displayName: string;
+  /** Sum of remaining amounts for pending DEBT (what the user owes). */
+  pendingDebt: number;
+  /** Sum of remaining amounts for pending LOAN (what is owed to the user). */
+  pendingLoan: number;
+  /** `pendingLoan - pendingDebt`. Positive = owed to the user. */
+  netOwed: number;
+  pendingCount: number;
+  settledCount: number;
+}
+
+export interface BulkSettleResult {
+  settledIds: string[];
+  totalSettled: number;
+  count: number;
+}
+
+export const settleByReferenceSchema = z.object({
+  reference: z.string().min(1, 'required').max(255),
+});
+
+export type SettleByReferenceInput = z.infer<typeof settleByReferenceSchema>;

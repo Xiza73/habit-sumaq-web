@@ -9,6 +9,7 @@ import {
   ArrowLeftRight,
   CreditCard,
   FolderTree,
+  HandCoins,
   type LucideIcon,
   Settings,
   Target,
@@ -22,6 +23,8 @@ interface NavItem {
   href: string;
   labelKey: string;
   icon: LucideIcon;
+  /** True = rendered indented, as a sub-item of the previous sibling. */
+  indent?: boolean;
 }
 
 interface NavSection {
@@ -36,6 +39,7 @@ const NAV_SECTIONS: NavSection[] = [
       { href: '/accounts', labelKey: 'accounts', icon: CreditCard },
       { href: '/categories', labelKey: 'categories', icon: FolderTree },
       { href: '/transactions', labelKey: 'transactions', icon: ArrowLeftRight },
+      { href: '/transactions/debts', labelKey: 'debts', icon: HandCoins, indent: true },
     ],
   },
   {
@@ -52,9 +56,46 @@ export function Sidebar() {
   const sidebarOpen = useUIStore((s) => s.sidebarOpen);
   const setSidebarOpen = useUIStore((s) => s.setSidebarOpen);
 
+  function isItemActive(item: NavItem): boolean {
+    if (pathname === item.href) return true;
+    if (!pathname.startsWith(item.href + '/')) return false;
+    // A parent nav item does NOT light up when we're on a sub-route that has
+    // its own registered entry (e.g. /transactions should not highlight when
+    // the user is on /transactions/debts).
+    const hasMoreSpecific = NAV_SECTIONS.flatMap((s) => s.items).some(
+      (other) =>
+        other.href !== item.href &&
+        other.href.startsWith(item.href + '/') &&
+        (pathname === other.href || pathname.startsWith(other.href + '/')),
+    );
+    return !hasMoreSpecific;
+  }
+
   function renderNavLink(item: NavItem) {
-    const isActive = pathname.startsWith(item.href);
+    const isActive = isItemActive(item);
     const Icon = item.icon;
+
+    if (item.indent) {
+      return (
+        <Link
+          key={item.href}
+          href={item.href}
+          onClick={() => setSidebarOpen(false)}
+          className={cn(
+            'ml-6 flex items-center gap-2 border-l py-1.5 pl-3 pr-3 text-xs font-normal transition-colors',
+            // rounded only on the right so the left border reads as a hanging
+            // indent connected to the parent item above.
+            'rounded-r-md',
+            isActive
+              ? 'border-sidebar-primary bg-sidebar-primary/10 text-sidebar-primary'
+              : 'border-border text-muted-foreground hover:border-sidebar-accent-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground',
+          )}
+        >
+          <Icon className="size-3.5" />
+          {t(item.labelKey)}
+        </Link>
+      );
+    }
 
     return (
       <Link

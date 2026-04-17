@@ -1,9 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 
-import { Filter, Plus } from 'lucide-react';
+import { Filter, HandCoins, Plus, Search } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { useAccounts } from '@/core/application/hooks/use-accounts';
@@ -27,15 +29,37 @@ interface TransactionListProps {
 
 export function TransactionList({ accountId }: TransactionListProps) {
   const t = useTranslations('transactions');
+  const tDebts = useTranslations('transactions.debtsSummary');
   const tErrors = useTranslations('errors');
+  const searchParams = useSearchParams();
 
-  const [filters, setFilters] = useState<Filters>(accountId ? { accountId } : {});
+  const [filters, setFilters] = useState<Filters>(() => {
+    const initial: Filters = accountId ? { accountId } : {};
+    const urlSearch = searchParams.get('search');
+    const urlStatus = searchParams.get('status');
+    if (urlSearch) initial.search = urlSearch;
+    if (urlStatus === 'PENDING' || urlStatus === 'SETTLED') initial.status = urlStatus;
+    return initial;
+  });
+  const [searchInput, setSearchInput] = useState(filters.search ?? '');
   const [page, setPage] = useState(1);
   const [showFilters, setShowFilters] = useState(false);
   const [formOpen, setFormOpen] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
   const [deletingTransaction, setDeletingTransaction] = useState<Transaction | null>(null);
   const [settlingTransaction, setSettlingTransaction] = useState<Transaction | null>(null);
+
+  // Debounce the free-form search input into the filters (and reset page).
+  useEffect(() => {
+    const handle = setTimeout(() => {
+      setFilters((prev) => {
+        if (prev.search === searchInput) return prev;
+        return { ...prev, search: searchInput || undefined };
+      });
+      setPage(1);
+    }, 300);
+    return () => clearTimeout(handle);
+  }, [searchInput]);
 
   const { data: paginatedData, isLoading } = useTransactions({ ...filters, page });
   const transactions = paginatedData?.data;
@@ -103,6 +127,13 @@ export function TransactionList({ accountId }: TransactionListProps) {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-2xl font-bold">{t('title')}</h1>
         <div className="flex shrink-0 items-center gap-2">
+          <Link
+            href="/transactions/debts"
+            className="flex items-center gap-2 rounded-lg border border-border px-3 py-2 text-sm transition-colors hover:bg-muted"
+          >
+            <HandCoins className="size-4" />
+            <span className="hidden sm:inline">{tDebts('viewDebts')}</span>
+          </Link>
           <button
             type="button"
             onClick={() => setShowFilters(!showFilters)}
@@ -122,6 +153,17 @@ export function TransactionList({ accountId }: TransactionListProps) {
             {t('createTransaction')}
           </button>
         </div>
+      </div>
+
+      <div className="relative">
+        <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+        <input
+          type="search"
+          value={searchInput}
+          onChange={(e) => setSearchInput(e.target.value)}
+          placeholder={t('searchPlaceholder')}
+          className="w-full rounded-lg border border-border bg-background py-2 pl-9 pr-3 text-sm placeholder:text-muted-foreground focus:border-primary focus:outline-none"
+        />
       </div>
 
       {showFilters && <TransactionFilters filters={filters} onChange={handleFiltersChange} />}
