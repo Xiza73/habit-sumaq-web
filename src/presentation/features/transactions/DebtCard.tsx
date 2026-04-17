@@ -29,6 +29,7 @@ export function DebtCard({ row, onSettleAll }: DebtCardProps) {
 
   const netInYourFavor = row.netOwed > 0;
   const netAmount = Math.abs(row.netOwed);
+  const netIsZero = netAmount === 0;
 
   // Link to the transactions list filtered by this person. Backend search is
   // accent/case-insensitive so the displayName always matches its transactions.
@@ -51,83 +52,75 @@ export function DebtCard({ row, onSettleAll }: DebtCardProps) {
         </div>
       </div>
 
-      {!hasAny && (
-        <div className="mt-4 rounded-md bg-muted px-3 py-2 text-center text-xs text-muted-foreground">
-          {t('allSettled')}
-        </div>
-      )}
-
-      {hasAny && !hasDebt && (
-        <div className="mt-4 flex items-end justify-between gap-2">
-          <div className="flex items-center gap-2 text-sm text-green-700 dark:text-green-400">
-            <ArrowDownLeft className="size-4" />
+      {/* Unified 3-line layout — the shape of the card is the same regardless of
+          whether the person has DEBT-only, LOAN-only, or both. Zero amounts are
+          rendered as muted '—'. */}
+      <div className="mt-4 space-y-2 text-sm">
+        <div className="flex items-center justify-between tabular-nums">
+          <span
+            className={cn(
+              'flex items-center gap-1.5',
+              hasLoan ? 'text-green-700 dark:text-green-400' : 'text-muted-foreground',
+            )}
+          >
+            <ArrowDownLeft className="size-3.5" />
             {t('owesYou')}
-          </div>
-          <p className="font-mono text-xl font-bold tabular-nums text-green-700 dark:text-green-400">
-            {formatAmount(row.pendingLoan)}
-          </p>
+          </span>
+          <span
+            className={cn(
+              'font-mono',
+              hasLoan ? 'text-green-700 dark:text-green-400' : 'text-muted-foreground',
+            )}
+          >
+            {hasLoan ? formatAmount(row.pendingLoan) : '—'}
+          </span>
         </div>
-      )}
-
-      {hasAny && hasDebt && !hasLoan && (
-        <div className="mt-4 flex items-end justify-between gap-2">
-          <div className="flex items-center gap-2 text-sm text-destructive">
-            <ArrowUpRight className="size-4" />
+        <div className="flex items-center justify-between tabular-nums">
+          <span
+            className={cn(
+              'flex items-center gap-1.5',
+              hasDebt ? 'text-destructive' : 'text-muted-foreground',
+            )}
+          >
+            <ArrowUpRight className="size-3.5" />
             {t('youOwe')}
-          </div>
-          <p className="font-mono text-xl font-bold tabular-nums text-destructive">
-            {formatAmount(row.pendingDebt)}
-          </p>
+          </span>
+          <span className={cn('font-mono', hasDebt ? 'text-destructive' : 'text-muted-foreground')}>
+            {hasDebt ? formatAmount(row.pendingDebt) : '—'}
+          </span>
         </div>
-      )}
-
-      {hasDebt && hasLoan && (
-        <div className="mt-4 space-y-2 text-sm">
-          <div className="flex justify-between tabular-nums">
-            <span className="flex items-center gap-1.5 text-green-700 dark:text-green-400">
-              <ArrowDownLeft className="size-3.5" />
-              {t('owesYou')}
-            </span>
-            <span className="font-mono text-green-700 dark:text-green-400">
-              {formatAmount(row.pendingLoan)}
-            </span>
-          </div>
-          <div className="flex justify-between tabular-nums">
-            <span className="flex items-center gap-1.5 text-destructive">
-              <ArrowUpRight className="size-3.5" />
-              {t('youOwe')}
-            </span>
-            <span className="font-mono text-destructive">{formatAmount(row.pendingDebt)}</span>
-          </div>
-          <div className="mt-2 flex items-baseline justify-between border-t border-border pt-2">
-            <span className="text-xs font-medium text-muted-foreground">{t('net')}</span>
-            <div className="text-right">
-              <p
-                className={cn(
-                  'font-mono text-lg font-bold tabular-nums',
-                  netInYourFavor ? 'text-green-700 dark:text-green-400' : 'text-destructive',
-                )}
-              >
-                {formatAmount(netAmount)}
-              </p>
+        <div className="flex items-baseline justify-between border-t border-border pt-2">
+          <span className="text-xs font-medium text-muted-foreground">{t('net')}</span>
+          <div className="text-right">
+            <p
+              className={cn(
+                'font-mono text-lg font-bold tabular-nums',
+                netIsZero
+                  ? 'text-muted-foreground'
+                  : netInYourFavor
+                    ? 'text-green-700 dark:text-green-400'
+                    : 'text-destructive',
+              )}
+            >
+              {netIsZero ? '—' : formatAmount(netAmount)}
+            </p>
+            {!netIsZero && (
               <p className="text-xs text-muted-foreground">
                 {netInYourFavor ? t('inYourFavor') : t('inTheirFavor')}
               </p>
-            </div>
+            )}
           </div>
         </div>
-      )}
+      </div>
 
       {hasAny && onSettleAll && (
         <>
-          {/* Spacer — in a grid, shorter cards need this so the button lands at
-              the bottom edge instead of floating right below the last row. */}
           <div className="flex-1" />
           <button
             type="button"
             onClick={(e) => {
-              // Prevent the parent <Link> from navigating when the user clicks
-              // the button.
+              // Keep the parent <Link> from navigating when the user clicks the
+              // button.
               e.preventDefault();
               e.stopPropagation();
               onSettleAll(row);
