@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 
 import { ArrowDownLeft, ArrowUpRight, User } from 'lucide-react';
@@ -29,8 +30,15 @@ export function DebtCard({ row, onSettleAll }: DebtCardProps) {
   const netInYourFavor = row.netOwed > 0;
   const netAmount = Math.abs(row.netOwed);
 
+  // Link to the transactions list filtered by this person. Backend search is
+  // accent/case-insensitive so the displayName always matches its transactions.
+  const href = `/transactions?search=${encodeURIComponent(row.displayName)}&status=PENDING`;
+
   return (
-    <div className="group rounded-xl border border-border bg-card p-5 transition-shadow hover:shadow-md">
+    <Link
+      href={href}
+      className="group block rounded-xl border border-border bg-card p-5 transition-shadow hover:shadow-md"
+    >
       <div className="flex items-center gap-3">
         <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-muted">
           <User className="size-5 text-muted-foreground" />
@@ -113,12 +121,18 @@ export function DebtCard({ row, onSettleAll }: DebtCardProps) {
       {hasAny && onSettleAll && (
         <button
           type="button"
-          onClick={() => onSettleAll(row)}
+          onClick={(e) => {
+            // Prevent the parent <Link> from navigating when the user clicks
+            // the button.
+            e.preventDefault();
+            e.stopPropagation();
+            onSettleAll(row);
+          }}
           className="mt-4 w-full rounded-lg border border-border px-3 py-2 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
         >
           {t('settleAll')}
         </button>
       )}
-    </div>
+    </Link>
   );
 }

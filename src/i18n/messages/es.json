@@ -110,6 +110,7 @@
     "settleAmount": "Monto a liquidar",
     "remaining": "Pendiente",
     "noDescription": "Sin descripción",
+    "searchPlaceholder": "Buscar por nombre, descripción o referencia…",
     "debtsSummary": {
       "title": "Deudas y préstamos",
       "subtitle": "Resumen agrupado por persona (referencia)",
