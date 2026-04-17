@@ -5,9 +5,15 @@ import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 
 import { ArrowLeft } from 'lucide-react';
+import { toast } from 'sonner';
 
-import { useDebtsSummary } from '@/core/application/hooks/use-transactions';
-import { type DebtsSummaryStatusFilter } from '@/core/domain/schemas/transaction.schema';
+import { useDebtsSummary, useSettleByReference } from '@/core/application/hooks/use-transactions';
+import {
+  type DebtsSummaryRow,
+  type DebtsSummaryStatusFilter,
+} from '@/core/domain/schemas/transaction.schema';
+
+import { ConfirmDialog } from '@/presentation/components/feedback/ConfirmDialog';
 
 import { cn } from '@/lib/utils';
 
@@ -17,10 +23,29 @@ const STATUS_OPTIONS: DebtsSummaryStatusFilter[] = ['pending', 'all', 'settled']
 
 export function DebtsDashboard() {
   const t = useTranslations('transactions.debtsSummary');
+  const tErrors = useTranslations('errors');
   const [status, setStatus] = useState<DebtsSummaryStatusFilter>('pending');
+  const [settlingRow, setSettlingRow] = useState<DebtsSummaryRow | null>(null);
   const { data: rows = [], isLoading } = useDebtsSummary(status);
+  const settleMutation = useSettleByReference();
 
   const emptyMessage = status === 'pending' ? t('emptyPending') : t('empty');
+
+  function handleSettleConfirm() {
+    if (!settlingRow) return;
+    settleMutation.mutate(
+      { reference: settlingRow.displayName },
+      {
+        onSuccess: () => {
+          toast.success(t('settleAllSuccess', { name: settlingRow.displayName }));
+          setSettlingRow(null);
+        },
+        onError: () => {
+          toast.error(tErrors('generic'));
+        },
+      },
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -69,10 +94,23 @@ export function DebtsDashboard() {
       ) : (
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
           {rows.map((row) => (
-            <DebtCard key={row.reference} row={row} />
+            <DebtCard key={row.reference} row={row} onSettleAll={setSettlingRow} />
           ))}
         </div>
       )}
+
+      <ConfirmDialog
+        open={!!settlingRow}
+        title={settlingRow ? t('settleAllConfirmTitle', { name: settlingRow.displayName }) : ''}
+        description={
+          settlingRow ? t('settleAllConfirmBody', { count: settlingRow.pendingCount }) : ''
+        }
+        variant="destructive"
+        confirmLabel={t('settleAll')}
+        loading={settleMutation.isPending}
+        onConfirm={handleSettleConfirm}
+        onCancel={() => setSettlingRow(null)}
+      />
     </div>
   );
 }
