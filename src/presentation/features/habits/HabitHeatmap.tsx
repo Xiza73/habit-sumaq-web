@@ -203,11 +203,7 @@ export function HabitHeatmap({ logs, targetCount, color }: HabitHeatmapProps) {
       </div>
 
       <div className="overflow-x-auto">
-        <svg
-          width={svgWidth}
-          height={monthLabelHeight + gridHeight + 4}
-          className="relative"
-        >
+        <svg width={svgWidth} height={monthLabelHeight + gridHeight + 4} className="relative">
           {monthLabels.map((m, i) => (
             <text
               key={i}
