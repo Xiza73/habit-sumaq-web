@@ -3,6 +3,7 @@
   "include": [
     "src/**/*.ts",
     "src/**/*.tsx",
+    "e2e/**/*.ts",
     "*.config.ts",
     "*.config.mjs",
     "eslint.config.mjs",

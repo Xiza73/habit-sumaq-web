@@ -172,31 +172,78 @@ describe('AccountList', () => {
 
 ## Tests E2E (Playwright)
 
-### Flujos críticos a cubrir
+### Flujos cubiertos hoy (módulo Habits)
 
-1. **Auth flow:** Login con Google → callback → dashboard.
-2. **Crear cuenta:** Abrir formulario → llenar campos → submit → aparece en lista.
-3. **Editar cuenta:** Click editar → modificar nombre → guardar → refleja cambio.
-4. **Archivar cuenta:** Archivar → desaparece de lista activa → aparece en archivadas.
-5. **Eliminar cuenta:** Eliminar cuenta sin transacciones → confirmación → desaparece.
-6. **Settings:** Cambiar tema → UI refleja cambio. Cambiar idioma → textos cambian.
-7. **Crear transacción:** Seleccionar tipo → llenar campos → submit → balance se actualiza.
+Un spec por flujo bajo `e2e/habits/`. Nombres únicos por test vía `testInfo.testId`
+para aislamiento cuando `workers > 1`.
+
+1. **Crear:** `/habits` → "Nuevo hábito" → form → submit → aparece en lista.
+2. **Check-in + undo:** seed vía API → click `Registrar` → `1/3` → click `Deshacer registro` → `0/3`.
+3. **Editar:** seed → menú de acciones → Editar → cambiar nombre → Guardar → assert visible.
+4. **Archivar:** seed → archivar → oculto del daily view → toggle "Show archived" → visible → desarchivar → toggle back → visible.
+5. **Eliminar:** seed → menú → Eliminar → confirm dialog → assert removido del DOM.
+6. **Detalle + reload:** click card → URL `/habits/{id}` → reload → session sobrevive.
+7. **Heatmap:** seed + 3 logs históricos → `/habits/{id}` → assert `Historial` + SVG grid.
 
 ### Estructura
 
 ```
 e2e/
 ├── fixtures/
-│   └── auth.ts          # Login helper
-├── pages/
-│   ├── accounts.page.ts # Page Object para cuentas
-│   └── settings.page.ts
-└── tests/
-    ├── auth.spec.ts
-    ├── accounts.spec.ts
-    ├── settings.spec.ts
-    └── transactions.spec.ts
+│   └── authenticated-page.ts    # fixture `auth` (test-login → cookies + Bearer API client)
+├── helpers/
+│   └── habits-api.ts            # createHabit / deleteHabit / logHabit
+└── habits/
+    ├── create-habit.spec.ts
+    ├── checkin.spec.ts
+    ├── edit-habit.spec.ts
+    ├── archive-habit.spec.ts
+    ├── delete-habit.spec.ts
+    ├── detail-navigation.spec.ts
+    └── heatmap-renders.spec.ts
 ```
+
+No usamos Page Objects por ahora: con un solo módulo en e2e, los fixtures +
+helpers son más idiomáticos. Migrar a PO cuando se sumen accounts/transactions.
+
+### Autenticación en e2e
+
+Para evitar depender del flujo real de Google OAuth, el backend expone un
+endpoint oculto `POST /auth/test-login` (triple guard, devuelve 404 ante
+cualquier fallo). El fixture `auth` lo consume así:
+
+1. `POST /auth/test-login { email }` con header `x-test-auth-secret`.
+2. Captura el `accessToken` del body y el `refresh_token` del `Set-Cookie`.
+3. Inyecta `refresh_token` (HttpOnly) + `NEXT_LOCALE=es` en el browser
+   context → el silent-refresh del frontend resuelve el access token al
+   primer request protegido.
+4. Devuelve `{ page, api, email }` scoped al test. `api` ya tiene Bearer
+   configurado para seed/cleanup.
+
+El fixture aborta con un error claro si `TEST_AUTH_SECRET` no está seteada.
+
+### Correr e2e localmente
+
+Se necesitan backend + frontend corriendo en paralelo.
+
+```bash
+# terminal 1 — backend (habit-sumaq-backend)
+TEST_AUTH_ENABLED=true TEST_AUTH_SECRET=<32-o-mas-chars> pnpm start:dev
+
+# terminal 2 — frontend (habit-sumaq-web)
+pnpm test:e2e:install          # solo la primera vez: descarga chromium
+TEST_AUTH_SECRET=<mismo-secret> pnpm test:e2e
+```
+
+El mismo secret DEBE estar en ambos procesos (si no, el endpoint devuelve
+404 por el timing-safe compare). El boot del backend falla con Zod error
+si `TEST_AUTH_ENABLED=true` pero el secret es `< 32` chars o está vacío.
+
+Comandos útiles:
+
+- `pnpm test:e2e` — headless, reporter `list` local, `github` + `html` en CI.
+- `pnpm test:e2e:ui` — modo UI interactivo (debug).
+- `pnpm exec playwright show-report` — abre el HTML report del último run.
 
 ---
 
