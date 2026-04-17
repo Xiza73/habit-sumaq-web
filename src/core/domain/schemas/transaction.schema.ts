@@ -70,8 +70,10 @@ export interface TransactionFilters {
 export type DebtsSummaryStatusFilter = 'pending' | 'all' | 'settled';
 
 export interface DebtsSummaryRow {
-  /** Normalized reference (lowercase + unaccented). Grouping key. */
+  /** Normalized reference (lowercase + unaccented). Part of grouping key. */
   reference: string;
+  /** Currency of the underlying account (PEN/USD/EUR). Part of grouping key. */
+  currency: string;
   /** Most-recent spelling of this reference. */
   displayName: string;
   /** Sum of remaining amounts for pending DEBT (what the user owes). */
@@ -92,6 +94,8 @@ export interface BulkSettleResult {
 
 export const settleByReferenceSchema = z.object({
   reference: z.string().min(1, 'required').max(255),
+  /** Optional — narrows bulk settle to a single currency bucket. */
+  currency: z.enum(['PEN', 'USD', 'EUR']).optional(),
 });
 
 export type SettleByReferenceInput = z.infer<typeof settleByReferenceSchema>;
