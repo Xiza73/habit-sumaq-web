@@ -62,14 +62,14 @@ export function DebtsDashboard() {
           <p className="text-sm text-muted-foreground">{t('subtitle')}</p>
         </div>
 
-        <div className="inline-flex rounded-lg border border-border p-1">
+        <div className="flex w-full rounded-lg border border-border p-1 sm:inline-flex sm:w-auto">
           {STATUS_OPTIONS.map((opt) => (
             <button
               key={opt}
               type="button"
               onClick={() => setStatus(opt)}
               className={cn(
-                'rounded-md px-3 py-1.5 text-xs font-medium transition-colors',
+                'flex-1 rounded-md px-3 py-1.5 text-xs font-medium transition-colors sm:flex-none',
                 status === opt
                   ? 'bg-primary text-primary-foreground'
                   : 'text-muted-foreground hover:text-foreground',
