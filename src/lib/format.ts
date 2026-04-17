@@ -18,7 +18,10 @@ export function formatCurrency(amount: number, currency: Currency): string {
 }
 
 export function formatDate(dateStr: string, dateFormat: DateFormat): string {
-  const [year, month, day] = dateStr.split('-');
+  // Accept both 'YYYY-MM-DD' and ISO strings like 'YYYY-MM-DDTHH:mm:ss.sssZ'.
+  // Without the slice, splitting an ISO string leaves the time glued to `day`
+  // (e.g. '15T12:00:00.000Z').
+  const [year, month, day] = dateStr.slice(0, 10).split('-');
 
   switch (dateFormat) {
     case 'DD/MM/YYYY':
