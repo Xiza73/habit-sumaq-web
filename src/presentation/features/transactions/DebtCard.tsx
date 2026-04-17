@@ -37,7 +37,7 @@ export function DebtCard({ row, onSettleAll }: DebtCardProps) {
   return (
     <Link
       href={href}
-      className="group block rounded-xl border border-border bg-card p-5 transition-shadow hover:shadow-md"
+      className="group flex h-full flex-col rounded-xl border border-border bg-card p-5 transition-shadow hover:shadow-md"
     >
       <div className="flex items-center gap-3">
         <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-muted">
@@ -119,19 +119,24 @@ export function DebtCard({ row, onSettleAll }: DebtCardProps) {
       )}
 
       {hasAny && onSettleAll && (
-        <button
-          type="button"
-          onClick={(e) => {
-            // Prevent the parent <Link> from navigating when the user clicks
-            // the button.
-            e.preventDefault();
-            e.stopPropagation();
-            onSettleAll(row);
-          }}
-          className="mt-4 w-full rounded-lg border border-border px-3 py-2 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-        >
-          {t('settleAll')}
-        </button>
+        <>
+          {/* Spacer — in a grid, shorter cards need this so the button lands at
+              the bottom edge instead of floating right below the last row. */}
+          <div className="flex-1" />
+          <button
+            type="button"
+            onClick={(e) => {
+              // Prevent the parent <Link> from navigating when the user clicks
+              // the button.
+              e.preventDefault();
+              e.stopPropagation();
+              onSettleAll(row);
+            }}
+            className="mt-4 w-full rounded-lg border border-border px-3 py-2 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+          >
+            {t('settleAll')}
+          </button>
+        </>
       )}
     </Link>
   );
