@@ -109,7 +109,32 @@
     "settleAccount": "Payment account",
     "settleAmount": "Amount to settle",
     "remaining": "Remaining",
-    "noDescription": "No description"
+    "noDescription": "No description",
+    "searchPlaceholder": "Search by name, description, or reference…",
+    "debtsSummary": {
+      "title": "Debts and loans",
+      "subtitle": "Summary grouped by person (reference)",
+      "backToList": "Back to transactions",
+      "viewDebts": "View debts",
+      "empty": "No debts to show.",
+      "emptyPending": "No pending debts. All caught up.",
+      "owesYou": "Owes you",
+      "youOwe": "You owe",
+      "net": "Net",
+      "inYourFavor": "in your favor",
+      "inTheirFavor": "in their favor",
+      "allSettled": "All settled",
+      "pendingCount": "{count, plural, one {# pending} other {# pending}}",
+      "settleAll": "Settle all",
+      "settleAllConfirmTitle": "Settle everything with {name}",
+      "settleAllConfirmBody": "You'll mark {count} pending transactions as settled. No account movements created, no balances affected. Continue?",
+      "settleAllSuccess": "Debts with {name} settled",
+      "statusFilter": {
+        "pending": "Pending",
+        "all": "All",
+        "settled": "Settled"
+      }
+    }
   },
   "settings": {
     "title": "Settings",
@@ -195,6 +220,7 @@
     "accounts": "Accounts",
     "categories": "Categories",
     "transactions": "Transactions",
+    "debts": "Debts and loans",
     "habits": "Habits",
     "settings": "Settings"
   }
