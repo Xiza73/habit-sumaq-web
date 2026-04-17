@@ -1,6 +1,10 @@
 import { type Transaction } from '@/core/domain/entities/transaction';
 import {
+  type BulkSettleResult,
   type CreateTransactionInput,
+  type DebtsSummaryRow,
+  type DebtsSummaryStatusFilter,
+  type SettleByReferenceInput,
   type SettleTransactionInput,
   type TransactionFilters,
   type UpdateTransactionInput,
@@ -18,6 +22,7 @@ function buildQuery(filters: TransactionFilters): string {
   if (filters.dateTo) params.set('dateTo', filters.dateTo);
   if (filters.page) params.set('page', String(filters.page));
   if (filters.limit) params.set('limit', String(filters.limit));
+  if (filters.search && filters.search.trim() !== '') params.set('search', filters.search.trim());
   const query = params.toString();
   return query ? `?${query}` : '';
 }
@@ -45,5 +50,13 @@ export const transactionsApi = {
 
   settle(id: string, data: SettleTransactionInput): Promise<Transaction> {
     return httpClient.post<Transaction>(`/transactions/${id}/settle`, data);
+  },
+
+  getDebtsSummary(status: DebtsSummaryStatusFilter = 'pending'): Promise<DebtsSummaryRow[]> {
+    return httpClient.get<DebtsSummaryRow[]>(`/transactions/debts-summary?status=${status}`);
+  },
+
+  settleByReference(data: SettleByReferenceInput): Promise<BulkSettleResult> {
+    return httpClient.post<BulkSettleResult>('/transactions/settle-by-reference', data);
   },
 };

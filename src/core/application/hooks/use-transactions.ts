@@ -2,6 +2,8 @@ import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tansta
 
 import {
   type CreateTransactionInput,
+  type DebtsSummaryStatusFilter,
+  type SettleByReferenceInput,
   type SettleTransactionInput,
   type TransactionFilters,
   type UpdateTransactionInput,
@@ -17,6 +19,8 @@ export const transactionKeys = {
   list: (filters: TransactionFilters = {}) => [...transactionKeys.lists(), filters] as const,
   details: () => [...transactionKeys.all, 'detail'] as const,
   detail: (id: string) => [...transactionKeys.details(), id] as const,
+  debtsSummary: (status: DebtsSummaryStatusFilter) =>
+    [...transactionKeys.all, 'debts-summary', status] as const,
 };
 
 export function useTransactions(filters: TransactionFilters = {}) {
@@ -83,6 +87,27 @@ export function useSettleTransaction() {
       void queryClient.invalidateQueries({ queryKey: transactionKeys.lists() });
       void queryClient.invalidateQueries({ queryKey: transactionKeys.detail(id) });
       void queryClient.invalidateQueries({ queryKey: accountKeys.all });
+    },
+  });
+}
+
+export function useDebtsSummary(status: DebtsSummaryStatusFilter = 'pending') {
+  return useQuery({
+    queryKey: transactionKeys.debtsSummary(status),
+    queryFn: () => transactionsApi.getDebtsSummary(status),
+    placeholderData: keepPreviousData,
+  });
+}
+
+export function useSettleByReference() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data: SettleByReferenceInput) => transactionsApi.settleByReference(data),
+    onSuccess: () => {
+      // Bulk settle flips statuses → invalidate lists and all debts-summary filters.
+      void queryClient.invalidateQueries({ queryKey: transactionKeys.lists() });
+      void queryClient.invalidateQueries({ queryKey: [...transactionKeys.all, 'debts-summary'] });
     },
   });
 }
