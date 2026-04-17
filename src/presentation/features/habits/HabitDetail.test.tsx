@@ -165,20 +165,11 @@ describe('HabitDetail', () => {
     expect(mockArchiveMutate).toHaveBeenCalledWith('1');
   });
 
-  it('renders log history', () => {
+  it('renders the heatmap with the Historial heading', () => {
     renderDetail();
-    expect(screen.getByText('2026-03-13')).toBeInTheDocument();
-    expect(screen.getByText('2026-03-12')).toBeInTheDocument();
-  });
-
-  it('renders log note', () => {
-    renderDetail();
-    expect(screen.getByText('Buen día')).toBeInTheDocument();
-  });
-
-  it('shows log count in history', () => {
-    renderDetail();
-    expect(screen.getByText('6/8')).toBeInTheDocument();
-    expect(screen.getByText('8/8')).toBeInTheDocument();
+    // HabitDetail passes the fetched logs to HabitHeatmap instead of rendering
+    // them as a text list. Detailed heatmap behavior (cells, tooltips, colors)
+    // is covered by HabitHeatmap.test.tsx and the Playwright heatmap spec.
+    expect(screen.getByText('Historial')).toBeInTheDocument();
   });
 });

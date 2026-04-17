@@ -102,7 +102,10 @@ describe('HabitCard', () => {
   });
 
   it('shows 0/target when no todayLog', () => {
-    const noLogHabit = { ...mockHabit, todayLog: null };
+    // Also reset periodCount — HabitCard renders `{periodCount}/{targetCount}`,
+    // not `{todayLog.count}/{targetCount}`, so leaving the mock's periodCount=6
+    // would render '6/8' even when todayLog is null.
+    const noLogHabit = { ...mockHabit, todayLog: null, periodCount: 0 };
     renderCard(noLogHabit);
     expect(screen.getByText('0/8')).toBeInTheDocument();
   });
