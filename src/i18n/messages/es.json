@@ -109,7 +109,32 @@
     "settleAccount": "Cuenta de pago",
     "settleAmount": "Monto a liquidar",
     "remaining": "Pendiente",
-    "noDescription": "Sin descripción"
+    "noDescription": "Sin descripción",
+    "debtsSummary": {
+      "title": "Deudas y préstamos",
+      "subtitle": "Resumen agrupado por persona (referencia)",
+      "backToList": "Volver a transacciones",
+      "viewDebts": "Ver deudas",
+      "empty": "No hay deudas por mostrar.",
+      "emptyPending": "No tenés deudas pendientes. Todo al día.",
+      "owesYou": "Te debe",
+      "youOwe": "Le debes",
+      "net": "Neto",
+      "inYourFavor": "a tu favor",
+      "inTheirFavor": "a su favor",
+      "allSettled": "Todo liquidado",
+      "pendingCount_one": "{count} pendiente",
+      "pendingCount_other": "{count} pendientes",
+      "settleAll": "Liquidar todo",
+      "settleAllConfirmTitle": "Liquidar todo con {name}",
+      "settleAllConfirmBody": "Vas a marcar como saldadas {count} transacciones pendientes. No crea movimientos en tus cuentas ni afecta balances. ¿Continuar?",
+      "settleAllSuccess": "Deudas con {name} liquidadas",
+      "statusFilter": {
+        "pending": "Pendientes",
+        "all": "Todas",
+        "settled": "Liquidadas"
+      }
+    }
   },
   "settings": {
     "title": "Configuración",
