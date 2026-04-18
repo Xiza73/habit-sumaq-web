@@ -34,10 +34,15 @@ export function DebtsDashboard() {
   function handleSettleConfirm() {
     if (!settlingRow) return;
     settleMutation.mutate(
-      { reference: settlingRow.displayName },
+      { reference: settlingRow.displayName, currency: settlingRow.currency },
       {
         onSuccess: () => {
-          toast.success(t('settleAllSuccess', { name: settlingRow.displayName }));
+          toast.success(
+            t('settleAllSuccess', {
+              name: settlingRow.displayName,
+              currency: settlingRow.currency,
+            }),
+          );
           setSettlingRow(null);
         },
         onError: () => {
@@ -94,16 +99,32 @@ export function DebtsDashboard() {
       ) : (
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
           {rows.map((row) => (
-            <DebtCard key={row.reference} row={row} onSettleAll={setSettlingRow} />
+            <DebtCard
+              key={`${row.reference}-${row.currency}`}
+              row={row}
+              onSettleAll={setSettlingRow}
+            />
           ))}
         </div>
       )}
 
       <ConfirmDialog
         open={!!settlingRow}
-        title={settlingRow ? t('settleAllConfirmTitle', { name: settlingRow.displayName }) : ''}
+        title={
+          settlingRow
+            ? t('settleAllConfirmTitle', {
+                name: settlingRow.displayName,
+                currency: settlingRow.currency,
+              })
+            : ''
+        }
         description={
-          settlingRow ? t('settleAllConfirmBody', { count: settlingRow.pendingCount }) : ''
+          settlingRow
+            ? t('settleAllConfirmBody', {
+                count: settlingRow.pendingCount,
+                currency: settlingRow.currency,
+              })
+            : ''
         }
         variant="destructive"
         confirmLabel={t('settleAll')}

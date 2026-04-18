@@ -7,18 +7,12 @@ import { ArrowDownLeft, ArrowUpRight, User } from 'lucide-react';
 
 import { type DebtsSummaryRow } from '@/core/domain/schemas/transaction.schema';
 
+import { formatCurrency } from '@/lib/format';
 import { cn } from '@/lib/utils';
 
 interface DebtCardProps {
   row: DebtsSummaryRow;
   onSettleAll?: (row: DebtsSummaryRow) => void;
-}
-
-function formatAmount(value: number): string {
-  return value.toLocaleString('es-PE', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  });
 }
 
 export function DebtCard({ row, onSettleAll }: DebtCardProps) {
@@ -45,7 +39,12 @@ export function DebtCard({ row, onSettleAll }: DebtCardProps) {
           <User className="size-5 text-muted-foreground" />
         </div>
         <div className="min-w-0 flex-1">
-          <p className="truncate font-medium">{row.displayName}</p>
+          <div className="flex items-center gap-2">
+            <p className="truncate font-medium">{row.displayName}</p>
+            <span className="shrink-0 rounded bg-muted px-1.5 py-0.5 font-mono text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+              {row.currency}
+            </span>
+          </div>
           <p className="text-xs text-muted-foreground">
             {hasAny ? t('pendingCount', { count: row.pendingCount }) : t('allSettled')}
           </p>
@@ -72,7 +71,7 @@ export function DebtCard({ row, onSettleAll }: DebtCardProps) {
               hasLoan ? 'text-green-700 dark:text-green-400' : 'text-muted-foreground',
             )}
           >
-            {hasLoan ? formatAmount(row.pendingLoan) : '—'}
+            {hasLoan ? formatCurrency(row.pendingLoan, row.currency) : '—'}
           </span>
         </div>
         <div className="flex items-center justify-between tabular-nums">
@@ -86,7 +85,7 @@ export function DebtCard({ row, onSettleAll }: DebtCardProps) {
             {t('youOwe')}
           </span>
           <span className={cn('font-mono', hasDebt ? 'text-destructive' : 'text-muted-foreground')}>
-            {hasDebt ? formatAmount(row.pendingDebt) : '—'}
+            {hasDebt ? formatCurrency(row.pendingDebt, row.currency) : '—'}
           </span>
         </div>
         <div className="flex items-baseline justify-between border-t border-border pt-2">
@@ -102,7 +101,7 @@ export function DebtCard({ row, onSettleAll }: DebtCardProps) {
                     : 'text-destructive',
               )}
             >
-              {netIsZero ? '—' : formatAmount(netAmount)}
+              {netIsZero ? '—' : formatCurrency(netAmount, row.currency)}
             </p>
             {!netIsZero && (
               <p className="text-xs text-muted-foreground">

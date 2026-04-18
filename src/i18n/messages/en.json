@@ -126,9 +126,9 @@
       "allSettled": "All settled",
       "pendingCount": "{count, plural, one {# pending} other {# pending}}",
       "settleAll": "Settle all",
-      "settleAllConfirmTitle": "Settle everything with {name}",
-      "settleAllConfirmBody": "You'll mark {count} pending transactions as settled. No account movements created, no balances affected. Continue?",
-      "settleAllSuccess": "Debts with {name} settled",
+      "settleAllConfirmTitle": "Settle everything with {name} ({currency})",
+      "settleAllConfirmBody": "You'll mark {count} pending transactions in {currency} as settled. No account movements created, no balances affected. Continue?",
+      "settleAllSuccess": "Debts with {name} in {currency} settled",
       "statusFilter": {
         "pending": "Pending",
         "all": "All",
