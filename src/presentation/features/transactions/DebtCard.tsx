@@ -5,7 +5,6 @@ import { useTranslations } from 'next-intl';
 
 import { ArrowDownLeft, ArrowUpRight, User } from 'lucide-react';
 
-import { type Currency } from '@/core/domain/enums/account.enums';
 import { type DebtsSummaryRow } from '@/core/domain/schemas/transaction.schema';
 
 import { formatCurrency } from '@/lib/format';
@@ -72,7 +71,7 @@ export function DebtCard({ row, onSettleAll }: DebtCardProps) {
               hasLoan ? 'text-green-700 dark:text-green-400' : 'text-muted-foreground',
             )}
           >
-            {hasLoan ? formatCurrency(row.pendingLoan, row.currency as Currency) : '—'}
+            {hasLoan ? formatCurrency(row.pendingLoan, row.currency) : '—'}
           </span>
         </div>
         <div className="flex items-center justify-between tabular-nums">
@@ -86,7 +85,7 @@ export function DebtCard({ row, onSettleAll }: DebtCardProps) {
             {t('youOwe')}
           </span>
           <span className={cn('font-mono', hasDebt ? 'text-destructive' : 'text-muted-foreground')}>
-            {hasDebt ? formatCurrency(row.pendingDebt, row.currency as Currency) : '—'}
+            {hasDebt ? formatCurrency(row.pendingDebt, row.currency) : '—'}
           </span>
         </div>
         <div className="flex items-baseline justify-between border-t border-border pt-2">
@@ -102,7 +101,7 @@ export function DebtCard({ row, onSettleAll }: DebtCardProps) {
                     : 'text-destructive',
               )}
             >
-              {netIsZero ? '—' : formatCurrency(netAmount, row.currency as Currency)}
+              {netIsZero ? '—' : formatCurrency(netAmount, row.currency)}
             </p>
             {!netIsZero && (
               <p className="text-xs text-muted-foreground">

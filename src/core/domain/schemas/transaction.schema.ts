@@ -1,5 +1,7 @@
 import { z } from 'zod/v4';
 
+import { type Currency } from '@/core/domain/enums/account.enums';
+
 export const createTransactionSchema = z
   .object({
     accountId: z.string().min(1, 'required'),
@@ -73,7 +75,7 @@ export interface DebtsSummaryRow {
   /** Normalized reference (lowercase + unaccented). Part of grouping key. */
   reference: string;
   /** Currency of the underlying account (PEN/USD/EUR). Part of grouping key. */
-  currency: string;
+  currency: Currency;
   /** Most-recent spelling of this reference. */
   displayName: string;
   /** Sum of remaining amounts for pending DEBT (what the user owes). */

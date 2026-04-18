@@ -126,9 +126,9 @@
       "allSettled": "Todo liquidado",
       "pendingCount": "{count, plural, one {# pendiente} other {# pendientes}}",
       "settleAll": "Liquidar todo",
-      "settleAllConfirmTitle": "Liquidar todo con {name}",
-      "settleAllConfirmBody": "Vas a marcar como saldadas {count} transacciones pendientes. No crea movimientos en tus cuentas ni afecta balances. ¿Continuar?",
-      "settleAllSuccess": "Deudas con {name} liquidadas",
+      "settleAllConfirmTitle": "Liquidar todo con {name} ({currency})",
+      "settleAllConfirmBody": "Vas a marcar como saldadas {count} transacciones pendientes en {currency}. No crea movimientos en tus cuentas ni afecta balances. ¿Continuar?",
+      "settleAllSuccess": "Deudas con {name} en {currency} liquidadas",
       "statusFilter": {
         "pending": "Pendientes",
         "all": "Todas",
