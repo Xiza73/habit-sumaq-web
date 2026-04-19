@@ -253,7 +253,33 @@
     "categories": "Categories",
     "transactions": "Transactions",
     "debts": "Debts and loans",
+    "routines": "Routines",
     "habits": "Habits",
+    "quickTasks": "Daily",
     "settings": "Settings"
+  },
+  "quickTasks": {
+    "title": "Daily",
+    "subtitle": "What you want to do today. Completed tasks disappear tomorrow; pending ones stay.",
+    "createTask": "New task",
+    "editTask": "Edit task",
+    "deleteTask": "Delete task",
+    "titleField": "Title",
+    "titlePlaceholder": "e.g. Buy milk",
+    "titleRequired": "Title is required",
+    "description": "Description",
+    "descriptionPlaceholder": "Add details in **Markdown** if you need…",
+    "descriptionPreviewEmpty": "No description",
+    "descriptionModeEdit": "Edit",
+    "descriptionModePreview": "Preview",
+    "descriptionHint": "Supports Markdown: **bold**, *italic*, lists, links, tables.",
+    "pending": "Pending",
+    "pendingEmpty": "Nothing pending to do.",
+    "completedToday": "Completed today",
+    "emptyState": "You haven't added any tasks for today yet.",
+    "markComplete": "Mark as completed",
+    "markIncomplete": "Mark as pending",
+    "dragHandle": "Reorder",
+    "deleteConfirm": "This is permanent. The task will be deleted forever."
   }
 }
