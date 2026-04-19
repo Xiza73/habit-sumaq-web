@@ -143,6 +143,7 @@
     "defaultCurrency": "Moneda por defecto",
     "dateFormat": "Formato de fecha",
     "startOfWeek": "Inicio de semana",
+    "timezone": "Zona horaria",
     "themes": {
       "light": "Claro",
       "dark": "Oscuro",
@@ -151,6 +152,37 @@
     "days": {
       "monday": "Lunes",
       "sunday": "Domingo"
+    },
+    "timezoneRegions": {
+      "americas": "América",
+      "europe": "Europa",
+      "asia": "Asia",
+      "oceania": "Oceanía",
+      "utc": "UTC"
+    },
+    "timezoneZones": {
+      "lima": "Lima, Bogotá, Quito (UTC-5)",
+      "mexicoCity": "Ciudad de México (UTC-6)",
+      "newYork": "Nueva York, Miami (UTC-5)",
+      "losAngeles": "Los Ángeles (UTC-8)",
+      "chicago": "Chicago (UTC-6)",
+      "santiago": "Santiago (UTC-4)",
+      "buenosAires": "Buenos Aires, Montevideo (UTC-3)",
+      "saoPaulo": "São Paulo, Río de Janeiro (UTC-3)",
+      "laPaz": "La Paz, Caracas (UTC-4)",
+      "panama": "Panamá (UTC-5)",
+      "london": "Londres, Lisboa (UTC+0)",
+      "madrid": "Madrid, París, Roma, Berlín (UTC+1)",
+      "athens": "Atenas, Estambul, Helsinki (UTC+2)",
+      "moscow": "Moscú (UTC+3)",
+      "dubai": "Dubái (UTC+4)",
+      "kolkata": "India (UTC+5:30)",
+      "bangkok": "Bangkok, Yakarta (UTC+7)",
+      "shanghai": "Shanghái, Hong Kong, Singapur (UTC+8)",
+      "tokyo": "Tokio, Seúl (UTC+9)",
+      "sydney": "Sídney, Melbourne (UTC+10)",
+      "auckland": "Auckland (UTC+12)",
+      "utc": "UTC (sin offset)"
     }
   },
   "errors": {

@@ -1,5 +1,7 @@
 'use client';
 
+import { useAutoDetectTimezone } from '@/core/application/hooks/use-auto-detect-timezone';
+
 import { Header } from './Header';
 import { MobileNav } from './MobileNav';
 import { Sidebar } from './Sidebar';
@@ -9,6 +11,8 @@ interface DashboardShellProps {
 }
 
 export function DashboardShell({ children }: DashboardShellProps) {
+  useAutoDetectTimezone();
+
   return (
     <div className="flex min-h-screen">
       <Sidebar />
