@@ -253,7 +253,33 @@
     "categories": "Categorías",
     "transactions": "Transacciones",
     "debts": "Deudas y préstamos",
+    "routines": "Rutinas",
     "habits": "Hábitos",
+    "quickTasks": "Diarias",
     "settings": "Configuración"
+  },
+  "quickTasks": {
+    "title": "Diarias",
+    "subtitle": "Lo que querés hacer hoy. Lo que completes hoy desaparece mañana; lo pendiente se queda.",
+    "createTask": "Nueva tarea",
+    "editTask": "Editar tarea",
+    "deleteTask": "Eliminar tarea",
+    "titleField": "Título",
+    "titlePlaceholder": "Ej: Comprar leche",
+    "titleRequired": "El título es obligatorio",
+    "description": "Descripción",
+    "descriptionPlaceholder": "Agrega detalles en **Markdown** si lo necesitás…",
+    "descriptionPreviewEmpty": "Sin descripción",
+    "descriptionModeEdit": "Editar",
+    "descriptionModePreview": "Vista previa",
+    "descriptionHint": "Soporta Markdown: **negrita**, *cursiva*, listas, enlaces, tablas.",
+    "pending": "Pendientes",
+    "pendingEmpty": "Nada pendiente por hacer.",
+    "completedToday": "Completadas hoy",
+    "emptyState": "Todavía no agregaste tareas para hoy.",
+    "markComplete": "Marcar como completada",
+    "markIncomplete": "Marcar como pendiente",
+    "dragHandle": "Reordenar",
+    "deleteConfirm": "Esta acción es definitiva. La tarea se elimina para siempre."
   }
 }

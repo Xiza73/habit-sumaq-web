@@ -4,7 +4,14 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 
-import { ArrowLeftRight, CreditCard, type LucideIcon, Settings, Target } from 'lucide-react';
+import {
+  ArrowLeftRight,
+  CheckSquare,
+  CreditCard,
+  type LucideIcon,
+  Settings,
+  Target,
+} from 'lucide-react';
 
 import { cn } from '@/lib/utils';
 
@@ -18,6 +25,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: '/accounts', labelKey: 'accounts', icon: CreditCard },
   { href: '/transactions', labelKey: 'transactions', icon: ArrowLeftRight },
   { href: '/habits', labelKey: 'habits', icon: Target },
+  { href: '/quick-tasks', labelKey: 'quickTasks', icon: CheckSquare },
   { href: '/settings', labelKey: 'settings', icon: Settings },
 ];
 

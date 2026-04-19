@@ -7,6 +7,7 @@ import { useTranslations } from 'next-intl';
 
 import {
   ArrowLeftRight,
+  CheckSquare,
   CreditCard,
   FolderTree,
   HandCoins,
@@ -43,8 +44,11 @@ const NAV_SECTIONS: NavSection[] = [
     ],
   },
   {
-    titleKey: null,
-    items: [{ href: '/habits', labelKey: 'habits', icon: Target }],
+    titleKey: 'routines',
+    items: [
+      { href: '/habits', labelKey: 'habits', icon: Target },
+      { href: '/quick-tasks', labelKey: 'quickTasks', icon: CheckSquare },
+    ],
   },
 ];
 
