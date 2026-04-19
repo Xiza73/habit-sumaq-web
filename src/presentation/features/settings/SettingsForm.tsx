@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { useLocale, useTranslations } from 'next-intl';
 import { useTheme } from 'next-themes';
@@ -10,6 +10,11 @@ import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { useUpdateUserSettings, useUserSettings } from '@/core/application/hooks/use-user-settings';
+import {
+  computeUtcOffset,
+  isCuratedTimezone,
+  TIMEZONE_REGIONS,
+} from '@/core/domain/constants/timezones';
 import {
   type UpdateUserSettingsInput,
   updateUserSettingsSchema,
@@ -34,8 +39,18 @@ export function SettingsForm() {
       defaultCurrency: 'PEN',
       dateFormat: 'DD/MM/YYYY',
       startOfWeek: 'monday',
+      timezone: 'UTC',
     },
   });
+
+  // If the user's stored timezone isn't in the curated list, render a
+  // dynamic option so their current value is selectable and visible.
+  const currentTimezone = settings?.timezone ?? 'UTC';
+  const customTimezone = useMemo(() => {
+    if (isCuratedTimezone(currentTimezone)) return null;
+    const offset = computeUtcOffset(currentTimezone);
+    return { value: currentTimezone, label: `${currentTimezone} (${offset})` };
+  }, [currentTimezone]);
 
   useEffect(() => {
     if (settings) {
@@ -45,6 +60,7 @@ export function SettingsForm() {
         defaultCurrency: settings.defaultCurrency,
         dateFormat: settings.dateFormat,
         startOfWeek: settings.startOfWeek,
+        timezone: settings.timezone,
       });
     }
   }, [settings, form]);
@@ -124,6 +140,26 @@ export function SettingsForm() {
         <Select id="startOfWeek" {...form.register('startOfWeek')}>
           <option value="monday">{t('days.monday')}</option>
           <option value="sunday">{t('days.sunday')}</option>
+        </Select>
+      </div>
+
+      <div className="space-y-2">
+        <label htmlFor="timezone" className="text-sm font-medium">
+          {t('timezone')}
+        </label>
+        <Select id="timezone" {...form.register('timezone')}>
+          {customTimezone ? (
+            <option value={customTimezone.value}>{customTimezone.label}</option>
+          ) : null}
+          {TIMEZONE_REGIONS.map((region) => (
+            <optgroup key={region.regionKey} label={t(`timezoneRegions.${region.regionKey}`)}>
+              {region.zones.map((zone) => (
+                <option key={zone.value} value={zone.value}>
+                  {t(`timezoneZones.${zone.labelKey}`)}
+                </option>
+              ))}
+            </optgroup>
+          ))}
         </Select>
       </div>
 

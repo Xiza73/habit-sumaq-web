@@ -9,6 +9,7 @@ describe('updateUserSettingsSchema', () => {
     defaultCurrency: 'PEN' as const,
     dateFormat: 'DD/MM/YYYY' as const,
     startOfWeek: 'monday' as const,
+    timezone: 'America/Lima',
   };
 
   it('accepts valid input', () => {
@@ -78,6 +79,24 @@ describe('updateUserSettingsSchema', () => {
 
   it('rejects invalid start of week', () => {
     const result = updateUserSettingsSchema.safeParse({ ...validInput, startOfWeek: 'saturday' });
+    expect(result.success).toBe(false);
+  });
+
+  it('accepts canonical IANA timezones', () => {
+    const zones = ['UTC', 'America/Lima', 'Europe/Madrid', 'Asia/Tokyo'];
+    for (const timezone of zones) {
+      const result = updateUserSettingsSchema.safeParse({ ...validInput, timezone });
+      expect(result.success).toBe(true);
+    }
+  });
+
+  it('rejects garbage timezone strings', () => {
+    const result = updateUserSettingsSchema.safeParse({ ...validInput, timezone: 'Not/A/Zone' });
+    expect(result.success).toBe(false);
+  });
+
+  it('rejects empty timezone', () => {
+    const result = updateUserSettingsSchema.safeParse({ ...validInput, timezone: '' });
     expect(result.success).toBe(false);
   });
 });

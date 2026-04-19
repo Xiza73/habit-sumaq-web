@@ -8,6 +8,7 @@ export interface UpdateUserSettingsDto {
   defaultCurrency?: string;
   dateFormat?: string;
   startOfWeek?: string;
+  timezone?: string;
 }
 
 export const userSettingsApi = {
