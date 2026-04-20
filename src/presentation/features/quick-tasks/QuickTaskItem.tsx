@@ -124,7 +124,10 @@ export function QuickTaskItem({ task, sortable = false, onEdit }: QuickTaskItemP
             />
           )}
 
-          <div className="flex shrink-0 items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100">
+          {/* Actions always visible on touch devices (mobile/tablet); on
+              hover-capable pointers they fade in on hover to keep the card
+              visually quieter. */}
+          <div className="flex shrink-0 items-center gap-1 transition-opacity sm:opacity-0 sm:group-hover:opacity-100 sm:focus-within:opacity-100">
             <button
               type="button"
               onClick={() => onEdit(task)}
