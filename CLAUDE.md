@@ -142,10 +142,44 @@ pnpm test:e2e     # Tests e2e (Playwright)
 
 ## Alcance Actual
 
-El MVP de **Finanzas** está completo (cuentas, categorías, transacciones) junto con autenticación y settings (Fases 0–6).
+Módulos en producción: **Autenticación**, **Settings** (con timezone), **Cuentas**, **Categorías**, **Transacciones** (incluye deudas/préstamos + settle + bulk settle), **Hábitos**, **Diarias** (quick-tasks), **Reportes** (dashboards de Finanzas y Rutinas). Ver el detalle por fase en [docs/frontend/implementation-plan.md](docs/frontend/implementation-plan.md).
 
-**En desarrollo:** Módulo de **Hábitos** (Habit Tracker) — Fase 7.
+Backlog activo (post-MVP): presupuestos, vinculación hábitos ↔ finanzas, schedule, export/import, mobile nativa.
 
-Módulos futuros (post-MVP): reportes, presupuestos, vinculación hábitos ↔ finanzas, schedule.
+---
+
+## Convención de documentación (obligatoria)
+
+Todo cambio con impacto de **contrato público** o **arquitectura** debe documentarse **antes** de empezar y **después** de shipear. Sin excepción.
+
+### Antes de codear
+
+Si el PR introduce un endpoint, módulo, variable de entorno, comando, schema de request/response, o ruta nueva:
+
+1. **Escribir o actualizar el doc primero** con la shape planeada. El diff del doc sirve como "spec" al que codear.
+2. Archivos candidatos (no todos aplican a cada cambio):
+   - [`docs/frontend/api-reference.md`](docs/frontend/api-reference.md) si el cambio toca la API del backend
+   - [`docs/frontend/implementation-plan.md`](docs/frontend/implementation-plan.md) si es una fase / módulo nuevo
+   - [`docs/frontend/error-codes.md`](docs/frontend/error-codes.md) si hay códigos nuevos
+   - [`docs/frontend/enums.md`](docs/frontend/enums.md) si hay enums nuevos
+   - [`README.md`](README.md) si cambian comandos, env vars, estructura de carpetas
+   - `CLAUDE.md` (este archivo) si se agrega una regla nueva al proyecto
+
+### Después de shipear (checklist del PR)
+
+- [ ] `api-reference.md` refleja la shape final si difiere de la planeada
+- [ ] `error-codes.md` incluye cualquier código de error nuevo
+- [ ] `implementation-plan.md` marca la fase con ✅ si el entregable quedó completo
+- [ ] `README.md` actualizado si cambiaron comandos, env vars, módulos listados o estructura
+- [ ] Los comentarios en código con TODOs introducidos están taggeados con su fase de resolución (`// TODO (Fase X): ...`)
+
+### Excepciones (no requieren doc)
+
+- Fixes puntuales sin cambio de contrato (copy, rollback visual, optimistic update)
+- Tests puros
+- Refactors internos sin cambio de API pública
+- Dependencias menores que no afecten al usuario
+
+> **Regla de dedo:** si dudás si documentar o no, **documentar igual**. Es más barato bajar una doc innecesaria que subir una que falta.
 
 Implementar siguiendo el orden definido en [implementation-plan.md](docs/frontend/implementation-plan.md).

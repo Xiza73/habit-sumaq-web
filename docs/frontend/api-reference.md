@@ -94,13 +94,14 @@ Obtiene la configuración del usuario autenticado. Si no existe, se crea automá
 
 Actualiza parcialmente la configuración. Solo se modifican los campos enviados.
 
-| Campo             | Tipo        | Notas                                |
-| ----------------- | ----------- | ------------------------------------ |
-| `language`        | Language    | Ver [enums.md](enums.md#language)    |
-| `theme`           | Theme       | Ver [enums.md](enums.md#theme)       |
-| `defaultCurrency` | Currency    | Ver [enums.md](enums.md#currency)    |
-| `dateFormat`      | DateFormat  | Ver [enums.md](enums.md#dateformat)  |
-| `startOfWeek`     | StartOfWeek | Ver [enums.md](enums.md#startofweek) |
+| Campo             | Tipo        | Notas                                                                          |
+| ----------------- | ----------- | ------------------------------------------------------------------------------ |
+| `language`        | Language    | Ver [enums.md](enums.md#language)                                              |
+| `theme`           | Theme       | Ver [enums.md](enums.md#theme)                                                 |
+| `defaultCurrency` | Currency    | Ver [enums.md](enums.md#currency)                                              |
+| `dateFormat`      | DateFormat  | Ver [enums.md](enums.md#dateformat)                                            |
+| `startOfWeek`     | StartOfWeek | Ver [enums.md](enums.md#startofweek)                                           |
+| `timezone`        | string      | IANA zone (ej: `America/Lima`). Validado server-side con `Intl.DateTimeFormat` |
 
 Todos los campos son opcionales. Si no existe configuración previa, se crea antes de aplicar los cambios.
 
@@ -116,10 +117,13 @@ Todos los campos son opcionales. Si no existe configuración previa, se crea ant
   "defaultCurrency": "PEN",
   "dateFormat": "DD/MM/YYYY",
   "startOfWeek": "monday",
+  "timezone": "America/Lima",
   "createdAt": "2026-01-01T00:00:00.000Z",
   "updatedAt": "2026-01-01T00:00:00.000Z"
 }
 ```
+
+> **Timezone default:** Usuarios pre-existentes tienen `'UTC'` hasta que el frontend auto-detecte su zona en el primer login post-deploy y haga un PATCH silencioso. Una vez seteado, el backend lo usa para cálculos "por día" como el cleanup diario de quick-tasks y el rango calendario-alineado (`month`, `3m`) en reports.
 
 ---
 
@@ -642,3 +646,176 @@ Historial de logs paginados.
   "updatedAt": "2026-03-13T10:00:00.000Z"
 }
 ```
+
+---
+
+## Quick Tasks (Diarias)
+
+TODOs cortas "para hoy". Se eliminan automáticamente al día siguiente **si fueron completadas**; las pendientes persisten indefinidamente. La lógica de "día siguiente" usa la timezone del usuario (`user_settings.timezone`, default `'UTC'`).
+
+> **Hard delete:** A diferencia del resto del proyecto (soft delete), las quick-tasks se borran físicamente. Excepción deliberada por la naturaleza efímera del módulo.
+
+### `GET /quick-tasks`
+
+Lista las tareas del usuario, ordenadas por `position ASC, createdAt ASC`. Antes de responder, **ejecuta un lazy cleanup**: elimina las tareas completadas cuyo `completedAt` sea anterior al inicio del día del usuario.
+
+**Response:** `200` — `QuickTaskResponseDto[]`
+
+### `POST /quick-tasks`
+
+Crea una tarea nueva. Se agrega al final (`position = maxPosition + 1`).
+
+| Campo         | Tipo           | Requerido | Notas                                   |
+| ------------- | -------------- | --------- | --------------------------------------- |
+| `title`       | string         | sí        | Máx 120 chars                           |
+| `description` | string \| null | no        | Markdown, máx 5000 chars                |
+
+**Response:** `201` — `QuickTaskResponseDto`
+
+**Errores:**
+
+- `422` — Título vacío (`QTK_003`) o fuera de rango (`QTK_004`/`QTK_005`)
+
+### `PATCH /quick-tasks/:id`
+
+Actualiza título, descripción y/o estado de completado. Togglear `completed` a `true` setea `completedAt = now`; a `false` limpia el timestamp (la tarea sobrevive al cleanup del día siguiente).
+
+| Campo         | Tipo           | Notas                                      |
+| ------------- | -------------- | ------------------------------------------ |
+| `title`       | string         | Máx 120 chars                              |
+| `description` | string \| null | Enviar `null` explícito para limpiar       |
+| `completed`   | boolean        | Al completar, `completedAt` se setea solo  |
+
+Todos los campos son opcionales.
+
+**Response:** `200` — `QuickTaskResponseDto`
+
+**Errores:**
+
+- `404` — Tarea no encontrada
+- `403` — Tarea pertenece a otro usuario
+
+### `DELETE /quick-tasks/:id`
+
+**Hard delete.**
+
+**Response:** `204 No Content`
+
+**Errores:**
+
+- `404` — Tarea no encontrada
+- `403` — Tarea pertenece a otro usuario
+
+### `PATCH /quick-tasks/reorder`
+
+Renumera las posiciones según el orden de `orderedIds`. Todas las ids deben pertenecer al usuario autenticado. Ids no listadas mantienen su posición.
+
+| Campo        | Tipo     | Requerido | Notas                                    |
+| ------------ | -------- | --------- | ---------------------------------------- |
+| `orderedIds` | UUID[]   | sí        | Mínimo 1 elemento. Se reasignan 1..N    |
+
+**Response:** `204 No Content`
+
+**Errores:**
+
+- `422` — Alguna id no pertenece al usuario (`QTK_006`)
+
+### Respuesta de tarea (`QuickTaskResponseDto`)
+
+```json
+{
+  "id": "uuid",
+  "title": "Comprar leche",
+  "description": "Fresca del mercado",
+  "completed": false,
+  "completedAt": null,
+  "position": 1,
+  "createdAt": "2026-04-20T00:00:00.000Z",
+  "updatedAt": "2026-04-20T00:00:00.000Z"
+}
+```
+
+---
+
+## Reports (Dashboards)
+
+Endpoints agregados para las pantallas de reportes. Cada endpoint acepta `?period=week|30d|month|3m` (default `month`). Los valores se documentan en [enums.md](enums.md#reportperiod).
+
+Rangos:
+
+- `week` — últimos 7 días (deslizante)
+- `30d` — últimos 30 días (deslizante)
+- `month` — mes calendario actual en la timezone del usuario (desde el 1° a las 00:00 locales, hasta `now`)
+- `3m` — mes actual + los dos meses anteriores
+
+### `GET /reports/finances-dashboard?period=...`
+
+Devuelve agregados financieros agrupados **por moneda** (nunca se suman cuentas de monedas distintas).
+
+**Response:** `200` — `FinancesDashboardResponseDto`
+
+```json
+{
+  "period": "month",
+  "range": { "from": "2026-04-01T05:00:00.000Z", "to": "2026-04-20T15:00:00.000Z" },
+  "totalBalance": [
+    { "currency": "PEN", "amount": 1520.5, "accountCount": 3 }
+  ],
+  "periodFlow": [
+    { "currency": "PEN", "income": 3000, "expense": 2400, "net": 600 }
+  ],
+  "topExpenseCategories": [
+    {
+      "categoryId": "uuid",
+      "name": "Comida",
+      "color": "#FF5722",
+      "currency": "PEN",
+      "total": 420.75,
+      "percentage": 28.5
+    }
+  ],
+  "dailyFlow": [
+    {
+      "currency": "PEN",
+      "points": [{ "date": "2026-04-15", "income": 120, "expense": 85 }]
+    }
+  ],
+  "pendingDebts": [
+    { "currency": "PEN", "owesYou": 300, "youOwe": 120, "net": 180 }
+  ]
+}
+```
+
+- `topExpenseCategories[].percentage`: porcentaje del total de EXPENSE para esa moneda (0–100). Máximo 5 categorías.
+- `dailyFlow[].points`: una entrada por día del rango con actividad. `date` es `YYYY-MM-DD` en UTC.
+- `pendingDebts`: reutiliza `aggregateDebtsByReference` con filtro `pending` y lo colapsa por moneda.
+
+### `GET /reports/routines-dashboard?period=...`
+
+Devuelve agregados de hábitos + tareas diarias. Las métricas "hoy" usan la timezone del usuario independientemente del período.
+
+**Response:** `200` — `RoutinesDashboardResponseDto`
+
+```json
+{
+  "period": "month",
+  "range": { "from": "2026-04-01T05:00:00.000Z", "to": "2026-04-20T15:00:00.000Z" },
+  "topHabitStreaks": [
+    {
+      "habitId": "uuid",
+      "name": "Tomar agua",
+      "color": "#2196F3",
+      "frequency": "DAILY",
+      "currentStreak": 5,
+      "longestStreak": 12,
+      "completionRate": 0.83
+    }
+  ],
+  "habitCompletionToday": { "completedToday": 3, "dueToday": 5, "rate": 0.6 },
+  "quickTasksToday": { "completed": 2, "pending": 1, "total": 3 }
+}
+```
+
+- `topHabitStreaks`: hasta 5 hábitos ordenados por `currentStreak DESC` y desempatados por `longestStreak`. Usa el mismo `StatsCalculator` que `GET /habits`, así los números coinciden con la página de hábitos.
+- `habitCompletionToday`: solo cuenta hábitos DAILY (los WEEKLY no encajan en una métrica diaria).
+- `quickTasksToday`: refleja el estado actual del día en la timezone del usuario.
