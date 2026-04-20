@@ -18,6 +18,7 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { Loader2, Plus } from 'lucide-react';
+import { toast } from 'sonner';
 
 import { useQuickTasks, useReorderQuickTasks } from '@/core/application/hooks/use-quick-tasks';
 import { type QuickTask } from '@/core/domain/entities/quick-task';
@@ -27,6 +28,7 @@ import { QuickTaskItem } from './QuickTaskItem';
 
 export function QuickTasksList() {
   const t = useTranslations('quickTasks');
+  const tErrors = useTranslations('errors');
 
   const { data: tasks = [], isLoading } = useQuickTasks();
   const reorderMutation = useReorderQuickTasks();
@@ -57,7 +59,14 @@ export function QuickTasksList() {
     const [moved] = reordered.splice(oldIndex, 1);
     reordered.splice(newIndex, 0, moved);
 
-    reorderMutation.mutate({ orderedIds: reordered.map((t) => t.id) });
+    reorderMutation.mutate(
+      { orderedIds: reordered.map((t) => t.id) },
+      {
+        // The hook rolls back the optimistic cache update; we just surface
+        // the failure so the user knows why the cards snapped back.
+        onError: () => toast.error(tErrors('generic')),
+      },
+    );
   }
 
   function openCreateForm() {

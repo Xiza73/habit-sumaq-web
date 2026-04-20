@@ -80,7 +80,27 @@ export function useDeleteQuickTask() {
 
   return useMutation({
     mutationFn: (id: string) => quickTasksApi.delete(id),
-    onSuccess: () => {
+
+    // Optimistic removal so the card disappears instantly when the user
+    // confirms deletion. Rolled back from `previous` if the request fails.
+    onMutate: async (id) => {
+      await queryClient.cancelQueries({ queryKey: quickTasksKeys.list() });
+      const previous = queryClient.getQueryData<QuickTask[]>(quickTasksKeys.list());
+
+      if (previous) {
+        queryClient.setQueryData<QuickTask[]>(quickTasksKeys.list(), (old) =>
+          old?.filter((task) => task.id !== id),
+        );
+      }
+
+      return { previous };
+    },
+    onError: (_err, _vars, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(quickTasksKeys.list(), context.previous);
+      }
+    },
+    onSettled: () => {
       void queryClient.invalidateQueries({ queryKey: quickTasksKeys.all });
     },
   });
