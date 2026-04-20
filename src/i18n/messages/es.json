@@ -256,7 +256,56 @@
     "routines": "Rutinas",
     "habits": "Hábitos",
     "quickTasks": "Diarias",
+    "reports": "Reportes",
     "settings": "Configuración"
+  },
+  "reports": {
+    "loadError": "No se pudo cargar el reporte. Intenta de nuevo.",
+    "periods": {
+      "week": "Semana",
+      "30d": "30 días",
+      "month": "Mes",
+      "3m": "3 meses"
+    },
+    "finances": {
+      "title": "Reporte de Finanzas",
+      "subtitle": "Resumen agregado de tus cuentas y transacciones en el período seleccionado.",
+      "totalBalance": "Balance total",
+      "totalBalanceEmpty": "Todavía no tenés cuentas activas.",
+      "accountCount": "{count, plural, one {# cuenta} other {# cuentas}}",
+      "periodFlow": "Ingresos vs Gastos",
+      "periodFlowEmpty": "Sin movimientos en el período.",
+      "income": "Ingresos",
+      "expense": "Gastos",
+      "net": "Neto",
+      "topExpenseCategories": "Top categorías de gasto",
+      "topCategoriesEmpty": "Sin gastos categorizados en el período.",
+      "uncategorized": "Sin categoría",
+      "pendingDebts": "Deudas pendientes",
+      "pendingDebtsEmpty": "Todo al día.",
+      "owesYou": "Te deben",
+      "youOwe": "Debes",
+      "dailyFlow": {
+        "title": "Flujo diario",
+        "empty": "Sin movimientos para graficar en el período.",
+        "income": "Ingresos",
+        "expense": "Gastos"
+      }
+    },
+    "routines": {
+      "title": "Reporte de Rutinas",
+      "subtitle": "Rachas, completitud diaria y tareas de hoy.",
+      "today": "Hoy",
+      "habitsCompletion": "Hábitos completados",
+      "habitsCompletionSubtitle": "{rate}% de los diarios",
+      "quickTasksCompletion": "Diarias completadas",
+      "quickTasksPending": "{count, plural, one {# pendiente} other {# pendientes}}",
+      "topStreaks": "Top rachas de hábitos",
+      "topStreaksEmpty": "Todavía no tenés rachas activas.",
+      "currentStreak": "Actual",
+      "longestStreak": "Mejor",
+      "completionRate": "Completitud últimos 30 días: {rate}%"
+    }
   },
   "quickTasks": {
     "title": "Diarias",

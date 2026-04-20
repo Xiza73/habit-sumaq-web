@@ -256,7 +256,56 @@
     "routines": "Routines",
     "habits": "Habits",
     "quickTasks": "Daily",
+    "reports": "Reports",
     "settings": "Settings"
+  },
+  "reports": {
+    "loadError": "Could not load the report. Please try again.",
+    "periods": {
+      "week": "Week",
+      "30d": "30 days",
+      "month": "Month",
+      "3m": "3 months"
+    },
+    "finances": {
+      "title": "Finances report",
+      "subtitle": "Aggregated view of your accounts and transactions in the selected period.",
+      "totalBalance": "Total balance",
+      "totalBalanceEmpty": "You don't have any active accounts yet.",
+      "accountCount": "{count, plural, one {# account} other {# accounts}}",
+      "periodFlow": "Income vs Expense",
+      "periodFlowEmpty": "No movements in the period.",
+      "income": "Income",
+      "expense": "Expense",
+      "net": "Net",
+      "topExpenseCategories": "Top expense categories",
+      "topCategoriesEmpty": "No categorized expenses in the period.",
+      "uncategorized": "Uncategorized",
+      "pendingDebts": "Pending debts",
+      "pendingDebtsEmpty": "All caught up.",
+      "owesYou": "Owe you",
+      "youOwe": "You owe",
+      "dailyFlow": {
+        "title": "Daily flow",
+        "empty": "No movements to chart in this period.",
+        "income": "Income",
+        "expense": "Expense"
+      }
+    },
+    "routines": {
+      "title": "Routines report",
+      "subtitle": "Streaks, today's completion and daily tasks.",
+      "today": "Today",
+      "habitsCompletion": "Habits completed",
+      "habitsCompletionSubtitle": "{rate}% of daily habits",
+      "quickTasksCompletion": "Daily tasks done",
+      "quickTasksPending": "{count, plural, one {# pending} other {# pending}}",
+      "topStreaks": "Top habit streaks",
+      "topStreaksEmpty": "No active streaks yet.",
+      "currentStreak": "Current",
+      "longestStreak": "Best",
+      "completionRate": "Last 30 days completion: {rate}%"
+    }
   },
   "quickTasks": {
     "title": "Daily",
