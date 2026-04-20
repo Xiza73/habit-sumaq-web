@@ -7,6 +7,7 @@ import { useTranslations } from 'next-intl';
 
 import {
   ArrowLeftRight,
+  BarChart3,
   CheckSquare,
   CreditCard,
   FolderTree,
@@ -48,6 +49,13 @@ const NAV_SECTIONS: NavSection[] = [
       { href: '/categories', labelKey: 'categories', icon: FolderTree },
       { href: '/transactions', labelKey: 'transactions', icon: ArrowLeftRight },
       { href: '/transactions/debts', labelKey: 'debts', icon: HandCoins, indent: true },
+    ],
+  },
+  {
+    titleKey: 'reports',
+    items: [
+      { href: '/reports/finances', labelKey: 'finances', icon: BarChart3 },
+      { href: '/reports/routines', labelKey: 'routines', icon: BarChart3 },
     ],
   },
 ];
