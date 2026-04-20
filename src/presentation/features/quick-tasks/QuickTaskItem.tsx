@@ -117,17 +117,22 @@ export function QuickTaskItem({ task, sortable = false, onEdit }: QuickTaskItemP
           {hasDescription && (
             <ChevronDown
               className={cn(
-                'size-4 shrink-0 text-muted-foreground transition-transform',
+                'size-4 shrink-0 text-muted-foreground transition-[transform,opacity]',
                 expanded && 'rotate-180',
+                // Chevron is an affordance, not an action — keep it visible
+                // on touch, but fade it in only on hover on desktop so the
+                // card stays quiet. Once expanded, keep it visible to mark
+                // the state regardless of pointer.
+                !expanded && 'sm:opacity-0 sm:group-hover:opacity-100',
               )}
               aria-hidden="true"
             />
           )}
 
-          {/* Actions always visible on touch devices (mobile/tablet); on
-              hover-capable pointers they fade in on hover to keep the card
-              visually quieter. */}
-          <div className="flex shrink-0 items-center gap-1 transition-opacity sm:opacity-0 sm:group-hover:opacity-100 sm:focus-within:opacity-100">
+          {/* Edit/delete are always visible — no hover-reveal. Hover reveal
+              was unreachable on touch devices, and even on desktop it hid
+              the primary affordances behind a gesture. */}
+          <div className="flex shrink-0 items-center gap-1">
             <button
               type="button"
               onClick={() => onEdit(task)}
