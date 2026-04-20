@@ -77,6 +77,17 @@ Cuando una operación falla, la respuesta incluye un `error.code` con un identif
 | `HAB_005` | 422  | targetCount inválido               | targetCount < 1                          |
 | `HAB_006` | 403  | El hábito pertenece a otro usuario | Acceso a hábito ajeno                    |
 
+### Quick Tasks (Diarias)
+
+| Código    | HTTP | Descripción                                   | Cuándo ocurre                                                |
+| --------- | ---- | --------------------------------------------- | ------------------------------------------------------------ |
+| `QTK_001` | 404  | Tarea no encontrada                           | PATCH/DELETE con UUID inexistente                            |
+| `QTK_002` | 403  | La tarea pertenece a otro usuario             | Acceso a tarea ajena                                         |
+| `QTK_003` | 422  | Título obligatorio                            | POST/PATCH con `title` vacío o solo whitespace               |
+| `QTK_004` | 422  | Título supera 120 chars                       | POST/PATCH con título demasiado largo                        |
+| `QTK_005` | 422  | Descripción supera 5000 chars                 | POST/PATCH con descripción demasiado larga                   |
+| `QTK_006` | 422  | Reorder incluye ids no propias del usuario    | PATCH /quick-tasks/reorder con uuid de otro user o inexistente |
+
 ### Generales
 
 | Código    | HTTP | Descripción                       | Cuándo ocurre                              |

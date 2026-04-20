@@ -154,7 +154,7 @@ Desarrollo progresivo por fases. Cada fase produce un incremento funcional y tes
 
 ---
 
-## Fase 7 — Módulo de Hábitos (Habit Tracker) 🚧 EN DESARROLLO
+## Fase 7 — Módulo de Hábitos (Habit Tracker) ✅
 
 **Objetivo:** Seguimiento de hábitos diarios/semanales con check-in, streaks y estadísticas.
 
@@ -179,11 +179,70 @@ Desarrollo progresivo por fases. Cada fase produce un incremento funcional y tes
 
 ---
 
-## Módulos Futuros (fuera del MVP)
+## Fase 8 — Timezone en user-settings ✅
 
-Estos módulos se planificarán después de completar las fases anteriores:
+**Objetivo:** Guardar la IANA timezone del usuario como pre-requisito para features que razonan en "días del usuario" (cleanup diario, rangos calendario-alineados en reportes).
 
-- **Reportes:** Gráficos de gastos por categoría, tendencias mensuales.
+| #   | Tarea                                         | Detalle                                                                             |
+| --- | --------------------------------------------- | ----------------------------------------------------------------------------------- |
+| 8.1 | Añadir `timezone` al backend (user-settings)  | Columna `varchar(64)` con default `'UTC'` + validador `@IsIanaTimezone`             |
+| 8.2 | Exponer `timezone` en la API response         | `PATCH/GET /users/settings` incluyen el nuevo campo                                 |
+| 8.3 | Crear lista curada de timezones en front      | 22 IANA zones agrupadas en 5 regiones (América, Europa, Asia, Oceanía, UTC)         |
+| 8.4 | Integrar selector en `/settings`              | `<optgroup>` nativos con i18n por locale. Fallback dinámico si la zona no está    |
+| 8.5 | Auto-detect en primer login                   | Hook `useAutoDetectTimezone` en `DashboardShell` — PATCH silencioso si stored='UTC' |
+
+**Entregable:** Todo usuario tiene una timezone correcta guardada, el resto del sistema puede confiar en `user.timezone`.
+
+---
+
+## Fase 9 — Quick Tasks (Diarias) ✅
+
+**Objetivo:** Lista TODO diaria simple con cards, DnD, markdown y auto-cleanup al día siguiente.
+
+| #   | Tarea                                          | Detalle                                                                  |
+| --- | ---------------------------------------------- | ------------------------------------------------------------------------ |
+| 9.1 | Módulo backend `quick-tasks`                   | Entity (hard delete explícito), endpoints CRUD + reorder                 |
+| 9.2 | Lazy cleanup timezone-aware                    | `GET /quick-tasks` borra `completed + completedAt < startOfTodayInTZ`    |
+| 9.3 | Entity + schemas + api.ts + hooks en web       | Optimistic updates para toggle completed y reorder                       |
+| 9.4 | Componentes `QuickTaskItem`, `QuickTaskForm`   | Card con drag handle, expand markdown, edit/delete                       |
+| 9.5 | Markdown renderer + editor con preview toggle  | `react-markdown` + `remark-gfm`. Sin HTML raw por default                |
+| 9.6 | DnD con `@dnd-kit`                             | Sortable solo sobre pendientes. Completadas no se reordenan              |
+| 9.7 | Restructure del sidebar con sección "Rutinas"  | Agrupa Hábitos + Diarias. Nav mobile incluye Diarias                     |
+| 9.8 | i18n en es / en / pt                           | Labels, estados y mensajes del flow completo                             |
+| 9.9 | Tests unit de los 4 componentes + hook         | RTL + mocks de hooks                                                     |
+
+**Entregable:** Pantalla `/quick-tasks` funcional, responsive, con DnD, markdown y persistencia con auto-cleanup.
+
+---
+
+## Fase 10 — Reportes (Dashboards agregados) ✅
+
+**Objetivo:** Dashboards por módulo (Finanzas, Rutinas) con período configurable. Sin nuevo data — solo agregación de entidades existentes.
+
+| #    | Tarea                                                                              | Detalle                                                                 |
+| ---- | ---------------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| 10.1 | Endpoints backend `/reports/finances-dashboard` + `/reports/routines-dashboard`    | Aggregation con raw SQL + JOIN por moneda                               |
+| 10.2 | Period helper timezone-aware (`week/30d/month/3m`)                                 | Intl-based, tests con DST                                               |
+| 10.3 | Entity + api.ts + hooks en web                                                     | `useFinancesDashboard`, `useRoutinesDashboard`                          |
+| 10.4 | Chart library — Recharts directo                                                   | Decidido por incompatibilidad de Tremor 3.x con Tailwind 4              |
+| 10.5 | Shared primitives                                                                  | `PeriodSelector`, `KpiCard`, `BarList`, `ReportShell`                   |
+| 10.6 | Página `/reports/finances`                                                         | Balance, flow, top categorías, debts KPI, daily flow chart              |
+| 10.7 | Página `/reports/routines`                                                         | Today KPIs con progress bars, top habit streaks                         |
+| 10.8 | Nueva sección "Reportes" en sidebar (bottom)                                       | Con entradas para Finanzas y Rutinas                                    |
+| 10.9 | i18n completa en 3 locales                                                         | Reportes, periodos, widgets, labels                                     |
+
+**Entregable:** Dashboards accesibles desde la sección "Reportes" en sidebar, cargan en <1s con datos reales, responsive.
+
+---
+
+## Módulos Futuros (fuera del MVP actual)
+
+Estos módulos se planificarán después de las fases anteriores:
+
 - **Presupuestos:** Límites por categoría con alertas.
-- **Vinculación hábitos ↔ finanzas:** Hábitos financieros vinculados a transacciones.
+- **Vinculación hábitos ↔ finanzas:** Hábitos con costo asociado (ej: "comer fuera" suma a gasto).
 - **Schedule:** Transacciones recurrentes, recordatorios.
+- **Export / import:** CSV/JSON de transacciones y tareas.
+- **Historial de quick-tasks completadas:** Hoy se pierden al cleanup; requiere tabla de log dedicada.
+- **Heatmap anual** en el dashboard de Rutinas.
+- **Mobile app nativa** con Expo reusando la misma API.
