@@ -23,6 +23,8 @@ import { toast } from 'sonner';
 import { useQuickTasks, useReorderQuickTasks } from '@/core/application/hooks/use-quick-tasks';
 import { type QuickTask } from '@/core/domain/entities/quick-task';
 
+import { cn } from '@/lib/utils';
+
 import { QuickTaskForm } from './QuickTaskForm';
 import { QuickTaskItem } from './QuickTaskItem';
 
@@ -110,7 +112,15 @@ export function QuickTasksList() {
           <p className="max-w-sm text-muted-foreground">{t('emptyState')}</p>
         </div>
       ) : (
-        <div className="space-y-8">
+        <div
+          className={cn(
+            // Mobile: pending stacked on top of completed (like a TODO list).
+            // Desktop: two side-by-side columns when both sections have data
+            // so the user can scan both at a glance.
+            'space-y-8',
+            completed.length > 0 && 'md:grid md:grid-cols-2 md:gap-6 md:space-y-0',
+          )}
+        >
           <section className="space-y-2">
             <header className="flex items-center justify-between">
               <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">

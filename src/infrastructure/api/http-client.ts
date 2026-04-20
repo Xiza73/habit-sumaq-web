@@ -62,6 +62,13 @@ class HttpClient {
       throw new ApiError('Session expired', 'AUT_001');
     }
 
+    // 204 No Content has no body — calling response.json() would throw
+    // SyntaxError. Callers that hit endpoints with 204 (DELETEs, reorder)
+    // typed as Promise<void>, so resolving with undefined is safe.
+    if (response.status === 204) {
+      return undefined as T;
+    }
+
     const json = (await response.json()) as ApiResponse<T>;
 
     if (!json.success) {

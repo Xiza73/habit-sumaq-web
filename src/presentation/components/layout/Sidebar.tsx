@@ -35,19 +35,19 @@ interface NavSection {
 
 const NAV_SECTIONS: NavSection[] = [
   {
+    titleKey: 'routines',
+    items: [
+      { href: '/habits', labelKey: 'habits', icon: Target },
+      { href: '/quick-tasks', labelKey: 'quickTasks', icon: CheckSquare },
+    ],
+  },
+  {
     titleKey: 'finances',
     items: [
       { href: '/accounts', labelKey: 'accounts', icon: CreditCard },
       { href: '/categories', labelKey: 'categories', icon: FolderTree },
       { href: '/transactions', labelKey: 'transactions', icon: ArrowLeftRight },
       { href: '/transactions/debts', labelKey: 'debts', icon: HandCoins, indent: true },
-    ],
-  },
-  {
-    titleKey: 'routines',
-    items: [
-      { href: '/habits', labelKey: 'habits', icon: Target },
-      { href: '/quick-tasks', labelKey: 'quickTasks', icon: CheckSquare },
     ],
   },
 ];
