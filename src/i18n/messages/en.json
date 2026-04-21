@@ -76,8 +76,8 @@
       "INCOME": "Income",
       "EXPENSE": "Expense",
       "TRANSFER": "Transfer",
-      "DEBT": "Debt",
-      "LOAN": "Loan"
+      "DEBT": "Debt (you owe)",
+      "LOAN": "Loan (owed to you)"
     },
     "status": {
       "PENDING": "Pending",

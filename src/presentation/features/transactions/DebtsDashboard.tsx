@@ -4,7 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 
-import { ArrowLeft, HandCoins, HandHeart } from 'lucide-react';
+import { ArrowDownLeft, ArrowLeft, ArrowUpRight, HandCoins, HandHeart } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { useDebtsSummary, useSettleByReference } from '@/core/application/hooks/use-transactions';
@@ -79,6 +79,8 @@ export function DebtsDashboard() {
             >
               <HandCoins className="size-4" />
               <span>{t('newDebt')}</span>
+              {/* Matches DebtCard convention: DEBT = money flowing out = ArrowUpRight */}
+              <ArrowUpRight className="size-4 text-destructive" aria-hidden />
             </button>
             <button
               type="button"
@@ -87,6 +89,8 @@ export function DebtsDashboard() {
             >
               <HandHeart className="size-4" />
               <span>{t('newLoan')}</span>
+              {/* Matches DebtCard convention: LOAN = money flowing in = ArrowDownLeft */}
+              <ArrowDownLeft className="size-4 text-green-700 dark:text-green-400" aria-hidden />
             </button>
           </div>
 
