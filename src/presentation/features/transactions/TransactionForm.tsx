@@ -33,6 +33,15 @@ interface TransactionFormProps {
   open: boolean;
   transaction?: Transaction | null;
   defaultAccountId?: string;
+  /**
+   * When set, the type select is removed from the form and all new
+   * transactions are created with this type. Used by the Debts dashboard
+   * to offer "Nueva deuda" / "Nuevo préstamo" shortcuts without exposing
+   * the full type picker.
+   *
+   * Ignored while editing — `transaction.type` is already immutable there.
+   */
+  lockedType?: 'DEBT' | 'LOAN';
   onClose: () => void;
 }
 
@@ -40,6 +49,7 @@ export function TransactionForm({
   open,
   transaction,
   defaultAccountId,
+  lockedType,
   onClose,
 }: TransactionFormProps) {
   const t = useTranslations('transactions');
@@ -59,7 +69,7 @@ export function TransactionForm({
     defaultValues: {
       accountId: defaultAccountId ?? '',
       categoryId: null,
-      type: 'EXPENSE',
+      type: lockedType ?? 'EXPENSE',
       amount: 0,
       description: null,
       date: today,
@@ -102,7 +112,7 @@ export function TransactionForm({
       form.reset({
         accountId: defaultAccountId ?? '',
         categoryId: null,
-        type: 'EXPENSE',
+        type: lockedType ?? 'EXPENSE',
         amount: 0,
         description: null,
         date: today,
@@ -110,7 +120,7 @@ export function TransactionForm({
         reference: null,
       });
     }
-  }, [open, transaction, defaultAccountId, form, today]);
+  }, [open, transaction, defaultAccountId, lockedType, form, today]);
 
   function emptyToNull(value: string | null | undefined): string | null {
     return value === '' ? null : (value ?? null);
@@ -162,25 +172,34 @@ export function TransactionForm({
     }
   }
 
+  const createTitle =
+    lockedType === 'DEBT'
+      ? t('createDebt')
+      : lockedType === 'LOAN'
+        ? t('createLoan')
+        : t('createTransaction');
+
   return (
-    <Modal
-      open={open}
-      onClose={onClose}
-      title={isEditing ? t('editTransaction') : t('createTransaction')}
-    >
+    <Modal open={open} onClose={onClose} title={isEditing ? t('editTransaction') : createTitle}>
       <form onSubmit={(e) => void form.handleSubmit(handleSubmit)(e)} className="space-y-4">
-        <div className="space-y-2">
-          <label htmlFor="txn-type" className="text-sm font-medium">
-            {t('type')}
-          </label>
-          <Select id="txn-type" {...form.register('type')} disabled={isEditing}>
-            <option value="EXPENSE">{t('types.EXPENSE')}</option>
-            <option value="INCOME">{t('types.INCOME')}</option>
-            <option value="TRANSFER">{t('types.TRANSFER')}</option>
-            <option value="DEBT">{t('types.DEBT')}</option>
-            <option value="LOAN">{t('types.LOAN')}</option>
-          </Select>
-        </div>
+        {lockedType && !isEditing ? (
+          // Type is locked — keep it in the form state via a hidden input so
+          // react-hook-form still submits it, but hide the whole field.
+          <input type="hidden" {...form.register('type')} value={lockedType} />
+        ) : (
+          <div className="space-y-2">
+            <label htmlFor="txn-type" className="text-sm font-medium">
+              {t('type')}
+            </label>
+            <Select id="txn-type" {...form.register('type')} disabled={isEditing}>
+              <option value="EXPENSE">{t('types.EXPENSE')}</option>
+              <option value="INCOME">{t('types.INCOME')}</option>
+              <option value="TRANSFER">{t('types.TRANSFER')}</option>
+              <option value="DEBT">{t('types.DEBT')}</option>
+              <option value="LOAN">{t('types.LOAN')}</option>
+            </Select>
+          </div>
+        )}
 
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">

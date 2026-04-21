@@ -129,12 +129,16 @@
       "settleAllConfirmTitle": "Settle everything with {name} ({currency})",
       "settleAllConfirmBody": "You'll mark {count} pending transactions in {currency} as settled. No account movements created, no balances affected. Continue?",
       "settleAllSuccess": "Debts with {name} in {currency} settled",
+      "newDebt": "New debt",
+      "newLoan": "New loan",
       "statusFilter": {
         "pending": "Pending",
         "all": "All",
         "settled": "Settled"
       }
-    }
+    },
+    "createDebt": "New debt",
+    "createLoan": "New loan"
   },
   "settings": {
     "title": "Settings",
