@@ -8,6 +8,7 @@ import { Flame, Trophy } from 'lucide-react';
 import { useRoutinesDashboard } from '@/core/application/hooks/use-reports';
 import { type ReportPeriod } from '@/core/domain/entities/reports';
 
+import { getStreakStyle } from '@/lib/streak-styles';
 import { cn } from '@/lib/utils';
 
 import { KpiCard } from './KpiCard';
@@ -67,42 +68,51 @@ export function RoutinesDashboard() {
               <p className="text-sm text-muted-foreground">{t('topStreaksEmpty')}</p>
             ) : (
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                {data.topHabitStreaks.map((streak) => (
-                  <div
-                    key={streak.habitId}
-                    className="flex flex-col gap-3 rounded-xl border border-border bg-card p-4"
-                  >
-                    <div className="flex items-center gap-2">
-                      <span
-                        className="size-3 shrink-0 rounded-full"
-                        style={{ backgroundColor: streak.color ?? 'var(--color-primary)' }}
-                        aria-hidden="true"
-                      />
-                      <p className="truncate font-medium">{streak.name}</p>
-                    </div>
-                    <div className="grid grid-cols-2 gap-3">
+                {data.topHabitStreaks.map((streak) => {
+                  const streakStyle = getStreakStyle(streak.currentStreak);
+                  return (
+                    <div
+                      key={streak.habitId}
+                      className={cn(
+                        'flex flex-col gap-3 rounded-xl border bg-card p-4',
+                        streakStyle.cardClass || 'border-border',
+                      )}
+                    >
                       <div className="flex items-center gap-2">
-                        <Flame className="size-4 text-orange-500" aria-hidden="true" />
-                        <div>
-                          <p className="text-xs text-muted-foreground">{t('currentStreak')}</p>
-                          <p className="text-lg font-bold">{streak.currentStreak}</p>
+                        <span
+                          className="size-3 shrink-0 rounded-full"
+                          style={{ backgroundColor: streak.color ?? 'var(--color-primary)' }}
+                          aria-hidden="true"
+                        />
+                        <p className="truncate font-medium">{streak.name}</p>
+                      </div>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="flex items-center gap-2">
+                          <Flame
+                            className={cn('size-4', streakStyle.flameClass)}
+                            aria-hidden="true"
+                          />
+                          <div>
+                            <p className="text-xs text-muted-foreground">{t('currentStreak')}</p>
+                            <p className="text-lg font-bold">{streak.currentStreak}</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Trophy className="size-4 text-amber-500" aria-hidden="true" />
+                          <div>
+                            <p className="text-xs text-muted-foreground">{t('longestStreak')}</p>
+                            <p className="text-lg font-bold">{streak.longestStreak}</p>
+                          </div>
                         </div>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <Trophy className="size-4 text-amber-500" aria-hidden="true" />
-                        <div>
-                          <p className="text-xs text-muted-foreground">{t('longestStreak')}</p>
-                          <p className="text-lg font-bold">{streak.longestStreak}</p>
-                        </div>
+                      <div className="text-xs text-muted-foreground">
+                        {t('completionRate', {
+                          rate: Math.round(streak.completionRate * 100),
+                        })}
                       </div>
                     </div>
-                    <div className="text-xs text-muted-foreground">
-                      {t('completionRate', {
-                        rate: Math.round(streak.completionRate * 100),
-                      })}
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </section>

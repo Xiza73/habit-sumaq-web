@@ -19,6 +19,7 @@ import { ApiError } from '@/infrastructure/api/api-error';
 import { ConfirmDialog } from '@/presentation/components/feedback/ConfirmDialog';
 
 import { getTodayLocaleDate } from '@/lib/format';
+import { getStreakStyle } from '@/lib/streak-styles';
 import { cn } from '@/lib/utils';
 
 import { HabitForm } from './HabitForm';
@@ -113,6 +114,7 @@ export function HabitDetail({ habitId }: HabitDetailProps) {
   const isCompleted = habit.periodCompleted ?? periodCount >= habit.targetCount;
   const progress = Math.min(periodCount / habit.targetCount, 1);
   const completionPercent = Math.round(habit.completionRate * 100);
+  const streakStyle = getStreakStyle(habit.currentStreak);
   const logs = logsData?.data ?? [];
 
   return (
@@ -231,9 +233,11 @@ export function HabitDetail({ habitId }: HabitDetailProps) {
 
       {/* Stats cards */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <div className="rounded-xl border border-border bg-card p-5">
+        <div
+          className={cn('rounded-xl border bg-card p-5', streakStyle.cardClass || 'border-border')}
+        >
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Flame className="size-4 text-orange-500" />
+            <Flame className={cn('size-4', streakStyle.flameClass)} />
             {t('currentStreak')}
           </div>
           <p className="mt-2 text-2xl font-bold tabular-nums">
