@@ -5,7 +5,6 @@ import { useTranslations } from 'next-intl';
 
 import { useFinancesDashboard } from '@/core/application/hooks/use-reports';
 import { type ReportPeriod } from '@/core/domain/entities/reports';
-import { type Currency } from '@/core/domain/enums/account.enums';
 
 import { formatCurrency } from '@/lib/format';
 import { cn } from '@/lib/utils';
