@@ -19,6 +19,7 @@ import {
 
 import { type HabitWithStats } from '@/core/domain/entities/habit';
 
+import { getStreakStyle } from '@/lib/streak-styles';
 import { cn } from '@/lib/utils';
 
 interface HabitCardProps {
@@ -46,9 +47,15 @@ export function HabitCard({
   const periodCount = habit.periodCount ?? todayCount;
   const isCompleted = habit.periodCompleted ?? periodCount >= habit.targetCount;
   const progress = Math.min(periodCount / habit.targetCount, 1);
+  const streakStyle = getStreakStyle(habit.currentStreak);
 
   return (
-    <div className="group relative rounded-xl border border-border bg-card p-5 transition-shadow hover:shadow-md">
+    <div
+      className={cn(
+        'group relative rounded-xl border bg-card p-5 transition-shadow hover:shadow-md',
+        streakStyle.cardClass || 'border-border',
+      )}
+    >
       <div className="absolute right-3 top-3">
         <button
           type="button"
@@ -137,7 +144,7 @@ export function HabitCard({
       <div className="mt-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-            <Flame className="size-3.5 text-orange-500" />
+            <Flame className={cn('size-3.5', streakStyle.flameClass)} />
             <span className="tabular-nums">{habit.currentStreak}</span>
           </div>
           <span className="text-xs tabular-nums text-muted-foreground">
