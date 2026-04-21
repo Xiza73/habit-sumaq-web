@@ -129,12 +129,16 @@
       "settleAllConfirmTitle": "Liquidar todo con {name} ({currency})",
       "settleAllConfirmBody": "Vas a marcar como saldadas {count} transacciones pendientes en {currency}. No crea movimientos en tus cuentas ni afecta balances. ¿Continuar?",
       "settleAllSuccess": "Deudas con {name} en {currency} liquidadas",
+      "newDebt": "Nueva deuda",
+      "newLoan": "Nuevo préstamo",
       "statusFilter": {
         "pending": "Pendientes",
         "all": "Todas",
         "settled": "Liquidadas"
       }
-    }
+    },
+    "createDebt": "Nueva deuda",
+    "createLoan": "Nuevo préstamo"
   },
   "settings": {
     "title": "Configuración",
