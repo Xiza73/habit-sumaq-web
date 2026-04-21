@@ -76,8 +76,8 @@
       "INCOME": "Receita",
       "EXPENSE": "Despesa",
       "TRANSFER": "Transferência",
-      "DEBT": "Dívida",
-      "LOAN": "Empréstimo"
+      "DEBT": "Dívida (você deve)",
+      "LOAN": "Empréstimo (devem a você)"
     },
     "status": {
       "PENDING": "Pendente",
