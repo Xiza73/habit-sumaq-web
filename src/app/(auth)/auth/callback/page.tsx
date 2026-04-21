@@ -25,7 +25,9 @@ function CallbackHandler() {
         useAuthStore.getState().setAccessToken(accessToken);
         const user = await authApi.getMe();
         setAuth(accessToken, user);
-        router.replace('/accounts');
+        // Landing post-login → dashboard de Rutinas. Ver comentario en
+        // src/app/page.tsx sobre por qué no lleva a /accounts.
+        router.replace('/reports/routines');
       } catch {
         clearAuth();
         router.replace('/login');
