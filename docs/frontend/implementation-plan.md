@@ -235,6 +235,27 @@ Desarrollo progresivo por fases. Cada fase produce un incremento funcional y tes
 
 ---
 
+## Fase 11 — Servicios Mensuales ✅
+
+**Objetivo:** Gestionar pagos recurrentes (luz, agua, internet, ...) con un período de facturación mensual. Paga = genera `EXPENSE`; saltear = avanza el período sin movimiento.
+
+| #     | Tarea                                                              | Detalle                                                                   |
+| ----- | ------------------------------------------------------------------ | ------------------------------------------------------------------------- |
+| 11.1  | `MonthlyService` entity + Zod schemas (`create/update/pay`)        | Currency y `startPeriod` inmutables después de creación                   |
+| 11.2  | `monthly-services.api.ts` + hooks TanStack Query                   | Invalidation de `monthly-services` + `transactions` + `accounts` en `pay` |
+| 11.3  | `MonthlyServiceCard`                                               | Estado derivado (paid / pending / overdue) + menú 3-dots + botones        |
+| 11.4  | `MonthlyServicesSummary`                                           | KPIs del mes (pagados / pendientes / atrasados)                           |
+| 11.5  | `MonthlyServiceForm` (create/edit)                                 | En edit: sin `currency` ni `startPeriod`                                  |
+| 11.6  | `PayMonthlyServiceForm`                                            | Modal con amount / date / description / accountIdOverride                 |
+| 11.7  | `MonthlyServicesList` (tabs activos / archivados + empty states)   | Grid responsive (1 / 2 / 3 cols)                                          |
+| 11.8  | Page `/services` + item en sidebar (sección Finanzas)              | Ícono `Receipt` de lucide                                                 |
+| 11.9  | i18n en es / en / pt                                               | Namespace `monthlyServices` + `errors.MSVC_001/002/003`                   |
+| 11.10 | Tests                                                              | Schema (create/update/pay) + Card (estados) + List (loading/empty/data)   |
+
+**Entregable:** Pantalla `/services` funcional con CRUD, pagar (crea EXPENSE), saltear mes, archivar y eliminar (bloqueado si hay pagos).
+
+---
+
 ## Módulos Futuros (fuera del MVP actual)
 
 Estos módulos se planificarán después de las fases anteriores:

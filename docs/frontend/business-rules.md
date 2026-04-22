@@ -122,6 +122,24 @@ Reglas que el frontend debe conocer para construir la UI correctamente y preveni
 
 ---
 
+## Servicios mensuales
+
+1. **Nombre único por usuario para servicios activos.** No pueden existir dos servicios activos con el mismo nombre.
+2. **`currency` es inmutable** después de la creación. En edit el form no expone el campo.
+3. **`startPeriod` es inmutable** después de la creación. Solo sirve para marcar el primer período facturable.
+4. **`estimatedAmount` y `dueDay` son opcionales.** `dueDay` (1-31) es solo informativo, se usa para ordenar/recordar — no dispara alertas automáticas.
+5. **Pagar un servicio genera un `EXPENSE`** contra `accountIdOverride ?? defaultAccountId` y avanza `lastPaidPeriod` al período cubierto. El balance de la cuenta se actualiza.
+6. **Saltear un mes avanza `lastPaidPeriod`** sin crear transacción. Útil para meses en los que el servicio no corrió (mudanza, vacaciones).
+7. **Estados derivados del backend (en la timezone del usuario):**
+   - `isOverdue` — `nextDuePeriod` < mes actual
+   - `isPaidForCurrentMonth` — `lastPaidPeriod === mes actual`
+   - Pendiente normal — ninguno de los dos
+8. **Archivado (`isActive=false`) ≠ eliminado.** Mantiene historial de pagos y puede desarchivarse. No aparece en la vista "Activos".
+9. **DELETE está bloqueado si el servicio tiene transacciones asociadas** (error `MSVC_001`). Mostrar el CTA "Archivar" como alternativa.
+10. **El picker de cuenta en `PayMonthlyServiceForm` filtra por `currency === service.currency`** — no hay conversión automática.
+
+---
+
 ## Monedas y balance
 
 1. **Las transferencias requieren misma moneda.** Si cuenta A es PEN y cuenta B es USD, no se puede transferir entre ellas.

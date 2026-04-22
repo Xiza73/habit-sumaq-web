@@ -211,6 +211,9 @@
     "HAB_004": "No se puede registrar en una fecha futura",
     "HAB_005": "La cantidad objetivo debe ser al menos 1",
     "HAB_006": "No tienes acceso a este hábito",
+    "MSVC_001": "No se puede eliminar un servicio con pagos. Archivalo en su lugar.",
+    "MSVC_002": "Servicio mensual no encontrado.",
+    "MSVC_003": "Ya tenés un servicio activo con ese nombre.",
     "generic": "Ocurrió un error inesperado. Intenta de nuevo."
   },
   "habits": {
@@ -251,12 +254,76 @@
     "today": "Hoy",
     "pastDateNotice": "Registrando para una fecha pasada."
   },
+  "monthlyServices": {
+    "title": "Servicios mensuales",
+    "subtitle": "Gestiona tus pagos recurrentes (luz, agua, internet, ...)",
+    "createService": "Nuevo servicio",
+    "editService": "Editar servicio",
+    "empty": "Todavía no agregaste ningún servicio",
+    "emptyArchived": "No tenés servicios archivados",
+    "tabs": { "active": "Activos", "archived": "Archivados" },
+    "status": {
+      "paid": "Al día",
+      "pending": "Pendiente",
+      "overdue": "Atrasado · {period}"
+    },
+    "actions": {
+      "pay": "Pagar",
+      "skip": "Saltear mes",
+      "edit": "Editar",
+      "archive": "Archivar",
+      "unarchive": "Desarchivar",
+      "delete": "Eliminar permanentemente"
+    },
+    "skipConfirm": {
+      "title": "¿Saltear {name} para {period}?",
+      "body": "No se creará ningún movimiento. El servicio avanzará al período siguiente.",
+      "confirm": "Saltear"
+    },
+    "deleteConfirm": {
+      "title": "¿Eliminar {name}?",
+      "body": "Esta acción no se puede deshacer.",
+      "disabledReason": "No podés eliminar un servicio que ya tiene pagos. Archivalo en su lugar.",
+      "confirm": "Eliminar"
+    },
+    "paySuccess": "Pago de {name} registrado",
+    "skipSuccess": "{name} saltado para {period}",
+    "archived": "Archivado",
+    "unarchived": "Desarchivado",
+    "summary": {
+      "currentMonth": "{month}",
+      "paid": "{count, plural, one {# pagado} other {# pagados}}",
+      "pending": "{count, plural, one {# pendiente} other {# pendientes}}",
+      "overdue": "{count, plural, one {# atrasado} other {# atrasados}}"
+    },
+    "fields": {
+      "name": "Nombre",
+      "defaultAccount": "Cuenta por defecto",
+      "category": "Categoría",
+      "currency": "Moneda",
+      "estimatedAmount": "Monto estimado",
+      "estimatedAmountHint": "Se autocompleta con el promedio de tus pagos",
+      "dueDay": "Día aproximado de vencimiento",
+      "dueDayHint": "Solo para ordenar y recordar",
+      "startPeriod": "Mes de inicio"
+    },
+    "payForm": {
+      "title": "Pagar {name}",
+      "period": "Período: {period}",
+      "amount": "Monto",
+      "date": "Fecha",
+      "description": "Descripción",
+      "account": "Pagar desde",
+      "confirm": "Confirmar pago"
+    }
+  },
   "navigation": {
     "finances": "Finanzas",
     "accounts": "Cuentas",
     "categories": "Categorías",
     "transactions": "Transacciones",
     "debts": "Deudas y préstamos",
+    "services": "Servicios",
     "routines": "Rutinas",
     "habits": "Hábitos",
     "quickTasks": "Diarias",
