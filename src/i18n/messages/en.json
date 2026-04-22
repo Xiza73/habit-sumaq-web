@@ -253,7 +253,12 @@
     "less": "Less",
     "more": "More",
     "today": "Today",
-    "pastDateNotice": "Logging for a past date."
+    "pastDateNotice": "Logging for a past date.",
+    "milestones": {
+      "week": "🔥 One full week with {name}! You're on fire.",
+      "month": "🚀 A whole month with {name}! Unstoppable.",
+      "century": "💎 {days} days with {name}! A legendary streak."
+    }
   },
   "monthlyServices": {
     "title": "Monthly services",
