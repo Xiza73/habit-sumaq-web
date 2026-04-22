@@ -253,7 +253,12 @@
     "less": "Menos",
     "more": "Más",
     "today": "Hoy",
-    "pastDateNotice": "Registrando para una fecha pasada."
+    "pastDateNotice": "Registrando para una fecha pasada.",
+    "milestones": {
+      "week": "🔥 ¡Una semana seguida con {name}! Vas bien.",
+      "month": "🚀 ¡Un mes completo con {name}! Sos imparable.",
+      "century": "💎 ¡{days} días con {name}! Una racha legendaria."
+    }
   },
   "monthlyServices": {
     "title": "Servicios mensuales",
