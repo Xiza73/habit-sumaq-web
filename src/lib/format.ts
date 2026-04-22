@@ -46,3 +46,42 @@ export function getTodayLocaleDate(): string {
 export function getOnlyDateFromApi(apiDate: string): string {
   return new Date(apiDate.split('Z')[0]).toLocaleDateString();
 }
+
+const PERIOD_LOCALE: Record<string, string> = {
+  es: 'es-PE',
+  en: 'en-US',
+  pt: 'pt-BR',
+};
+
+/**
+ * Turns a `YYYY-MM` period string into a localized human-readable label.
+ * Format is always `"{Month} {Year}"` — we strip the locale-specific "de" /
+ * "of" connectors so all locales render consistently:
+ *   es: `"2026-04"` → `"Abril 2026"` (not "abril de 2026")
+ *   en: `"2026-04"` → `"April 2026"`
+ *   pt: `"2026-04"` → `"Abril 2026"` (not "abril de 2026")
+ * Falls back to the raw period if the input doesn't match the expected shape.
+ */
+export function formatPeriodLabel(period: string, locale: string): string {
+  const match = /^(\d{4})-(\d{2})$/.exec(period);
+  if (!match) return period;
+  const year = Number(match[1]);
+  const month = Number(match[2]);
+  if (!Number.isFinite(year) || month < 1 || month > 12) return period;
+
+  const date = new Date(Date.UTC(year, month - 1, 1));
+  // `formatToParts` lets us pluck the month + year parts explicitly and skip
+  // any literals the locale adds ("de", "of", commas). Keeps the output shape
+  // identical across `es` / `en` / `pt`.
+  const parts = new Intl.DateTimeFormat(PERIOD_LOCALE[locale] ?? locale, {
+    month: 'long',
+    year: 'numeric',
+    timeZone: 'UTC',
+  }).formatToParts(date);
+
+  const monthName = parts.find((p) => p.type === 'month')?.value ?? '';
+  const yearValue = parts.find((p) => p.type === 'year')?.value ?? String(year);
+  // Capitalize the month (some locales return it lowercase).
+  const capitalized = monthName.charAt(0).toLocaleUpperCase(locale) + monthName.slice(1);
+  return `${capitalized} ${yearValue}`;
+}

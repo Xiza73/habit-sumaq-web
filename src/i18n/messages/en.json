@@ -211,6 +211,9 @@
     "HAB_004": "Cannot log a future date",
     "HAB_005": "Target count must be at least 1",
     "HAB_006": "You don't have access to this habit",
+    "MSVC_001": "Cannot delete a service with payments. Archive it instead.",
+    "MSVC_002": "Monthly service not found.",
+    "MSVC_003": "You already have an active service with that name.",
     "generic": "An unexpected error occurred. Please try again."
   },
   "habits": {
@@ -251,12 +254,76 @@
     "today": "Today",
     "pastDateNotice": "Logging for a past date."
   },
+  "monthlyServices": {
+    "title": "Monthly services",
+    "subtitle": "Manage your recurring bills (power, water, internet, ...)",
+    "createService": "New service",
+    "editService": "Edit service",
+    "empty": "You haven't added any service yet",
+    "emptyArchived": "No archived services",
+    "tabs": { "active": "Active", "archived": "Archived" },
+    "status": {
+      "paid": "Up to date",
+      "pending": "Pending",
+      "overdue": "Overdue · {period}"
+    },
+    "actions": {
+      "pay": "Pay",
+      "skip": "Skip month",
+      "edit": "Edit",
+      "archive": "Archive",
+      "unarchive": "Unarchive",
+      "delete": "Delete permanently"
+    },
+    "skipConfirm": {
+      "title": "Skip {name} for {period}?",
+      "body": "No movement will be created. The service will advance to the next period.",
+      "confirm": "Skip"
+    },
+    "deleteConfirm": {
+      "title": "Delete {name}?",
+      "body": "This action cannot be undone.",
+      "disabledReason": "You can't delete a service that already has payments. Archive it instead.",
+      "confirm": "Delete"
+    },
+    "paySuccess": "{name} payment recorded",
+    "skipSuccess": "{name} skipped for {period}",
+    "archived": "Archived",
+    "unarchived": "Unarchived",
+    "summary": {
+      "currentMonth": "{month}",
+      "paid": "{count, plural, one {# paid} other {# paid}}",
+      "pending": "{count, plural, one {# pending} other {# pending}}",
+      "overdue": "{count, plural, one {# overdue} other {# overdue}}"
+    },
+    "fields": {
+      "name": "Name",
+      "defaultAccount": "Default account",
+      "category": "Category",
+      "currency": "Currency",
+      "estimatedAmount": "Estimated amount",
+      "estimatedAmountHint": "Auto-filled from the average of your payments",
+      "dueDay": "Approximate due day",
+      "dueDayHint": "Just for sorting and reminders",
+      "startPeriod": "Start month"
+    },
+    "payForm": {
+      "title": "Pay {name}",
+      "period": "Period: {period}",
+      "amount": "Amount",
+      "date": "Date",
+      "description": "Description",
+      "account": "Pay from",
+      "confirm": "Confirm payment"
+    }
+  },
   "navigation": {
     "finances": "Finances",
     "accounts": "Accounts",
     "categories": "Categories",
     "transactions": "Transactions",
     "debts": "Debts and loans",
+    "services": "Services",
     "routines": "Routines",
     "habits": "Habits",
     "quickTasks": "Daily",

@@ -13,6 +13,7 @@ import {
   FolderTree,
   HandCoins,
   type LucideIcon,
+  Receipt,
   Settings,
   Target,
 } from 'lucide-react';
@@ -49,6 +50,7 @@ const NAV_SECTIONS: NavSection[] = [
       { href: '/categories', labelKey: 'categories', icon: FolderTree },
       { href: '/transactions', labelKey: 'transactions', icon: ArrowLeftRight },
       { href: '/transactions/debts', labelKey: 'debts', icon: HandCoins, indent: true },
+      { href: '/services', labelKey: 'services', icon: Receipt },
     ],
   },
   {

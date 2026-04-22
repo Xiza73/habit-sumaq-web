@@ -94,6 +94,7 @@ src/
 │   │   ├── accounts/
 │   │   ├── categories/
 │   │   ├── transactions/
+│   │   ├── monthly-services/
 │   │   ├── habits/
 │   │   ├── quick-tasks/
 │   │   ├── reports/
@@ -120,6 +121,7 @@ Reglas:
 - **Cuentas** — CRUD completo con archivado
 - **Categorías** — CRUD con categorías default por usuario
 - **Transacciones** — CRUD con 5 tipos (INCOME, EXPENSE, TRANSFER, DEBT, LOAN), settle, bulk settle, debts dashboard
+- **Servicios mensuales** — Pagos recurrentes (luz, agua, internet, ...) con pagar / saltear mes / archivar
 - **Hábitos** — Tracking diario/semanal con streaks, heatmap y stats
 - **Diarias** — Lista TODO diaria con DnD, markdown y lazy cleanup en medianoche del user
 - **Settings** — Idioma, tema, moneda default, formato de fecha, inicio de semana, timezone (auto-detectado)
