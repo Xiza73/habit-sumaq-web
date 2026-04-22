@@ -214,6 +214,7 @@
     "MSVC_001": "Cannot delete a service with payments. Archive it instead.",
     "MSVC_002": "Monthly service not found.",
     "MSVC_003": "You already have an active service with that name.",
+    "MSVC_004": "This service is already paid for the current month.",
     "generic": "An unexpected error occurred. Please try again."
   },
   "habits": {

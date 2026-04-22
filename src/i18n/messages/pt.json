@@ -214,6 +214,7 @@
     "MSVC_001": "Não é possível excluir um serviço com pagamentos. Arquive-o no lugar.",
     "MSVC_002": "Serviço mensal não encontrado.",
     "MSVC_003": "Você já tem um serviço ativo com esse nome.",
+    "MSVC_004": "Este serviço já está pago para o mês atual.",
     "generic": "Ocorreu um erro inesperado. Tente novamente."
   },
   "habits": {
