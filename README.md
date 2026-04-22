@@ -133,9 +133,6 @@ Reglas:
 |---|---|
 | Arquitectura | [docs/frontend/architecture.md](docs/frontend/architecture.md) |
 | Convenciones | [docs/frontend/conventions.md](docs/frontend/conventions.md) |
-| API Reference | [docs/frontend/api-reference.md](docs/frontend/api-reference.md) |
-| Enums | [docs/frontend/enums.md](docs/frontend/enums.md) |
-| Códigos de error | [docs/frontend/error-codes.md](docs/frontend/error-codes.md) |
 | Plan de implementación | [docs/frontend/implementation-plan.md](docs/frontend/implementation-plan.md) |
 | i18n | [docs/frontend/i18n.md](docs/frontend/i18n.md) |
 | Testing | [docs/frontend/testing.md](docs/frontend/testing.md) |
@@ -143,6 +140,16 @@ Reglas:
 | Temas y paletas | [docs/frontend/themes.md](docs/frontend/themes.md) |
 | Linting y formateo | [docs/frontend/linting.md](docs/frontend/linting.md) |
 | Reglas de negocio | [docs/frontend/business-rules.md](docs/frontend/business-rules.md) |
+
+### Contrato con el backend (single source of truth)
+
+Estos tres documentos **viven canónicamente en `habit-sumaq-backend`** — este repo solo tiene stubs con el link porque el backend es quien define el contrato:
+
+| Documento | Canonical (backend) |
+|---|---|
+| API Reference | [habit-sumaq-backend/docs/frontend/api-reference.md](https://github.com/Xiza73/habit-sumaq-backend/blob/master/docs/frontend/api-reference.md) |
+| Enums | [habit-sumaq-backend/docs/frontend/enums.md](https://github.com/Xiza73/habit-sumaq-backend/blob/master/docs/frontend/enums.md) |
+| Códigos de error | [habit-sumaq-backend/docs/frontend/error-codes.md](https://github.com/Xiza73/habit-sumaq-backend/blob/master/docs/frontend/error-codes.md) |
 
 ## Convención de documentación
 

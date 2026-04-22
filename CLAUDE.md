@@ -36,9 +36,18 @@ Antes de implementar cualquier feature, consulta los documentos relevantes:
 | State Management       | [state-management.md](docs/frontend/state-management.md)       | Manejo de estado y data fetching                   |
 | i18n                   | [i18n.md](docs/frontend/i18n.md)                               | Estrategia de internacionalización                 |
 | Reglas de Negocio      | [business-rules.md](docs/frontend/business-rules.md)           | Reglas que la UI debe respetar                     |
-| API Reference          | [api-reference.md](docs/frontend/api-reference.md)             | Endpoints, DTOs y contratos                        |
-| Enums                  | [enums.md](docs/frontend/enums.md)                             | Valores válidos para cada campo                    |
-| Códigos de Error       | [error-codes.md](docs/frontend/error-codes.md)                 | Mapeo de códigos a mensajes de UI                  |
+
+### Docs compartidos con el backend (single source of truth)
+
+Estos tres documentos describen el **contrato** que el backend expone. Por eso viven canónicamente en `habit-sumaq-backend` y este repo solo tiene stubs con el link:
+
+| Documento         | Stub local                                            | Canonical (backend)                                                                                                                       |
+| ----------------- | ----------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| API Reference     | [api-reference.md](docs/frontend/api-reference.md)    | [habit-sumaq-backend/docs/frontend/api-reference.md](https://github.com/Xiza73/habit-sumaq-backend/blob/master/docs/frontend/api-reference.md) |
+| Enums             | [enums.md](docs/frontend/enums.md)                    | [habit-sumaq-backend/docs/frontend/enums.md](https://github.com/Xiza73/habit-sumaq-backend/blob/master/docs/frontend/enums.md)                 |
+| Códigos de Error  | [error-codes.md](docs/frontend/error-codes.md)        | [habit-sumaq-backend/docs/frontend/error-codes.md](https://github.com/Xiza73/habit-sumaq-backend/blob/master/docs/frontend/error-codes.md)     |
+
+Si trabajás local y tenés ambos repos clonados adyacentes, los paths relativos son `../../habit-sumaq-backend/docs/frontend/*.md`.
 
 ---
 
@@ -158,17 +167,15 @@ Si el PR introduce un endpoint, módulo, variable de entorno, comando, schema de
 
 1. **Escribir o actualizar el doc primero** con la shape planeada. El diff del doc sirve como "spec" al que codear.
 2. Archivos candidatos (no todos aplican a cada cambio):
-   - [`docs/frontend/api-reference.md`](docs/frontend/api-reference.md) si el cambio toca la API del backend
-   - [`docs/frontend/implementation-plan.md`](docs/frontend/implementation-plan.md) si es una fase / módulo nuevo
-   - [`docs/frontend/error-codes.md`](docs/frontend/error-codes.md) si hay códigos nuevos
-   - [`docs/frontend/enums.md`](docs/frontend/enums.md) si hay enums nuevos
+   - **`docs/frontend/api-reference.md`** / **`error-codes.md`** / **`enums.md`** → **viven canónicamente en `habit-sumaq-backend/docs/frontend/`**. Si tu cambio en el web se basa en un nuevo endpoint / error code / enum, el cambio va en el PR del backend; este repo solo tiene stubs.
+   - [`docs/frontend/implementation-plan.md`](docs/frontend/implementation-plan.md) si es una fase / módulo nuevo del web
+   - [`docs/frontend/business-rules.md`](docs/frontend/business-rules.md) si hay reglas de UI nuevas
    - [`README.md`](README.md) si cambian comandos, env vars, estructura de carpetas
    - `CLAUDE.md` (este archivo) si se agrega una regla nueva al proyecto
 
 ### Después de shipear (checklist del PR)
 
-- [ ] `api-reference.md` refleja la shape final si difiere de la planeada
-- [ ] `error-codes.md` incluye cualquier código de error nuevo
+- [ ] Los docs compartidos (`api-reference`, `error-codes`, `enums`) quedaron al día en el **backend repo** si tu feature tocaba el contrato
 - [ ] `implementation-plan.md` marca la fase con ✅ si el entregable quedó completo
 - [ ] `README.md` actualizado si cambiaron comandos, env vars, módulos listados o estructura
 - [ ] Los comentarios en código con TODOs introducidos están taggeados con su fase de resolución (`// TODO (Fase X): ...`)
