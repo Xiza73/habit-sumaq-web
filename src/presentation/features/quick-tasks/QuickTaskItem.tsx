@@ -53,6 +53,19 @@ export function QuickTaskItem({ task, sortable = false, onEdit }: QuickTaskItemP
     updateMutation.mutate({ id: task.id, data: { completed: !task.completed } });
   }
 
+  function handleRowExpand() {
+    if (!hasDescription) return;
+    setExpanded((v) => !v);
+  }
+
+  function handleRowKeyDown(e: React.KeyboardEvent) {
+    if (!hasDescription) return;
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      setExpanded((v) => !v);
+    }
+  }
+
   function handleConfirmDelete() {
     deleteMutation.mutate(task.id, {
       onSuccess: () => {
@@ -72,13 +85,26 @@ export function QuickTaskItem({ task, sortable = false, onEdit }: QuickTaskItemP
           task.completed && 'bg-muted/40',
         )}
       >
-        <div className="flex items-center gap-2 px-3 py-2.5 sm:px-4">
+        {/* The whole row is the expand affordance — only drag/checkbox/edit/
+            delete controls keep their own click via stopPropagation. */}
+        <div
+          className={cn(
+            'flex items-center gap-2 px-3 py-2.5 sm:px-4',
+            hasDescription && 'cursor-pointer',
+          )}
+          onClick={handleRowExpand}
+          onKeyDown={handleRowKeyDown}
+          role={hasDescription ? 'button' : undefined}
+          tabIndex={hasDescription ? 0 : undefined}
+          aria-expanded={hasDescription ? expanded : undefined}
+        >
           {sortable ? (
             <button
               type="button"
               aria-label={t('dragHandle')}
               {...attributes}
               {...listeners}
+              onClick={(e) => e.stopPropagation()}
               className="-ml-1 cursor-grab touch-none text-muted-foreground hover:text-foreground active:cursor-grabbing"
             >
               <GripVertical className="size-4" />
@@ -91,28 +117,19 @@ export function QuickTaskItem({ task, sortable = false, onEdit }: QuickTaskItemP
             type="checkbox"
             checked={task.completed}
             onChange={handleToggle}
+            onClick={(e) => e.stopPropagation()}
             aria-label={task.completed ? t('markIncomplete') : t('markComplete')}
             className="size-4 shrink-0 cursor-pointer rounded border-input accent-primary"
           />
 
-          <button
-            type="button"
-            onClick={() => hasDescription && setExpanded((v) => !v)}
+          <span
             className={cn(
-              'flex-1 min-w-0 text-left',
-              hasDescription ? 'cursor-pointer' : 'cursor-default',
+              'flex-1 min-w-0 truncate text-sm font-medium',
+              task.completed && 'text-muted-foreground line-through',
             )}
-            aria-expanded={hasDescription ? expanded : undefined}
           >
-            <span
-              className={cn(
-                'block truncate text-sm font-medium',
-                task.completed && 'text-muted-foreground line-through',
-              )}
-            >
-              {task.title}
-            </span>
-          </button>
+            {task.title}
+          </span>
 
           {hasDescription && (
             <ChevronDown
@@ -135,7 +152,10 @@ export function QuickTaskItem({ task, sortable = false, onEdit }: QuickTaskItemP
           <div className="flex shrink-0 items-center gap-1">
             <button
               type="button"
-              onClick={() => onEdit(task)}
+              onClick={(e) => {
+                e.stopPropagation();
+                onEdit(task);
+              }}
               aria-label={t('editTask')}
               className="rounded p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
             >
@@ -143,7 +163,10 @@ export function QuickTaskItem({ task, sortable = false, onEdit }: QuickTaskItemP
             </button>
             <button
               type="button"
-              onClick={() => setConfirmingDelete(true)}
+              onClick={(e) => {
+                e.stopPropagation();
+                setConfirmingDelete(true);
+              }}
               aria-label={t('deleteTask')}
               className="rounded p-1.5 text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
             >
