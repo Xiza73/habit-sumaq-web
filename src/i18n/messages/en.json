@@ -399,6 +399,15 @@
     "descriptionPreviewEmpty": "No description",
     "descriptionModeEdit": "Edit",
     "descriptionModePreview": "Preview",
+    "markdownToolbar": {
+      "bold": "Bold",
+      "italic": "Italic",
+      "code": "Inline code",
+      "heading": "Heading",
+      "bulletList": "Bullet list",
+      "orderedList": "Numbered list",
+      "quote": "Quote"
+    },
     "descriptionHint": "Supports Markdown: **bold**, *italic*, lists, links, tables.",
     "pending": "Pending",
     "pendingEmpty": "Nothing pending to do.",

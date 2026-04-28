@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useTranslations } from 'next-intl';
 
@@ -22,6 +22,7 @@ import { Modal } from '@/presentation/components/ui/Modal';
 
 import { cn } from '@/lib/utils';
 
+import { MarkdownToolbar } from './MarkdownToolbar';
 import { QuickTaskMarkdown } from './QuickTaskMarkdown';
 
 interface QuickTaskFormProps {
@@ -41,6 +42,9 @@ export function QuickTaskForm({ open, task, onClose }: QuickTaskFormProps) {
   const isPending = createMutation.isPending || updateMutation.isPending;
 
   const [mode, setMode] = useState<'edit' | 'preview'>('edit');
+  // Ref shared between react-hook-form's `register` and the markdown toolbar
+  // so the toolbar buttons can read/write the selection on the textarea.
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 
   const form = useForm<CreateQuickTaskInput>({
     resolver: zodResolver(createQuickTaskSchema),
@@ -150,14 +154,26 @@ export function QuickTaskForm({ open, task, onClose }: QuickTaskFormProps) {
           </div>
 
           {mode === 'edit' ? (
-            <textarea
-              id="description"
-              {...form.register('description')}
-              placeholder={t('descriptionPlaceholder')}
-              rows={6}
-              maxLength={5000}
-              className="block w-full rounded-md border border-input bg-background px-3 py-2 font-mono text-sm shadow-xs transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
-            />
+            <div className="overflow-hidden rounded-md border border-input bg-background shadow-xs transition-colors focus-within:border-ring focus-within:ring-2 focus-within:ring-ring/50">
+              <MarkdownToolbar textareaRef={textareaRef} />
+              <textarea
+                id="description"
+                {...(() => {
+                  const reg = form.register('description');
+                  return {
+                    ...reg,
+                    ref: (el: HTMLTextAreaElement | null) => {
+                      reg.ref(el);
+                      textareaRef.current = el;
+                    },
+                  };
+                })()}
+                placeholder={t('descriptionPlaceholder')}
+                rows={6}
+                maxLength={5000}
+                className="block w-full bg-transparent px-3 py-2 font-mono text-sm placeholder:text-muted-foreground focus:outline-none"
+              />
+            </div>
           ) : (
             <div className="min-h-[9rem] rounded-md border border-input bg-muted/30 px-3 py-2">
               {descriptionValue.trim() ? (
