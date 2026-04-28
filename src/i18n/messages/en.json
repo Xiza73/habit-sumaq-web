@@ -311,6 +311,7 @@
       "estimatedAmountHint": "Auto-filled from the average of your payments",
       "dueDay": "Approximate due day",
       "dueDayHint": "Just for sorting and reminders",
+      "dueDayOutOfRange": "Day must be between 1 and 31",
       "startPeriod": "Start month"
     },
     "payForm": {

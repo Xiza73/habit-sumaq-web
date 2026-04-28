@@ -85,3 +85,30 @@ export function formatPeriodLabel(period: string, locale: string): string {
   const capitalized = monthName.charAt(0).toLocaleUpperCase(locale) + monthName.slice(1);
   return `${capitalized} ${yearValue}`;
 }
+
+/**
+ * Builds an estimated payment date in `YYYY-MM-DD` for a given period using
+ * the service's `dueDay`. Used to pre-fill the "Pagar" form so the user gets
+ * the date of the actual due day (e.g. 15 of the month being paid) instead
+ * of today's date.
+ *
+ * - Returns null when `dueDay` is null — caller falls back to today.
+ * - Clamps `dueDay` to the last valid day of the month (e.g. dueDay=31 in
+ *   February → 28 or 29).
+ * - Returns null when `period` is not a valid `YYYY-MM` string.
+ */
+export function getEstimatedPaymentDate(period: string, dueDay: number | null): string | null {
+  if (dueDay == null) return null;
+  const match = /^(\d{4})-(\d{2})$/.exec(period);
+  if (!match) return null;
+  const year = Number(match[1]);
+  const month = Number(match[2]); // 1-indexed
+  if (!Number.isFinite(year) || month < 1 || month > 12) return null;
+
+  // `new Date(year, month, 0)` gives the last day of `month` (because `month`
+  // here is 0-indexed-as-month+1 trick: day 0 of next month = last day of this).
+  const lastDayOfMonth = new Date(year, month, 0).getDate();
+  const clampedDay = Math.min(Math.max(dueDay, 1), lastDayOfMonth);
+
+  return `${match[1]}-${match[2]}-${String(clampedDay).padStart(2, '0')}`;
+}

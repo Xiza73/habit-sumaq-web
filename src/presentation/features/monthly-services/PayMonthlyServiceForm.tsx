@@ -22,7 +22,7 @@ import { Input } from '@/presentation/components/ui/Input';
 import { Modal } from '@/presentation/components/ui/Modal';
 import { Select } from '@/presentation/components/ui/Select';
 
-import { formatPeriodLabel, getTodayLocaleDate } from '@/lib/format';
+import { formatPeriodLabel, getEstimatedPaymentDate, getTodayLocaleDate } from '@/lib/format';
 
 interface PayMonthlyServiceFormProps {
   open: boolean;
@@ -51,9 +51,14 @@ export function PayMonthlyServiceForm({ open, service, onClose }: PayMonthlyServ
 
   useEffect(() => {
     if (!open || !service) return;
+    // If the service has a dueDay, pre-fill the date to that day in the period
+    // being paid (e.g. 15 of nextDuePeriod) — better default than today, since
+    // the user typically pays around the due day, not when they remember to
+    // open the form. Falls back to today when dueDay is null.
+    const estimatedDate = getEstimatedPaymentDate(service.nextDuePeriod, service.dueDay);
     form.reset({
       amount: service.estimatedAmount ?? 0,
-      date: getTodayLocaleDate(),
+      date: estimatedDate ?? getTodayLocaleDate(),
       description: service.name,
       accountIdOverride: service.defaultAccountId,
     });

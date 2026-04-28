@@ -271,6 +271,9 @@ export function MonthlyServiceForm({ open, service, onClose }: MonthlyServiceFor
                 setValueAs: (v) => (v === '' || v == null ? null : Number(v)),
               })}
             />
+            {form.formState.errors.dueDay && (
+              <p className="text-xs text-destructive">{t('fields.dueDayOutOfRange')}</p>
+            )}
             <p className="text-[11px] text-muted-foreground">{t('fields.dueDayHint')}</p>
           </div>
         </div>

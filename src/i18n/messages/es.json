@@ -311,6 +311,7 @@
       "estimatedAmountHint": "Se autocompleta con el promedio de tus pagos",
       "dueDay": "Día aproximado de vencimiento",
       "dueDayHint": "Solo para ordenar y recordar",
+      "dueDayOutOfRange": "El día debe estar entre 1 y 31",
       "startPeriod": "Mes de inicio"
     },
     "payForm": {

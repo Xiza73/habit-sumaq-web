@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest';
 
-import { formatCurrency, formatDate, getOnlyDateFromApi, getTodayLocaleDate } from './format';
+import {
+  formatCurrency,
+  formatDate,
+  getEstimatedPaymentDate,
+  getOnlyDateFromApi,
+  getTodayLocaleDate,
+} from './format';
 
 describe('formatCurrency', () => {
   it('formats PEN currency', () => {
@@ -83,5 +89,37 @@ describe('getOnlyDateFromApi', () => {
   it('handles date without Z suffix', () => {
     const result = getOnlyDateFromApi('2026-03-13T10:30:00.000');
     expect(result).toBeTruthy();
+  });
+});
+
+describe('getEstimatedPaymentDate', () => {
+  it('returns null when dueDay is null', () => {
+    expect(getEstimatedPaymentDate('2026-04', null)).toBeNull();
+  });
+
+  it('returns null when period has invalid shape', () => {
+    expect(getEstimatedPaymentDate('not-a-period', 15)).toBeNull();
+    expect(getEstimatedPaymentDate('2026-13', 15)).toBeNull();
+    expect(getEstimatedPaymentDate('2026-00', 15)).toBeNull();
+  });
+
+  it('returns YYYY-MM-DD with the dueDay padded', () => {
+    expect(getEstimatedPaymentDate('2026-04', 5)).toBe('2026-04-05');
+    expect(getEstimatedPaymentDate('2026-04', 15)).toBe('2026-04-15');
+    expect(getEstimatedPaymentDate('2026-04', 30)).toBe('2026-04-30');
+  });
+
+  it('clamps dueDay to the last valid day of months with fewer days', () => {
+    // April has 30 days — dueDay=31 clamps to 30.
+    expect(getEstimatedPaymentDate('2026-04', 31)).toBe('2026-04-30');
+    // February 2026 has 28 days — dueDay=31 clamps to 28.
+    expect(getEstimatedPaymentDate('2026-02', 31)).toBe('2026-02-28');
+    // Leap year: February 2024 has 29 days.
+    expect(getEstimatedPaymentDate('2024-02', 31)).toBe('2024-02-29');
+  });
+
+  it('clamps non-positive dueDay to 1 (defensive)', () => {
+    expect(getEstimatedPaymentDate('2026-04', 0)).toBe('2026-04-01');
+    expect(getEstimatedPaymentDate('2026-04', -5)).toBe('2026-04-01');
   });
 });
