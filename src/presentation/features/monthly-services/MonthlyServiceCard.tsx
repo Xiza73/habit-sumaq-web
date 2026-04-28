@@ -19,7 +19,10 @@ import {
 
 import { type Account } from '@/core/domain/entities/account';
 import { type Category } from '@/core/domain/entities/category';
-import { type MonthlyService } from '@/core/domain/entities/monthly-service';
+import {
+  MONTHLY_SERVICE_FREQUENCY_LABEL_KEYS,
+  type MonthlyService,
+} from '@/core/domain/entities/monthly-service';
 
 import { formatCurrency, formatPeriodLabel } from '@/lib/format';
 import { cn } from '@/lib/utils';
@@ -89,6 +92,13 @@ export function MonthlyServiceCard({
             <span className="shrink-0 rounded-md border border-border px-1.5 py-0.5 font-mono text-[10px] uppercase text-muted-foreground">
               {service.currency}
             </span>
+            {service.frequencyMonths !== 1 && (
+              // Cadence chip — only shown for non-monthly services because
+              // monthly is the default and adding a chip there would be noise.
+              <span className="shrink-0 rounded-md bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-primary">
+                {t(`frequency.${MONTHLY_SERVICE_FREQUENCY_LABEL_KEYS[service.frequencyMonths]}`)}
+              </span>
+            )}
           </div>
           <span
             className={cn(
