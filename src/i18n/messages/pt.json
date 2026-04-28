@@ -399,6 +399,15 @@
     "descriptionPreviewEmpty": "Sem descrição",
     "descriptionModeEdit": "Editar",
     "descriptionModePreview": "Visualizar",
+    "markdownToolbar": {
+      "bold": "Negrito",
+      "italic": "Itálico",
+      "code": "Código em linha",
+      "heading": "Cabeçalho",
+      "bulletList": "Lista",
+      "orderedList": "Lista numerada",
+      "quote": "Citação"
+    },
     "descriptionHint": "Suporta Markdown: **negrito**, *itálico*, listas, links, tabelas.",
     "pending": "Pendentes",
     "pendingEmpty": "Nada pendente para fazer.",
