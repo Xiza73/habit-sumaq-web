@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+  dateInputToBackendIso,
   formatCurrency,
   formatDate,
   getEstimatedPaymentDate,
@@ -121,5 +122,38 @@ describe('getEstimatedPaymentDate', () => {
   it('clamps non-positive dueDay to 1 (defensive)', () => {
     expect(getEstimatedPaymentDate('2026-04', 0)).toBe('2026-04-01');
     expect(getEstimatedPaymentDate('2026-04', -5)).toBe('2026-04-01');
+  });
+});
+
+describe('dateInputToBackendIso', () => {
+  it('returns undefined for empty / undefined inputs', () => {
+    expect(dateInputToBackendIso(undefined)).toBeUndefined();
+    expect(dateInputToBackendIso('')).toBeUndefined();
+  });
+
+  it('returns undefined when the input is not YYYY-MM-DD', () => {
+    expect(dateInputToBackendIso('2026/04/03')).toBeUndefined();
+    expect(dateInputToBackendIso('2026-4-3')).toBeUndefined();
+    expect(dateInputToBackendIso('not a date')).toBeUndefined();
+  });
+
+  it('pins valid YYYY-MM-DD to 12:00 UTC so the day is stable across timezones', () => {
+    expect(dateInputToBackendIso('2026-04-03')).toBe('2026-04-03T12:00:00.000Z');
+    expect(dateInputToBackendIso('2026-12-31')).toBe('2026-12-31T12:00:00.000Z');
+  });
+
+  it('regression: paying the 3rd in America/Lima still reads the 3rd on the backend', () => {
+    // Repro of the bug that prompted this helper. Without the noon-UTC pin,
+    // `new Date('2026-04-03')` gave 2026-04-03T00:00:00Z which is the 2nd
+    // in America/Lima. The fix pins to 12:00 UTC so any zone in [-12,+14]
+    // sees day=3.
+    const iso = dateInputToBackendIso('2026-04-03');
+    const day = new Intl.DateTimeFormat('en-US', {
+      timeZone: 'America/Lima',
+      day: '2-digit',
+    })
+      .formatToParts(new Date(iso!))
+      .find((p) => p.type === 'day')?.value;
+    expect(day).toBe('03');
   });
 });

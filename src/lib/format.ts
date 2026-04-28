@@ -87,6 +87,30 @@ export function formatPeriodLabel(period: string, locale: string): string {
 }
 
 /**
+ * Converts a date picker value (`YYYY-MM-DD`) into a backend-safe ISO string
+ * that "stays on the same day" no matter the user's timezone.
+ *
+ * The naive approach — sending `YYYY-MM-DD` directly — makes the backend
+ * parse it as UTC midnight (`new Date('2026-04-03')` → `2026-04-03T00:00Z`).
+ * In any negative-offset zone (e.g. `America/Lima`, UTC-5), that instant is
+ * the previous calendar day → the backend's day-of-month logic then reads
+ * the wrong day.
+ *
+ * Pinning the time to **12:00 UTC** makes the day stable across every
+ * realistic IANA zone (offsets in `[-12h, +14h]`): `2026-04-03T12:00Z`
+ * lands on the 3rd everywhere from Pacific/Niue (UTC-11) to Pacific/
+ * Kiritimati (UTC+14).
+ *
+ * Returns `undefined` when the input doesn't match the expected shape so
+ * callers can fall through to the default backend handling.
+ */
+export function dateInputToBackendIso(date: string | undefined): string | undefined {
+  if (!date) return undefined;
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return undefined;
+  return `${date}T12:00:00.000Z`;
+}
+
+/**
  * Builds an estimated payment date in `YYYY-MM-DD` for a given period using
  * the service's `dueDay`. Used to pre-fill the "Pagar" form so the user gets
  * the date of the actual due day (e.g. 15 of the month being paid) instead

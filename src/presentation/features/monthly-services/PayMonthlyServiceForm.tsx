@@ -22,7 +22,12 @@ import { Input } from '@/presentation/components/ui/Input';
 import { Modal } from '@/presentation/components/ui/Modal';
 import { Select } from '@/presentation/components/ui/Select';
 
-import { formatPeriodLabel, getEstimatedPaymentDate, getTodayLocaleDate } from '@/lib/format';
+import {
+  dateInputToBackendIso,
+  formatPeriodLabel,
+  getEstimatedPaymentDate,
+  getTodayLocaleDate,
+} from '@/lib/format';
 
 interface PayMonthlyServiceFormProps {
   open: boolean;
@@ -71,7 +76,12 @@ export function PayMonthlyServiceForm({ open, service, onClose }: PayMonthlyServ
 
     const cleaned: PayMonthlyServiceInput = {
       amount: values.amount,
-      date: values.date,
+      // Pin to 12:00 UTC so the backend reads the same calendar day across
+      // every realistic timezone — sending the raw YYYY-MM-DD makes it
+      // parse as UTC midnight which shifts to the previous day in negative
+      // offsets (e.g. paying the 3rd in America/Lima ended up stored as
+      // the 2nd, breaking the dueDay recompute).
+      date: dateInputToBackendIso(values.date),
       description: values.description === '' ? null : (values.description ?? null),
       accountIdOverride: values.accountIdOverride || undefined,
     };
