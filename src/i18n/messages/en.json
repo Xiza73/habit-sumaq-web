@@ -307,12 +307,21 @@
       "defaultAccount": "Default account",
       "category": "Category",
       "currency": "Currency",
+      "frequency": "Cadence",
+      "frequencyHint": "How often it's billed. This can't be changed later.",
+      "frequencyHintEdit": "Cadence is immutable. To change it, archive this service and create a new one.",
       "estimatedAmount": "Estimated amount",
       "estimatedAmountHint": "Auto-filled from the average of your payments",
       "dueDay": "Approximate due day",
       "dueDayHint": "Just for sorting and reminders",
       "dueDayOutOfRange": "Day must be between 1 and 31",
       "startPeriod": "Start month"
+    },
+    "frequency": {
+      "monthly": "Monthly",
+      "quarterly": "Quarterly",
+      "semiannual": "Semiannual",
+      "annual": "Annual"
     },
     "payForm": {
       "title": "Pay {name}",

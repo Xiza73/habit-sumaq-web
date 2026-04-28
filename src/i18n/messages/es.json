@@ -307,12 +307,21 @@
       "defaultAccount": "Cuenta por defecto",
       "category": "Categoría",
       "currency": "Moneda",
+      "frequency": "Cadencia",
+      "frequencyHint": "Cada cuánto se cobra. Esto no se puede cambiar después.",
+      "frequencyHintEdit": "La cadencia es inmutable. Para cambiarla, archivá este servicio y creá uno nuevo.",
       "estimatedAmount": "Monto estimado",
       "estimatedAmountHint": "Se autocompleta con el promedio de tus pagos",
       "dueDay": "Día aproximado de vencimiento",
       "dueDayHint": "Solo para ordenar y recordar",
       "dueDayOutOfRange": "El día debe estar entre 1 y 31",
       "startPeriod": "Mes de inicio"
+    },
+    "frequency": {
+      "monthly": "Mensual",
+      "quarterly": "Trimestral",
+      "semiannual": "Semestral",
+      "annual": "Anual"
     },
     "payForm": {
       "title": "Pagar {name}",

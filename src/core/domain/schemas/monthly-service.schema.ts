@@ -1,13 +1,28 @@
 import { z } from 'zod/v4';
 
+import { MONTHLY_SERVICE_FREQUENCIES } from '@/core/domain/entities/monthly-service';
+
 const PERIOD_REGEX = /^\d{4}-(0[1-9]|1[0-2])$/;
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+// Refine without a type predicate so the schema's output stays as `number |
+// undefined`. Narrowing it to `1|3|6|12` would tighten the inferred form
+// shape, which the RHF resolver can't match against the entity field that
+// stores the raw number.
+const frequencyMonthsSchema = z
+  .number()
+  .int()
+  .refine((v) => (MONTHLY_SERVICE_FREQUENCIES as readonly number[]).includes(v), {
+    message: 'invalid_frequency',
+  })
+  .optional();
 
 export const createMonthlyServiceSchema = z.object({
   name: z.string().min(1, 'required').max(100, 'max_length'),
   defaultAccountId: z.string().regex(UUID_REGEX, 'invalid_uuid'),
   categoryId: z.string().regex(UUID_REGEX, 'invalid_uuid'),
   currency: z.string().length(3, 'invalid_currency'),
+  frequencyMonths: frequencyMonthsSchema,
   estimatedAmount: z.number().positive('min_amount').nullable().optional(),
   dueDay: z.number().int().min(1).max(31).nullable().optional(),
   startPeriod: z.string().regex(PERIOD_REGEX, 'invalid_period').optional(),

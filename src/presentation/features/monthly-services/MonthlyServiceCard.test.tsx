@@ -43,6 +43,7 @@ const baseService: MonthlyService = {
   defaultAccountId: 'acc-1',
   categoryId: 'cat-1',
   currency: 'PEN',
+  frequencyMonths: 1,
   estimatedAmount: 120,
   dueDay: 15,
   startPeriod: '2026-01',
@@ -138,5 +139,23 @@ describe('MonthlyServiceCard', () => {
   it('renders em dash when estimatedAmount is null', () => {
     renderCard({ ...baseService, estimatedAmount: null });
     expect(screen.getByText('—')).toBeInTheDocument();
+  });
+
+  it('hides the cadence chip when frequencyMonths === 1 (monthly)', () => {
+    renderCard();
+    // Monthly is the default and adding a chip there would be visual noise.
+    expect(screen.queryByText(/mensual/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/trimestral/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/anual/i)).not.toBeInTheDocument();
+  });
+
+  it('shows a localized cadence chip for non-monthly services', () => {
+    renderCard({ ...baseService, frequencyMonths: 3 });
+    expect(screen.getByText(/trimestral/i)).toBeInTheDocument();
+  });
+
+  it('renders the annual cadence too', () => {
+    renderCard({ ...baseService, frequencyMonths: 12 });
+    expect(screen.getByText(/anual/i)).toBeInTheDocument();
   });
 });

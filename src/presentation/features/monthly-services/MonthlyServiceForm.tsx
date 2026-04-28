@@ -14,7 +14,11 @@ import {
   useCreateMonthlyService,
   useUpdateMonthlyService,
 } from '@/core/application/hooks/use-monthly-services';
-import { type MonthlyService } from '@/core/domain/entities/monthly-service';
+import {
+  MONTHLY_SERVICE_FREQUENCIES,
+  MONTHLY_SERVICE_FREQUENCY_LABEL_KEYS,
+  type MonthlyService,
+} from '@/core/domain/entities/monthly-service';
 import {
   type CreateMonthlyServiceInput,
   createMonthlyServiceSchema,
@@ -65,6 +69,7 @@ export function MonthlyServiceForm({ open, service, onClose }: MonthlyServiceFor
       defaultAccountId: '',
       categoryId: '',
       currency: 'PEN',
+      frequencyMonths: 1,
       estimatedAmount: null,
       dueDay: null,
       startPeriod: getCurrentPeriod(),
@@ -89,6 +94,7 @@ export function MonthlyServiceForm({ open, service, onClose }: MonthlyServiceFor
         defaultAccountId: service.defaultAccountId,
         categoryId: service.categoryId,
         currency: service.currency,
+        frequencyMonths: service.frequencyMonths,
         estimatedAmount: service.estimatedAmount,
         dueDay: service.dueDay,
         startPeriod: service.startPeriod,
@@ -99,6 +105,7 @@ export function MonthlyServiceForm({ open, service, onClose }: MonthlyServiceFor
         defaultAccountId: '',
         categoryId: '',
         currency: 'PEN',
+        frequencyMonths: 1,
         estimatedAmount: null,
         dueDay: null,
         startPeriod: getCurrentPeriod(),
@@ -239,6 +246,29 @@ export function MonthlyServiceForm({ open, service, onClose }: MonthlyServiceFor
             </div>
           </div>
         )}
+
+        <div className="space-y-2">
+          <label htmlFor="msvc-frequency" className="text-sm font-medium">
+            {t('fields.frequency')}
+          </label>
+          <Select
+            id="msvc-frequency"
+            {...form.register('frequencyMonths', { valueAsNumber: true })}
+            // Cadence is immutable after creation (matches the backend
+            // contract). We still render the value in edit mode so the user
+            // sees what they have.
+            disabled={isEditing}
+          >
+            {MONTHLY_SERVICE_FREQUENCIES.map((value) => (
+              <option key={value} value={value}>
+                {t(`frequency.${MONTHLY_SERVICE_FREQUENCY_LABEL_KEYS[value]}`)}
+              </option>
+            ))}
+          </Select>
+          <p className="text-[11px] text-muted-foreground">
+            {isEditing ? t('fields.frequencyHintEdit') : t('fields.frequencyHint')}
+          </p>
+        </div>
 
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">

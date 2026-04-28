@@ -25,11 +25,22 @@ describe('createMonthlyServiceSchema', () => {
   it('accepts valid input with all fields', () => {
     const result = createMonthlyServiceSchema.safeParse({
       ...validInput,
+      frequencyMonths: 3,
       estimatedAmount: 120.5,
       dueDay: 15,
       startPeriod: '2026-01',
     });
     expect(result.success).toBe(true);
+  });
+
+  it.each([1, 3, 6, 12])('accepts %i as frequencyMonths', (value) => {
+    const result = createMonthlyServiceSchema.safeParse({ ...validInput, frequencyMonths: value });
+    expect(result.success).toBe(true);
+  });
+
+  it.each([0, 2, 4, 5, 7, 13, 99])('rejects %i as frequencyMonths', (value) => {
+    const result = createMonthlyServiceSchema.safeParse({ ...validInput, frequencyMonths: value });
+    expect(result.success).toBe(false);
   });
 
   it('rejects empty name', () => {
