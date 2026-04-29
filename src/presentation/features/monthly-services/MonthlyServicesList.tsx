@@ -14,6 +14,7 @@ import {
   useMonthlyServices,
   useSkipMonthlyServiceMonth,
 } from '@/core/application/hooks/use-monthly-services';
+import { useMonthlyServicesViewPrefs } from '@/core/application/hooks/use-monthly-services-view-prefs';
 import { type Account } from '@/core/domain/entities/account';
 import { type Category } from '@/core/domain/entities/category';
 import { type MonthlyService } from '@/core/domain/entities/monthly-service';
@@ -23,11 +24,13 @@ import { ApiError } from '@/infrastructure/api/api-error';
 import { ConfirmDialog } from '@/presentation/components/feedback/ConfirmDialog';
 
 import { formatPeriodLabel } from '@/lib/format';
+import { applyView } from '@/lib/monthly-services-view';
 import { cn } from '@/lib/utils';
 
 import { MonthlyServiceCard } from './MonthlyServiceCard';
 import { MonthlyServiceForm } from './MonthlyServiceForm';
 import { MonthlyServicesSummary } from './MonthlyServicesSummary';
+import { MonthlyServicesViewControls } from './MonthlyServicesViewControls';
 import { PayMonthlyServiceForm } from './PayMonthlyServiceForm';
 
 function CardSkeleton() {
@@ -51,6 +54,38 @@ function CardSkeleton() {
 
 type Tab = 'active' | 'archived';
 
+/**
+ * Resolves the human-readable label for a group header. Pulls from i18n for
+ * status / frequency, and from the category lookup for `category` groups.
+ * For uncategorised buckets it falls through to the dedicated i18n key.
+ */
+function renderGroupLabel(
+  group: { key: string },
+  groupBy: ReturnType<typeof useMonthlyServicesViewPrefs>['prefs']['groupBy'],
+  categoriesById: Map<string, Category>,
+  t: ReturnType<typeof useTranslations<'monthlyServices'>>,
+): string {
+  if (groupBy === 'status') {
+    // Dedicated header keys — the per-card `status.*` keys carry a `{period}`
+    // placeholder we don't need here.
+    return t(`groupHeaders.status.${group.key as 'overdue' | 'pending' | 'paid' | 'archived'}`);
+  }
+  if (groupBy === 'frequency') {
+    const labelMap: Record<string, 'monthly' | 'quarterly' | 'semiannual' | 'annual'> = {
+      '1': 'monthly',
+      '3': 'quarterly',
+      '6': 'semiannual',
+      '12': 'annual',
+    };
+    return t(`frequency.${labelMap[group.key] ?? 'monthly'}`);
+  }
+  if (groupBy === 'category') {
+    if (group.key === 'null-category') return t('groupHeaders.noCategory');
+    return categoriesById.get(group.key)?.name ?? t('groupHeaders.noCategory');
+  }
+  return '';
+}
+
 export function MonthlyServicesList() {
   const t = useTranslations('monthlyServices');
   const tErrors = useTranslations('errors');
@@ -71,6 +106,7 @@ export function MonthlyServicesList() {
   const archiveMutation = useArchiveMonthlyService();
   const deleteMutation = useDeleteMonthlyService();
   const skipMutation = useSkipMonthlyServiceMonth();
+  const { prefs, setPrefs } = useMonthlyServicesViewPrefs();
 
   const accountsById = useMemo(() => {
     const map = new Map<string, Account>();
@@ -88,6 +124,13 @@ export function MonthlyServicesList() {
     if (!services) return [];
     return services.filter((s) => (showArchived ? !s.isActive : s.isActive));
   }, [services, showArchived]);
+
+  // Group + sort the visible list according to the persisted view prefs.
+  // Helper is pure — see `src/lib/monthly-services-view.ts`.
+  const groups = useMemo(
+    () => applyView(visibleServices, prefs, categoriesById),
+    [visibleServices, prefs, categoriesById],
+  );
 
   function handleOpenCreate() {
     setEditingService(null);
@@ -181,22 +224,27 @@ export function MonthlyServicesList() {
         </button>
       </div>
 
-      <div className="flex items-center gap-2">
-        {(['active', 'archived'] as const).map((value) => (
-          <button
-            key={value}
-            type="button"
-            onClick={() => setTab(value)}
-            className={cn(
-              'rounded-lg border px-3 py-1.5 text-sm font-medium transition-colors',
-              tab === value
-                ? 'border-primary bg-primary/10 text-primary'
-                : 'border-border text-muted-foreground hover:bg-muted',
-            )}
-          >
-            {t(`tabs.${value}`)}
-          </button>
-        ))}
+      {/* Tabs + view controls. Stack on mobile, space-between on desktop. */}
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-center gap-2">
+          {(['active', 'archived'] as const).map((value) => (
+            <button
+              key={value}
+              type="button"
+              onClick={() => setTab(value)}
+              className={cn(
+                'rounded-lg border px-3 py-1.5 text-sm font-medium transition-colors',
+                tab === value
+                  ? 'border-primary bg-primary/10 text-primary'
+                  : 'border-border text-muted-foreground hover:bg-muted',
+              )}
+            >
+              {t(`tabs.${value}`)}
+            </button>
+          ))}
+        </div>
+
+        <MonthlyServicesViewControls prefs={prefs} onChange={setPrefs} />
       </div>
 
       {!showArchived && services && services.length > 0 && (
@@ -226,19 +274,33 @@ export function MonthlyServicesList() {
           )}
         </div>
       ) : (
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {visibleServices.map((service) => (
-            <MonthlyServiceCard
-              key={service.id}
-              service={service}
-              account={accountsById.get(service.defaultAccountId)}
-              category={categoriesById.get(service.categoryId)}
-              onPay={setPayingService}
-              onSkip={setSkippingService}
-              onEdit={handleEdit}
-              onArchive={handleArchive}
-              onDelete={setDeletingService}
-            />
+        <div className="space-y-6">
+          {groups.map((group) => (
+            <section key={group.id} className="space-y-3">
+              {/* Group header — only rendered when there's actual grouping
+                  (groupBy !== 'none' produces a key other than 'all'). */}
+              {group.key !== 'all' && (
+                <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                  {renderGroupLabel(group, prefs.groupBy, categoriesById, t)}
+                  <span className="ml-2 text-muted-foreground/70">({group.services.length})</span>
+                </h2>
+              )}
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+                {group.services.map((service) => (
+                  <MonthlyServiceCard
+                    key={service.id}
+                    service={service}
+                    account={accountsById.get(service.defaultAccountId)}
+                    category={categoriesById.get(service.categoryId)}
+                    onPay={setPayingService}
+                    onSkip={setSkippingService}
+                    onEdit={handleEdit}
+                    onArchive={handleArchive}
+                    onDelete={setDeletingService}
+                  />
+                ))}
+              </div>
+            </section>
           ))}
         </div>
       )}

@@ -323,6 +323,34 @@
       "semiannual": "Semestral",
       "annual": "Anual"
     },
+    "viewControls": {
+      "groupLabel": "Agrupar",
+      "orderLabel": "Ordenar",
+      "toggleToAsc": "Cambiar a ascendente",
+      "toggleToDesc": "Cambiar a descendente",
+      "groupBy": {
+        "none": "Sin agrupar",
+        "status": "Por estado",
+        "frequency": "Por cadencia",
+        "category": "Por categoría"
+      },
+      "orderBy": {
+        "name": "Nombre",
+        "dueDay": "Día de vencimiento",
+        "nextDuePeriod": "Próximo período",
+        "estimatedAmount": "Monto",
+        "createdAt": "Creación"
+      }
+    },
+    "groupHeaders": {
+      "noCategory": "Sin categoría",
+      "status": {
+        "overdue": "Atrasados",
+        "pending": "Pendientes",
+        "paid": "Al día",
+        "archived": "Archivados"
+      }
+    },
     "payForm": {
       "title": "Pagar {name}",
       "period": "Período: {period}",

@@ -9,6 +9,9 @@ export interface UpdateUserSettingsDto {
   dateFormat?: string;
   startOfWeek?: string;
   timezone?: string;
+  monthlyServicesGroupBy?: string;
+  monthlyServicesOrderBy?: string;
+  monthlyServicesOrderDir?: string;
 }
 
 export const userSettingsApi = {
