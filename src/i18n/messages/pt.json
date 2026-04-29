@@ -215,6 +215,8 @@
     "MSVC_002": "Serviço mensal não encontrado.",
     "MSVC_003": "Você já tem um serviço ativo com esse nome.",
     "MSVC_004": "Este serviço já está pago para o mês atual.",
+    "CHRE_001": "Não é possível excluir uma tarefa com histórico. Arquive-a no lugar.",
+    "CHRE_002": "Tarefa não encontrada.",
     "generic": "Ocorreu um erro inesperado. Tente novamente."
   },
   "habits": {
@@ -371,8 +373,82 @@
     "routines": "Rotinas",
     "habits": "Hábitos",
     "quickTasks": "Diárias",
+    "chores": "Tarefas",
     "reports": "Relatórios",
     "settings": "Configurações"
+  },
+  "chores": {
+    "title": "Tarefas",
+    "subtitle": "Tarefas recorrentes que você faz de tempos em tempos (cortar cabelo, limpar despensa, ...)",
+    "createChore": "Nova tarefa",
+    "editChore": "Editar tarefa",
+    "empty": "Você ainda não adicionou nenhuma tarefa",
+    "emptyArchived": "Nenhuma tarefa arquivada",
+    "tabs": { "active": "Ativas", "archived": "Arquivadas" },
+    "status": {
+      "overdue": "Atrasada",
+      "upcoming": "Próxima",
+      "horizon": "No horizonte"
+    },
+    "intervalUnit": {
+      "days": "{value, plural, one {dia} other {dias}}",
+      "weeks": "{value, plural, one {semana} other {semanas}}",
+      "months": "{value, plural, one {mês} other {meses}}",
+      "years": "{value, plural, one {ano} other {anos}}"
+    },
+    "intervalLabel": "A cada {value} {unit}",
+    "actions": {
+      "done": "Feito",
+      "skip": "Pular",
+      "edit": "Editar",
+      "archive": "Arquivar",
+      "unarchive": "Desarquivar",
+      "delete": "Excluir permanentemente",
+      "viewHistory": "Ver histórico"
+    },
+    "fields": {
+      "name": "Nome",
+      "intervalValue": "A cada",
+      "intervalUnit": "Unidade",
+      "startDate": "Data de início",
+      "nextDueDate": "Próxima vez",
+      "nextDueDateHint": "Edite manualmente para reajustar o ritmo",
+      "category": "Categoria",
+      "categoryHint": "Opcional. Para agrupar tarefas relacionadas (Casa, Saúde, Carro, ...).",
+      "notes": "Notas",
+      "notesPlaceholder": "Detalhes, local, marca, etc."
+    },
+    "lastDone": "Última vez: {date}",
+    "lastDoneNever": "Nunca",
+    "nextDue": "Próxima: {date}",
+    "doneForm": {
+      "title": "Marcar como feita",
+      "description": "Registre quando você fez \"{name}\". Se for hoje, deixe a data padrão.",
+      "doneAt": "Data",
+      "note": "Nota",
+      "notePlaceholder": "(Opcional) o que você fez, onde, etc.",
+      "confirm": "Registrar",
+      "success": "{name} registrada"
+    },
+    "skipConfirm": {
+      "title": "Pular este ciclo?",
+      "body": "A próxima vez avançará para {nextDate}. Nenhum evento será adicionado ao histórico.",
+      "confirm": "Pular",
+      "success": "Ciclo pulado"
+    },
+    "deleteConfirm": {
+      "title": "Excluir \"{name}\"?",
+      "body": "Esta ação não pode ser desfeita.",
+      "disabledReason": "Você não pode excluir uma tarefa com histórico. Arquive-a no lugar.",
+      "confirm": "Excluir"
+    },
+    "logs": {
+      "title": "Histórico de \"{name}\"",
+      "empty": "Sem eventos ainda",
+      "loadMore": "Carregar mais"
+    },
+    "archived": "Arquivada",
+    "unarchived": "Desarquivada"
   },
   "reports": {
     "loadError": "Não foi possível carregar o relatório. Tente novamente.",
