@@ -109,6 +109,7 @@
     "settleAccount": "Cuenta de pago",
     "settleAmount": "Monto a liquidar",
     "remaining": "Pendiente",
+    "ofTotal": "de {total}",
     "noDescription": "Sin descripción",
     "searchPlaceholder": "Buscar por nombre, descripción o referencia…",
     "debtsSummary": {
@@ -126,15 +127,31 @@
       "allSettled": "Todo liquidado",
       "pendingCount": "{count, plural, one {# pendiente} other {# pendientes}}",
       "settleAll": "Liquidar todo",
-      "settleAllConfirmTitle": "Liquidar todo con {name} ({currency})",
-      "settleAllConfirmBody": "Vas a marcar como saldadas {count} transacciones pendientes en {currency}. No crea movimientos en tus cuentas ni afecta balances. ¿Continuar?",
-      "settleAllSuccess": "Deudas con {name} en {currency} liquidadas",
       "newDebt": "Nueva deuda",
       "newLoan": "Nuevo préstamo",
       "statusFilter": {
         "pending": "Pendientes",
         "all": "Todas",
         "settled": "Liquidadas"
+      },
+      "bulkSettle": {
+        "title": "Liquidar todo con {name} ({currency})",
+        "intro": "Vas a procesar {count, plural, one {# transacción pendiente} other {# transacciones pendientes}} en {currency}.",
+        "modeLabel": "Modo de liquidación",
+        "confirm": "Confirmar",
+        "real": {
+          "title": "Pago real",
+          "description": "Crea movimientos en tu cuenta (gastos para deudas, ingresos para préstamos) y mueve el balance.",
+          "accountLabel": "Cuenta en {currency}",
+          "summary": "Vas a generar {count, plural, one {# liquidación} other {# liquidaciones}} por un total de {total} desde {account}.",
+          "noEligibleAccount": "No tenés ninguna cuenta activa en {currency}. Crea una o usá el cierre informal."
+        },
+        "informal": {
+          "title": "Cierre informal",
+          "description": "Solo marca como saldadas. No toca tus cuentas ni mueve plata. Útil cuando ya saldaron cara a cara."
+        },
+        "successReal": "Deudas con {name} en {currency} liquidadas y registradas en tu cuenta",
+        "successInformal": "Deudas con {name} en {currency} marcadas como saldadas"
       }
     },
     "createDebt": "Nueva deuda",
