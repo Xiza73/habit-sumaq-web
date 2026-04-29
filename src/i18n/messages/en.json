@@ -323,6 +323,34 @@
       "semiannual": "Semiannual",
       "annual": "Annual"
     },
+    "viewControls": {
+      "groupLabel": "Group",
+      "orderLabel": "Sort",
+      "toggleToAsc": "Switch to ascending",
+      "toggleToDesc": "Switch to descending",
+      "groupBy": {
+        "none": "No grouping",
+        "status": "By status",
+        "frequency": "By cadence",
+        "category": "By category"
+      },
+      "orderBy": {
+        "name": "Name",
+        "dueDay": "Due day",
+        "nextDuePeriod": "Next period",
+        "estimatedAmount": "Amount",
+        "createdAt": "Created"
+      }
+    },
+    "groupHeaders": {
+      "noCategory": "Uncategorised",
+      "status": {
+        "overdue": "Overdue",
+        "pending": "Pending",
+        "paid": "Up to date",
+        "archived": "Archived"
+      }
+    },
     "payForm": {
       "title": "Pay {name}",
       "period": "Period: {period}",
