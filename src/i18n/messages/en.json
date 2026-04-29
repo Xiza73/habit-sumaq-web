@@ -215,6 +215,8 @@
     "MSVC_002": "Monthly service not found.",
     "MSVC_003": "You already have an active service with that name.",
     "MSVC_004": "This service is already paid for the current month.",
+    "CHRE_001": "Cannot delete a chore with logged events. Archive it instead.",
+    "CHRE_002": "Chore not found.",
     "generic": "An unexpected error occurred. Please try again."
   },
   "habits": {
@@ -371,8 +373,82 @@
     "routines": "Routines",
     "habits": "Habits",
     "quickTasks": "Daily",
+    "chores": "Chores",
     "reports": "Reports",
     "settings": "Settings"
+  },
+  "chores": {
+    "title": "Chores",
+    "subtitle": "Recurring tasks you do every so often (haircut, clean the pantry, ...)",
+    "createChore": "New chore",
+    "editChore": "Edit chore",
+    "empty": "You haven't added any chore yet",
+    "emptyArchived": "No archived chores",
+    "tabs": { "active": "Active", "archived": "Archived" },
+    "status": {
+      "overdue": "Overdue",
+      "upcoming": "Upcoming",
+      "horizon": "On the horizon"
+    },
+    "intervalUnit": {
+      "days": "{value, plural, one {day} other {days}}",
+      "weeks": "{value, plural, one {week} other {weeks}}",
+      "months": "{value, plural, one {month} other {months}}",
+      "years": "{value, plural, one {year} other {years}}"
+    },
+    "intervalLabel": "Every {value} {unit}",
+    "actions": {
+      "done": "Done",
+      "skip": "Skip",
+      "edit": "Edit",
+      "archive": "Archive",
+      "unarchive": "Unarchive",
+      "delete": "Delete permanently",
+      "viewHistory": "View history"
+    },
+    "fields": {
+      "name": "Name",
+      "intervalValue": "Every",
+      "intervalUnit": "Unit",
+      "startDate": "Start date",
+      "nextDueDate": "Next due",
+      "nextDueDateHint": "Edit manually to re-anchor the rhythm",
+      "category": "Category",
+      "categoryHint": "Optional. Group related chores (Home, Health, Car, ...).",
+      "notes": "Notes",
+      "notesPlaceholder": "Details, place, brand, etc."
+    },
+    "lastDone": "Last done: {date}",
+    "lastDoneNever": "Never",
+    "nextDue": "Next: {date}",
+    "doneForm": {
+      "title": "Mark as done",
+      "description": "Log when you did \"{name}\". Leave the date as today if it's right now.",
+      "doneAt": "Date",
+      "note": "Note",
+      "notePlaceholder": "(Optional) what you did, where, etc.",
+      "confirm": "Log it",
+      "success": "{name} logged"
+    },
+    "skipConfirm": {
+      "title": "Skip this cycle?",
+      "body": "Next due will move to {nextDate}. No event is added to the history.",
+      "confirm": "Skip",
+      "success": "Cycle skipped"
+    },
+    "deleteConfirm": {
+      "title": "Delete \"{name}\"?",
+      "body": "This action cannot be undone.",
+      "disabledReason": "You can't delete a chore that already has history. Archive it instead.",
+      "confirm": "Delete"
+    },
+    "logs": {
+      "title": "History of \"{name}\"",
+      "empty": "No events yet",
+      "loadMore": "Load more"
+    },
+    "archived": "Archived",
+    "unarchived": "Unarchived"
   },
   "reports": {
     "loadError": "Could not load the report. Please try again.",

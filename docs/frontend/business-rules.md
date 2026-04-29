@@ -122,6 +122,24 @@ Reglas que el frontend debe conocer para construir la UI correctamente y preveni
 
 ---
 
+## Quehaceres (Chores)
+
+1. **Cadencia inmutable.** `intervalValue` y `intervalUnit` no son editables después de la creación. Para cambiar el ritmo, se borra el chore y se crea uno nuevo, o se mueve `nextDueDate` manualmente.
+2. **`nextDueDate` editable manualmente** desde el form de edición. Sirve para "reanclar el ritmo" sin crear un log de done falso.
+3. **Marcar como hecho** crea un `ChoreLog` con `doneAt` (default = hoy en TZ del usuario), avanza `lastDoneDate` y recalcula `nextDueDate` sumando el intervalo. Acepta una `note` opcional (≤ 500 chars).
+4. **Saltear ciclo** avanza `nextDueDate` sin crear log. Útil para ciclos que no corresponden (mudanza, vacaciones).
+5. **Estados derivados client-side** en la TZ del usuario:
+   - `overdue` — `nextDueDate < hoy`
+   - `upcoming` — `nextDueDate ∈ [hoy, hoy + 7d]`
+   - `horizon` — `nextDueDate > hoy + 7d`
+   El backend solo expone `isOverdue`; el resto se calcula con `getChoreStatus()` (`src/lib/chore-status.ts`).
+6. **Archivado (`isActive=false`) ≠ eliminado.** Mantiene historial y puede desarchivarse.
+7. **DELETE está bloqueado si el chore tiene logs** (error `CHRE_001`). Mostrar el CTA "Archivar" como alternativa.
+8. **Categoría es free-text.** El form ofrece autocompletado con un `<datalist>` poblado desde las categorías ya usadas por el usuario, pero acepta cualquier string ≤ 50 chars.
+9. **Las fechas (`startDate`, `nextDueDate`, `lastDoneDate`, `doneAt`) viajan como `YYYY-MM-DD`** directo al backend. Los chores no usan el helper `dateInputToBackendIso` — el backend acepta el día calendario nativo en estos endpoints.
+
+---
+
 ## Servicios mensuales
 
 1. **Nombre único por usuario para servicios activos.** No pueden existir dos servicios activos con el mismo nombre.

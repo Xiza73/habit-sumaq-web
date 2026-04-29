@@ -14,6 +14,7 @@ import {
   HandCoins,
   type LucideIcon,
   Receipt,
+  Repeat2,
   Settings,
   Target,
 } from 'lucide-react';
@@ -41,6 +42,7 @@ const NAV_SECTIONS: NavSection[] = [
     items: [
       { href: '/habits', labelKey: 'habits', icon: Target },
       { href: '/quick-tasks', labelKey: 'quickTasks', icon: CheckSquare },
+      { href: '/chores', labelKey: 'chores', icon: Repeat2 },
     ],
   },
   {

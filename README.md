@@ -124,6 +124,7 @@ Reglas:
 - **Servicios mensuales** — Pagos recurrentes (luz, agua, internet, ...) con pagar / saltear mes / archivar
 - **Hábitos** — Tracking diario/semanal con streaks, heatmap y stats
 - **Diarias** — Lista TODO diaria con DnD, markdown y lazy cleanup en medianoche del user
+- **Quehaceres** — Tareas recurrentes no diarias (cortar pelo, limpiar alacena, ...) con cadencia configurable, hecho / saltear / archivar e historial de eventos
 - **Settings** — Idioma, tema, moneda default, formato de fecha, inicio de semana, timezone (auto-detectado)
 - **Reportes** — Dashboards agregados por módulo (Finanzas, Rutinas) con período configurable
 

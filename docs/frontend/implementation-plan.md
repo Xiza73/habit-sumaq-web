@@ -256,6 +256,28 @@ Desarrollo progresivo por fases. Cada fase produce un incremento funcional y tes
 
 ---
 
+## Fase 12 — Chores (Quehaceres recurrentes no diarios) ✅
+
+**Objetivo:** Tareas recurrentes con cadencia configurable en `days/weeks/months/years` (cortar pelo, limpiar alacena, ...). Hecho = log + `nextDueDate` recalculado; saltear = avanzar `nextDueDate` sin log.
+
+| #    | Tarea                                                              | Detalle                                                                                |
+| ---- | ------------------------------------------------------------------ | -------------------------------------------------------------------------------------- |
+| 12.1 | `Chore` + `ChoreLog` entities + Zod schemas (`create/update/done`) | `intervalValue` + `intervalUnit` inmutables; en edit se permite tocar `nextDueDate`    |
+| 12.2 | `chores.api.ts` + hooks TanStack Query                             | Invalida `chores.list` + `chores.detail` + `chore-logs(:id)` en `markDone`             |
+| 12.3 | `ChoreCard`                                                        | Estado derivado client-side (`overdue` / `upcoming` / `horizon`) + menú 3-dots         |
+| 12.4 | Helper puro `chore-status.ts`                                      | `getChoreStatus(nextDueDate, today)` con tests de bordes (hoy, +7d, +8d, mes, año)     |
+| 12.5 | `ChoreForm` (create/edit)                                          | En create: `intervalValue/Unit` + `startDate`; en edit: `nextDueDate` editable manual  |
+| 12.6 | `MarkChoreDoneForm` (modal)                                        | `doneAt` (default = hoy user TZ) + `note` opcional                                     |
+| 12.7 | `ChoreLogsHistoryDialog` (modal paginado)                          | Trigger desde menú 3-dots; reset de offset por chore vía `key={chore.id}`              |
+| 12.8 | `ChoresList` (tabs activos / archivados + empty states)            | Sort default por `nextDueDate ASC`; grid responsive (1 / 2 / 3 cols)                   |
+| 12.9 | Page `/chores` + item en sidebar (sección Rutinas)                 | Ícono `Wrench` de lucide                                                               |
+| 12.10| i18n en es / en / pt                                               | Namespace `chores` + `errors.CHRE_001/002`                                             |
+| 12.11| Tests                                                              | Schemas (create/update/markDone) + helper de status + Card + List                      |
+
+**Entregable:** Pantalla `/chores` funcional con CRUD, marcar hecho (modal con fecha + nota), saltear ciclo, ver historial paginado, archivar y eliminar (bloqueado si hay logs).
+
+---
+
 ## Módulos Futuros (fuera del MVP actual)
 
 Estos módulos se planificarán después de las fases anteriores:
