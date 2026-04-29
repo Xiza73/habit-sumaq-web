@@ -13,10 +13,9 @@ import {
   type DebtsSummaryStatusFilter,
 } from '@/core/domain/schemas/transaction.schema';
 
-import { ConfirmDialog } from '@/presentation/components/feedback/ConfirmDialog';
-
 import { cn } from '@/lib/utils';
 
+import { BulkSettleModal } from './BulkSettleModal';
 import { DebtCard } from './DebtCard';
 import { TransactionForm } from './TransactionForm';
 
@@ -34,14 +33,20 @@ export function DebtsDashboard() {
 
   const emptyMessage = status === 'pending' ? t('emptyPending') : t('empty');
 
-  function handleSettleConfirm() {
+  function handleSettleConfirm(mode: 'real' | 'informal', accountId?: string) {
     if (!settlingRow) return;
     settleMutation.mutate(
-      { reference: settlingRow.displayName, currency: settlingRow.currency },
+      {
+        reference: settlingRow.displayName,
+        currency: settlingRow.currency,
+        // accountId only when "real" mode → backend creates EXPENSE/INCOME
+        // settlements and moves the balance. Omitted for "informal".
+        accountId: mode === 'real' ? accountId : undefined,
+      },
       {
         onSuccess: () => {
           toast.success(
-            t('settleAllSuccess', {
+            t(mode === 'real' ? 'bulkSettle.successReal' : 'bulkSettle.successInformal', {
               name: settlingRow.displayName,
               currency: settlingRow.currency,
             }),
@@ -136,26 +141,8 @@ export function DebtsDashboard() {
         </div>
       )}
 
-      <ConfirmDialog
-        open={!!settlingRow}
-        title={
-          settlingRow
-            ? t('settleAllConfirmTitle', {
-                name: settlingRow.displayName,
-                currency: settlingRow.currency,
-              })
-            : ''
-        }
-        description={
-          settlingRow
-            ? t('settleAllConfirmBody', {
-                count: settlingRow.pendingCount,
-                currency: settlingRow.currency,
-              })
-            : ''
-        }
-        variant="destructive"
-        confirmLabel={t('settleAll')}
+      <BulkSettleModal
+        row={settlingRow}
         loading={settleMutation.isPending}
         onConfirm={handleSettleConfirm}
         onCancel={() => setSettlingRow(null)}

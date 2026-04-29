@@ -39,6 +39,16 @@ export function TransactionCard({
   const canSettle = isDebtOrLoan && transaction.status === 'PENDING';
   const canEdit = !isSettled;
 
+  // Partial payment = remaining strictly between 0 and total. In that case we
+  // flip the visual hierarchy: remaining is the headline number, total drops
+  // to a small "de {total}" caption. Full pending (remaining === total) and
+  // fully settled (remaining === 0) keep the regular layout.
+  const isPartiallyPaid =
+    isDebtOrLoan &&
+    transaction.remainingAmount !== null &&
+    transaction.remainingAmount > 0 &&
+    transaction.remainingAmount < transaction.amount;
+
   const amountPrefix =
     transaction.type === 'INCOME'
       ? '+'
@@ -83,20 +93,26 @@ export function TransactionCard({
           {t(`types.${transaction.type}`)}
           {transaction.reference && ` · ${transaction.reference}`}
         </p>
-        {isDebtOrLoan &&
-          transaction.remainingAmount !== null &&
-          transaction.remainingAmount > 0 && (
-            <p className="text-xs text-muted-foreground">
-              {t('remaining')}: {formatCurrency(transaction.remainingAmount, currency)}
-            </p>
-          )}
       </div>
 
       <div className="shrink-0 text-right">
-        <p className={`font-semibold tabular-nums ${colorClass}`}>
-          {amountPrefix}
-          {formatCurrency(transaction.amount, currency)}
-        </p>
+        {isPartiallyPaid ? (
+          <>
+            <p className={`font-semibold tabular-nums ${colorClass}`}>
+              {amountPrefix}
+              {/* Non-null asserted: isPartiallyPaid already gates remainingAmount !== null */}
+              {formatCurrency(transaction.remainingAmount as number, currency)}
+            </p>
+            <p className="text-xs text-muted-foreground tabular-nums">
+              {t('ofTotal', { total: formatCurrency(transaction.amount, currency) })}
+            </p>
+          </>
+        ) : (
+          <p className={`font-semibold tabular-nums ${colorClass}`}>
+            {amountPrefix}
+            {formatCurrency(transaction.amount, currency)}
+          </p>
+        )}
         <p className="text-xs text-muted-foreground">{getOnlyDateFromApi(transaction.date)}</p>
       </div>
 

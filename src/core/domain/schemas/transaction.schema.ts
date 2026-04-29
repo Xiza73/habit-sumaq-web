@@ -92,12 +92,23 @@ export interface BulkSettleResult {
   settledIds: string[];
   totalSettled: number;
   count: number;
+  /** New EXPENSE/INCOME settlement transactions created in real-payment mode. Empty in informal mode. */
+  settlementIds: string[];
 }
+
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export const settleByReferenceSchema = z.object({
   reference: z.string().min(1, 'required').max(255),
   /** Optional — narrows bulk settle to a single currency bucket. */
   currency: z.enum(['PEN', 'USD', 'EUR']).optional(),
+  /**
+   * When set, the bulk settle runs in **real-payment mode**: per pending tx
+   * creates a settlement (EXPENSE for DEBT, INCOME for LOAN) on this account
+   * and moves the balance. When omitted, runs in **informal mode**: only
+   * marks SETTLED, no movement.
+   */
+  accountId: z.string().regex(UUID_REGEX, 'invalid_uuid').optional(),
 });
 
 export type SettleByReferenceInput = z.infer<typeof settleByReferenceSchema>;

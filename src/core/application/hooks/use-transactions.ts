@@ -104,10 +104,15 @@ export function useSettleByReference() {
 
   return useMutation({
     mutationFn: (data: SettleByReferenceInput) => transactionsApi.settleByReference(data),
-    onSuccess: () => {
+    onSuccess: (_result, variables) => {
       // Bulk settle flips statuses → invalidate lists and all debts-summary filters.
       void queryClient.invalidateQueries({ queryKey: transactionKeys.lists() });
       void queryClient.invalidateQueries({ queryKey: [...transactionKeys.all, 'debts-summary'] });
+      // Real-payment mode also moved an account balance → refresh accounts so
+      // the dashboard / lists pick up the new totals.
+      if (variables.accountId) {
+        void queryClient.invalidateQueries({ queryKey: ['accounts'] });
+      }
     },
   });
 }

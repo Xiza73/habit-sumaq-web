@@ -109,6 +109,7 @@
     "settleAccount": "Payment account",
     "settleAmount": "Amount to settle",
     "remaining": "Remaining",
+    "ofTotal": "of {total}",
     "noDescription": "No description",
     "searchPlaceholder": "Search by name, description, or reference…",
     "debtsSummary": {
@@ -126,15 +127,31 @@
       "allSettled": "All settled",
       "pendingCount": "{count, plural, one {# pending} other {# pending}}",
       "settleAll": "Settle all",
-      "settleAllConfirmTitle": "Settle everything with {name} ({currency})",
-      "settleAllConfirmBody": "You'll mark {count} pending transactions in {currency} as settled. No account movements created, no balances affected. Continue?",
-      "settleAllSuccess": "Debts with {name} in {currency} settled",
       "newDebt": "New debt",
       "newLoan": "New loan",
       "statusFilter": {
         "pending": "Pending",
         "all": "All",
         "settled": "Settled"
+      },
+      "bulkSettle": {
+        "title": "Settle everything with {name} ({currency})",
+        "intro": "You'll process {count, plural, one {# pending transaction} other {# pending transactions}} in {currency}.",
+        "modeLabel": "Settlement mode",
+        "confirm": "Confirm",
+        "real": {
+          "title": "Real payment",
+          "description": "Creates account movements (expenses for debts, income for loans) and updates your balance.",
+          "accountLabel": "Account in {currency}",
+          "summary": "You'll generate {count, plural, one {# settlement} other {# settlements}} for a total of {total} from {account}.",
+          "noEligibleAccount": "You don't have any active account in {currency}. Create one or use informal close."
+        },
+        "informal": {
+          "title": "Informal close",
+          "description": "Just marks them settled. Doesn't touch your accounts or move money. Useful when you already squared up face-to-face."
+        },
+        "successReal": "Debts with {name} in {currency} settled and recorded in your account",
+        "successInformal": "Debts with {name} in {currency} marked as settled"
       }
     },
     "createDebt": "New debt",
