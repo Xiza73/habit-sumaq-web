@@ -624,7 +624,8 @@
       "deleteSuccess": "Seção excluída",
       "createSuccess": "Seção criada",
       "editSuccess": "Seção atualizada",
-      "emptyTasks": "Sem tarefas nesta seção"
+      "emptyTasks": "Sem tarefas nesta seção",
+      "toggle": "Mostrar ou ocultar a seção {name}"
     },
     "task": {
       "add": "Nova tarefa",

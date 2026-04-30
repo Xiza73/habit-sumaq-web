@@ -624,7 +624,8 @@
       "deleteSuccess": "Section deleted",
       "createSuccess": "Section created",
       "editSuccess": "Section updated",
-      "emptyTasks": "No tasks in this section"
+      "emptyTasks": "No tasks in this section",
+      "toggle": "Show or hide the {name} section"
     },
     "task": {
       "add": "New task",
