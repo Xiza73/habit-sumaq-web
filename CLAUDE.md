@@ -151,9 +151,9 @@ pnpm test:e2e     # Tests e2e (Playwright)
 
 ## Alcance Actual
 
-Módulos en producción: **Autenticación**, **Settings** (con timezone), **Cuentas**, **Categorías**, **Transacciones** (incluye deudas/préstamos + settle + bulk settle), **Servicios mensuales** (pagar / saltear / archivar), **Hábitos**, **Diarias** (quick-tasks), **Quehaceres** (chores recurrentes no diarios con cadencia configurable + historial), **Reportes** (dashboards de Finanzas y Rutinas). Ver el detalle por fase en [docs/frontend/implementation-plan.md](docs/frontend/implementation-plan.md).
+Módulos en producción: **Autenticación**, **Settings** (con timezone), **Cuentas**, **Categorías**, **Transacciones** (incluye deudas/préstamos + settle + bulk settle real-payment), **Servicios mensuales** (pagar / saltear / archivar), **Presupuestos** (mensuales discrecionales con KPI diaria + movimientos linkeados a transacciones), **Hábitos**, **Prioridades** (quick-tasks — antes "Diarias"; rename i18n-only en Fase C), **Tareas** (TODOs estilo proyectos con secciones + cleanup semanal), **Quehaceres** (chores recurrentes no diarios con cadencia configurable + historial), **Reportes** (dashboards de Finanzas y Rutinas). Ver el detalle por fase en [docs/frontend/implementation-plan.md](docs/frontend/implementation-plan.md).
 
-Backlog activo (post-MVP): presupuestos, vinculación hábitos ↔ finanzas, schedule, export/import, mobile nativa.
+Backlog activo (post-MVP): vinculación hábitos ↔ finanzas, schedule, export/import, mobile nativa, mover transactions existentes a un budget retroactivo, presupuestos por categoría con alertas.
 
 ---
 
