@@ -122,8 +122,10 @@ Reglas:
 - **Categorías** — CRUD con categorías default por usuario
 - **Transacciones** — CRUD con 5 tipos (INCOME, EXPENSE, TRANSFER, DEBT, LOAN), settle, bulk settle, debts dashboard
 - **Servicios mensuales** — Pagos recurrentes (luz, agua, internet, ...) con pagar / saltear mes / archivar
+- **Presupuestos** — Presupuestos mensuales discrecionales (uno por moneda) con KPI diaria `(remaining / días-restantes)` calculada en TZ del usuario; movimientos linkeados a transactions reales (debitan cuenta) — separado del flujo financiero general
 - **Hábitos** — Tracking diario/semanal con streaks, heatmap y stats
-- **Diarias** — Lista TODO diaria con DnD, markdown y lazy cleanup en medianoche del user
+- **Prioridades** — Lista TODO diaria con DnD, markdown y lazy cleanup en medianoche del user (antes "Diarias", rename i18n-only en Fase C)
+- **Tareas** — TODOs estilo proyectos agrupados en secciones (color + reorder), drag intra-section, cross-section move via edit form, cleanup semanal de completadas
 - **Quehaceres** — Tareas recurrentes no diarias (cortar pelo, limpiar alacena, ...) con cadencia configurable, hecho / saltear / archivar e historial de eventos
 - **Settings** — Idioma, tema, moneda default, formato de fecha, inicio de semana, timezone (auto-detectado)
 - **Reportes** — Dashboards agregados por módulo (Finanzas, Rutinas) con período configurable

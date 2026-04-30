@@ -278,11 +278,36 @@ Desarrollo progresivo por fases. Cada fase produce un incremento funcional y tes
 
 ---
 
+## Fase A — Bulk settle real-payment (release-blocker) ✅
+
+**Objetivo:** Cuando el usuario liquida deudas/préstamos en bulk en `/transactions/debts`, ofrecer dos modos: **pago real** (default — crea EXPENSE/INCOME settlements y mueve balance de cuenta) o **cierre informal** (legacy — solo marca como saldado). Plus invertir la jerarquía visual de "remaining" vs "total" en `TransactionCard` cuando hay pago parcial.
+
+**Entregable:** `BulkSettleModal` con radio de modo + select de cuenta filtrado por currency cuando es real. Backend genera `settlementIds: string[]` en la respuesta. (Backend PR #24, Web PR #38)
+
+---
+
+## Fase B — Presupuestos mensuales discrecionales ✅
+
+**Objetivo:** Presupuestos mensuales por moneda (uno por user × año-mes × moneda). Movimientos del budget = transactions EXPENSE con `budgetId` FK; **no** lee todos los expenses del mes, solo los explícitamente registrados. KPI server-side: `dailyAllowance = (amount - spent) / daysRestantes` calculada en TZ del usuario, con `null` cuando el mes ya cerró. Soft-delete del budget nullifica `budgetId` en sus transactions sin borrarlas.
+
+**Entregable:** `/budgets` con currency picker (default = `defaultCurrency` de settings), KPI card grande, `EmptyBudgetCta` cuando no hay budget, `AddMovementForm` con account picker filtrado por currency + date constrained al mes, historial linkado a `/budgets/[id]`. Badge "Budget" en `TransactionCard` cuando `budgetId !== null`. (Backend PR #25, Web PR #39, tests web PR #42)
+
+---
+
+## Fase C — Tasks + rename Diarias → Prioridades ✅
+
+**Objetivo:** Nuevo módulo `tasks` — TODOs estilo proyectos agrupados en secciones (color + reorder + cleanup semanal). Drag intra-section vía DnD; cross-section move vía edit form (cambia `sectionId`). Cleanup: tasks completadas con `completedAt < startOfWeek` (TZ + setting `startOfWeek`) se hard-deletean lazy en `GET /tasks`. Plus rename i18n-only del módulo Diarias (quick-tasks) → "Prioridades": route, DB y component names quedan intactos, solo cambian las strings visibles.
+
+**Entregable:** `/tasks` con dashboard de secciones (cada una con su DnD context interno + acciones add/edit/delete), `SectionForm` (con color picker), `TaskForm` (con section dropdown + markdown editor reusando `QuickTaskMarkdown`). Sidebar nueva entry "Tareas" + label de quick-tasks renombrado a "Prioridades". (Backend PR #26, Web PR #40, tests web PR #41, e2e PR #43)
+
+---
+
 ## Módulos Futuros (fuera del MVP actual)
 
 Estos módulos se planificarán después de las fases anteriores:
 
-- **Presupuestos:** Límites por categoría con alertas.
+- **Presupuestos por categoría con alertas:** El v1 de Budgets es un único monto total por moneda; futuro: filtros por categoría + push notifications cuando se acerca el cap.
+- **Mover transactions existentes a un budget retroactivamente:** Hoy se crea movimiento desde el budget; futuro: action en `TransactionCard` para "adoptar" un expense pre-existente.
 - **Vinculación hábitos ↔ finanzas:** Hábitos con costo asociado (ej: "comer fuera" suma a gasto).
 - **Schedule:** Transacciones recurrentes, recordatorios.
 - **Export / import:** CSV/JSON de transacciones y tareas.
