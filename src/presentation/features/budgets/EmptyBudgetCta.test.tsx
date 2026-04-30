@@ -11,7 +11,7 @@ describe('EmptyBudgetCta', () => {
     render(<EmptyBudgetCta currency="PEN" year={2026} month={4} onCreate={vi.fn()} />, {
       wrapper: TestProviders,
     });
-    // Title is "No tenés presupuesto para Abril 2026 en PEN" — match the variable parts.
+    // Title is "No tienes presupuesto para Abril 2026 en PEN" — match the variable parts.
     expect(screen.getByRole('heading', { level: 2 })).toHaveTextContent(/abril 2026/i);
     expect(screen.getByRole('heading', { level: 2 })).toHaveTextContent(/pen/i);
   });

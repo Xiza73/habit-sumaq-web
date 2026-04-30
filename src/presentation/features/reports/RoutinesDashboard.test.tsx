@@ -71,7 +71,7 @@ describe('RoutinesDashboard', () => {
     hookState.data = buildData();
     render(<RoutinesDashboard />, { wrapper: TestProviders });
 
-    expect(screen.getByText(/todavía no tenés rachas activas/i)).toBeInTheDocument();
+    expect(screen.getByText(/todavía no tienes rachas activas/i)).toBeInTheDocument();
   });
 
   it('renders one card per habit streak', () => {

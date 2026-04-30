@@ -105,7 +105,7 @@ describe('AddMovementForm', () => {
     mockCategories = [category];
     renderForm();
 
-    expect(screen.getByText(/no tenés cuentas activas en pen/i)).toBeInTheDocument();
+    expect(screen.getByText(/no tienes cuentas activas en pen/i)).toBeInTheDocument();
     // Submit button must be disabled in this state to prevent invalid POSTs.
     expect(screen.getByRole('button', { name: /registrar movimiento/i })).toBeDisabled();
   });

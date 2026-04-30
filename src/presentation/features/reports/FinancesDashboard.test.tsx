@@ -53,7 +53,7 @@ describe('FinancesDashboard', () => {
     hookState.data = buildData();
     render(<FinancesDashboard />, { wrapper: TestProviders });
 
-    expect(screen.getByText(/todavía no tenés cuentas activas/i)).toBeInTheDocument();
+    expect(screen.getByText(/todavía no tienes cuentas activas/i)).toBeInTheDocument();
     expect(screen.getByText(/sin movimientos en el período/i)).toBeInTheDocument();
     expect(screen.getByText(/sin gastos categorizados en el período/i)).toBeInTheDocument();
     expect(screen.getByText(/todo al día/i)).toBeInTheDocument();
@@ -169,7 +169,7 @@ describe('FinancesDashboard', () => {
 
     expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument();
     // No section copy should surface while loading.
-    expect(screen.queryByText(/todavía no tenés cuentas activas/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/todavía no tienes cuentas activas/i)).not.toBeInTheDocument();
   });
 
   it('shows the error message when the query fails', () => {
