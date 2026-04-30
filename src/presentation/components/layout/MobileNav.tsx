@@ -25,7 +25,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: '/accounts', labelKey: 'accounts', icon: CreditCard },
   { href: '/transactions', labelKey: 'transactions', icon: ArrowLeftRight },
   { href: '/habits', labelKey: 'habits', icon: Target },
-  { href: '/quick-tasks', labelKey: 'quickTasks', icon: CheckSquare },
+  { href: '/quick-tasks', labelKey: 'priorities', icon: CheckSquare },
   { href: '/settings', labelKey: 'settings', icon: Settings },
 ];
 
