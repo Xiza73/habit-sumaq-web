@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
@@ -9,6 +9,7 @@ import { Filter, HandCoins, Plus, Search } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { useAccounts } from '@/core/application/hooks/use-accounts';
+import { useCategories } from '@/core/application/hooks/use-categories';
 import { useDeleteTransaction, useTransactions } from '@/core/application/hooks/use-transactions';
 import { type Transaction } from '@/core/domain/entities/transaction';
 import { type Currency } from '@/core/domain/enums/account.enums';
@@ -65,6 +66,15 @@ export function TransactionList({ accountId }: TransactionListProps) {
   const transactions = paginatedData?.data;
   const meta = paginatedData?.meta;
   const { data: accounts } = useAccounts(false);
+  // Categories drive the new TransactionCard subtitle (color swatch +
+  // category name). We index them once at this layer so each card can do
+  // an O(1) lookup; passing the whole list down + having every card .find()
+  // would scale poorly with a long transactions page.
+  const { data: categories } = useCategories();
+  const categoriesById = useMemo(
+    () => new Map((categories ?? []).map((c) => [c.id, c])),
+    [categories],
+  );
   const deleteMutation = useDeleteTransaction();
 
   function getCurrency(txn: Transaction): Currency {
@@ -192,6 +202,11 @@ export function TransactionList({ accountId }: TransactionListProps) {
                 key={transaction.id}
                 transaction={transaction}
                 currency={getCurrency(transaction)}
+                category={
+                  transaction.categoryId
+                    ? (categoriesById.get(transaction.categoryId) ?? null)
+                    : null
+                }
                 isLast={index === transactions.length - 1}
                 onEdit={handleEdit}
                 onDelete={setDeletingTransaction}
