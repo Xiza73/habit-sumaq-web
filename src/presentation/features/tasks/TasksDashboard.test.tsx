@@ -72,7 +72,7 @@ describe('TasksDashboard', () => {
     render(<TasksDashboard />, { wrapper: TestProviders });
 
     expect(screen.getByRole('heading', { level: 2 })).toHaveTextContent(
-      /empezá creando tu primera sección/i,
+      /empieza creando tu primera sección/i,
     );
     expect(screen.getByRole('button', { name: /crear primera sección/i })).toBeInTheDocument();
   });
@@ -84,7 +84,7 @@ describe('TasksDashboard', () => {
     // Header has 2 buttons: section + task. The task one is disabled until a
     // section exists. Match by aria-label OR title (the visible label hides
     // on small screens behind .hidden sm:inline).
-    const taskButton = screen.getByTitle(/creá una sección primero/i);
+    const taskButton = screen.getByTitle(/crea una sección primero/i);
     expect(taskButton).toBeDisabled();
   });
 

@@ -51,7 +51,7 @@ test.describe('Tasks — delete section cascades to its tasks', () => {
 
       // UI returns to the empty CTA (no other sections existed).
       await expect(
-        auth.page.getByRole('heading', { name: /empezá creando tu primera sección/i }),
+        auth.page.getByRole('heading', { name: /empieza creando tu primera sección/i }),
       ).toBeVisible();
 
       // Backend wiped the section + both tasks.

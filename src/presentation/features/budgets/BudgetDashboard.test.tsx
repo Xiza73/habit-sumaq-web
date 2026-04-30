@@ -81,8 +81,8 @@ describe('BudgetDashboard', () => {
     currentBudgetData = null;
     render(<BudgetDashboard />, { wrapper: TestProviders });
 
-    // h2 inside EmptyBudgetCta carries the "no tenés presupuesto" copy.
-    expect(screen.getByRole('heading', { level: 2 })).toHaveTextContent(/no tenés presupuesto/i);
+    // h2 inside EmptyBudgetCta carries the "no tienes presupuesto" copy.
+    expect(screen.getByRole('heading', { level: 2 })).toHaveTextContent(/no tienes presupuesto/i);
     expect(screen.getByRole('button', { name: /crear presupuesto/i })).toBeInTheDocument();
   });
 

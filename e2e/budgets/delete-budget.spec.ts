@@ -34,7 +34,7 @@ test.describe('Budgets — delete', () => {
         .click();
 
       // Dashboard returns to the empty CTA.
-      await expect(auth.page.getByRole('heading', { name: /no tenés presupuesto/i })).toBeVisible();
+      await expect(auth.page.getByRole('heading', { name: /no tienes presupuesto/i })).toBeVisible();
 
       // Backend no longer lists the deleted budget.
       const remaining = await listBudgets(auth.api);

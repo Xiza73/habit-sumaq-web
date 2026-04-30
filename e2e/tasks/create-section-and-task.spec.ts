@@ -27,12 +27,12 @@ test.describe('Tasks — create section and first task', () => {
 
       // 1. Empty CTA visible.
       await expect(
-        auth.page.getByRole('heading', { name: /empezá creando tu primera sección/i }),
+        auth.page.getByRole('heading', { name: /empieza creando tu primera sección/i }),
       ).toBeVisible();
 
       // 2. Header "Nueva tarea" button is disabled while no sections exist.
       // The disabled button has `title="Creá una sección primero"`.
-      const newTaskButton = auth.page.getByTitle(/creá una sección primero/i);
+      const newTaskButton = auth.page.getByTitle(/crea una sección primero/i);
       await expect(newTaskButton).toBeDisabled();
 
       // 3. CTA opens the SectionForm modal.
