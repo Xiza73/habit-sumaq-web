@@ -62,8 +62,10 @@ describe('QuickTasksList', () => {
   it('renders the page header with title, subtitle and "new task" button', () => {
     renderList();
 
-    // Both the h1 and the sidebar-style button include "Diarias"/"Nueva tarea".
-    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Diarias');
+    // Title was renamed from "Diarias" → "Prioridades" in Phase C (i18n only —
+    // routes/components/db unchanged). The sidebar entry & this page heading
+    // both read the new label.
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Prioridades');
     expect(screen.getByRole('button', { name: /nueva tarea/i })).toBeInTheDocument();
   });
 
