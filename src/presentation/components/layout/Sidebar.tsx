@@ -12,6 +12,7 @@ import {
   CreditCard,
   FolderTree,
   HandCoins,
+  ListChecks,
   type LucideIcon,
   PiggyBank,
   Receipt,
@@ -42,7 +43,8 @@ const NAV_SECTIONS: NavSection[] = [
     titleKey: 'routines',
     items: [
       { href: '/habits', labelKey: 'habits', icon: Target },
-      { href: '/quick-tasks', labelKey: 'quickTasks', icon: CheckSquare },
+      { href: '/quick-tasks', labelKey: 'priorities', icon: CheckSquare },
+      { href: '/tasks', labelKey: 'tasks', icon: ListChecks },
       { href: '/chores', labelKey: 'chores', icon: Repeat2 },
     ],
   },
