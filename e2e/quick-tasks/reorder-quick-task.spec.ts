@@ -1,11 +1,7 @@
 import { type Locator, type Page } from '@playwright/test';
 
 import { expect, test } from '../fixtures/authenticated-page';
-import {
-  createQuickTask,
-  deleteQuickTask,
-  listQuickTasks,
-} from '../helpers/quick-tasks-api';
+import { createQuickTask, deleteQuickTask, listQuickTasks } from '../helpers/quick-tasks-api';
 
 // ---------------------------------------------------------------------------
 // Drag-and-drop helper for @dnd-kit/sortable
@@ -65,84 +61,84 @@ test.describe('Quick tasks — reorder via drag-and-drop', () => {
   test('dragging the last card to the top persists the new order in the backend', async ({
     auth,
   }, testInfo) => {
-      // ------------------------------------------------------------------
-      // 1. Seed: create tasks A, B, C via the API (isolated by testId).
-      // ------------------------------------------------------------------
-      const suffix = testInfo.testId;
-      const titleA = `Tarea A ${suffix}`;
-      const titleB = `Tarea B ${suffix}`;
-      const titleC = `Tarea C ${suffix}`;
+    // ------------------------------------------------------------------
+    // 1. Seed: create tasks A, B, C via the API (isolated by testId).
+    // ------------------------------------------------------------------
+    const suffix = testInfo.testId;
+    const titleA = `Tarea A ${suffix}`;
+    const titleB = `Tarea B ${suffix}`;
+    const titleC = `Tarea C ${suffix}`;
 
-      const taskA = await createQuickTask(auth.api, { title: titleA });
-      const taskB = await createQuickTask(auth.api, { title: titleB });
-      const taskC = await createQuickTask(auth.api, { title: titleC });
+    const taskA = await createQuickTask(auth.api, { title: titleA });
+    const taskB = await createQuickTask(auth.api, { title: titleB });
+    const taskC = await createQuickTask(auth.api, { title: titleC });
 
-      try {
-        // ----------------------------------------------------------------
-        // 2. Navigate and verify initial order: A → B → C.
-        // ----------------------------------------------------------------
-        await auth.page.goto('/quick-tasks');
-        // Wait for the list to render.
-        await expect(auth.page.locator('div.group', { hasText: titleA }).first()).toBeVisible();
+    try {
+      // ----------------------------------------------------------------
+      // 2. Navigate and verify initial order: A → B → C.
+      // ----------------------------------------------------------------
+      await auth.page.goto('/quick-tasks');
+      // Wait for the list to render.
+      await expect(auth.page.locator('div.group', { hasText: titleA }).first()).toBeVisible();
 
-        const initialOrder = await pendingTitlesInDOM(auth.page);
-        // The API returns tasks ordered by position; the three tasks we just
-        // created should appear in creation order A, B, C.
-        expect(initialOrder).toEqual([titleA, titleB, titleC]);
+      const initialOrder = await pendingTitlesInDOM(auth.page);
+      // The API returns tasks ordered by position; the three tasks we just
+      // created should appear in creation order A, B, C.
+      expect(initialOrder).toEqual([titleA, titleB, titleC]);
 
-        // ----------------------------------------------------------------
-        // 3. Drag C (bottom) to the top, above A.
-        //    The drag handle is the GripVertical button (aria-label="Reordenar").
-        // ----------------------------------------------------------------
-        const cardA = auth.page.locator('div.group', { hasText: titleA }).first();
-        const cardC = auth.page.locator('div.group', { hasText: titleC }).first();
+      // ----------------------------------------------------------------
+      // 3. Drag C (bottom) to the top, above A.
+      //    The drag handle is the GripVertical button (aria-label="Reordenar").
+      // ----------------------------------------------------------------
+      const cardA = auth.page.locator('div.group', { hasText: titleA }).first();
+      const cardC = auth.page.locator('div.group', { hasText: titleC }).first();
 
-        const handleC = cardC.getByRole('button', { name: /reordenar/i });
-        const handleA = cardA.getByRole('button', { name: /reordenar/i });
+      const handleC = cardC.getByRole('button', { name: /reordenar/i });
+      const handleA = cardA.getByRole('button', { name: /reordenar/i });
 
-        await dragByPointer(auth.page, handleC, handleA);
+      await dragByPointer(auth.page, handleC, handleA);
 
-        // ----------------------------------------------------------------
-        // 4. Wait for UI to reflect the new order: C → A → B.
-        //    dnd-kit applies an optimistic update on drop, so the DOM should
-        //    update without a network round-trip.
-        // ----------------------------------------------------------------
-        await expect
-          .poll(async () => pendingTitlesInDOM(auth.page), {
-            message: 'UI did not reorder tasks to C → A → B within timeout',
+      // ----------------------------------------------------------------
+      // 4. Wait for UI to reflect the new order: C → A → B.
+      //    dnd-kit applies an optimistic update on drop, so the DOM should
+      //    update without a network round-trip.
+      // ----------------------------------------------------------------
+      await expect
+        .poll(async () => pendingTitlesInDOM(auth.page), {
+          message: 'UI did not reorder tasks to C → A → B within timeout',
+          timeout: 5_000,
+        })
+        .toEqual([titleC, titleA, titleB]);
+
+      // ----------------------------------------------------------------
+      // 5. Verify that the backend persisted the new order.
+      //    Give the mutation a moment to finish (optimistic update is
+      //    instant, but the PATCH request is async).
+      // ----------------------------------------------------------------
+      await expect
+        .poll(
+          async () => {
+            const tasks = await listQuickTasks(auth.api);
+            // Filter only our three test tasks and return their titles in
+            // position order.
+            return tasks
+              .filter((t) => [taskA.id, taskB.id, taskC.id].includes(t.id))
+              .map((t) => t.title);
+          },
+          {
+            message: 'Backend did not persist order C → A → B within timeout',
             timeout: 5_000,
-          })
-          .toEqual([titleC, titleA, titleB]);
-
-        // ----------------------------------------------------------------
-        // 5. Verify that the backend persisted the new order.
-        //    Give the mutation a moment to finish (optimistic update is
-        //    instant, but the PATCH request is async).
-        // ----------------------------------------------------------------
-        await expect
-          .poll(
-            async () => {
-              const tasks = await listQuickTasks(auth.api);
-              // Filter only our three test tasks and return their titles in
-              // position order.
-              return tasks
-                .filter((t) => [taskA.id, taskB.id, taskC.id].includes(t.id))
-                .map((t) => t.title);
-            },
-            {
-              message: 'Backend did not persist order C → A → B within timeout',
-              timeout: 5_000,
-              intervals: [500, 500, 1_000, 1_000],
-            },
-          )
-          .toEqual([titleC, titleA, titleB]);
-      } finally {
-        // ----------------------------------------------------------------
-        // 6. Cleanup — always runs, even if the test fails.
-        // ----------------------------------------------------------------
-        await deleteQuickTask(auth.api, taskA.id);
-        await deleteQuickTask(auth.api, taskB.id);
-        await deleteQuickTask(auth.api, taskC.id);
-      }
-    });
+            intervals: [500, 500, 1_000, 1_000],
+          },
+        )
+        .toEqual([titleC, titleA, titleB]);
+    } finally {
+      // ----------------------------------------------------------------
+      // 6. Cleanup — always runs, even if the test fails.
+      // ----------------------------------------------------------------
+      await deleteQuickTask(auth.api, taskA.id);
+      await deleteQuickTask(auth.api, taskB.id);
+      await deleteQuickTask(auth.api, taskC.id);
+    }
+  });
 });

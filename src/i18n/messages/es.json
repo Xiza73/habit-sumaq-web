@@ -76,7 +76,7 @@
       "INCOME": "Ingreso",
       "EXPENSE": "Gasto",
       "TRANSFER": "Transferencia",
-      "DEBT": "Deuda (le debés)",
+      "DEBT": "Deuda (le debes)",
       "LOAN": "Préstamo (te deben)"
     },
     "status": {
@@ -289,7 +289,7 @@
     "pastDateNotice": "Registrando para una fecha pasada.",
     "milestones": {
       "week": "🔥 ¡Una semana seguida con {name}! Vas bien.",
-      "month": "🚀 ¡Un mes completo con {name}! Sos imparable.",
+      "month": "🚀 ¡Un mes completo con {name}! Eres imparable.",
       "century": "💎 ¡{days} días con {name}! Una racha legendaria."
     }
   },
@@ -588,7 +588,7 @@
       "today": "Hoy",
       "habitsCompletion": "Hábitos completados",
       "habitsCompletionSubtitle": "{rate}% de los diarios",
-      "quickTasksCompletion": "Diarias completadas",
+      "quickTasksCompletion": "Prioridades completadas",
       "quickTasksPending": "{count, plural, one {# pendiente} other {# pendientes}}",
       "topStreaks": "Top rachas de hábitos",
       "topStreaksEmpty": "Todavía no tienes rachas activas.",

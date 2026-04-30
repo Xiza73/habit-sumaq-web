@@ -1,0 +1,22 @@
+# Force LF line endings for all text files. Without this, Windows
+# checkouts get CRLF (because git's core.autocrlf=true converts on
+# checkout) while Prettier writes LF — which produces phantom
+# `prettier/prettier` lint errors on every fresh clone. Setting
+# eol=lf tells git to keep LF in the working tree on every OS.
+* text=auto eol=lf
+
+# Lock common binary types so git never tries to text-convert them
+# (icons, fonts, lockfiles where order matters, etc.).
+*.png    binary
+*.jpg    binary
+*.jpeg   binary
+*.gif    binary
+*.ico    binary
+*.webp   binary
+*.avif   binary
+*.woff   binary
+*.woff2  binary
+*.ttf    binary
+*.eot    binary
+*.otf    binary
+*.pdf    binary

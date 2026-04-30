@@ -588,7 +588,7 @@
       "today": "Today",
       "habitsCompletion": "Habits completed",
       "habitsCompletionSubtitle": "{rate}% of daily habits",
-      "quickTasksCompletion": "Daily tasks done",
+      "quickTasksCompletion": "Priorities done",
       "quickTasksPending": "{count, plural, one {# pending} other {# pending}}",
       "topStreaks": "Top habit streaks",
       "topStreaksEmpty": "No active streaks yet.",

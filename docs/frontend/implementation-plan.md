@@ -195,7 +195,7 @@ Desarrollo progresivo por fases. Cada fase produce un incremento funcional y tes
 
 ---
 
-## Fase 9 — Quick Tasks (Diarias) ✅
+## Fase 9 — Quick Tasks (Prioridades) ✅
 
 **Objetivo:** Lista TODO diaria simple con cards, DnD, markdown y auto-cleanup al día siguiente.
 
@@ -207,7 +207,7 @@ Desarrollo progresivo por fases. Cada fase produce un incremento funcional y tes
 | 9.4 | Componentes `QuickTaskItem`, `QuickTaskForm`   | Card con drag handle, expand markdown, edit/delete                       |
 | 9.5 | Markdown renderer + editor con preview toggle  | `react-markdown` + `remark-gfm`. Sin HTML raw por default                |
 | 9.6 | DnD con `@dnd-kit`                             | Sortable solo sobre pendientes. Completadas no se reordenan              |
-| 9.7 | Restructure del sidebar con sección "Rutinas"  | Agrupa Hábitos + Diarias. Nav mobile incluye Diarias                     |
+| 9.7 | Restructure del sidebar con sección "Rutinas"  | Agrupa Hábitos + Prioridades. Nav mobile incluye Prioridades             |
 | 9.8 | i18n en es / en / pt                           | Labels, estados y mensajes del flow completo                             |
 | 9.9 | Tests unit de los 4 componentes + hook         | RTL + mocks de hooks                                                     |
 

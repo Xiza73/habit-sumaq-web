@@ -161,7 +161,7 @@ git checkout dev && git merge master && git push   # sync dev con master
 
 ```env
 PORT=3001                                       # Puerto del frontend
-NEXT_PUBLIC_API_URL=http://localhost:3000        # URL del backend
+NEXT_PUBLIC_API_URL=http://localhost:3010        # URL del backend
 NEXT_PUBLIC_APP_URL=http://localhost:${PORT}     # URL del frontend (usa PORT)
 ```
 

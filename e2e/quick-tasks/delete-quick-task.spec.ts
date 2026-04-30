@@ -2,9 +2,7 @@ import { expect, test } from '../fixtures/authenticated-page';
 import { createQuickTask, deleteQuickTask, listQuickTasks } from '../helpers/quick-tasks-api';
 
 test.describe('Quick tasks — delete', () => {
-  test('delete requires confirmation and then removes the card', async ({
-    auth,
-  }, testInfo) => {
+  test('delete requires confirmation and then removes the card', async ({ auth }, testInfo) => {
     const title = `Por borrar ${testInfo.testId}`;
     const task = await createQuickTask(auth.api, { title });
 
@@ -15,7 +13,9 @@ test.describe('Quick tasks — delete', () => {
 
       // Click the trash icon — the confirm dialog should pop up and the
       // task must still exist on the page until confirm.
-      await card().getByRole('button', { name: /eliminar tarea/i }).click();
+      await card()
+        .getByRole('button', { name: /eliminar tarea/i })
+        .click();
       await expect(auth.page.getByText(/es definitiva/i)).toBeVisible();
       await expect(card()).toBeVisible();
 
