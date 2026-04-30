@@ -13,6 +13,7 @@ import {
   FolderTree,
   HandCoins,
   type LucideIcon,
+  PiggyBank,
   Receipt,
   Repeat2,
   Settings,
@@ -53,6 +54,7 @@ const NAV_SECTIONS: NavSection[] = [
       { href: '/transactions', labelKey: 'transactions', icon: ArrowLeftRight },
       { href: '/transactions/debts', labelKey: 'debts', icon: HandCoins, indent: true },
       { href: '/services', labelKey: 'services', icon: Receipt },
+      { href: '/budgets', labelKey: 'budgets', icon: PiggyBank },
     ],
   },
   {

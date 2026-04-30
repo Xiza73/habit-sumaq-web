@@ -111,6 +111,8 @@
     "remaining": "Pendente",
     "ofTotal": "de {total}",
     "noDescription": "Sem descrição",
+    "budgetBadge": "Orçamento",
+    "budgetBadgeTitle": "Movimento do orçamento mensal",
     "searchPlaceholder": "Buscar por nome, descrição ou referência…",
     "debtsSummary": {
       "title": "Dívidas e empréstimos",
@@ -234,6 +236,10 @@
     "MSVC_004": "Este serviço já está pago para o mês atual.",
     "CHRE_001": "Não é possível excluir uma tarefa com histórico. Arquive-a no lugar.",
     "CHRE_002": "Tarefa não encontrada.",
+    "BDGT_001": "Orçamento não encontrado.",
+    "BDGT_002": "Você já tem um orçamento para esse mês e moeda.",
+    "BDGT_003": "A data do movimento deve estar dentro do mês do orçamento.",
+    "VAL_002": "A moeda da conta não coincide com a do orçamento.",
     "generic": "Ocorreu um erro inesperado. Tente novamente."
   },
   "habits": {
@@ -387,12 +393,79 @@
     "transactions": "Transações",
     "debts": "Dívidas e empréstimos",
     "services": "Serviços",
+    "budgets": "Orçamento",
     "routines": "Rotinas",
     "habits": "Hábitos",
     "quickTasks": "Diárias",
     "chores": "Tarefas",
     "reports": "Relatórios",
     "settings": "Configurações"
+  },
+  "budgets": {
+    "title": "Orçamento mensal",
+    "subtitle": "Gastos discricionários do mês — só conta o que você registrar aqui explicitamente.",
+    "kpi": {
+      "title": "Seu mês",
+      "addMovement": "Adicionar gasto",
+      "editAmount": "Editar valor",
+      "delete": "Excluir",
+      "remaining": "Disponível",
+      "spentOfTotal": "{spent} gasto de {total}",
+      "dailyAllowance": "Por dia",
+      "dailyAllowanceHint": "Sugerido para os dias restantes",
+      "dailyAllowanceClosedHint": "Mês fechado",
+      "daysRemaining": "Dias restantes",
+      "daysRemainingHint": "Inclui hoje",
+      "spent": "Gasto",
+      "spentHint": "Soma de todos os seus movimentos"
+    },
+    "empty": {
+      "title": "Sem orçamento para {period} em {currency}",
+      "subtitle": "Defina quanto quer gastar este mês em coisas discricionárias e veja seu valor diário dia a dia.",
+      "createBudget": "Criar orçamento"
+    },
+    "form": {
+      "createTitle": "Novo orçamento",
+      "editTitle": "Editar orçamento",
+      "year": "Ano",
+      "month": "Mês",
+      "currency": "Moeda",
+      "currencyImmutableHint": "A moeda não pode ser alterada após a criação.",
+      "amount": "Valor",
+      "amountHint": "Total que você quer orçar para o mês (na moeda escolhida).",
+      "createSuccess": "Orçamento criado",
+      "editSuccess": "Orçamento atualizado"
+    },
+    "movements": {
+      "title": "Movimentos",
+      "addTitle": "Novo movimento",
+      "currencyHint": "O movimento é registrado em {currency} (a moeda do orçamento).",
+      "noEligibleAccount": "Você não tem nenhuma conta ativa em {currency}. Crie uma primeiro.",
+      "amount": "Valor",
+      "date": "Data",
+      "account": "Conta",
+      "category": "Categoria",
+      "description": "Descrição",
+      "descriptionPlaceholder": "Ex: Jantar com amigos",
+      "addSubmit": "Registrar movimento",
+      "addSuccess": "Movimento registrado",
+      "empty": "Nenhum movimento registrado neste mês ainda",
+      "noDescription": "Sem descrição",
+      "deleteConfirm": "Excluir este movimento? A conta vinculada será reembolsada.",
+      "deleteSuccess": "Movimento excluído"
+    },
+    "history": {
+      "title": "Histórico"
+    },
+    "delete": {
+      "title": "Excluir orçamento",
+      "description": "O plano é excluído, mas os movimentos sobrevivem como gastos normais em /transactions. O dinheiro já se moveu.",
+      "success": "Orçamento excluído"
+    },
+    "detail": {
+      "backToList": "Voltar ao orçamento atual",
+      "notFound": "Orçamento não encontrado ou já excluído."
+    }
   },
   "chores": {
     "title": "Tarefas",

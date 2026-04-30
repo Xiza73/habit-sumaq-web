@@ -111,6 +111,8 @@
     "remaining": "Remaining",
     "ofTotal": "of {total}",
     "noDescription": "No description",
+    "budgetBadge": "Budget",
+    "budgetBadgeTitle": "Movement of the monthly budget",
     "searchPlaceholder": "Search by name, description, or reference…",
     "debtsSummary": {
       "title": "Debts and loans",
@@ -234,6 +236,10 @@
     "MSVC_004": "This service is already paid for the current month.",
     "CHRE_001": "Cannot delete a chore with logged events. Archive it instead.",
     "CHRE_002": "Chore not found.",
+    "BDGT_001": "Budget not found.",
+    "BDGT_002": "You already have a budget for that month and currency.",
+    "BDGT_003": "The movement date must fall within the budget's month.",
+    "VAL_002": "The account currency does not match the budget's.",
     "generic": "An unexpected error occurred. Please try again."
   },
   "habits": {
@@ -387,12 +393,79 @@
     "transactions": "Transactions",
     "debts": "Debts and loans",
     "services": "Services",
+    "budgets": "Budget",
     "routines": "Routines",
     "habits": "Habits",
     "quickTasks": "Daily",
     "chores": "Chores",
     "reports": "Reports",
     "settings": "Settings"
+  },
+  "budgets": {
+    "title": "Monthly budget",
+    "subtitle": "Discretionary spending — only what you log here counts.",
+    "kpi": {
+      "title": "Your month",
+      "addMovement": "Add expense",
+      "editAmount": "Edit amount",
+      "delete": "Delete",
+      "remaining": "Available",
+      "spentOfTotal": "{spent} spent of {total}",
+      "dailyAllowance": "Per day",
+      "dailyAllowanceHint": "Suggested for the days remaining",
+      "dailyAllowanceClosedHint": "Month closed",
+      "daysRemaining": "Days remaining",
+      "daysRemainingHint": "Today included",
+      "spent": "Spent",
+      "spentHint": "Sum of all your movements"
+    },
+    "empty": {
+      "title": "No budget for {period} in {currency}",
+      "subtitle": "Define how much you want to spend this month on discretionary stuff and watch your daily allowance day by day.",
+      "createBudget": "Create budget"
+    },
+    "form": {
+      "createTitle": "New budget",
+      "editTitle": "Edit budget",
+      "year": "Year",
+      "month": "Month",
+      "currency": "Currency",
+      "currencyImmutableHint": "Currency cannot be changed after creation.",
+      "amount": "Amount",
+      "amountHint": "Total you want to budget for the month (in the chosen currency).",
+      "createSuccess": "Budget created",
+      "editSuccess": "Budget updated"
+    },
+    "movements": {
+      "title": "Movements",
+      "addTitle": "New movement",
+      "currencyHint": "The movement is recorded in {currency} (the budget's currency).",
+      "noEligibleAccount": "You don't have any active account in {currency}. Create one first.",
+      "amount": "Amount",
+      "date": "Date",
+      "account": "Account",
+      "category": "Category",
+      "description": "Description",
+      "descriptionPlaceholder": "e.g. Dinner with friends",
+      "addSubmit": "Record movement",
+      "addSuccess": "Movement recorded",
+      "empty": "No movements logged for this month yet",
+      "noDescription": "No description",
+      "deleteConfirm": "Delete this movement? The linked account will be refunded.",
+      "deleteSuccess": "Movement deleted"
+    },
+    "history": {
+      "title": "History"
+    },
+    "delete": {
+      "title": "Delete budget",
+      "description": "The plan is deleted, but the movements survive as regular expenses in /transactions. The money already moved.",
+      "success": "Budget deleted"
+    },
+    "detail": {
+      "backToList": "Back to current budget",
+      "notFound": "Budget not found or already deleted."
+    }
   },
   "chores": {
     "title": "Chores",
