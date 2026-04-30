@@ -2,9 +2,7 @@ import { expect, test } from '../fixtures/authenticated-page';
 import { createQuickTask, deleteQuickTask } from '../helpers/quick-tasks-api';
 
 test.describe('Quick tasks — complete / uncomplete', () => {
-  test('checking the checkbox moves the task to "Completadas hoy"', async ({
-    auth,
-  }, testInfo) => {
+  test('checking the checkbox moves the task to "Completadas hoy"', async ({ auth }, testInfo) => {
     const title = `Pagar luz ${testInfo.testId}`;
     const task = await createQuickTask(auth.api, { title });
 
@@ -29,9 +27,7 @@ test.describe('Quick tasks — complete / uncomplete', () => {
     }
   });
 
-  test('unchecking a completed task sends it back to Pendientes', async ({
-    auth,
-  }, testInfo) => {
+  test('unchecking a completed task sends it back to Pendientes', async ({ auth }, testInfo) => {
     const title = `Ir al gym ${testInfo.testId}`;
     const task = await createQuickTask(auth.api, { title });
 
@@ -47,9 +43,7 @@ test.describe('Quick tasks — complete / uncomplete', () => {
 
       // The "Completadas hoy" header disappears when the last completed task
       // is unchecked (only one task in this test).
-      await expect(
-        auth.page.getByRole('heading', { name: /completadas hoy/i }),
-      ).not.toBeVisible();
+      await expect(auth.page.getByRole('heading', { name: /completadas hoy/i })).not.toBeVisible();
       await expect(card().getByRole('checkbox')).not.toBeChecked();
     } finally {
       await deleteQuickTask(auth.api, task.id);

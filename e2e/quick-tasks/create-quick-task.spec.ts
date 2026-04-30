@@ -14,9 +14,7 @@ test.describe('Quick tasks — create', () => {
 
     // Task card surfaces in the Pendientes section.
     await expect(auth.page.getByText(title)).toBeVisible();
-    await expect(
-      auth.page.getByRole('heading', { name: /pendientes/i }),
-    ).toBeVisible();
+    await expect(auth.page.getByRole('heading', { name: /pendientes/i })).toBeVisible();
   });
 
   test('rejects an empty title', async ({ auth }) => {
