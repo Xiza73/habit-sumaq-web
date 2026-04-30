@@ -160,10 +160,16 @@ Todo cambio con impacto de contrato (endpoint, módulo nuevo, variable de entorn
 
 ## Contribuir
 
-1. Branch desde `master`: `feat/<módulo>/<descripción>` o `fix/<módulo>/<descripción>`
+Desde v0.1.0 el repo usa split `dev` ↔ `master`: feature work va a `dev`, master se mergea solo cuando se corta release (ese push gatilla deploy en Vercel).
+
+1. Branch desde `dev`: `feat/<módulo>/<descripción>` · `fix/<módulo>/<descripción>` · `chore/<area>/<descripción>` · `test/<módulo>/<descripción>` · `docs/<area>/<descripción>`
 2. Conventional Commits (`feat:`, `fix:`, `refactor:`, `docs:`, `test:`, `chore:`)
 3. Pipeline local antes del PR: `pnpm tsc --noEmit` + `pnpm lint` + `pnpm test`
-4. Nunca mergear a `master` sin PR; CI + Vercel preview deben estar verdes
+4. PR contra `dev` (default). Nunca pushear directo a master.
+5. Para releases: merge `dev` → `master` + tag `vX.Y.Z`. El push a master gatilla Vercel.
+6. Hotfixes urgentes (excepción): branch desde `master`, PR a `master`, después merge `master` → `dev` para mantener sincronizadas.
+
+Ver el flujo completo en [`CLAUDE.md`](CLAUDE.md).
 
 ## Licencia
 

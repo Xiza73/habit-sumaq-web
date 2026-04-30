@@ -111,11 +111,42 @@ Si trabajás local y tenés ambos repos clonados adyacentes, los paths relativos
 - Validar en frontend **antes** de enviar al backend. Mostrar errores inline por campo.
 - Tras submit exitoso, invalidar queries relevantes de TanStack Query.
 
-### Git & Branching
+### Git & Branching (post-v0.1.0)
 
-- Rama principal: `main`.
-- Ramas de feature: `feat/<module>/<description>` (ej: `feat/accounts/create-form`).
-- Ramas de fix: `fix/<module>/<description>`.
+Desde el release v0.1.0 el repo usa un split `dev` ↔ `master` para desacoplar
+"feature mergeada" de "deploy a producción".
+
+- **`dev`** — Default branch en GitHub. Recibe TODOS los PRs de feature/fix.
+- **`master`** — Branch de release. **Vercel watchea master y deploya en cada push.** Solo recibe merges desde `dev` cuando se quiere cortar release.
+
+**Para feature/fix:**
+
+```bash
+git checkout dev && git pull
+git checkout -b feat/<module>/<descripción> dev   # SIEMPRE desde dev
+# ... cambios ...
+git push -u origin feat/<module>/<descripción>
+gh pr create                                       # default base = dev
+```
+
+**Para release:**
+
+```bash
+git checkout master && git pull
+git merge --no-ff dev
+git push origin master                             # gatilla deploy en Vercel
+git tag -a vX.Y.Z -m "Release vX.Y.Z — ..."
+git push origin vX.Y.Z
+gh release create vX.Y.Z --title "..." --notes "..."
+git checkout dev && git merge master && git push   # sync dev con master
+```
+
+**Reglas duras:**
+
+- **Nunca pushear directo a master.** Master solo recibe merges desde `dev`.
+- **Nunca branch desde master para feature.** Siempre desde `dev`.
+- **Hotfixes urgentes en producción**: branch `hotfix/<descripción>` desde master, PR a master, después mergear master → dev. Excepción, no regla.
+- Convenciones de naming: `feat/<module>/<description>`, `fix/<module>/<description>`, `chore/<area>/<description>`, `test/<module>/<description>`, `docs/<area>/<description>`.
 - Commits atómicos. Un commit = un cambio lógico.
 
 ### Seguridad
