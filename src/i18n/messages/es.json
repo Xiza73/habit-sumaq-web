@@ -111,6 +111,8 @@
     "remaining": "Pendiente",
     "ofTotal": "de {total}",
     "noDescription": "Sin descripción",
+    "budgetBadge": "Budget",
+    "budgetBadgeTitle": "Movimiento del presupuesto del mes",
     "searchPlaceholder": "Buscar por nombre, descripción o referencia…",
     "debtsSummary": {
       "title": "Deudas y préstamos",
@@ -234,6 +236,10 @@
     "MSVC_004": "Este servicio ya está pagado para el mes actual.",
     "CHRE_001": "No se puede eliminar una tarea con historial. Archivala en su lugar.",
     "CHRE_002": "Tarea no encontrada.",
+    "BDGT_001": "Presupuesto no encontrado.",
+    "BDGT_002": "Ya tenés un presupuesto para ese mes y moneda.",
+    "BDGT_003": "La fecha del movimiento debe estar dentro del mes del presupuesto.",
+    "VAL_002": "La moneda de la cuenta no coincide con la del presupuesto.",
     "generic": "Ocurrió un error inesperado. Intenta de nuevo."
   },
   "habits": {
@@ -387,12 +393,79 @@
     "transactions": "Transacciones",
     "debts": "Deudas y préstamos",
     "services": "Servicios",
+    "budgets": "Presupuesto",
     "routines": "Rutinas",
     "habits": "Hábitos",
     "quickTasks": "Diarias",
     "chores": "Quehaceres",
     "reports": "Reportes",
     "settings": "Configuración"
+  },
+  "budgets": {
+    "title": "Presupuesto mensual",
+    "subtitle": "Gastos discrecionales del mes — solo cuenta lo que cargás acá explícitamente.",
+    "kpi": {
+      "title": "Tu mes",
+      "addMovement": "Agregar gasto",
+      "editAmount": "Editar monto",
+      "delete": "Eliminar",
+      "remaining": "Disponible",
+      "spentOfTotal": "{spent} gastado de {total}",
+      "dailyAllowance": "Por día",
+      "dailyAllowanceHint": "Sugerido para los días que faltan",
+      "dailyAllowanceClosedHint": "Mes cerrado",
+      "daysRemaining": "Días restantes",
+      "daysRemainingHint": "Incluye hoy",
+      "spent": "Gastado",
+      "spentHint": "Suma de todos tus movimientos"
+    },
+    "empty": {
+      "title": "No tenés presupuesto para {period} en {currency}",
+      "subtitle": "Definí cuánto querés gastar este mes en cosas discrecionales y mirá cómo te va día a día.",
+      "createBudget": "Crear presupuesto"
+    },
+    "form": {
+      "createTitle": "Nuevo presupuesto",
+      "editTitle": "Editar presupuesto",
+      "year": "Año",
+      "month": "Mes",
+      "currency": "Moneda",
+      "currencyImmutableHint": "La moneda no se puede cambiar después de crear el presupuesto.",
+      "amount": "Monto",
+      "amountHint": "El total que vas a presupuestar para el mes (en la moneda elegida).",
+      "createSuccess": "Presupuesto creado",
+      "editSuccess": "Presupuesto actualizado"
+    },
+    "movements": {
+      "title": "Movimientos",
+      "addTitle": "Nuevo movimiento",
+      "currencyHint": "El movimiento se registra en {currency} (la moneda del presupuesto).",
+      "noEligibleAccount": "No tenés cuentas activas en {currency}. Creá una primero.",
+      "amount": "Monto",
+      "date": "Fecha",
+      "account": "Cuenta",
+      "category": "Categoría",
+      "description": "Descripción",
+      "descriptionPlaceholder": "Ej: Cena con amigos",
+      "addSubmit": "Registrar movimiento",
+      "addSuccess": "Movimiento registrado",
+      "empty": "Todavía no cargaste ningún movimiento este mes",
+      "noDescription": "Sin descripción",
+      "deleteConfirm": "¿Seguro que querés eliminar este movimiento? La cuenta vinculada se reembolsa.",
+      "deleteSuccess": "Movimiento eliminado"
+    },
+    "history": {
+      "title": "Historial"
+    },
+    "delete": {
+      "title": "Eliminar presupuesto",
+      "description": "Se elimina el plan, pero los movimientos sobreviven como gastos normales en /transactions. La plata ya se movió.",
+      "success": "Presupuesto eliminado"
+    },
+    "detail": {
+      "backToList": "Volver al presupuesto actual",
+      "notFound": "Presupuesto no encontrado o ya eliminado."
+    }
   },
   "chores": {
     "title": "Quehaceres",

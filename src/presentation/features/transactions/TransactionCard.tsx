@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 
-import { HandCoins, MoreVertical, Pencil, Trash2 } from 'lucide-react';
+import { HandCoins, MoreVertical, Pencil, PiggyBank, Trash2 } from 'lucide-react';
 
 import { type Transaction } from '@/core/domain/entities/transaction';
 import { type Currency } from '@/core/domain/enums/account.enums';
@@ -86,6 +86,17 @@ export function TransactionCard({
               }`}
             >
               {t(`status.${transaction.status}`)}
+            </span>
+          )}
+          {/* Budget movement marker — lets the user spot expenses tagged to
+              a monthly budget at a glance in the global tx list. */}
+          {transaction.budgetId && (
+            <span
+              className="inline-flex shrink-0 items-center gap-1 rounded bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-primary"
+              title={t('budgetBadgeTitle')}
+            >
+              <PiggyBank className="size-2.5" />
+              {t('budgetBadge')}
             </span>
           )}
         </div>
