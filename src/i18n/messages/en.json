@@ -110,7 +110,6 @@
     "settleAmount": "Amount to settle",
     "remaining": "Remaining",
     "ofTotal": "of {total}",
-    "noDescription": "No description",
     "budgetBadge": "Budget",
     "budgetBadgeTitle": "Movement of the monthly budget",
     "searchPlaceholder": "Search by name, description, or reference…",

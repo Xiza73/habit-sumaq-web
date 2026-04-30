@@ -110,7 +110,6 @@
     "settleAmount": "Monto a liquidar",
     "remaining": "Pendiente",
     "ofTotal": "de {total}",
-    "noDescription": "Sin descripción",
     "budgetBadge": "Budget",
     "budgetBadgeTitle": "Movimiento del presupuesto del mes",
     "searchPlaceholder": "Buscar por nombre, descripción o referencia…",

@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 
 import { HandCoins, MoreVertical, Pencil, PiggyBank, Trash2 } from 'lucide-react';
 
+import { type Category } from '@/core/domain/entities/category';
 import { type Transaction } from '@/core/domain/entities/transaction';
 import { type Currency } from '@/core/domain/enums/account.enums';
 
@@ -15,6 +16,12 @@ import { cn } from '@/lib/utils';
 interface TransactionCardProps {
   transaction: Transaction;
   currency: Currency;
+  /**
+   * Category resolved by the parent (TransactionList builds the lookup once).
+   * `null` when the transaction has no category — valid for INCOME / TRANSFER.
+   * `undefined` when the lookup hasn't loaded yet.
+   */
+  category?: Category | null;
   isLast?: boolean;
   onEdit: (transaction: Transaction) => void;
   onDelete: (transaction: Transaction) => void;
@@ -24,6 +31,7 @@ interface TransactionCardProps {
 export function TransactionCard({
   transaction,
   currency,
+  category,
   isLast,
   onEdit,
   onDelete,
@@ -56,6 +64,19 @@ export function TransactionCard({
         ? '-'
         : '';
 
+  // Title falls back through three layers: explicit description → category
+  // name → localized type label. The previous "No description" copy was
+  // user-hostile when most transactions have a category that already names
+  // them well ("Comida", "Sueldo", etc.).
+  const titleText = transaction.description
+    ? transaction.description
+    : (category?.name ?? t(`types.${transaction.type}`));
+
+  // The subtitle keeps the type + reference info, but inserts the category
+  // (with a colored swatch) ONLY when the title isn't already showing it —
+  // otherwise the same name would appear twice on adjacent lines.
+  const showCategoryInSubtitle = transaction.description !== null && category != null;
+
   return (
     <div className="group relative flex items-center gap-3 rounded-xl border border-border bg-card p-4 transition-shadow hover:shadow-md">
       {/* Touch devices: whole card is tappable */}
@@ -74,9 +95,7 @@ export function TransactionCard({
 
       <div className="min-w-0 flex-1">
         <div className="flex min-w-0 items-center gap-2">
-          <p className="min-w-0 truncate font-medium">
-            {transaction.description ?? t('noDescription')}
-          </p>
+          <p className="min-w-0 truncate font-medium">{titleText}</p>
           {isDebtOrLoan && transaction.status && (
             <span
               className={`shrink-0 rounded px-1.5 py-0.5 text-[10px] font-medium ${
@@ -100,10 +119,25 @@ export function TransactionCard({
             </span>
           )}
         </div>
-        <p className="text-xs text-muted-foreground">
-          {t(`types.${transaction.type}`)}
-          {transaction.reference && ` · ${transaction.reference}`}
-        </p>
+        <div className="flex min-w-0 items-center gap-1.5 text-xs text-muted-foreground">
+          {showCategoryInSubtitle && (
+            <>
+              {category.color && (
+                <span
+                  className="inline-block size-2 shrink-0 rounded-full"
+                  style={{ backgroundColor: category.color }}
+                  aria-hidden
+                />
+              )}
+              <span className="truncate">{category.name}</span>
+              <span aria-hidden>·</span>
+            </>
+          )}
+          <span className="truncate">
+            {t(`types.${transaction.type}`)}
+            {transaction.reference && ` · ${transaction.reference}`}
+          </span>
+        </div>
       </div>
 
       <div className="shrink-0 text-right">
