@@ -39,6 +39,16 @@ export function useTransaction(id: string) {
   });
 }
 
+// Any mutation that creates / updates / deletes / settles a transaction MUST
+// also invalidate the debts-summary cache: a new DEBT/LOAN won't surface on
+// the /transactions/debts dashboard otherwise, and edits / settlements /
+// deletes on existing DEBT/LOAN rows leave the dashboard counts stale. We
+// invalidate the prefix `[..., 'debts-summary']` (without the status filter)
+// so all three variants — pending / all / settled — refresh in one shot.
+// Same pattern that `useSettleByReference` already uses; we just bring the
+// rest of the mutating hooks in line.
+const debtsSummaryPrefix = [...transactionKeys.all, 'debts-summary'] as const;
+
 export function useCreateTransaction() {
   const queryClient = useQueryClient();
 
@@ -46,6 +56,7 @@ export function useCreateTransaction() {
     mutationFn: (data: CreateTransactionInput) => transactionsApi.create(data),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: transactionKeys.lists() });
+      void queryClient.invalidateQueries({ queryKey: debtsSummaryPrefix });
       void queryClient.invalidateQueries({ queryKey: accountKeys.all });
     },
   });
@@ -60,6 +71,7 @@ export function useUpdateTransaction() {
     onSuccess: (_, { id }) => {
       void queryClient.invalidateQueries({ queryKey: transactionKeys.lists() });
       void queryClient.invalidateQueries({ queryKey: transactionKeys.detail(id) });
+      void queryClient.invalidateQueries({ queryKey: debtsSummaryPrefix });
       void queryClient.invalidateQueries({ queryKey: accountKeys.all });
     },
   });
@@ -72,6 +84,7 @@ export function useDeleteTransaction() {
     mutationFn: (id: string) => transactionsApi.delete(id),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: transactionKeys.lists() });
+      void queryClient.invalidateQueries({ queryKey: debtsSummaryPrefix });
       void queryClient.invalidateQueries({ queryKey: accountKeys.all });
     },
   });
@@ -86,6 +99,7 @@ export function useSettleTransaction() {
     onSuccess: (_, { id }) => {
       void queryClient.invalidateQueries({ queryKey: transactionKeys.lists() });
       void queryClient.invalidateQueries({ queryKey: transactionKeys.detail(id) });
+      void queryClient.invalidateQueries({ queryKey: debtsSummaryPrefix });
       void queryClient.invalidateQueries({ queryKey: accountKeys.all });
     },
   });

@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { useRef, useState } from 'react';
+import { useForm, useWatch } from 'react-hook-form';
 import { useTranslations } from 'next-intl';
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -41,9 +41,32 @@ interface TaskFormProps {
  *   automatically.
  *
  * Description is markdown — reuses the `QuickTaskMarkdown` renderer + the
- * shared `MarkdownToolbar` so the editing UX matches Diarias / Priorities.
+ * shared `MarkdownToolbar` so the editing UX matches Prioridades.
+ *
+ * Body lives in `<Body>` so it can compute its `defaultValues` straight from
+ * the `task` prop — Modal unmounts children when closed (see Modal.tsx), so
+ * each open mounts a fresh Body without a setState-in-effect reset.
  */
 export function TaskForm({ open, task, defaultSectionId, sections, onClose }: TaskFormProps) {
+  if (!open) return null;
+  return (
+    <Body
+      task={task ?? null}
+      defaultSectionId={defaultSectionId}
+      sections={sections}
+      onClose={onClose}
+    />
+  );
+}
+
+interface BodyProps {
+  task: Task | null;
+  defaultSectionId?: string;
+  sections: Section[];
+  onClose: () => void;
+}
+
+function Body({ task, defaultSectionId, sections, onClose }: BodyProps) {
   const t = useTranslations('tasks');
   const tCommon = useTranslations('common');
   const tErrors = useTranslations('errors');
@@ -58,28 +81,22 @@ export function TaskForm({ open, task, defaultSectionId, sections, onClose }: Ta
 
   const form = useForm<CreateTaskInput>({
     resolver: zodResolver(createTaskSchema),
-    defaultValues: { sectionId: '', title: '', description: null },
+    defaultValues: task
+      ? {
+          sectionId: task.sectionId,
+          title: task.title,
+          description: task.description,
+        }
+      : {
+          sectionId: defaultSectionId ?? sections[0]?.id ?? '',
+          title: '',
+          description: null,
+        },
   });
 
-  const descriptionValue = form.watch('description') ?? '';
-
-  useEffect(() => {
-    if (!open) return;
-    setMode('edit');
-    if (task) {
-      form.reset({
-        sectionId: task.sectionId,
-        title: task.title,
-        description: task.description,
-      });
-    } else {
-      form.reset({
-        sectionId: defaultSectionId ?? sections[0]?.id ?? '',
-        title: '',
-        description: null,
-      });
-    }
-  }, [open, task, defaultSectionId, sections, form]);
+  // useWatch instead of form.watch() so React Compiler can memoize this
+  // component — form.watch() returns a function the compiler can't track.
+  const descriptionValue = useWatch({ control: form.control, name: 'description' }) ?? '';
 
   function handleSubmit(values: CreateTaskInput) {
     const payload: CreateTaskInput = {
@@ -127,12 +144,16 @@ export function TaskForm({ open, task, defaultSectionId, sections, onClose }: Ta
     );
   }
 
+  // Combine RHF's ref with our textareaRef in a single callback so the
+  // toolbar can manipulate the selection on the same node RHF tracks.
+  const descriptionReg = form.register('description');
+  function setTextareaRef(el: HTMLTextAreaElement | null) {
+    descriptionReg.ref(el);
+    textareaRef.current = el;
+  }
+
   return (
-    <Modal
-      open={open}
-      onClose={onClose}
-      title={isEditing ? t('task.editTitle') : t('task.createTitle')}
-    >
+    <Modal open onClose={onClose} title={isEditing ? t('task.editTitle') : t('task.createTitle')}>
       <form onSubmit={(e) => void form.handleSubmit(handleSubmit)(e)} className="space-y-4">
         <div className="space-y-2">
           <label htmlFor="task-section" className="text-sm font-medium">
@@ -206,16 +227,8 @@ export function TaskForm({ open, task, defaultSectionId, sections, onClose }: Ta
               <MarkdownToolbar textareaRef={textareaRef} />
               <textarea
                 id="task-description"
-                {...(() => {
-                  const reg = form.register('description');
-                  return {
-                    ...reg,
-                    ref: (el: HTMLTextAreaElement | null) => {
-                      reg.ref(el);
-                      textareaRef.current = el;
-                    },
-                  };
-                })()}
+                {...descriptionReg}
+                ref={setTextareaRef}
                 placeholder={t('task.descriptionPlaceholder')}
                 rows={6}
                 maxLength={5000}

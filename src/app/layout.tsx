@@ -26,8 +26,20 @@ export const metadata: Metadata = {
   description: 'Empieza hoy un buen hábito — Finanzas personales y hábitos',
   manifest: '/manifest.json',
   icons: {
-    icon: '/logo/logo_lg.svg',
-    apple: '/logo/logo_lg.png',
+    // Modern browsers prefer the SVG (sharp at any size). The PNG fallbacks
+    // are bitmaps generated from the same SVG and live in /public/icons/ —
+    // referenced explicitly so iOS Safari and older Android Chrome pick the
+    // right artwork instead of falling back to a default.
+    icon: [
+      { url: '/logo/logo_lg.svg', type: 'image/svg+xml' },
+      { url: '/icons/icon-192.png', sizes: '192x192', type: 'image/png' },
+      { url: '/icons/icon-512.png', sizes: '512x512', type: 'image/png' },
+    ],
+    shortcut: '/icons/icon-192.png',
+    // iOS uses apple-touch-icon at 180x180 for the home-screen webclip. The
+    // bitmap is rendered from logo_lg.svg with a white background so the
+    // brand reads well over any wallpaper.
+    apple: { url: '/icons/icon-apple-180.png', sizes: '180x180', type: 'image/png' },
   },
   appleWebApp: {
     capable: true,

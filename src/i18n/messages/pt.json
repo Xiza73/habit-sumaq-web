@@ -110,7 +110,6 @@
     "settleAmount": "Valor a liquidar",
     "remaining": "Pendente",
     "ofTotal": "de {total}",
-    "noDescription": "Sem descrição",
     "budgetBadge": "Orçamento",
     "budgetBadgeTitle": "Movimento do orçamento mensal",
     "searchPlaceholder": "Buscar por nome, descrição ou referência…",
@@ -589,7 +588,7 @@
       "today": "Hoje",
       "habitsCompletion": "Hábitos concluídos",
       "habitsCompletionSubtitle": "{rate}% dos diários",
-      "quickTasksCompletion": "Diárias concluídas",
+      "quickTasksCompletion": "Prioridades concluídas",
       "quickTasksPending": "{count, plural, one {# pendente} other {# pendentes}}",
       "topStreaks": "Top sequências de hábitos",
       "topStreaksEmpty": "Ainda sem sequências ativas.",
@@ -625,7 +624,8 @@
       "deleteSuccess": "Seção excluída",
       "createSuccess": "Seção criada",
       "editSuccess": "Seção atualizada",
-      "emptyTasks": "Sem tarefas nesta seção"
+      "emptyTasks": "Sem tarefas nesta seção",
+      "toggle": "Mostrar ou ocultar a seção {name}"
     },
     "task": {
       "add": "Nova tarefa",

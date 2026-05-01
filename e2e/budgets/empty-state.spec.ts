@@ -20,8 +20,8 @@ test.describe('Budgets — empty state', () => {
 
     await auth.page.goto('/budgets');
 
-    // EmptyBudgetCta heading copy: "No tenés presupuesto para {period} en {currency}"
-    await expect(auth.page.getByRole('heading', { name: /no tenés presupuesto/i })).toBeVisible();
+    // EmptyBudgetCta heading copy: "No tienes presupuesto para {period} en {currency}"
+    await expect(auth.page.getByRole('heading', { name: /no tienes presupuesto/i })).toBeVisible();
     await expect(auth.page.getByRole('button', { name: /crear presupuesto/i })).toBeVisible();
   });
 });

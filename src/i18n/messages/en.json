@@ -110,7 +110,6 @@
     "settleAmount": "Amount to settle",
     "remaining": "Remaining",
     "ofTotal": "of {total}",
-    "noDescription": "No description",
     "budgetBadge": "Budget",
     "budgetBadgeTitle": "Movement of the monthly budget",
     "searchPlaceholder": "Search by name, description, or reference…",
@@ -589,7 +588,7 @@
       "today": "Today",
       "habitsCompletion": "Habits completed",
       "habitsCompletionSubtitle": "{rate}% of daily habits",
-      "quickTasksCompletion": "Daily tasks done",
+      "quickTasksCompletion": "Priorities done",
       "quickTasksPending": "{count, plural, one {# pending} other {# pending}}",
       "topStreaks": "Top habit streaks",
       "topStreaksEmpty": "No active streaks yet.",
@@ -625,7 +624,8 @@
       "deleteSuccess": "Section deleted",
       "createSuccess": "Section created",
       "editSuccess": "Section updated",
-      "emptyTasks": "No tasks in this section"
+      "emptyTasks": "No tasks in this section",
+      "toggle": "Show or hide the {name} section"
     },
     "task": {
       "add": "New task",

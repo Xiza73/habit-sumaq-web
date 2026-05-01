@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { useRef, useState } from 'react';
+import { useForm, useWatch } from 'react-hook-form';
 import { useTranslations } from 'next-intl';
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -31,7 +31,23 @@ interface QuickTaskFormProps {
   onClose: () => void;
 }
 
+/**
+ * The form body lives in `<Body>` so it can compute its `defaultValues`
+ * straight from the `task` prop — no `useEffect(() => form.reset(...))`,
+ * no `setMode('edit')` after mount. The Modal returns null when closed
+ * (see Modal.tsx), so each open mounts a fresh Body.
+ */
 export function QuickTaskForm({ open, task, onClose }: QuickTaskFormProps) {
+  if (!open) return null;
+  return <Body task={task ?? null} onClose={onClose} />;
+}
+
+interface BodyProps {
+  task: QuickTask | null;
+  onClose: () => void;
+}
+
+function Body({ task, onClose }: BodyProps) {
   const t = useTranslations('quickTasks');
   const tCommon = useTranslations('common');
   const tErrors = useTranslations('errors');
@@ -48,20 +64,14 @@ export function QuickTaskForm({ open, task, onClose }: QuickTaskFormProps) {
 
   const form = useForm<CreateQuickTaskInput>({
     resolver: zodResolver(createQuickTaskSchema),
-    defaultValues: { title: '', description: null },
+    defaultValues: task
+      ? { title: task.title, description: task.description }
+      : { title: '', description: null },
   });
 
-  const descriptionValue = form.watch('description') ?? '';
-
-  useEffect(() => {
-    if (!open) return;
-    setMode('edit');
-    form.reset(
-      task
-        ? { title: task.title, description: task.description }
-        : { title: '', description: null },
-    );
-  }, [open, task, form]);
+  // useWatch instead of form.watch() so React Compiler can memoize this
+  // component — form.watch() returns a function the compiler can't track.
+  const descriptionValue = useWatch({ control: form.control, name: 'description' }) ?? '';
 
   function handleSubmit(values: CreateQuickTaskInput) {
     const payload: CreateQuickTaskInput = {
@@ -99,8 +109,16 @@ export function QuickTaskForm({ open, task, onClose }: QuickTaskFormProps) {
     );
   }
 
+  // Combine RHF's ref with our textareaRef in a single callback so the
+  // toolbar can manipulate the selection on the same node RHF tracks.
+  const descriptionReg = form.register('description');
+  function setTextareaRef(el: HTMLTextAreaElement | null) {
+    descriptionReg.ref(el);
+    textareaRef.current = el;
+  }
+
   return (
-    <Modal open={open} onClose={onClose} title={isEditing ? t('editTask') : t('createTask')}>
+    <Modal open onClose={onClose} title={isEditing ? t('editTask') : t('createTask')}>
       <form onSubmit={(e) => void form.handleSubmit(handleSubmit)(e)} className="space-y-4">
         <div className="space-y-2">
           <label htmlFor="title" className="text-sm font-medium">
@@ -158,16 +176,8 @@ export function QuickTaskForm({ open, task, onClose }: QuickTaskFormProps) {
               <MarkdownToolbar textareaRef={textareaRef} />
               <textarea
                 id="description"
-                {...(() => {
-                  const reg = form.register('description');
-                  return {
-                    ...reg,
-                    ref: (el: HTMLTextAreaElement | null) => {
-                      reg.ref(el);
-                      textareaRef.current = el;
-                    },
-                  };
-                })()}
+                {...descriptionReg}
+                ref={setTextareaRef}
                 placeholder={t('descriptionPlaceholder')}
                 rows={6}
                 maxLength={5000}

@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useRef } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -75,6 +76,18 @@ export function Sidebar() {
   const t = useTranslations('navigation');
   const sidebarOpen = useUIStore((s) => s.sidebarOpen);
   const setSidebarOpen = useUIStore((s) => s.setSidebarOpen);
+  const navRef = useRef<HTMLElement | null>(null);
+
+  // When the active route changes (or on mount with a deep route already
+  // selected), scroll the active link into view INSIDE the nav. block:
+  // 'nearest' is a no-op when the link is already on screen, so users
+  // with short routes never see a jump.
+  useEffect(() => {
+    const active = navRef.current?.querySelector<HTMLElement>('[aria-current="page"]');
+    if (active) {
+      active.scrollIntoView({ block: 'nearest', behavior: 'auto' });
+    }
+  }, [pathname]);
 
   function isItemActive(item: NavItem): boolean {
     if (pathname === item.href) return true;
@@ -101,6 +114,7 @@ export function Sidebar() {
           key={item.href}
           href={item.href}
           onClick={() => setSidebarOpen(false)}
+          aria-current={isActive ? 'page' : undefined}
           className={cn(
             'ml-6 flex items-center gap-2 border-l py-1.5 pl-3 pr-3 text-xs font-normal transition-colors',
             // rounded only on the right so the left border reads as a hanging
@@ -122,6 +136,7 @@ export function Sidebar() {
         key={item.href}
         href={item.href}
         onClick={() => setSidebarOpen(false)}
+        aria-current={isActive ? 'page' : undefined}
         className={cn(
           'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
           isActive
@@ -152,11 +167,17 @@ export function Sidebar() {
 
       <aside
         className={cn(
-          'fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-r border-border bg-sidebar transition-transform duration-200 md:relative md:translate-x-0',
+          // Mobile: fixed off-canvas drawer. Desktop: sticky to the top of
+          // the viewport so the sidebar stays anchored while the main pane
+          // scrolls underneath. h-screen pins the height to the viewport in
+          // BOTH layouts — that gives sticky a height to anchor against,
+          // and it lets the inner <nav> compute overflow correctly.
+          'fixed inset-y-0 left-0 z-50 flex h-screen w-64 flex-col border-r border-border bg-sidebar transition-transform duration-200',
+          'md:sticky md:top-0 md:translate-x-0',
           sidebarOpen ? 'translate-x-0' : '-translate-x-full',
         )}
       >
-        <div className="flex h-16 items-center gap-3 border-b border-border px-6">
+        <div className="flex h-16 shrink-0 items-center gap-3 border-b border-border px-6">
           <Image
             src="/logo/logo_lg_dark.svg"
             alt="Habit Sumaq"
@@ -174,7 +195,24 @@ export function Sidebar() {
           <span className="text-lg font-semibold">Habit Sumaq</span>
         </div>
 
-        <nav className="flex-1 space-y-6 p-3">
+        <nav
+          ref={navRef}
+          // overflow-y-auto on the nav means scrolling stays inside the
+          // sidebar — the main content scrolls independently. Custom thin
+          // scrollbar via arbitrary variants so we don't pollute globals.css:
+          // Firefox uses scrollbar-width, WebKit/Chromium uses the
+          // pseudo-elements. Both fall back to the platform default outside
+          // those browsers.
+          className={cn(
+            'flex-1 space-y-6 overflow-y-auto p-3',
+            '[scrollbar-width:thin]',
+            '[&::-webkit-scrollbar]:w-1.5',
+            '[&::-webkit-scrollbar-track]:bg-transparent',
+            '[&::-webkit-scrollbar-thumb]:rounded-full',
+            '[&::-webkit-scrollbar-thumb]:bg-border',
+            'hover:[&::-webkit-scrollbar-thumb]:bg-muted-foreground/40',
+          )}
+        >
           {NAV_SECTIONS.map((section) => (
             <div key={section.titleKey ?? section.items[0].href}>
               {section.titleKey && (
@@ -187,7 +225,7 @@ export function Sidebar() {
           ))}
         </nav>
 
-        <div className="border-t border-border p-3">{BOTTOM_ITEMS.map(renderNavLink)}</div>
+        <div className="shrink-0 border-t border-border p-3">{BOTTOM_ITEMS.map(renderNavLink)}</div>
       </aside>
     </>
   );

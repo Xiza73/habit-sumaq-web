@@ -2,9 +2,7 @@ import { expect, test } from '../fixtures/authenticated-page';
 import { createQuickTask, deleteQuickTask } from '../helpers/quick-tasks-api';
 
 test.describe('Quick tasks — expand description', () => {
-  test('clicking the title expands the card and renders markdown', async ({
-    auth,
-  }, testInfo) => {
+  test('clicking the title expands the card and renders markdown', async ({ auth }, testInfo) => {
     const title = `Pagar recibo ${testInfo.testId}`;
     const description = 'Ir al **banco** y pagar.';
     const task = await createQuickTask(auth.api, { title, description });

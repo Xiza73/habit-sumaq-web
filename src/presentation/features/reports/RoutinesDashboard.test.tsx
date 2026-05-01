@@ -48,7 +48,7 @@ describe('RoutinesDashboard', () => {
     render(<RoutinesDashboard />, { wrapper: TestProviders });
 
     expect(screen.getByText('Hábitos completados')).toBeInTheDocument();
-    expect(screen.getByText('Diarias completadas')).toBeInTheDocument();
+    expect(screen.getByText('Prioridades completadas')).toBeInTheDocument();
     // Zero-state values for both KPIs.
     expect(screen.getAllByText('0/0')).toHaveLength(2);
   });
@@ -71,7 +71,7 @@ describe('RoutinesDashboard', () => {
     hookState.data = buildData();
     render(<RoutinesDashboard />, { wrapper: TestProviders });
 
-    expect(screen.getByText(/todavía no tenés rachas activas/i)).toBeInTheDocument();
+    expect(screen.getByText(/todavía no tienes rachas activas/i)).toBeInTheDocument();
   });
 
   it('renders one card per habit streak', () => {

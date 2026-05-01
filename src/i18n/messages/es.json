@@ -76,7 +76,7 @@
       "INCOME": "Ingreso",
       "EXPENSE": "Gasto",
       "TRANSFER": "Transferencia",
-      "DEBT": "Deuda (le debés)",
+      "DEBT": "Deuda (le debes)",
       "LOAN": "Préstamo (te deben)"
     },
     "status": {
@@ -110,7 +110,6 @@
     "settleAmount": "Monto a liquidar",
     "remaining": "Pendiente",
     "ofTotal": "de {total}",
-    "noDescription": "Sin descripción",
     "budgetBadge": "Budget",
     "budgetBadgeTitle": "Movimiento del presupuesto del mes",
     "searchPlaceholder": "Buscar por nombre, descripción o referencia…",
@@ -120,7 +119,7 @@
       "backToList": "Volver a transacciones",
       "viewDebts": "Ver deudas",
       "empty": "No hay deudas por mostrar.",
-      "emptyPending": "No tenés deudas pendientes. Todo al día.",
+      "emptyPending": "No tienes deudas pendientes. Todo al día.",
       "owesYou": "Te debe",
       "youOwe": "Le debes",
       "net": "Neto",
@@ -146,7 +145,7 @@
           "description": "Crea movimientos en tu cuenta (gastos para deudas, ingresos para préstamos) y mueve el balance.",
           "accountLabel": "Cuenta en {currency}",
           "summary": "Vas a generar {count, plural, one {# liquidación} other {# liquidaciones}} por un total de {total} desde {account}.",
-          "noEligibleAccount": "No tenés ninguna cuenta activa en {currency}. Crea una o usá el cierre informal."
+          "noEligibleAccount": "No tienes ninguna cuenta activa en {currency}. Crea una o usa el cierre informal."
         },
         "informal": {
           "title": "Cierre informal",
@@ -230,14 +229,14 @@
     "HAB_004": "No se puede registrar en una fecha futura",
     "HAB_005": "La cantidad objetivo debe ser al menos 1",
     "HAB_006": "No tienes acceso a este hábito",
-    "MSVC_001": "No se puede eliminar un servicio con pagos. Archivalo en su lugar.",
+    "MSVC_001": "No se puede eliminar un servicio con pagos. Archívalo en su lugar.",
     "MSVC_002": "Servicio mensual no encontrado.",
-    "MSVC_003": "Ya tenés un servicio activo con ese nombre.",
+    "MSVC_003": "Ya tienes un servicio activo con ese nombre.",
     "MSVC_004": "Este servicio ya está pagado para el mes actual.",
-    "CHRE_001": "No se puede eliminar una tarea con historial. Archivala en su lugar.",
+    "CHRE_001": "No se puede eliminar una tarea con historial. Archívala en su lugar.",
     "CHRE_002": "Tarea no encontrada.",
     "BDGT_001": "Presupuesto no encontrado.",
-    "BDGT_002": "Ya tenés un presupuesto para ese mes y moneda.",
+    "BDGT_002": "Ya tienes un presupuesto para ese mes y moneda.",
     "BDGT_003": "La fecha del movimiento debe estar dentro del mes del presupuesto.",
     "VAL_002": "La moneda de la cuenta no coincide con la del presupuesto.",
     "TSK_001": "Sección no encontrada.",
@@ -290,7 +289,7 @@
     "pastDateNotice": "Registrando para una fecha pasada.",
     "milestones": {
       "week": "🔥 ¡Una semana seguida con {name}! Vas bien.",
-      "month": "🚀 ¡Un mes completo con {name}! Sos imparable.",
+      "month": "🚀 ¡Un mes completo con {name}! Eres imparable.",
       "century": "💎 ¡{days} días con {name}! Una racha legendaria."
     }
   },
@@ -300,7 +299,7 @@
     "createService": "Nuevo servicio",
     "editService": "Editar servicio",
     "empty": "Todavía no agregaste ningún servicio",
-    "emptyArchived": "No tenés servicios archivados",
+    "emptyArchived": "No tienes servicios archivados",
     "tabs": { "active": "Activos", "archived": "Archivados" },
     "status": {
       "paid": "Al día",
@@ -323,7 +322,7 @@
     "deleteConfirm": {
       "title": "¿Eliminar {name}?",
       "body": "Esta acción no se puede deshacer.",
-      "disabledReason": "No podés eliminar un servicio que ya tiene pagos. Archivalo en su lugar.",
+      "disabledReason": "No puedes eliminar un servicio que ya tiene pagos. Archívalo en su lugar.",
       "confirm": "Eliminar"
     },
     "paySuccess": "Pago de {name} registrado",
@@ -343,7 +342,7 @@
       "currency": "Moneda",
       "frequency": "Cadencia",
       "frequencyHint": "Cada cuánto se cobra. Esto no se puede cambiar después.",
-      "frequencyHintEdit": "La cadencia es inmutable. Para cambiarla, archivá este servicio y creá uno nuevo.",
+      "frequencyHintEdit": "La cadencia es inmutable. Para cambiarla, archiva este servicio y crea uno nuevo.",
       "estimatedAmount": "Monto estimado",
       "estimatedAmountHint": "Se autocompleta con el promedio de tus pagos",
       "dueDay": "Día aproximado de vencimiento",
@@ -413,7 +412,7 @@
   },
   "budgets": {
     "title": "Presupuesto mensual",
-    "subtitle": "Gastos discrecionales del mes — solo cuenta lo que cargás acá explícitamente.",
+    "subtitle": "Gastos discrecionales del mes — solo cuenta lo que cargas aquí explícitamente.",
     "kpi": {
       "title": "Tu mes",
       "addMovement": "Agregar gasto",
@@ -430,8 +429,8 @@
       "spentHint": "Suma de todos tus movimientos"
     },
     "empty": {
-      "title": "No tenés presupuesto para {period} en {currency}",
-      "subtitle": "Definí cuánto querés gastar este mes en cosas discrecionales y mirá cómo te va día a día.",
+      "title": "No tienes presupuesto para {period} en {currency}",
+      "subtitle": "Define cuánto quieres gastar este mes en cosas discrecionales y mira cómo te va día a día.",
       "createBudget": "Crear presupuesto"
     },
     "form": {
@@ -450,7 +449,7 @@
       "title": "Movimientos",
       "addTitle": "Nuevo movimiento",
       "currencyHint": "El movimiento se registra en {currency} (la moneda del presupuesto).",
-      "noEligibleAccount": "No tenés cuentas activas en {currency}. Creá una primero.",
+      "noEligibleAccount": "No tienes cuentas activas en {currency}. Crea una primero.",
       "amount": "Monto",
       "date": "Fecha",
       "account": "Cuenta",
@@ -461,7 +460,7 @@
       "addSuccess": "Movimiento registrado",
       "empty": "Todavía no cargaste ningún movimiento este mes",
       "noDescription": "Sin descripción",
-      "deleteConfirm": "¿Seguro que querés eliminar este movimiento? La cuenta vinculada se reembolsa.",
+      "deleteConfirm": "¿Seguro que quieres eliminar este movimiento? La cuenta vinculada se reembolsa.",
       "deleteSuccess": "Movimiento eliminado"
     },
     "history": {
@@ -479,7 +478,7 @@
   },
   "chores": {
     "title": "Quehaceres",
-    "subtitle": "Tareas recurrentes que hacés cada cierto tiempo (cortar pelo, limpiar alacena, ...)",
+    "subtitle": "Tareas recurrentes que haces cada cierto tiempo (cortar pelo, limpiar alacena, ...)",
     "createChore": "Nueva tarea",
     "editChore": "Editar tarea",
     "empty": "Todavía no agregaste ninguna tarea",
@@ -512,7 +511,7 @@
       "intervalUnit": "Unidad",
       "startDate": "Fecha de inicio",
       "nextDueDate": "Próxima vez",
-      "nextDueDateHint": "Editá manualmente para reanclar el ritmo",
+      "nextDueDateHint": "Edita manualmente para reanclar el ritmo",
       "category": "Categoría",
       "categoryHint": "Opcional. Para agrupar tareas relacionadas (Hogar, Salud, Auto, ...).",
       "notes": "Notas",
@@ -539,7 +538,7 @@
     "deleteConfirm": {
       "title": "¿Eliminar \"{name}\"?",
       "body": "Esta acción no se puede deshacer.",
-      "disabledReason": "No podés eliminar una tarea con historial. Archivala en su lugar.",
+      "disabledReason": "No puedes eliminar una tarea con historial. Archívala en su lugar.",
       "confirm": "Eliminar"
     },
     "logs": {
@@ -562,7 +561,7 @@
       "title": "Reporte de Finanzas",
       "subtitle": "Resumen agregado de tus cuentas y transacciones en el período seleccionado.",
       "totalBalance": "Balance total",
-      "totalBalanceEmpty": "Todavía no tenés cuentas activas.",
+      "totalBalanceEmpty": "Todavía no tienes cuentas activas.",
       "accountCount": "{count, plural, one {# cuenta} other {# cuentas}}",
       "periodFlow": "Ingresos vs Gastos",
       "periodFlowEmpty": "Sin movimientos en el período.",
@@ -589,10 +588,10 @@
       "today": "Hoy",
       "habitsCompletion": "Hábitos completados",
       "habitsCompletionSubtitle": "{rate}% de los diarios",
-      "quickTasksCompletion": "Diarias completadas",
+      "quickTasksCompletion": "Prioridades completadas",
       "quickTasksPending": "{count, plural, one {# pendiente} other {# pendientes}}",
       "topStreaks": "Top rachas de hábitos",
-      "topStreaksEmpty": "Todavía no tenés rachas activas.",
+      "topStreaksEmpty": "Todavía no tienes rachas activas.",
       "currentStreak": "Actual",
       "longestStreak": "Mejor",
       "completionRate": "Completitud últimos 30 días: {rate}%"
@@ -602,8 +601,8 @@
     "title": "Tareas",
     "subtitle": "TODOs agrupados en secciones (estilo proyectos). Las tareas completadas se limpian al cierre de cada semana.",
     "empty": {
-      "title": "Empezá creando tu primera sección",
-      "subtitle": "Las tareas viven dentro de secciones. Creá una para arrancar — podés tener tantas como necesites.",
+      "title": "Empieza creando tu primera sección",
+      "subtitle": "Las tareas viven dentro de secciones. Crea una para empezar — puedes tener tantas como necesites.",
       "createFirst": "Crear primera sección"
     },
     "section": {
@@ -621,11 +620,12 @@
       "dragHandle": "Arrastrar sección",
       "deleteTitle": "Eliminar sección",
       "deleteDescriptionEmpty": "La sección está vacía. ¿Eliminarla?",
-      "deleteDescriptionWithCount": "Esta sección tiene {count, plural, one {# tarea} other {# tareas}}. Si la eliminás, se borran también esas tareas. ¿Continuar?",
+      "deleteDescriptionWithCount": "Esta sección tiene {count, plural, one {# tarea} other {# tareas}}. Si la eliminas, se borran también esas tareas. ¿Continuar?",
       "deleteSuccess": "Sección eliminada",
       "createSuccess": "Sección creada",
       "editSuccess": "Sección actualizada",
-      "emptyTasks": "Sin tareas en esta sección"
+      "emptyTasks": "Sin tareas en esta sección",
+      "toggle": "Mostrar u ocultar la sección {name}"
     },
     "task": {
       "add": "Nueva tarea",
@@ -636,7 +636,7 @@
       "titlePlaceholder": "Ej: Llamar al banco",
       "titleRequired": "El título es obligatorio",
       "description": "Descripción",
-      "descriptionPlaceholder": "Detalles en **Markdown** si querés…",
+      "descriptionPlaceholder": "Detalles en **Markdown** si quieres…",
       "descriptionPreviewEmpty": "Sin descripción",
       "descriptionModeEdit": "Editar",
       "descriptionModePreview": "Vista previa",
@@ -649,12 +649,12 @@
       "markComplete": "Marcar como hecha",
       "markIncomplete": "Marcar como pendiente",
       "dragHandle": "Arrastrar tarea",
-      "createNeedsSection": "Creá una sección primero"
+      "createNeedsSection": "Crea una sección primero"
     }
   },
   "quickTasks": {
     "title": "Prioridades",
-    "subtitle": "Lo que querés hacer hoy. Lo que completes hoy desaparece mañana; lo pendiente se queda.",
+    "subtitle": "Lo que quieres hacer hoy. Lo que completes hoy desaparece mañana; lo pendiente se queda.",
     "createTask": "Nueva tarea",
     "editTask": "Editar tarea",
     "deleteTask": "Eliminar tarea",
