@@ -100,6 +100,9 @@ export function FinancesDashboard() {
                     percentage: cat.percentage,
                     color: cat.color,
                   }))}
+                  // Defensive — the parent guard means BarList never renders
+                  // the empty state here, but the prop is required.
+                  emptyMessage={t('topCategoriesEmpty')}
                 />
               )}
             </section>

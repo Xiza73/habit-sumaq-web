@@ -1,8 +1,8 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 
-import { useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
 import { type UserSettings } from '@/core/domain/entities/user-settings';
@@ -37,18 +37,39 @@ const DEFAULT_PREFS: MonthlyServicesViewPrefs = {
   orderDir: MonthlyServicesOrderDir.ASC,
 };
 
+interface MutationContext {
+  /** Snapshot of `user_settings` from BEFORE this mutation's optimistic
+   * patch — the value we restore on error. */
+  previous: UserSettings | undefined;
+}
+
+function readPrefsFromCache(settings: UserSettings | undefined): MonthlyServicesViewPrefs {
+  if (!settings) return DEFAULT_PREFS;
+  return {
+    groupBy: settings.monthlyServicesGroupBy,
+    orderBy: settings.monthlyServicesOrderBy,
+    orderDir: settings.monthlyServicesOrderDir,
+  };
+}
+
 /**
- * Reads the monthly-services view preferences from `user_settings` and exposes
- * a `setPrefs(partial)` callback that:
- *   1. Updates the TanStack cache **immediately** (optimistic) so the UI feels
- *      snappy.
- *   2. Debounces the network PATCH so rapid clicks (e.g. toggling the dir
- *      back-and-forth) collapse into a single request.
- *   3. On error, rolls back the cache to the last server-confirmed value
- *      and shows a toast.
+ * Reads the monthly-services view preferences from `user_settings` and
+ * exposes a `setPrefs(partial)` callback that:
+ *   1. Optimistically patches the TanStack cache so the UI (and any other
+ *      consumer of `useUserSettings`) updates immediately.
+ *   2. Debounces the network PATCH so rapid clicks (e.g. flipping the
+ *      direction back-and-forth) collapse into a single request.
+ *   3. On error, rolls the cache back to the snapshot taken BEFORE this
+ *      mutation's optimistic update — TanStack Query's `onMutate` context
+ *      pattern, so consecutive errors can't compound into a stale target.
  *
- * Defaults to `{ none, name, asc }` while settings are still loading — the
- * UI renders the same as it always did before this PR.
+ * The previous version mirrored `serverPrefs` into local React state and
+ * tracked "last server value" via a ref synced through `useEffect`. That
+ * tripped the React Compiler's `set-state-in-effect` rule AND captured the
+ * optimistic value as "last server" (incorrect rollback target). This
+ * version uses the query cache as the single source of truth — each
+ * `setPrefs` reads the latest cached value to merge against, so rapid
+ * back-and-forth clicks coalesce naturally without local mirror state.
  */
 export function useMonthlyServicesViewPrefs(): {
   prefs: MonthlyServicesViewPrefs;
@@ -57,41 +78,61 @@ export function useMonthlyServicesViewPrefs(): {
   const { data: settings } = useUserSettings();
   const queryClient = useQueryClient();
 
-  const serverPrefs: MonthlyServicesViewPrefs = settings
-    ? {
-        groupBy: settings.monthlyServicesGroupBy,
-        orderBy: settings.monthlyServicesOrderBy,
-        orderDir: settings.monthlyServicesOrderDir,
+  const prefs = readPrefsFromCache(settings);
+
+  const mutation = useMutation<UserSettings, unknown, MonthlyServicesViewPrefs, MutationContext>({
+    mutationFn: (next) =>
+      userSettingsApi.updateSettings({
+        monthlyServicesGroupBy: next.groupBy,
+        monthlyServicesOrderBy: next.orderBy,
+        monthlyServicesOrderDir: next.orderDir,
+      } satisfies UpdateUserSettingsDto),
+    onMutate: async (next) => {
+      // Cancel any in-flight settings refetch so it can't race the optimistic
+      // patch and clobber our rollback snapshot.
+      await queryClient.cancelQueries({ queryKey: userSettingsKeys.detail() });
+      const previous = queryClient.getQueryData<UserSettings>(userSettingsKeys.detail());
+      // Re-apply the optimistic patch here too. The `setPrefs` body already
+      // patched the cache before scheduling the debounce, but if the user
+      // never debounced (single-shot path) onMutate is the only place it
+      // gets done.
+      queryClient.setQueryData<UserSettings | undefined>(userSettingsKeys.detail(), (prev) =>
+        prev
+          ? {
+              ...prev,
+              monthlyServicesGroupBy: next.groupBy,
+              monthlyServicesOrderBy: next.orderBy,
+              monthlyServicesOrderDir: next.orderDir,
+            }
+          : prev,
+      );
+      return { previous };
+    },
+    onError: (error, _next, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(userSettingsKeys.detail(), context.previous);
       }
-    : DEFAULT_PREFS;
-
-  // Local state mirrors the server prefs but updates immediately on
-  // setPrefs(...) so the controls feel snappy. We re-sync from the server
-  // whenever the cached settings change.
-  const [localPrefs, setLocalPrefs] = useState<MonthlyServicesViewPrefs>(serverPrefs);
-
-  useEffect(() => {
-    setLocalPrefs(serverPrefs);
-    // We deliberately depend on the underlying values, not the object — same
-    // values shouldn't trigger a re-sync.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [serverPrefs.groupBy, serverPrefs.orderBy, serverPrefs.orderDir]);
+      const code = error instanceof ApiError ? error.code : null;
+      toast.error(code ?? 'Could not save view preferences');
+    },
+    onSettled: () => {
+      void queryClient.invalidateQueries({ queryKey: userSettingsKeys.all });
+    },
+  });
 
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const lastServerPrefsRef = useRef<MonthlyServicesViewPrefs>(serverPrefs);
-
-  // Keep a ref of the last KNOWN server value so onError can roll back cleanly
-  // even if the user kept clicking during the debounce window.
-  useEffect(() => {
-    lastServerPrefsRef.current = serverPrefs;
-  }, [serverPrefs.groupBy, serverPrefs.orderBy, serverPrefs.orderDir]); // eslint-disable-line react-hooks/exhaustive-deps
 
   function setPrefs(partial: Partial<MonthlyServicesViewPrefs>) {
-    const next: MonthlyServicesViewPrefs = { ...localPrefs, ...partial };
-    setLocalPrefs(next);
+    // Read the freshest value FROM THE CACHE on every click. If a previous
+    // optimistic patch already landed (rapid clicks within the debounce
+    // window), this picks it up — so the second click merges against the
+    // first's optimistic state, not the stale server snapshot.
+    const cached = queryClient.getQueryData<UserSettings>(userSettingsKeys.detail());
+    const base = readPrefsFromCache(cached);
+    const next: MonthlyServicesViewPrefs = { ...base, ...partial };
 
-    // Optimistically patch the user-settings cache so any other consumer
-    // (e.g. the Settings page) sees the new values immediately too.
+    // Snappy UI: patch the cache immediately so the controls reflect the
+    // click before the debounce + network roundtrip.
     queryClient.setQueryData<UserSettings | undefined>(userSettingsKeys.detail(), (prev) =>
       prev
         ? {
@@ -106,34 +147,7 @@ export function useMonthlyServicesViewPrefs(): {
     // Coalesce rapid changes into a single PATCH.
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => {
-      const payload: UpdateUserSettingsDto = {
-        monthlyServicesGroupBy: next.groupBy,
-        monthlyServicesOrderBy: next.orderBy,
-        monthlyServicesOrderDir: next.orderDir,
-      };
-      void userSettingsApi.updateSettings(payload).then(
-        () => {
-          // Server confirmed — invalidate to pick up updatedAt etc.
-          void queryClient.invalidateQueries({ queryKey: userSettingsKeys.all });
-        },
-        (error: unknown) => {
-          // Roll back to the last server-confirmed value.
-          const fallback = lastServerPrefsRef.current;
-          setLocalPrefs(fallback);
-          queryClient.setQueryData<UserSettings | undefined>(userSettingsKeys.detail(), (prev) =>
-            prev
-              ? {
-                  ...prev,
-                  monthlyServicesGroupBy: fallback.groupBy,
-                  monthlyServicesOrderBy: fallback.orderBy,
-                  monthlyServicesOrderDir: fallback.orderDir,
-                }
-              : prev,
-          );
-          const code = error instanceof ApiError ? error.code : null;
-          toast.error(code ?? 'Could not save view preferences');
-        },
-      );
+      mutation.mutate(next);
     }, DEBOUNCE_MS);
   }
 
@@ -145,5 +159,5 @@ export function useMonthlyServicesViewPrefs(): {
     };
   }, []);
 
-  return { prefs: localPrefs, setPrefs };
+  return { prefs, setPrefs };
 }
