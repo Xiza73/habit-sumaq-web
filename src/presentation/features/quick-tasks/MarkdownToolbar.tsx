@@ -17,17 +17,48 @@ interface MarkdownToolbarProps {
  * via ref. Each button is `type="button"` so it never submits the parent form
  * and `onMouseDown` (instead of onClick) so the textarea doesn't lose focus
  * before we apply the change.
+ *
+ * The dispatch goes through ONE shared `onMouseDown` handler keyed by a
+ * `data-cmd` attribute. The previous factory pattern (`run(action)`) returned
+ * a closure during render, which `react-hooks/refs` flagged as "ref accessed
+ * during render" because lexically `textareaRef.current` lived inside a
+ * function called from JSX. With a single handler the access is unambiguously
+ * inside an event callback.
  */
+type ToolbarCmd = 'bold' | 'italic' | 'code' | 'heading' | 'bulletList' | 'orderedList' | 'quote';
+
 export function MarkdownToolbar({ textareaRef }: MarkdownToolbarProps) {
   const t = useTranslations('quickTasks.markdownToolbar');
 
-  function run(action: (textarea: HTMLTextAreaElement) => void) {
-    return (e: React.MouseEvent) => {
-      e.preventDefault();
-      const ta = textareaRef.current;
-      if (!ta) return;
-      action(ta);
-    };
+  function handleMouseDown(e: React.MouseEvent<HTMLButtonElement>) {
+    e.preventDefault();
+    const ta = textareaRef.current;
+    if (!ta) return;
+
+    const cmd = e.currentTarget.dataset.cmd as ToolbarCmd | undefined;
+    switch (cmd) {
+      case 'bold':
+        wrapSelection(ta, '**');
+        return;
+      case 'italic':
+        wrapSelection(ta, '*');
+        return;
+      case 'code':
+        wrapSelection(ta, '`');
+        return;
+      case 'heading':
+        prefixLine(ta, '## ');
+        return;
+      case 'bulletList':
+        prefixLine(ta, '- ');
+        return;
+      case 'orderedList':
+        prefixLine(ta, '1. ');
+        return;
+      case 'quote':
+        prefixLine(ta, '> ');
+        return;
+    }
   }
 
   const buttonClass =
@@ -37,27 +68,30 @@ export function MarkdownToolbar({ textareaRef }: MarkdownToolbarProps) {
     <div className="flex flex-wrap items-center gap-0.5 border-b border-border bg-muted/30 px-1 py-1">
       <button
         type="button"
+        data-cmd="bold"
         title={t('bold')}
         aria-label={t('bold')}
-        onMouseDown={run((ta) => wrapSelection(ta, '**'))}
+        onMouseDown={handleMouseDown}
         className={buttonClass}
       >
         <Bold className="size-3.5" />
       </button>
       <button
         type="button"
+        data-cmd="italic"
         title={t('italic')}
         aria-label={t('italic')}
-        onMouseDown={run((ta) => wrapSelection(ta, '*'))}
+        onMouseDown={handleMouseDown}
         className={buttonClass}
       >
         <Italic className="size-3.5" />
       </button>
       <button
         type="button"
+        data-cmd="code"
         title={t('code')}
         aria-label={t('code')}
-        onMouseDown={run((ta) => wrapSelection(ta, '`'))}
+        onMouseDown={handleMouseDown}
         className={buttonClass}
       >
         <Code className="size-3.5" />
@@ -67,36 +101,40 @@ export function MarkdownToolbar({ textareaRef }: MarkdownToolbarProps) {
 
       <button
         type="button"
+        data-cmd="heading"
         title={t('heading')}
         aria-label={t('heading')}
-        onMouseDown={run((ta) => prefixLine(ta, '## '))}
+        onMouseDown={handleMouseDown}
         className={buttonClass}
       >
         <Heading className="size-3.5" />
       </button>
       <button
         type="button"
+        data-cmd="bulletList"
         title={t('bulletList')}
         aria-label={t('bulletList')}
-        onMouseDown={run((ta) => prefixLine(ta, '- '))}
+        onMouseDown={handleMouseDown}
         className={buttonClass}
       >
         <List className="size-3.5" />
       </button>
       <button
         type="button"
+        data-cmd="orderedList"
         title={t('orderedList')}
         aria-label={t('orderedList')}
-        onMouseDown={run((ta) => prefixLine(ta, '1. '))}
+        onMouseDown={handleMouseDown}
         className={buttonClass}
       >
         <ListOrdered className="size-3.5" />
       </button>
       <button
         type="button"
+        data-cmd="quote"
         title={t('quote')}
         aria-label={t('quote')}
-        onMouseDown={run((ta) => prefixLine(ta, '> '))}
+        onMouseDown={handleMouseDown}
         className={buttonClass}
       >
         <Quote className="size-3.5" />

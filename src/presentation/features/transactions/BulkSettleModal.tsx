@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useId, useMemo, useState } from 'react';
+import { useId, useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
 
 import { Loader2 } from 'lucide-react';
@@ -32,34 +32,58 @@ interface BulkSettleModalProps {
  *    the balance.
  *  - **Cierre informal** — only marks SETTLED. Useful when the debt was
  *    already settled face-to-face and we just want to close the books.
+ *
+ * State (mode + account selection) lives in the inner `<Body>`. The outer
+ * shell mounts a fresh `<Body>` per row via `key={row.id}`, so opening the
+ * modal for a different row resets the form without a setState-in-effect.
  */
 export function BulkSettleModal({ row, loading, onConfirm, onCancel }: BulkSettleModalProps) {
+  if (!row) return null;
+  // `reference + currency` is the row's natural key (per
+  // `DebtsSummaryRow` schema). Using it as React key forces a fresh
+  // <Body> mount per row, which resets `mode` and the account override
+  // without an effect.
+  return (
+    <Body
+      key={`${row.reference}::${row.currency}`}
+      row={row}
+      loading={loading}
+      onConfirm={onConfirm}
+      onCancel={onCancel}
+    />
+  );
+}
+
+interface BodyProps {
+  row: DebtsSummaryRow;
+  loading: boolean;
+  onConfirm: (mode: BulkSettleMode, accountId?: string) => void;
+  onCancel: () => void;
+}
+
+function Body({ row, loading, onConfirm, onCancel }: BodyProps) {
   const t = useTranslations('transactions.debtsSummary.bulkSettle');
   const tCommon = useTranslations('common');
   const radioName = useId();
 
   const [mode, setMode] = useState<BulkSettleMode>('real');
-  const [accountId, setAccountId] = useState<string>('');
+  // `null` = "use the first eligible account once they load". Once the user
+  // explicitly picks one, this holds their choice and overrides the default.
+  // This avoids a setState-in-effect that would otherwise sync a default
+  // selection out of `eligibleAccounts`.
+  const [accountIdOverride, setAccountIdOverride] = useState<string | null>(null);
 
   const { data: accounts } = useAccounts(false);
 
   const eligibleAccounts = useMemo(
     () =>
       (accounts ?? []).filter(
-        (account) => !account.isArchived && row != null && account.currency === row.currency,
+        (account) => !account.isArchived && account.currency === row.currency,
       ),
-    [accounts, row],
+    [accounts, row.currency],
   );
 
-  // When the modal opens for a new row, default to "real" mode and pre-select
-  // the first eligible account in the row's currency.
-  useEffect(() => {
-    if (!row) return;
-    setMode('real');
-    setAccountId(eligibleAccounts[0]?.id ?? '');
-  }, [row, eligibleAccounts]);
-
-  if (!row) return null;
+  const accountId = accountIdOverride ?? eligibleAccounts[0]?.id ?? '';
 
   const canConfirmReal = mode === 'real' && accountId !== '';
   const canConfirm = mode === 'informal' || canConfirmReal;
@@ -77,7 +101,7 @@ export function BulkSettleModal({ row, loading, onConfirm, onCancel }: BulkSettl
 
   return (
     <Modal
-      open={!!row}
+      open
       onClose={onCancel}
       title={t('title', { name: row.displayName, currency: row.currency })}
     >
@@ -116,7 +140,7 @@ export function BulkSettleModal({ row, loading, onConfirm, onCancel }: BulkSettl
               <Select
                 id="bulk-settle-account"
                 value={accountId}
-                onChange={(e) => setAccountId(e.target.value)}
+                onChange={(e) => setAccountIdOverride(e.target.value)}
               >
                 {eligibleAccounts.map((account) => (
                   <option key={account.id} value={account.id}>

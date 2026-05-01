@@ -14,16 +14,16 @@ export interface BarListItem {
 
 interface BarListProps {
   items: BarListItem[];
-  emptyMessage?: string;
+  /**
+   * Required so callers always supply localized copy — there's no sane
+   * neutral default we can hardcode here without leaking Spanish.
+   */
+  emptyMessage: string;
 }
 
 export function BarList({ items, emptyMessage }: BarListProps) {
   if (items.length === 0) {
-    return (
-      <p className="py-4 text-sm text-muted-foreground">
-        {emptyMessage ?? 'Sin datos para mostrar.'}
-      </p>
-    );
+    return <p className="py-4 text-sm text-muted-foreground">{emptyMessage}</p>;
   }
 
   return (
