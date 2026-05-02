@@ -35,7 +35,8 @@ onboarding para que más usuarios se enganchen.
 - [x] Doc `docs/business/growth-roadmap.md` (este doc)
 - [x] Doc `docs/business/coach-ia-feature.md` con la spec del feature insignia
 - [x] Doc `docs/business/twa-deployment.md` con el proceso PWA → APK
-- [ ] **Posthog setup** + eventos básicos (1 día) — _siguiente PR_
+- [x] **Posthog setup** + 5 eventos críticos (`login_completed`,
+      `transaction_created`, `habit_logged`, `report_viewed`, identify/reset)
 - [ ] Onboarding mejorado: tutorial post-login + datos demo opcionales
 - [ ] Templates de hábitos / categorías por arquetipo ("Estudiante",
       "Freelancer", "Pareja")
@@ -45,6 +46,20 @@ onboarding para que más usuarios se enganchen.
 
 **Métrica de éxito:** D7 retention >25%, activation rate >60% (signups con
 ≥1 transacción + ≥1 hábito en la primera semana).
+
+#### Backlog técnico Fase 1+ (triaged)
+
+Items que surgieron mientras laburábamos Fase 1. Priorizados por
+**impacto / esfuerzo**, no por orden de aparición. Se agendan dentro de Fase 1
+salvo el que diga lo contrario.
+
+| Prio | Item                                          | Tipo    | Esfuerzo | Notas                                                                                                                                                                            |
+| ---- | --------------------------------------------- | ------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1    | **Crear categoría inline en TransactionForm** | Feature | ~3-4h    | Frontend-only. El `Select` de categoría no tiene escape hatch hoy → agregar opción "+ Crear nueva" que abre el `CategoryForm` modal sobre el TransactionForm. Quick win.         |
+| 2    | **Habit counter UX** (investigar)             | Polish  | 30min + 4h si hace falta | Feature ya existe (`Habit.targetCount` + `HabitLog.count`, `HabitForm` lo expone). Verificar si la UX de _incrementar el count_ al loguear está bien (vs solo checkbox). Si flojea, polish. |
+| 3    | **Persistencia de secciones colapsadas en Tasks** | Bug     | ~5h (back+front) | `Section` entity no tiene `isCollapsed` → state es local → al refresh se pierde. Fix: nueva column en `sections` + endpoint PATCH + frontend con optimistic. Requiere coord backend. |
+| 4    | **Date format unificado en forms**            | Bug     | ~6-10h   | 8 forms usan `<input type="date">` que ignora `userSettings.dateFormat` (HTML5 renderiza en locale del SO). Wire format está OK (`YYYY-MM-DD`), display NO. Fix proper: custom `<DatePicker>` component (ej. con `react-day-picker`) que reemplace todos los `type="date"`. Refactor mediano. |
+| 5    | **Generar APK del PWA** (Bubblewrap)          | Ops     | 1-2h     | Documentado en [twa-deployment.md](twa-deployment.md). Falta ejecutar Bubblewrap en máquina del autor + subir a Play Store. Cuando haya momento.                                  |
 
 ### 📈 Fase 2 — Killer feature + crecimiento (6-8 semanas)
 
