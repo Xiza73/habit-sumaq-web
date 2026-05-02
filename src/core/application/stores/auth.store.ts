@@ -2,6 +2,8 @@ import { create } from 'zustand';
 
 import { type User } from '@/core/domain/entities/user';
 
+import { analytics } from '@/lib/analytics';
+
 const TOKEN_COOKIE = 'access_token';
 
 function persistToken(token: string) {
@@ -38,6 +40,9 @@ export const useAuthStore = create<AuthState>((set) => ({
   },
   clearAuth: () => {
     removeToken();
+    // Drop the Posthog identity so the next login isn't conflated with the
+    // previous user's session.
+    analytics.reset();
     set({ accessToken: null, user: null });
   },
   setAccessToken: (accessToken) => {
