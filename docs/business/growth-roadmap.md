@@ -123,7 +123,7 @@ posthog.capture('first_budget_created');
 
 // Engagement recurrente
 posthog.capture('transaction_created', {
-  type: 'EXPENSE' | 'INCOME' | 'DEBT' | 'LOAN',
+  type: 'EXPENSE' | 'INCOME' | 'TRANSFER' | 'DEBT' | 'LOAN',
 });
 posthog.capture('habit_logged');
 posthog.capture('task_completed');

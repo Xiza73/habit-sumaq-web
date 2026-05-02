@@ -11,6 +11,8 @@ import {
 
 import { transactionsApi } from '@/infrastructure/api/transactions.api';
 
+import { analytics } from '@/lib/analytics';
+
 import { accountKeys } from './use-accounts';
 
 export const transactionKeys = {
@@ -54,10 +56,11 @@ export function useCreateTransaction() {
 
   return useMutation({
     mutationFn: (data: CreateTransactionInput) => transactionsApi.create(data),
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
       void queryClient.invalidateQueries({ queryKey: transactionKeys.lists() });
       void queryClient.invalidateQueries({ queryKey: debtsSummaryPrefix });
       void queryClient.invalidateQueries({ queryKey: accountKeys.all });
+      analytics.transactionCreated(variables.type);
     },
   });
 }
