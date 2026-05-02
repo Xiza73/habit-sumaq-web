@@ -684,5 +684,67 @@
     "markIncomplete": "Mark as pending",
     "dragHandle": "Reorder",
     "deleteConfirm": "This is permanent. The task will be deleted forever."
+  },
+  "templates": {
+    "title": "Templates",
+    "subtitle": "Speed up your setup with a pre-configured pack of habits and categories. You can apply several and combine them; duplicates are skipped.",
+    "habitsCount": "{count, plural, one {# habit} other {# habits}}",
+    "categoriesCount": "{count, plural, one {# category} other {# categories}}",
+    "applyAction": "Apply template",
+    "previewTitle": "Preview: {name}",
+    "previewHabits": "Habits",
+    "previewCategories": "Categories",
+    "previewIncome": "Income",
+    "previewExpense": "Expense",
+    "confirmAction": "Apply",
+    "cancelAction": "Cancel",
+    "applying": "Applying…",
+    "successCreatedOnly": "Template applied: {created} items created.",
+    "successWithSkipped": "Template applied: {created} created, {skipped} already existed and were skipped.",
+    "errorToast": "Could not apply the template",
+    "student": {
+      "name": "Student",
+      "description": "Study habits + typical categories for student life."
+    },
+    "freelancer": {
+      "name": "Freelancer",
+      "description": "Professional focus + finances adapted to multiple clients and typical freelance costs."
+    },
+    "couple": {
+      "name": "Couple",
+      "description": "Living together, shared finances, and weekly couple check-in."
+    },
+    "habits": {
+      "read30": "Read 30 minutes",
+      "study": "Study",
+      "exercise": "Exercise",
+      "sleep8": "Sleep 8 hours",
+      "deepWork": "Deep work",
+      "networking": "Networking",
+      "learning": "Learn something new",
+      "qualityTime": "Quality time together",
+      "weeklyMoneyMeeting": "Weekly finance check-in"
+    },
+    "categories": {
+      "food": "Food",
+      "transport": "Transport",
+      "studyMaterials": "Study materials",
+      "outings": "Outings",
+      "allowance": "Allowance",
+      "partTimeJob": "Part-time job",
+      "software": "Software / Subscriptions",
+      "coworking": "Coworking",
+      "taxes": "Taxes",
+      "health": "Health",
+      "clientA": "Client A",
+      "clientB": "Client B",
+      "oneOffJobs": "One-off jobs",
+      "home": "Home",
+      "sharedSubscriptions": "Shared subscriptions",
+      "services": "Services",
+      "salaryPerson1": "Salary person 1",
+      "salaryPerson2": "Salary person 2",
+      "other": "Other"
+    }
   }
 }
