@@ -684,5 +684,67 @@
     "markIncomplete": "Marcar como pendiente",
     "dragHandle": "Reordenar",
     "deleteConfirm": "Esta acción es definitiva. La tarea se elimina para siempre."
+  },
+  "templates": {
+    "title": "Plantillas",
+    "subtitle": "Acelera tu setup con un paquete preconfigurado de hábitos y categorías. Puedes aplicar varias y combinarlas; los duplicados se saltan.",
+    "habitsCount": "{count, plural, one {# hábito} other {# hábitos}}",
+    "categoriesCount": "{count, plural, one {# categoría} other {# categorías}}",
+    "applyAction": "Aplicar plantilla",
+    "previewTitle": "Vista previa: {name}",
+    "previewHabits": "Hábitos",
+    "previewCategories": "Categorías",
+    "previewIncome": "Ingreso",
+    "previewExpense": "Gasto",
+    "confirmAction": "Aplicar",
+    "cancelAction": "Cancelar",
+    "applying": "Aplicando…",
+    "successCreatedOnly": "Plantilla aplicada: {created} elementos creados.",
+    "successWithSkipped": "Plantilla aplicada: {created} creados, {skipped} ya existían y se saltaron.",
+    "errorToast": "No se pudo aplicar la plantilla",
+    "student": {
+      "name": "Estudiante",
+      "description": "Hábitos de estudio + categorías típicas de la vida estudiantil."
+    },
+    "freelancer": {
+      "name": "Freelancer",
+      "description": "Foco profesional + finanzas adaptadas a múltiples clientes y costos típicos del trabajo independiente."
+    },
+    "couple": {
+      "name": "Pareja",
+      "description": "Convivencia, finanzas compartidas y check-in semanal de pareja."
+    },
+    "habits": {
+      "read30": "Leer 30 minutos",
+      "study": "Estudiar",
+      "exercise": "Hacer ejercicio",
+      "sleep8": "Dormir 8 horas",
+      "deepWork": "Trabajo profundo",
+      "networking": "Networking",
+      "learning": "Aprender algo nuevo",
+      "qualityTime": "Tiempo de calidad juntos",
+      "weeklyMoneyMeeting": "Reunión semanal de finanzas"
+    },
+    "categories": {
+      "food": "Comida",
+      "transport": "Transporte",
+      "studyMaterials": "Materiales de estudio",
+      "outings": "Salidas",
+      "allowance": "Mesada",
+      "partTimeJob": "Trabajo part-time",
+      "software": "Software / Suscripciones",
+      "coworking": "Coworking",
+      "taxes": "Impuestos",
+      "health": "Salud",
+      "clientA": "Cliente A",
+      "clientB": "Cliente B",
+      "oneOffJobs": "Trabajos puntuales",
+      "home": "Hogar",
+      "sharedSubscriptions": "Suscripciones compartidas",
+      "services": "Servicios",
+      "salaryPerson1": "Sueldo persona 1",
+      "salaryPerson2": "Sueldo persona 2",
+      "other": "Otros"
+    }
   }
 }
