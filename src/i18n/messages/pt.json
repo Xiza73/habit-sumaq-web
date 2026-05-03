@@ -2,6 +2,7 @@
   "common": {
     "save": "Salvar",
     "cancel": "Cancelar",
+    "clear": "Limpar",
     "delete": "Excluir",
     "edit": "Editar",
     "create": "Criar",
@@ -98,6 +99,7 @@
     "allAccounts": "Todas as contas",
     "allCategories": "Todas as categorias",
     "allStatuses": "Todos os status",
+    "createNewCategory": "Criar nova categoria",
     "dateFrom": "De",
     "dateTo": "Até",
     "filters": "Filtros",
@@ -684,5 +686,67 @@
     "markIncomplete": "Marcar como pendente",
     "dragHandle": "Reordenar",
     "deleteConfirm": "Esta ação é definitiva. A tarefa será excluída para sempre."
+  },
+  "templates": {
+    "title": "Modelos",
+    "subtitle": "Acelere sua configuração com um pacote pré-configurado de hábitos e categorias. Você pode aplicar vários e combiná-los; duplicatas são ignoradas.",
+    "habitsCount": "{count, plural, one {# hábito} other {# hábitos}}",
+    "categoriesCount": "{count, plural, one {# categoria} other {# categorias}}",
+    "applyAction": "Aplicar modelo",
+    "previewTitle": "Pré-visualização: {name}",
+    "previewHabits": "Hábitos",
+    "previewCategories": "Categorias",
+    "previewIncome": "Receita",
+    "previewExpense": "Despesa",
+    "confirmAction": "Aplicar",
+    "cancelAction": "Cancelar",
+    "applying": "Aplicando…",
+    "successCreatedOnly": "Modelo aplicado: {created} itens criados.",
+    "successWithSkipped": "Modelo aplicado: {created} criados, {skipped} já existiam e foram ignorados.",
+    "errorToast": "Não foi possível aplicar o modelo",
+    "student": {
+      "name": "Estudante",
+      "description": "Hábitos de estudo + categorias típicas da vida estudantil."
+    },
+    "freelancer": {
+      "name": "Freelancer",
+      "description": "Foco profissional + finanças adaptadas a múltiplos clientes e custos típicos do trabalho autônomo."
+    },
+    "couple": {
+      "name": "Casal",
+      "description": "Convivência, finanças compartilhadas e check-in semanal de casal."
+    },
+    "habits": {
+      "read30": "Ler 30 minutos",
+      "study": "Estudar",
+      "exercise": "Fazer exercício",
+      "sleep8": "Dormir 8 horas",
+      "deepWork": "Trabalho profundo",
+      "networking": "Networking",
+      "learning": "Aprender algo novo",
+      "qualityTime": "Tempo de qualidade juntos",
+      "weeklyMoneyMeeting": "Reunião semanal de finanças"
+    },
+    "categories": {
+      "food": "Comida",
+      "transport": "Transporte",
+      "studyMaterials": "Materiais de estudo",
+      "outings": "Saídas",
+      "allowance": "Mesada",
+      "partTimeJob": "Trabalho meio período",
+      "software": "Software / Assinaturas",
+      "coworking": "Coworking",
+      "taxes": "Impostos",
+      "health": "Saúde",
+      "clientA": "Cliente A",
+      "clientB": "Cliente B",
+      "oneOffJobs": "Trabalhos pontuais",
+      "home": "Casa",
+      "sharedSubscriptions": "Assinaturas compartilhadas",
+      "services": "Serviços",
+      "salaryPerson1": "Salário pessoa 1",
+      "salaryPerson2": "Salário pessoa 2",
+      "other": "Outros"
+    }
   }
 }

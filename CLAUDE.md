@@ -37,6 +37,20 @@ Antes de implementar cualquier feature, consulta los documentos relevantes:
 | i18n                   | [i18n.md](docs/frontend/i18n.md)                               | Estrategia de internacionalización                 |
 | Reglas de Negocio      | [business-rules.md](docs/frontend/business-rules.md)           | Reglas que la UI debe respetar                     |
 
+### Estrategia de negocio (`docs/business/`)
+
+Decisiones de producto y monetización mapeadas para el presente y el futuro.
+Estos docs no son contrato técnico — son la memoria estratégica del proyecto.
+
+| Documento              | Ruta                                                           | Status      |
+| ---------------------- | -------------------------------------------------------------- | ----------- |
+| Índice                 | [README.md](docs/business/README.md)                           | —           |
+| Pricing & Tiering      | [pricing.md](docs/business/pricing.md)                         | BORRADOR    |
+| Growth roadmap         | [growth-roadmap.md](docs/business/growth-roadmap.md)           | ACTIVO      |
+| Coach IA (feature)     | [coach-ia-feature.md](docs/business/coach-ia-feature.md)       | BORRADOR    |
+| Habit Timer (feature)  | [habit-timer-feature.md](docs/business/habit-timer-feature.md) | BORRADOR    |
+| TWA deployment         | [twa-deployment.md](docs/business/twa-deployment.md)           | OPERACIONAL |
+
 ### Docs compartidos con el backend (single source of truth)
 
 Estos tres documentos describen el **contrato** que el backend expone. Por eso viven canónicamente en `habit-sumaq-backend` y este repo solo tiene stubs con el link:

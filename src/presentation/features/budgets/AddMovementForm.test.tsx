@@ -27,6 +27,34 @@ vi.mock('@/core/application/hooks/use-budgets', () => ({
   useAddBudgetMovement: () => ({ mutate: mockAddMovementMutate, isPending: false }),
 }));
 
+// Mock the DatePicker so we can assert AddMovementForm passes the right
+// `min`/`max` for the budget month. The real DatePicker renders a button +
+// portal-based calendar — too much to inspect for a behavioral assertion
+// like "the bounds are correct". A thin stub that surfaces the props as
+// data-attrs is enough to test the parent's logic.
+const datePickerProps = vi.fn<(props: { min?: string; max?: string; value: string }) => void>();
+vi.mock('@/presentation/components/ui/DatePicker', () => ({
+  DatePicker: (props: {
+    id?: string;
+    value: string;
+    onChange: (v: string) => void;
+    min?: string;
+    max?: string;
+  }) => {
+    datePickerProps(props);
+    return (
+      <input
+        data-testid="date-picker-stub"
+        id={props.id}
+        value={props.value}
+        onChange={(e) => props.onChange(e.target.value)}
+        data-min={props.min}
+        data-max={props.max}
+      />
+    );
+  },
+}));
+
 const baseBudget: Budget = {
   id: 'b-1',
   userId: 'user-1',
@@ -124,15 +152,18 @@ describe('AddMovementForm', () => {
     expect(screen.queryByRole('option', { name: /cuenta vieja/i })).not.toBeInTheDocument();
   });
 
-  it('constrains the date input to the budget month via min/max', () => {
+  it('passes the budget-month bounds to the DatePicker as min/max', () => {
     mockAccounts = [accountPen];
     mockCategories = [category];
     renderForm();
 
-    const dateInput = screen.getByLabelText(/fecha/i);
-    // April 2026 — first day, last day. (April has 30 days.)
-    expect(dateInput).toHaveAttribute('min', '2026-04-01');
-    expect(dateInput).toHaveAttribute('max', '2026-04-30');
+    // April 2026 — first day, last day. (April has 30 days.) Inspect the
+    // last call to the stubbed DatePicker; that's the most recent render.
+    const calls = datePickerProps.mock.calls;
+    const lastProps = calls[calls.length - 1]?.[0];
+    expect(lastProps).toBeDefined();
+    expect(lastProps?.min).toBe('2026-04-01');
+    expect(lastProps?.max).toBe('2026-04-30');
   });
 
   it('does not submit when amount is missing or zero', async () => {

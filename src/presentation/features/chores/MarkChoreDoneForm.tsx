@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
-import { useForm } from 'react-hook-form';
+import { Controller, useForm } from 'react-hook-form';
 import { useTranslations } from 'next-intl';
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -15,7 +15,7 @@ import { type MarkChoreDoneInput } from '@/core/domain/schemas/chore.schema';
 
 import { ApiError } from '@/infrastructure/api/api-error';
 
-import { Input } from '@/presentation/components/ui/Input';
+import { DatePicker } from '@/presentation/components/ui/DatePicker';
 import { Modal } from '@/presentation/components/ui/Modal';
 
 import { getTodayLocaleDate } from '@/lib/format';
@@ -95,7 +95,13 @@ export function MarkChoreDoneForm({ open, chore, onClose }: MarkChoreDoneFormPro
           <label htmlFor="chore-done-at" className="text-sm font-medium">
             {t('doneForm.doneAt')}
           </label>
-          <Input id="chore-done-at" type="date" {...form.register('doneAt')} />
+          <Controller
+            control={form.control}
+            name="doneAt"
+            render={({ field }) => (
+              <DatePicker id="chore-done-at" value={field.value} onChange={field.onChange} />
+            )}
+          />
           {form.formState.errors.doneAt && (
             <p className="text-xs text-destructive">{form.formState.errors.doneAt.message}</p>
           )}

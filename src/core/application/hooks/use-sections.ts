@@ -38,7 +38,29 @@ export function useUpdateSection() {
   return useMutation({
     mutationFn: ({ id, data }: { id: string; data: UpdateSectionInput }) =>
       sectionsApi.update(id, data),
-    onSuccess: () => {
+    // Optimistic: patch the cached section so changes (e.g. collapse toggle)
+    // feel instant. Most callers care about the toggle latency more than
+    // anything else — name/color edits land while the user is still in
+    // the form and the list refetch is fast enough either way.
+    onMutate: async ({ id, data }) => {
+      await queryClient.cancelQueries({ queryKey: sectionsKeys.list() });
+      const previous = queryClient.getQueryData<Section[]>(sectionsKeys.list());
+
+      if (previous) {
+        queryClient.setQueryData<Section[]>(
+          sectionsKeys.list(),
+          previous.map((section) => (section.id === id ? { ...section, ...data } : section)),
+        );
+      }
+
+      return { previous };
+    },
+    onError: (_err, _vars, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(sectionsKeys.list(), context.previous);
+      }
+    },
+    onSettled: () => {
       void queryClient.invalidateQueries({ queryKey: sectionsKeys.all });
     },
   });

@@ -22,6 +22,7 @@ const mockSection: Section = {
   name: 'Trabajo',
   color: '#FF6B35',
   position: 1,
+  isCollapsed: false,
   createdAt: '2026-04-20T00:00:00.000Z',
   updatedAt: '2026-04-20T00:00:00.000Z',
 };

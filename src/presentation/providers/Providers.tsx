@@ -2,6 +2,7 @@
 
 import { Toaster } from 'sonner';
 
+import { PostHogProvider } from './PostHogProvider';
 import { QueryProvider } from './QueryProvider';
 import { ThemeProvider } from './ThemeProvider';
 
@@ -11,18 +12,20 @@ interface ProvidersProps {
 
 export function Providers({ children }: ProvidersProps) {
   return (
-    <QueryProvider>
-      <ThemeProvider>
-        {children}
-        <Toaster
-          position="bottom-right"
-          toastOptions={{
-            className: 'font-sans',
-          }}
-          richColors
-          closeButton
-        />
-      </ThemeProvider>
-    </QueryProvider>
+    <PostHogProvider>
+      <QueryProvider>
+        <ThemeProvider>
+          {children}
+          <Toaster
+            position="bottom-right"
+            toastOptions={{
+              className: 'font-sans',
+            }}
+            richColors
+            closeButton
+          />
+        </ThemeProvider>
+      </QueryProvider>
+    </PostHogProvider>
   );
 }

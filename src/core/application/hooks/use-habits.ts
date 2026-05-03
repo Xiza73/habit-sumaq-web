@@ -12,6 +12,7 @@ import {
 
 import { habitsApi } from '@/infrastructure/api/habits.api';
 
+import { analytics } from '@/lib/analytics';
 import { fireCelebrationConfetti } from '@/lib/confetti';
 import { detectMilestoneCrossed } from '@/lib/streak-milestones';
 
@@ -185,6 +186,7 @@ export function useLogHabit() {
       }
     },
     onSuccess: async (_, { habitId, data }, context) => {
+      analytics.habitLogged();
       // Refetch the sources that carry the backend-computed `currentStreak`
       // so the cache is in sync before we detect the milestone. We target
       // the specific date + habit to avoid a broad network burst.

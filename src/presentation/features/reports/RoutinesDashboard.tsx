@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
 
 import { Flame, Trophy } from 'lucide-react';
@@ -8,6 +8,7 @@ import { Flame, Trophy } from 'lucide-react';
 import { useRoutinesDashboard } from '@/core/application/hooks/use-reports';
 import { type ReportPeriod } from '@/core/domain/entities/reports';
 
+import { analytics } from '@/lib/analytics';
 import { getStreakStyle } from '@/lib/streak-styles';
 import { cn } from '@/lib/utils';
 
@@ -19,6 +20,11 @@ export function RoutinesDashboard() {
 
   const [period, setPeriod] = useState<ReportPeriod>('month');
   const { data, isLoading, isError } = useRoutinesDashboard(period);
+
+  // One event per dashboard mount — see FinancesDashboard for rationale.
+  useEffect(() => {
+    analytics.reportViewed('routines');
+  }, []);
 
   return (
     <ReportShell
