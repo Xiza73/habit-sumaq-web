@@ -32,6 +32,16 @@ interface CategoryFormProps {
   category?: Category | null;
   defaultType?: 'INCOME' | 'EXPENSE';
   onClose: () => void;
+  /**
+   * Fires AFTER a successful create, BEFORE `onClose`. Receives the
+   * newly-created category. Use this from a parent that wants to act on
+   * the result — e.g. TransactionForm uses it to auto-select the new
+   * category in its dropdown so the user doesn't have to scroll back to
+   * find what they just created.
+   *
+   * Not called on edit.
+   */
+  onCreated?: (category: Category) => void;
 }
 
 export function CategoryForm({
@@ -39,6 +49,7 @@ export function CategoryForm({
   category,
   defaultType = 'EXPENSE',
   onClose,
+  onCreated,
 }: CategoryFormProps) {
   const t = useTranslations('categories');
   const tCommon = useTranslations('common');
@@ -98,8 +109,9 @@ export function CategoryForm({
       );
     } else {
       createMutation.mutate(values, {
-        onSuccess: () => {
+        onSuccess: (created) => {
           toast.success(t('createCategory'));
+          onCreated?.(created);
           onClose();
         },
         onError: handleError,
