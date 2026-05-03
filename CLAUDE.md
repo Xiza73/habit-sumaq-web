@@ -42,13 +42,14 @@ Antes de implementar cualquier feature, consulta los documentos relevantes:
 Decisiones de producto y monetización mapeadas para el presente y el futuro.
 Estos docs no son contrato técnico — son la memoria estratégica del proyecto.
 
-| Documento           | Ruta                                                     | Status      |
-| ------------------- | -------------------------------------------------------- | ----------- |
-| Índice              | [README.md](docs/business/README.md)                     | —           |
-| Pricing & Tiering   | [pricing.md](docs/business/pricing.md)                   | BORRADOR    |
-| Growth roadmap      | [growth-roadmap.md](docs/business/growth-roadmap.md)     | ACTIVO      |
-| Coach IA (feature)  | [coach-ia-feature.md](docs/business/coach-ia-feature.md) | BORRADOR    |
-| TWA deployment      | [twa-deployment.md](docs/business/twa-deployment.md)     | OPERACIONAL |
+| Documento              | Ruta                                                           | Status      |
+| ---------------------- | -------------------------------------------------------------- | ----------- |
+| Índice                 | [README.md](docs/business/README.md)                           | —           |
+| Pricing & Tiering      | [pricing.md](docs/business/pricing.md)                         | BORRADOR    |
+| Growth roadmap         | [growth-roadmap.md](docs/business/growth-roadmap.md)           | ACTIVO      |
+| Coach IA (feature)     | [coach-ia-feature.md](docs/business/coach-ia-feature.md)       | BORRADOR    |
+| Habit Timer (feature)  | [habit-timer-feature.md](docs/business/habit-timer-feature.md) | BORRADOR    |
+| TWA deployment         | [twa-deployment.md](docs/business/twa-deployment.md)           | OPERACIONAL |
 
 ### Docs compartidos con el backend (single source of truth)
 

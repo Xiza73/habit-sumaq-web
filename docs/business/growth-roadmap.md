@@ -55,9 +55,9 @@ salvo el que diga lo contrario.
 
 | Prio | Item                                          | Tipo    | Esfuerzo | Notas                                                                                                                                                                            |
 | ---- | --------------------------------------------- | ------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1    | **Crear categoría inline en TransactionForm** | Feature | ~3-4h    | Frontend-only. El `Select` de categoría no tiene escape hatch hoy → agregar opción "+ Crear nueva" que abre el `CategoryForm` modal sobre el TransactionForm. Quick win.         |
-| 2    | **Habit counter UX** (investigar)             | Polish  | 30min + 4h si hace falta | Feature ya existe (`Habit.targetCount` + `HabitLog.count`, `HabitForm` lo expone). Verificar si la UX de _incrementar el count_ al loguear está bien (vs solo checkbox). Si flojea, polish. |
-| 3    | **Persistencia de secciones colapsadas en Tasks** | Bug     | ~5h (back+front) | `Section` entity no tiene `isCollapsed` → state es local → al refresh se pierde. Fix: nueva column en `sections` + endpoint PATCH + frontend con optimistic. Requiere coord backend. |
+| 1 ✅ | **Crear categoría inline en TransactionForm** | Feature | ~3-4h    | Frontend-only. Shipped en PR #60. El `Select` de categoría tiene un botón "+ Crear nueva" que abre el `CategoryForm` modal y auto-selecciona la nueva categoría. |
+| 2 ✅ | **Habit counter UX** (investigar)             | Polish  | 30min    | Investigated. El feature de contador (`+`/`-` botones con progress) **ya existe y funciona**. Lo que el user pedía era un **cronómetro** (modo basado en tiempo), que es un feature distinto — spec'd en [habit-timer-feature.md](habit-timer-feature.md), agendado para Fase 2. |
+| 3    | **Persistencia de secciones colapsadas en Tasks** | Bug     | ~5h (back+front) | `Section` entity no tiene `isCollapsed` → state es local → al refresh se pierde. Fix: nueva column en `sections` + endpoint PATCH + frontend con optimistic. Requiere coord backend. **Próximo en cola.** |
 | 4    | **Date format unificado en forms**            | Bug     | ~6-10h   | 8 forms usan `<input type="date">` que ignora `userSettings.dateFormat` (HTML5 renderiza en locale del SO). Wire format está OK (`YYYY-MM-DD`), display NO. Fix proper: custom `<DatePicker>` component (ej. con `react-day-picker`) que reemplace todos los `type="date"`. Refactor mediano. |
 | 5    | **Generar APK del PWA** (Bubblewrap)          | Ops     | 1-2h     | Documentado en [twa-deployment.md](twa-deployment.md). Falta ejecutar Bubblewrap en máquina del autor + subir a Play Store. Cuando haya momento.                                  |
 
@@ -69,6 +69,7 @@ salvo el que diga lo contrario.
 **Trabajo:**
 
 - [ ] **Coach personal con IA** (ver [coach-ia-feature.md](coach-ia-feature.md))
+- [ ] **Hábitos modo cronómetro** (ver [habit-timer-feature.md](habit-timer-feature.md)) — narrativa única para TikTok junto al Coach
 - [ ] Vinculación Hábitos ↔ Finanzas (alimenta al Coach)
 - [ ] Presupuestos por categoría con alertas (ya en backlog técnico)
 - [ ] Export / import (free, generoso) — ver [pricing.md → Trust signals](pricing.md#trust-signals-qué-no-es-premium)

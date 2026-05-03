@@ -9,10 +9,11 @@ implementar no estemos improvisando.
 
 | Doc                                          | Propósito                                                       | Status      |
 | -------------------------------------------- | --------------------------------------------------------------- | ----------- |
-| [pricing.md](pricing.md)                     | Tiering free vs premium, pricing, programa Founder Lifetime     | BORRADOR    |
-| [growth-roadmap.md](growth-roadmap.md)       | Fases para llegar a 100+ MAU, KPIs, content strategy, analytics | ACTIVO      |
-| [coach-ia-feature.md](coach-ia-feature.md)   | Spec del feature insignia para Fase 2 (reportes mensuales con LLM) | BORRADOR |
-| [twa-deployment.md](twa-deployment.md)       | Cómo empaquetar la PWA como APK / AAB para Play Store           | OPERACIONAL |
+| [pricing.md](pricing.md)                         | Tiering free vs premium, pricing, programa Founder Lifetime         | BORRADOR    |
+| [growth-roadmap.md](growth-roadmap.md)           | Fases para llegar a 100+ MAU, KPIs, content strategy, analytics     | ACTIVO      |
+| [coach-ia-feature.md](coach-ia-feature.md)       | Spec del feature insignia para Fase 2 (reportes mensuales con LLM)  | BORRADOR    |
+| [habit-timer-feature.md](habit-timer-feature.md) | Spec del modo cronómetro para hábitos basados en tiempo (Fase 2)    | BORRADOR    |
+| [twa-deployment.md](twa-deployment.md)           | Cómo empaquetar la PWA como APK / AAB para Play Store               | OPERACIONAL |
 
 ## Convenciones de status
 
