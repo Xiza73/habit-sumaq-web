@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
-import { useForm } from 'react-hook-form';
+import { Controller, useForm } from 'react-hook-form';
 import { useLocale, useTranslations } from 'next-intl';
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -18,6 +18,7 @@ import {
 
 import { ApiError } from '@/infrastructure/api/api-error';
 
+import { DatePicker } from '@/presentation/components/ui/DatePicker';
 import { Input } from '@/presentation/components/ui/Input';
 import { Modal } from '@/presentation/components/ui/Modal';
 import { Select } from '@/presentation/components/ui/Select';
@@ -134,7 +135,13 @@ export function PayMonthlyServiceForm({ open, service, onClose }: PayMonthlyServ
             <label htmlFor="pay-date" className="text-sm font-medium">
               {t('payForm.date')}
             </label>
-            <Input id="pay-date" type="date" {...form.register('date')} />
+            <Controller
+              control={form.control}
+              name="date"
+              render={({ field }) => (
+                <DatePicker id="pay-date" value={field.value ?? ''} onChange={field.onChange} />
+              )}
+            />
           </div>
         </div>
 

@@ -8,7 +8,7 @@ import { useAccounts } from '@/core/application/hooks/use-accounts';
 import { useCategories } from '@/core/application/hooks/use-categories';
 import { type TransactionFilters as Filters } from '@/core/domain/schemas/transaction.schema';
 
-import { Input } from '@/presentation/components/ui/Input';
+import { DatePicker } from '@/presentation/components/ui/DatePicker';
 import { Select } from '@/presentation/components/ui/Select';
 
 interface TransactionFiltersProps {
@@ -79,20 +79,20 @@ export function TransactionFilters({ filters, onChange }: TransactionFiltersProp
           <option value="SETTLED">{t('status.SETTLED')}</option>
         </Select>
 
-        <Input
+        <DatePicker
           compact
-          type="date"
           value={filters.dateFrom ?? ''}
-          onChange={(e) => updateFilter('dateFrom', e.target.value)}
+          onChange={(v) => updateFilter('dateFrom', v)}
           placeholder={t('dateFrom')}
+          aria-label={t('dateFrom')}
         />
 
-        <Input
+        <DatePicker
           compact
-          type="date"
           value={filters.dateTo ?? ''}
-          onChange={(e) => updateFilter('dateTo', e.target.value)}
+          onChange={(v) => updateFilter('dateTo', v)}
           placeholder={t('dateTo')}
+          aria-label={t('dateTo')}
         />
       </div>
 
