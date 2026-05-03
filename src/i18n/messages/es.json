@@ -2,6 +2,7 @@
   "common": {
     "save": "Guardar",
     "cancel": "Cancelar",
+    "clear": "Limpiar",
     "delete": "Eliminar",
     "edit": "Editar",
     "create": "Crear",

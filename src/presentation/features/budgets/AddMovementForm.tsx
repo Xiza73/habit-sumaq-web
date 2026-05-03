@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo } from 'react';
-import { useForm } from 'react-hook-form';
+import { Controller, useForm } from 'react-hook-form';
 import { useTranslations } from 'next-intl';
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -19,6 +19,7 @@ import {
 
 import { ApiError } from '@/infrastructure/api/api-error';
 
+import { DatePicker } from '@/presentation/components/ui/DatePicker';
 import { Input } from '@/presentation/components/ui/Input';
 import { Modal } from '@/presentation/components/ui/Modal';
 import { Select } from '@/presentation/components/ui/Select';
@@ -38,7 +39,7 @@ interface AddMovementFormProps {
  *  2. Category must exist (filtered by EXPENSE type — same convention as the
  *     transactions form).
  *  3. Date must fall in the budget's calendar month — we constrain the
- *     `<input type="date">` `min`/`max` to enforce this client-side.
+ *     `<DatePicker>` `min`/`max` to enforce this client-side.
  *
  * The submit pins the date to noon UTC via `dateInputToBackendIso` so the
  * backend reads the same calendar day across every realistic timezone.
@@ -166,12 +167,18 @@ export function AddMovementForm({ open, budget, onClose }: AddMovementFormProps)
             <label htmlFor="mv-date" className="text-sm font-medium">
               {t('movements.date')}
             </label>
-            <Input
-              id="mv-date"
-              type="date"
-              min={monthFirst}
-              max={monthLast}
-              {...form.register('date')}
+            <Controller
+              control={form.control}
+              name="date"
+              render={({ field }) => (
+                <DatePicker
+                  id="mv-date"
+                  min={monthFirst}
+                  max={monthLast}
+                  value={field.value}
+                  onChange={field.onChange}
+                />
+              )}
             />
             {form.formState.errors.date && (
               <p className="text-xs text-destructive">{form.formState.errors.date.message}</p>

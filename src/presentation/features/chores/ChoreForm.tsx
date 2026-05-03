@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useId, useMemo } from 'react';
-import { useForm } from 'react-hook-form';
+import { Controller, useForm } from 'react-hook-form';
 import { useTranslations } from 'next-intl';
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -15,6 +15,7 @@ import { type CreateChoreInput, type UpdateChoreInput } from '@/core/domain/sche
 
 import { ApiError } from '@/infrastructure/api/api-error';
 
+import { DatePicker } from '@/presentation/components/ui/DatePicker';
 import { Input } from '@/presentation/components/ui/Input';
 import { Modal } from '@/presentation/components/ui/Modal';
 import { Select } from '@/presentation/components/ui/Select';
@@ -219,7 +220,13 @@ export function ChoreForm({ open, chore, knownCategories, onClose }: ChoreFormPr
             <label htmlFor="chore-start-date" className="text-sm font-medium">
               {t('fields.startDate')}
             </label>
-            <Input id="chore-start-date" type="date" {...form.register('startDate')} />
+            <Controller
+              control={form.control}
+              name="startDate"
+              render={({ field }) => (
+                <DatePicker id="chore-start-date" value={field.value} onChange={field.onChange} />
+              )}
+            />
             {form.formState.errors.startDate && (
               <p className="text-xs text-destructive">{form.formState.errors.startDate.message}</p>
             )}
@@ -231,7 +238,17 @@ export function ChoreForm({ open, chore, knownCategories, onClose }: ChoreFormPr
             <label htmlFor="chore-next-due" className="text-sm font-medium">
               {t('fields.nextDueDate')}
             </label>
-            <Input id="chore-next-due" type="date" {...form.register('nextDueDate')} />
+            <Controller
+              control={form.control}
+              name="nextDueDate"
+              render={({ field }) => (
+                <DatePicker
+                  id="chore-next-due"
+                  value={field.value ?? ''}
+                  onChange={field.onChange}
+                />
+              )}
+            />
             <p className="text-[11px] text-muted-foreground">{t('fields.nextDueDateHint')}</p>
           </div>
         )}
