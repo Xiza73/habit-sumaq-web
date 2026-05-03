@@ -1,6 +1,5 @@
 'use client';
 
-import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 
 import {
@@ -22,6 +21,7 @@ import { CSS } from '@dnd-kit/utilities';
 import { ChevronDown, GripVertical, Pencil, Plus, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 
+import { useUpdateSection } from '@/core/application/hooks/use-sections';
 import { useReorderTasks } from '@/core/application/hooks/use-tasks';
 import { type Section } from '@/core/domain/entities/section';
 import { type Task } from '@/core/domain/entities/task';
@@ -74,7 +74,11 @@ export function SectionColumn({
   const tErrors = useTranslations('errors');
 
   const reorderMutation = useReorderTasks();
-  const [collapsed, setCollapsed] = useState(false);
+  const updateSectionMutation = useUpdateSection();
+  // Read collapsed state directly from the persisted section. Toggling fires
+  // the mutation, which has an optimistic update in `useUpdateSection`, so
+  // the click feels instant.
+  const collapsed = section.isCollapsed;
 
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: section.id,
@@ -129,7 +133,12 @@ export function SectionColumn({
   }
 
   function toggleCollapsed() {
-    setCollapsed((c) => !c);
+    updateSectionMutation.mutate(
+      { id: section.id, data: { isCollapsed: !collapsed } },
+      {
+        onError: () => toast.error(tErrors('generic')),
+      },
+    );
   }
 
   function handleHeaderKeyDown(e: React.KeyboardEvent) {

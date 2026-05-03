@@ -13,6 +13,7 @@ export const updateSectionSchema = z.object({
   name: z.string().min(1, 'required').max(60, 'max_length').optional(),
   // Allow `null` explicitly to clear the color.
   color: z.union([z.string().regex(HEX_COLOR_REGEX, 'invalid_color'), z.null()]).optional(),
+  isCollapsed: z.boolean().optional(),
 });
 export type UpdateSectionInput = z.infer<typeof updateSectionSchema>;
 

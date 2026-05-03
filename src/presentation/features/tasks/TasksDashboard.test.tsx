@@ -40,6 +40,7 @@ const sectionA: Section = {
   name: 'Trabajo',
   color: null,
   position: 1,
+  isCollapsed: false,
   createdAt: '2026-04-20T00:00:00.000Z',
   updatedAt: '2026-04-20T00:00:00.000Z',
 };

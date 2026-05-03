@@ -19,12 +19,21 @@ vi.mock('@/core/application/hooks/use-tasks', () => ({
   useDeleteTask: () => ({ mutate: vi.fn(), isPending: false }),
 }));
 
+// Spy on the toggle mutation so we can assert it fires with the right
+// payload. Returning a no-op mutate is enough — the optimistic update lives
+// in the hook itself, which we replace here.
+const updateSectionMutate = vi.fn();
+vi.mock('@/core/application/hooks/use-sections', () => ({
+  useUpdateSection: () => ({ mutate: updateSectionMutate, isPending: false }),
+}));
+
 const baseSection: Section = {
   id: 'sec-1',
   userId: 'user-1',
   name: 'Trabajo',
   color: null,
   position: 1,
+  isCollapsed: false,
   createdAt: '2026-04-20T00:00:00.000Z',
   updatedAt: '2026-04-20T00:00:00.000Z',
 };
@@ -106,7 +115,7 @@ describe('SectionColumn', () => {
     expect(header).toHaveAttribute('aria-expanded', 'true');
   });
 
-  it('collapses + re-expands when the header is clicked', async () => {
+  it('clicking the header fires the persist mutation with the toggled value', async () => {
     const user = userEvent.setup();
     renderColumn({
       pendingTasks: [makeTask({ id: 'a', title: 'Llamar al banco' })],
@@ -115,18 +124,39 @@ describe('SectionColumn', () => {
     const header = screen.getByRole('button', { name: /trabajo/i });
     await user.click(header);
 
-    // Body hidden — task no longer in the DOM.
+    // The mutation is fired with the toggled flag. Optimistic update lives
+    // inside the hook (out of scope here) — once the cache is updated, the
+    // section prop arrives with isCollapsed: true and the body hides.
+    expect(updateSectionMutate).toHaveBeenCalledTimes(1);
+    expect(updateSectionMutate).toHaveBeenCalledWith(
+      { id: 'sec-1', data: { isCollapsed: true } },
+      expect.objectContaining({ onError: expect.any(Function) as unknown }),
+    );
+  });
+
+  it('renders collapsed when section.isCollapsed is true', () => {
+    renderColumn({
+      section: { isCollapsed: true },
+      pendingTasks: [makeTask({ id: 'a', title: 'Llamar al banco' })],
+    });
+
+    // Body hidden — task not in the DOM.
     expect(screen.queryByText('Llamar al banco')).not.toBeInTheDocument();
+    const header = screen.getByRole('button', { name: /trabajo/i });
     expect(header).toHaveAttribute('aria-expanded', 'false');
-
-    // Header counters STAY visible — that's the whole point of "collapsed
-    // but informative". Section name + count are still on screen.
+    // Header counters STAY visible — collapsed but informative.
     expect(screen.getByRole('heading', { level: 2, name: 'Trabajo' })).toBeInTheDocument();
+  });
 
-    // Click again → expands. Task comes back.
-    await user.click(header);
-    expect(screen.getByText('Llamar al banco')).toBeInTheDocument();
-    expect(header).toHaveAttribute('aria-expanded', 'true');
+  it('clicking a collapsed header sends isCollapsed: false', async () => {
+    const user = userEvent.setup();
+    renderColumn({ section: { isCollapsed: true } });
+    await user.click(screen.getByRole('button', { name: /trabajo/i }));
+
+    expect(updateSectionMutate).toHaveBeenCalledWith(
+      { id: 'sec-1', data: { isCollapsed: false } },
+      expect.anything(),
+    );
   });
 
   it('clicking the "add task" button does NOT toggle collapse', async () => {
