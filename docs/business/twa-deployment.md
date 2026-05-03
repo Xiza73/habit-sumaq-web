@@ -20,9 +20,118 @@ el caso.
 
 ---
 
-## Pre-requisitos
+## Dos paths según necesidad
 
-### Pre-flight checklist (validar antes de buildear)
+Hay **dos caminos** para empaquetar la PWA. Elegí según el caso de uso:
+
+| Path | Caso de uso | Costo | Tiempo | Tooling local |
+| ---- | ----------- | ----- | ------ | -------------- |
+| **A — APK para compartir** | Alpha / friends & family / testing privado | $0 | ~10 min | Solo navegador |
+| **B — Play Store** | Lanzamiento público con presencia en store | $25 USD one-time | 1-2 días | Java + Android SDK + Bubblewrap |
+
+> Si dudás cuál usar: arrancá con A. Es revertible — el APK que genera Path A
+> también sirve para subir a Play Store después si te gusta cómo se ve.
+
+---
+
+## Path A — APK para compartir (PWABuilder)
+
+Para cuando solo querés un `.apk` que mandás por WhatsApp/Telegram/email a
+tus amigos para que prueben la app. **Sin Play Store, sin instalar nada
+local, sin cuenta de developer.**
+
+### Pre-requisitos
+
+- [ ] La PWA está deployada en HTTPS y accesible públicamente (ej.
+      `https://habitsumaq.com`). Vercel te da esto gratis.
+- [ ] El `manifest.json` apunta a íconos maskable correctos (ya está,
+      [v0.1.1](https://github.com/Xiza73/habit-sumaq-web/releases/tag/v0.1.1)).
+- [ ] **Backup mental:** vas a recibir un `signing-key.keystore` —
+      guardalo en un lugar seguro (1Password, Drive privado). Lo necesitás
+      para todas las versiones futuras del APK.
+
+### Pasos
+
+1. Ir a https://www.pwabuilder.com
+2. Pegar la URL del PWA: `https://habitsumaq.com`
+3. PWABuilder analiza el manifest + service worker → muestra score y
+   warnings. Score >= 80 es suficiente para Path A.
+4. Click "**Package For Stores**" → tab "**Android**"
+5. Click "**Generate Package**". Configurar:
+   | Campo            | Valor                       |
+   | ---------------- | --------------------------- |
+   | Package ID       | `com.habitsumaq.app`        |
+   | App name         | `Habit Sumaq`               |
+   | Launcher name    | `Sumaq`                     |
+   | App version      | `1`                         |
+   | Version name     | `0.1.2` (matchea el release) |
+   | Display mode     | `standalone`                |
+   | Status bar color | `#16a34a` (theme color)     |
+   | Signing key      | **"Generate new"**          |
+
+   > ⚠️ **`Package ID` no se puede cambiar después.** Una vez que un user
+   > instala el APK con ese ID, futuros APKs deben usar el mismo ID o
+   > se instalan como apps separadas.
+
+6. Download → ZIP con:
+   - **`app-release-signed.apk`** ← lo que vas a compartir
+   - `app-release-bundle.aab` ← guardar para futuro Play Store
+   - `assetlinks.json` ← para Path B futuro (deployar a `.well-known/`)
+   - **`signing-key.keystore`** ← **GUARDAR EN LUGAR SEGURO**
+   - `signing-key-info.txt` ← password + alias del keystore (también guardar)
+
+7. Compartir el `.apk` por WhatsApp / Telegram / email.
+
+### Cómo lo instalan tus amigos (instrucciones para mandar con el APK)
+
+1. Recibir el archivo `.apk` (WhatsApp, email, lo que sea).
+2. En Android: Settings → Security → "Install unknown apps" →
+   habilitar para WhatsApp/Telegram/Files (lo que usen).
+3. Tap el APK → "Install".
+4. **Heads up:** la primera vez que abre la app, podría aparecer una
+   barra de URL de Chrome arriba (porque no configuramos Digital Asset
+   Links — eso es Path B). Para alpha está bien, se siente "casi nativo"
+   pero con esa pista de que es web.
+
+### Lo que **funciona** vía Path A
+
+- ✅ Login con Google
+- ✅ Service worker / cache offline
+- ✅ Push notifications (Web Push)
+- ✅ Manifest icons / splash screen
+- ✅ Standalone mode (sin chrome del navegador, salvo lo del Asset Links)
+
+### Lo que **NO funciona** vía Path A (necesitás Path B)
+
+- ❌ Distribución masiva (no podés subir a Play Store)
+- ❌ Auto-updates (cada nueva versión = nuevo APK + reenvío manual)
+- ❌ Verified TWA (la barra de URL aparece la primera vez si no se setea
+  Asset Links + verificación)
+- ❌ Search en Play Store (los amigos te encuentran solo por link)
+
+### Updates en Path A
+
+Para distribuir una nueva versión:
+
+1. Volver a PWABuilder → mismo flujo
+2. **IMPORTANTE: subir el mismo `signing-key.keystore`** del primer
+   build (en lugar de "Generate new"). Si generás uno nuevo, los
+   amigos no pueden actualizar — tienen que desinstalar + reinstalar.
+3. Bumpear `App version` (ej. `2`) y `Version name` (ej. `0.1.3`).
+4. Generate → mandar el nuevo APK.
+
+---
+
+## Path B — Play Store publication (Bubblewrap)
+
+> Esta sección es la guía completa de publicación a Play Store. Solo
+> hace falta cuando ya validaste el producto con Path A y querés
+> presencia oficial en la store. Trigger sugerido:
+> [Fase 3 del growth roadmap](growth-roadmap.md#-fase-3--monetización-3-4-semanas-recién-con-100-mau).
+
+### Pre-requisitos (Path B)
+
+#### Pre-flight checklist (validar antes de buildear)
 
 La PWA tiene que cumplir TODOS estos requisitos para que TWA funcione bien:
 
@@ -36,7 +145,7 @@ La PWA tiene que cumplir TODOS estos requisitos para que TWA funcione bien:
   PWA audit)
 - [ ] Digital Asset Links configurado (ver paso 5 abajo)
 
-### Cuentas y herramientas
+#### Cuentas y herramientas
 
 - **Cuenta Google Play Console**: $25 USD one-time
   (https://play.google.com/console)
@@ -46,7 +155,7 @@ La PWA tiene que cumplir TODOS estos requisitos para que TWA funcione bien:
 
 ---
 
-## Proceso paso a paso
+### Proceso paso a paso (Path B)
 
 ### 1. Instalar Bubblewrap
 
@@ -180,7 +289,7 @@ Verificar:
 
 ---
 
-## Updates (publicar nueva versión)
+### Updates (Path B — publicar nueva versión)
 
 Para subir una nueva versión:
 
@@ -200,7 +309,7 @@ Para subir una nueva versión:
 
 ---
 
-## Troubleshooting común
+### Troubleshooting común (Path B)
 
 | Problema                                | Solución                                                                                                                       |
 | --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
@@ -231,33 +340,33 @@ hayamos validado revenue en Android.
 
 ---
 
-## Costos
+## Costos comparados
 
-| Item                                | Costo                       |
-| ----------------------------------- | --------------------------- |
-| Play Store fee (one-time, lifetime) | $25 USD                     |
-| Apple Developer (anual, futuro)     | $99 USD/año                 |
-| Build infra                         | $0 (Bubblewrap es local)    |
-| Hosting de assetlinks.json          | $0 (Vercel sirve el static) |
+| Item                                  | Path A (PWABuilder) | Path B (Play Store)         |
+| ------------------------------------- | ------------------- | --------------------------- |
+| Tooling local                         | $0 (browser)        | $0 (Bubblewrap es local)    |
+| Cuenta de developer                   | —                   | Play Store: $25 USD one-time |
+| Apple Developer (futuro iOS)          | —                   | $99 USD/año                 |
+| Hosting de `assetlinks.json` (HTTPS)  | —                   | $0 (Vercel sirve el static) |
+| Tiempo total                          | ~10 min             | 1-2 días                    |
 
 ---
 
-## Cuándo ejecutar
+### Cuándo ejecutar Path B
 
-**Mínimos para que valga la pena hacerlo:**
+**Mínimos para que valga la pena el upgrade A → B:**
 
 - [ ] La PWA pasa Lighthouse PWA audit con score > 90
-- [ ] Tenés privacy policy publicada y accesible
-- [ ] Decidiste el `package_name` final (no se puede cambiar después)
+- [ ] Tenés privacy policy publicada y accesible (obligatoria para Play)
+- [ ] Decidiste el `package_name` final (no se puede cambiar después —
+      idealmente el mismo que usaste en Path A)
 - [ ] Tenés screenshots y feature graphic listos para el listing
 
 **Trigger sugeridos:**
 
-- **Test interno**: cuando querés repartir un APK a beta testers (sin
-  publicar). Saltea el paso 7.
-- **Lanzamiento público**: cuando arrancás Fase 3 del growth roadmap (junto
-  con el lanzamiento de paywall + Founder program). Es el momento de
-  máxima atención mediática.
+- **Lanzamiento público**: cuando arrancás Fase 3 del growth roadmap
+  (junto con el lanzamiento de paywall + Founder program). Es el
+  momento de máxima atención mediática.
 
 ---
 
