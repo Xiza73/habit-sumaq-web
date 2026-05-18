@@ -119,7 +119,10 @@ margen para reinvertir en growth).
 - TypeScript-first SDK
 - GDPR-friendly
 
-**Setup**: ver el siguiente PR (separado de este).
+**Comportamiento por ambiente:**
+- **Producción** (`NODE_ENV=production`) → init automático si hay `NEXT_PUBLIC_POSTHOG_KEY` seteada
+- **Desarrollo** (`pnpm dev`) → **NO** init por default. Eventos quedan no-op silencioso. Esto evita polución del dashboard de prod con eventos de testing + ruido en la consola.
+- **Override dev**: poner `NEXT_PUBLIC_POSTHOG_ENABLE_IN_DEV=true` en `.env.local` cuando quieras validar eventos end-to-end desde dev. Después borralo para no contaminar.
 
 ### Eventos a trackear
 
