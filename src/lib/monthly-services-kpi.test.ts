@@ -113,6 +113,76 @@ describe('buildMonthlyServicesKpis', () => {
     expect(buildMonthlyServicesKpis([archived], CURRENT_PERIOD)).toEqual([]);
   });
 
+  it('excludes skipped services (Al día but with paidAmountForCurrentMonth=0)', () => {
+    // Repro of the "Estimado is too high" UX issue: skipping a service
+    // advances `lastPaidPeriod` so it shows as "Al día", but no transaction
+    // is created, so `paidAmountForCurrentMonth` stays at 0. Without this
+    // exclusion the `Estimado` total would include a bill that will never
+    // happen, making the Pagado/Estimado ratio misleading.
+    const skipped = makeService({
+      id: 'skipped',
+      currency: 'PEN',
+      estimatedAmount: 50,
+      paidAmountForCurrentMonth: 0,
+      isPaidForCurrentMonth: true,
+      nextDuePeriod: '2026-06',
+    });
+
+    expect(buildMonthlyServicesKpis([skipped], CURRENT_PERIOD)).toEqual([]);
+  });
+
+  it('excludes services with a future startPeriod (Al día but not yet billable)', () => {
+    // A service whose first billing period is in the future shows up as
+    // "Al día" because `nextDuePeriod > currentPeriod`, but it hasn't been
+    // paid for real (no transaction yet). Same rule as the skipped case
+    // catches it.
+    const future = makeService({
+      id: 'future',
+      currency: 'PEN',
+      estimatedAmount: 50,
+      paidAmountForCurrentMonth: 0,
+      isPaidForCurrentMonth: true,
+      nextDuePeriod: '2026-08',
+      startPeriod: '2026-08',
+    });
+
+    expect(buildMonthlyServicesKpis([future], CURRENT_PERIOD)).toEqual([]);
+  });
+
+  it('mixes skipped and paid services correctly (skipped does NOT inflate Estimado)', () => {
+    // Smoke test of the user-reported scenario: 3 services all "Al día" but
+    // only one was actually paid for real. The Estimado bucket reflects only
+    // the service that will produce real spend this month.
+    const services = [
+      makeService({
+        id: 'paid',
+        estimatedAmount: 150,
+        paidAmountForCurrentMonth: 150,
+        isPaidForCurrentMonth: true,
+        nextDuePeriod: '2026-06',
+      }),
+      makeService({
+        id: 'skipped',
+        estimatedAmount: 80,
+        paidAmountForCurrentMonth: 0,
+        isPaidForCurrentMonth: true,
+        nextDuePeriod: '2026-06',
+      }),
+      makeService({
+        id: 'future-start',
+        estimatedAmount: 146,
+        paidAmountForCurrentMonth: 0,
+        isPaidForCurrentMonth: true,
+        nextDuePeriod: '2026-07',
+      }),
+    ];
+
+    const [kpi] = buildMonthlyServicesKpis(services, CURRENT_PERIOD);
+    expect(kpi.paid).toBe(150);
+    expect(kpi.estimated).toBe(150);
+    expect(kpi.servicesInScope).toBe(1);
+  });
+
   it('includes services already paid this month (drives the "Pagado" total)', () => {
     // After paying, the backend sets nextDuePeriod to NEXT month — so the
     // "due this month" check fails. `isPaidForCurrentMonth` is what keeps
