@@ -1,15 +1,14 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { Controller, useForm, useWatch } from 'react-hook-form';
 import { useTranslations } from 'next-intl';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Loader2, Plus } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { useAccounts } from '@/core/application/hooks/use-accounts';
-import { useCategories } from '@/core/application/hooks/use-categories';
 import {
   useCreateTransaction,
   useUpdateTransaction,
@@ -27,7 +26,7 @@ import { DatePicker } from '@/presentation/components/ui/DatePicker';
 import { Input } from '@/presentation/components/ui/Input';
 import { Modal } from '@/presentation/components/ui/Modal';
 import { Select } from '@/presentation/components/ui/Select';
-import { CategoryForm } from '@/presentation/features/categories/CategoryForm';
+import { CategorySelectField } from '@/presentation/features/categories/CategorySelectField';
 
 import { getTodayLocaleDate } from '@/lib/format';
 
@@ -83,14 +82,11 @@ export function TransactionForm({
   const selectedType = useWatch({ control: form.control, name: 'type' });
   const selectedAccountId = useWatch({ control: form.control, name: 'accountId' });
 
-  // Inline-create category flow: opens CategoryForm on top of this form, and
-  // when the new category lands we auto-select it in the dropdown so the
-  // user doesn't have to hunt for it.
-  const [isCreatingCategory, setIsCreatingCategory] = useState(false);
-
   const selectedAccount = accounts?.find((a) => a.id === selectedAccountId);
+  // The category filter follows the transaction type. For TRANSFER / DEBT /
+  // LOAN the field hides entirely (handled by the conditional render below),
+  // so the EXPENSE fallback here is irrelevant in those cases.
   const categoryType = selectedType === 'INCOME' ? 'INCOME' : 'EXPENSE';
-  const { data: categories } = useCategories(categoryType);
 
   const showDestination = selectedType === 'TRANSFER';
   const showReference = selectedType === 'DEBT' || selectedType === 'LOAN';
@@ -282,52 +278,15 @@ export function TransactionForm({
             </div>
           )}
 
-          {!isEditing && (selectedType === 'INCOME' || selectedType === 'EXPENSE') && (
-            <div className="space-y-2">
-              <label htmlFor="txn-category" className="text-sm font-medium">
-                {t('category')}
-              </label>
-              <Select id="txn-category" {...form.register('categoryId')}>
-                <option value="">{t('allCategories')}</option>
-                {categories?.map((category) => (
-                  <option key={category.id} value={category.id}>
-                    {category.name}
-                  </option>
-                ))}
-              </Select>
-              <button
-                type="button"
-                onClick={() => setIsCreatingCategory(true)}
-                className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
-              >
-                <Plus className="size-3" />
-                {t('createNewCategory')}
-              </button>
-            </div>
-          )}
-
-          {isEditing && (selectedType === 'INCOME' || selectedType === 'EXPENSE') && (
-            <div className="space-y-2">
-              <label htmlFor="txn-category-edit" className="text-sm font-medium">
-                {t('category')}
-              </label>
-              <Select id="txn-category-edit" {...form.register('categoryId')}>
-                <option value="">{t('allCategories')}</option>
-                {categories?.map((category) => (
-                  <option key={category.id} value={category.id}>
-                    {category.name}
-                  </option>
-                ))}
-              </Select>
-              <button
-                type="button"
-                onClick={() => setIsCreatingCategory(true)}
-                className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
-              >
-                <Plus className="size-3" />
-                {t('createNewCategory')}
-              </button>
-            </div>
+          {(selectedType === 'INCOME' || selectedType === 'EXPENSE') && (
+            <CategorySelectField
+              control={form.control}
+              name="categoryId"
+              categoryType={categoryType}
+              id={isEditing ? 'txn-category-edit' : 'txn-category'}
+              label={t('category')}
+              emptyOptionLabel={t('allCategories')}
+            />
           )}
 
           {showReference && (
@@ -380,18 +339,6 @@ export function TransactionForm({
           </div>
         </form>
       </Modal>
-
-      {/* Inline category creation. Mounted at the same level as the
-        transaction Modal so the new modal stacks above it. When the
-        category lands, we auto-select it via setValue. */}
-      <CategoryForm
-        open={isCreatingCategory}
-        defaultType={selectedType === 'INCOME' ? 'INCOME' : 'EXPENSE'}
-        onClose={() => setIsCreatingCategory(false)}
-        onCreated={(created) => {
-          form.setValue('categoryId', created.id, { shouldDirty: true });
-        }}
-      />
     </>
   );
 }

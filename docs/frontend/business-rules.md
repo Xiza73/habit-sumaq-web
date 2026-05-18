@@ -23,6 +23,20 @@ Reglas que el frontend debe conocer para construir la UI correctamente y preveni
 3. **Categorías por defecto** (`isDefault=true`) no se pueden eliminar ni modificar el tipo. Vienen precreadas para cada usuario.
 4. **Soft delete.** Las categorías eliminadas dejan de aparecer en la lista pero las transacciones que las referencian mantienen el `categoryId`.
 
+### Inline category creation
+
+Cualquier formulario que tenga un `<select>` de categoría **DEBE** ofrecer creación inline ("+ Crear nueva categoría") junto al campo. La meta es que el usuario nunca tenga que abandonar el flujo en el que está (registrar una transacción, agregar un movimiento a un presupuesto, crear un servicio mensual, etc.) solo porque la categoría que necesita todavía no existe.
+
+Reglas:
+
+1. **Usar `<CategorySelectField>`** (`src/presentation/features/categories/CategorySelectField.tsx`) en vez de un `<Select>` crudo. Encapsula label + Select + botón "+ Crear nueva" + el `<CategoryForm>` modal + auto-select tras crear.
+2. **Filtro por tipo es obligatorio.** El componente recibe `categoryType` y filtra el dropdown a ese tipo (INCOME o EXPENSE). Ese mismo `categoryType` se pasa al `defaultType` del `CategoryForm` para que el usuario no tenga que cambiarlo manualmente en el caso normal.
+3. **Auto-select tras crear.** Una vez creada la categoría, debe quedar pre-seleccionada en el form padre (`field.onChange(created.id)`). El usuario no tiene que volver a abrir el dropdown.
+4. **El modal no roba el contexto.** El `CategoryForm` se monta encima del form padre y al cerrarse el padre sigue intacto (con la nueva categoría seleccionada). No descartar el form padre cuando se abre el modal.
+5. **El i18n key vive en `categories.createNew`**, no en el namespace del form padre — es un componente genérico, no propiedad de transacciones.
+
+> Si vas a agregar un nuevo form que pickea categoría: usá `<CategorySelectField>` directamente. No copiar la lógica.
+
 ---
 
 ## Transacciones

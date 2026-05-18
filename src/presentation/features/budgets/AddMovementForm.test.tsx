@@ -21,6 +21,11 @@ vi.mock('@/core/application/hooks/use-accounts', () => ({
 
 vi.mock('@/core/application/hooks/use-categories', () => ({
   useCategories: () => ({ data: mockCategories, isLoading: false }),
+  // CategorySelectField mounts CategoryForm (closed by default) for the
+  // inline "+ Crear nueva categoría" flow — its hooks still run on render
+  // even with `open=false`, so stub them here.
+  useCreateCategory: () => ({ mutate: vi.fn(), isPending: false }),
+  useUpdateCategory: () => ({ mutate: vi.fn(), isPending: false }),
 }));
 
 vi.mock('@/core/application/hooks/use-budgets', () => ({

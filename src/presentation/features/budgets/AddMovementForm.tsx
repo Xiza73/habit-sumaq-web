@@ -10,7 +10,6 @@ import { toast } from 'sonner';
 
 import { useAccounts } from '@/core/application/hooks/use-accounts';
 import { useAddBudgetMovement } from '@/core/application/hooks/use-budgets';
-import { useCategories } from '@/core/application/hooks/use-categories';
 import { type Budget } from '@/core/domain/entities/budget';
 import {
   type AddBudgetMovementInput,
@@ -23,6 +22,7 @@ import { DatePicker } from '@/presentation/components/ui/DatePicker';
 import { Input } from '@/presentation/components/ui/Input';
 import { Modal } from '@/presentation/components/ui/Modal';
 import { Select } from '@/presentation/components/ui/Select';
+import { CategorySelectField } from '@/presentation/features/categories/CategorySelectField';
 
 import { dateInputToBackendIso, getTodayLocaleDate } from '@/lib/format';
 
@@ -50,7 +50,6 @@ export function AddMovementForm({ open, budget, onClose }: AddMovementFormProps)
   const tErrors = useTranslations('errors');
 
   const { data: accounts } = useAccounts(false);
-  const { data: categories } = useCategories('EXPENSE');
   const addMovementMutation = useAddBudgetMovement();
 
   // Pre-pick the first eligible account in the budget's currency. The form is
@@ -203,22 +202,15 @@ export function AddMovementForm({ open, budget, onClose }: AddMovementFormProps)
           )}
         </div>
 
-        <div className="space-y-2">
-          <label htmlFor="mv-category" className="text-sm font-medium">
-            {t('movements.category')}
-          </label>
-          <Select id="mv-category" {...form.register('categoryId')}>
-            <option value="">—</option>
-            {categories?.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.name}
-              </option>
-            ))}
-          </Select>
-          {form.formState.errors.categoryId && (
-            <p className="text-xs text-destructive">{form.formState.errors.categoryId.message}</p>
-          )}
-        </div>
+        <CategorySelectField
+          control={form.control}
+          name="categoryId"
+          categoryType="EXPENSE"
+          id="mv-category"
+          label={t('movements.category')}
+          emptyOptionLabel="—"
+          errorMessage={form.formState.errors.categoryId?.message}
+        />
 
         <div className="space-y-2">
           <label htmlFor="mv-description" className="text-sm font-medium">
