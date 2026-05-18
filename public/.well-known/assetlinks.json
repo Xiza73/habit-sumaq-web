@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "app.vercel.habit_sumaq_web.twa",
+      "sha256_cert_fingerprints": [
+        "3C:DE:B1:6E:11:B5:35:7A:E9:2E:AE:7A:9C:6C:FD:FB:FA:84:15:81:59:93:22:03:85:41:1A:25:18:F4:0A:E2"
+      ]
+    }
+  }
+]
