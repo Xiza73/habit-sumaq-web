@@ -505,7 +505,6 @@
       "addSubmit": "Record movement",
       "addSuccess": "Movement recorded",
       "empty": "No movements logged for this month yet",
-      "noDescription": "No description",
       "deleteConfirm": "Delete this movement? The linked account will be refunded.",
       "deleteSuccess": "Movement deleted"
     },

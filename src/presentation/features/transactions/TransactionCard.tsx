@@ -11,6 +11,7 @@ import { type Currency } from '@/core/domain/enums/account.enums';
 
 import { formatCurrency, getOnlyDateFromApi } from '@/lib/format';
 import { TRANSACTION_TYPE_COLORS, TRANSACTION_TYPE_ICONS } from '@/lib/transaction-icons';
+import { getTransactionDisplayTitle } from '@/lib/transaction-title';
 import { cn } from '@/lib/utils';
 
 interface TransactionCardProps {
@@ -64,13 +65,11 @@ export function TransactionCard({
         ? '-'
         : '';
 
-  // Title falls back through three layers: explicit description → category
-  // name → localized type label. The previous "No description" copy was
-  // user-hostile when most transactions have a category that already names
-  // them well ("Comida", "Sueldo", etc.).
-  const titleText = transaction.description
-    ? transaction.description
-    : (category?.name ?? t(`types.${transaction.type}`));
+  // Title fallback chain lives in `getTransactionDisplayTitle` — see the
+  // helper's docs (and business-rules.md#transaction-display-title) for the
+  // full rationale and so the same rule applies in every other surface that
+  // renders a transaction.
+  const titleText = getTransactionDisplayTitle(transaction, category, (type) => t(`types.${type}`));
 
   // The subtitle keeps the type + reference info, but inserts the category
   // (with a colored swatch) ONLY when the title isn't already showing it —
