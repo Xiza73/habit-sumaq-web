@@ -55,6 +55,7 @@
   "categories": {
     "title": "Categories",
     "createCategory": "New category",
+    "createNew": "Create new category",
     "editCategory": "Edit category",
     "deleteCategory": "Delete category",
     "name": "Name",
@@ -99,7 +100,6 @@
     "allAccounts": "All accounts",
     "allCategories": "All categories",
     "allStatuses": "All statuses",
-    "createNewCategory": "Create new category",
     "dateFrom": "From",
     "dateTo": "To",
     "filters": "Filters",
@@ -293,6 +293,50 @@
       "week": "🔥 One full week with {name}! You're on fire.",
       "month": "🚀 A whole month with {name}! Unstoppable.",
       "century": "💎 {days} days with {name}! A legendary streak."
+    },
+    "streakCard": {
+      "shareAction": "Share my streak",
+      "shareNow": "Share now",
+      "shareTitle": "Your streak on Habit Sumaq",
+      "shareText": "{days} days with {habit} on Habit Sumaq! 🔥",
+      "downloadAction": "Download image",
+      "copyAction": "Copy to clipboard",
+      "downloaded": "Image downloaded",
+      "copied": "Image copied",
+      "shareError": "Couldn't share the image",
+      "branding": "Habit Sumaq",
+      "preview": "Preview",
+      "celebrationTitle": "Milestone unlocked!",
+      "celebrationSubtitle": "Share your achievement or close to keep going.",
+      "closeAction": "Close",
+      "daysSingular": "day",
+      "daysPlural": "days",
+      "phrases": {
+        "starting1": "One day at a time.",
+        "starting2": "Strong start.",
+        "starting3": "The first step always counts.",
+        "week1": "One week. Building the habit.",
+        "week2": "Seven days. Consistency defines you.",
+        "week3": "A week and counting.",
+        "twoWeeks1": "Two weeks. The habit is settling in.",
+        "twoWeeks2": "14 days. Real momentum now.",
+        "twoWeeks3": "The routine is starting to shape you.",
+        "month1": "A whole month. This is part of you now.",
+        "month2": "30 days. The habit becomes identity.",
+        "month3": "One month. Few make it this far.",
+        "twoMonths1": "Two months. You're transforming.",
+        "twoMonths2": "60 days. Others find you inspiring.",
+        "twoMonths3": "Unstoppable.",
+        "quarter1": "Three months. Early mastery.",
+        "quarter2": "90 days. This is who you are.",
+        "quarter3": "Deep habit, solid identity.",
+        "halfYear1": "Half a year. Changing your life.",
+        "halfYear2": "180 days. Real commitment.",
+        "halfYear3": "Few make it here.",
+        "year1": "One year. Legend.",
+        "year2": "365 days. You're a different person.",
+        "year3": "You've earned respect. And day 366."
+      }
     }
   },
   "monthlyServices": {
@@ -336,6 +380,14 @@
       "paid": "{count, plural, one {# paid} other {# paid}}",
       "pending": "{count, plural, one {# pending} other {# pending}}",
       "overdue": "{count, plural, one {# overdue} other {# overdue}}"
+    },
+    "spendKpi": {
+      "title": "This month's spend",
+      "paidLabel": "Paid",
+      "estimatedLabel": "Estimated",
+      "ofEstimated": "of {estimated}",
+      "missingEstimate": "{count, plural, one {# service without estimate} other {# services without estimate}}",
+      "noServicesHint": "When you have active services for this month, you'll see the total here."
     },
     "fields": {
       "name": "Name",
@@ -461,7 +513,6 @@
       "addSubmit": "Record movement",
       "addSuccess": "Movement recorded",
       "empty": "No movements logged for this month yet",
-      "noDescription": "No description",
       "deleteConfirm": "Delete this movement? The linked account will be refunded.",
       "deleteSuccess": "Movement deleted"
     },

@@ -26,6 +26,7 @@ const mockServices: MonthlyService[] = [
     nextDuePeriod: '2026-04',
     isOverdue: false,
     isPaidForCurrentMonth: false,
+    paidAmountForCurrentMonth: 0,
   },
   {
     id: 'svc-2',
@@ -45,6 +46,7 @@ const mockServices: MonthlyService[] = [
     nextDuePeriod: '2026-05',
     isOverdue: false,
     isPaidForCurrentMonth: true,
+    paidAmountForCurrentMonth: 80,
   },
 ];
 

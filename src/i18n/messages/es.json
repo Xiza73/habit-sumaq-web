@@ -55,6 +55,7 @@
   "categories": {
     "title": "Categorías",
     "createCategory": "Nueva categoría",
+    "createNew": "Crear nueva categoría",
     "editCategory": "Editar categoría",
     "deleteCategory": "Eliminar categoría",
     "name": "Nombre",
@@ -99,7 +100,6 @@
     "allAccounts": "Todas las cuentas",
     "allCategories": "Todas las categorías",
     "allStatuses": "Todos los estados",
-    "createNewCategory": "Crear nueva categoría",
     "dateFrom": "Desde",
     "dateTo": "Hasta",
     "filters": "Filtros",
@@ -293,6 +293,50 @@
       "week": "🔥 ¡Una semana seguida con {name}! Vas bien.",
       "month": "🚀 ¡Un mes completo con {name}! Eres imparable.",
       "century": "💎 ¡{days} días con {name}! Una racha legendaria."
+    },
+    "streakCard": {
+      "shareAction": "Compartir mi racha",
+      "shareNow": "Compartir ahora",
+      "shareTitle": "Tu racha en Habit Sumaq",
+      "shareText": "¡{days} días con {habit} en Habit Sumaq! 🔥",
+      "downloadAction": "Descargar imagen",
+      "copyAction": "Copiar al portapapeles",
+      "downloaded": "Imagen descargada",
+      "copied": "Imagen copiada",
+      "shareError": "No se pudo compartir la imagen",
+      "branding": "Habit Sumaq",
+      "preview": "Vista previa",
+      "celebrationTitle": "¡Hito desbloqueado!",
+      "celebrationSubtitle": "Comparte tu logro o ciérralo para seguir.",
+      "closeAction": "Cerrar",
+      "daysSingular": "día",
+      "daysPlural": "días",
+      "phrases": {
+        "starting1": "Día a día.",
+        "starting2": "Empezando fuerte.",
+        "starting3": "El primer paso siempre cuenta.",
+        "week1": "Una semana. Construyendo el hábito.",
+        "week2": "Siete días. La consistencia te define.",
+        "week3": "Una semana y contando.",
+        "twoWeeks1": "Dos semanas. El hábito se asienta.",
+        "twoWeeks2": "14 días. Esto ya tiene momentum.",
+        "twoWeeks3": "La rutina empieza a hacerte.",
+        "month1": "Un mes completo. Esto ya es parte de ti.",
+        "month2": "30 días. El hábito se vuelve identidad.",
+        "month3": "Un mes. Pocos llegan aquí.",
+        "twoMonths1": "Dos meses. Te estás transformando.",
+        "twoMonths2": "60 días. Otros se inspiran en ti.",
+        "twoMonths3": "Imparable.",
+        "quarter1": "Tres meses. Maestría temprana.",
+        "quarter2": "90 días. Esto es lo que eres.",
+        "quarter3": "Hábito profundo, identidad sólida.",
+        "halfYear1": "Medio año. Cambiando tu vida.",
+        "halfYear2": "180 días. Compromiso real.",
+        "halfYear3": "Pocos llegan hasta aquí.",
+        "year1": "Un año. Leyenda.",
+        "year2": "365 días. Eres otra persona.",
+        "year3": "Te ganaste el respeto. Y el día 366."
+      }
     }
   },
   "monthlyServices": {
@@ -336,6 +380,14 @@
       "paid": "{count, plural, one {# pagado} other {# pagados}}",
       "pending": "{count, plural, one {# pendiente} other {# pendientes}}",
       "overdue": "{count, plural, one {# atrasado} other {# atrasados}}"
+    },
+    "spendKpi": {
+      "title": "Gasto del mes",
+      "paidLabel": "Pagado",
+      "estimatedLabel": "Estimado",
+      "ofEstimated": "de {estimated}",
+      "missingEstimate": "{count, plural, one {# servicio sin estimado} other {# servicios sin estimado}}",
+      "noServicesHint": "Cuando tengas servicios activos para este mes, vas a ver el total acá."
     },
     "fields": {
       "name": "Nombre",
@@ -461,7 +513,6 @@
       "addSubmit": "Registrar movimiento",
       "addSuccess": "Movimiento registrado",
       "empty": "Todavía no cargaste ningún movimiento este mes",
-      "noDescription": "Sin descripción",
       "deleteConfirm": "¿Seguro que quieres eliminar este movimiento? La cuenta vinculada se reembolsa.",
       "deleteSuccess": "Movimiento eliminado"
     },

@@ -45,6 +45,16 @@ export const analytics = {
     posthog.capture('report_viewed', { type });
   },
 
+  /**
+   * Fires when the user successfully shares (or downloads) a streak card.
+   * Streak cards are part of the viral-growth loop in Fase 1 — tracking
+   * `format` lets us see whether mobile share-sheet adoption beats
+   * desktop downloads.
+   */
+  streakCardShared: (params: { habitId: string; days: number; format: 'share' | 'download' }) => {
+    posthog.capture('streak_card_shared', params);
+  },
+
   // ─── User identification ────────────────────────────────────────────
 
   /**

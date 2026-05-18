@@ -1,17 +1,21 @@
 'use client';
 
+import { useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 
 import { Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 
+import { useCategories } from '@/core/application/hooks/use-categories';
 import { useDeleteTransaction } from '@/core/application/hooks/use-transactions';
+import { useDateFormat } from '@/core/application/hooks/use-user-settings';
 import { type Transaction } from '@/core/domain/entities/transaction';
 import { type Currency } from '@/core/domain/enums/account.enums';
 
 import { ApiError } from '@/infrastructure/api/api-error';
 
-import { formatCurrency, getOnlyDateFromApi } from '@/lib/format';
+import { formatCurrency, formatDate } from '@/lib/format';
+import { getTransactionDisplayTitle } from '@/lib/transaction-title';
 
 interface BudgetMovementListProps {
   movements: Transaction[];
@@ -33,6 +37,22 @@ export function BudgetMovementList({ movements, currency }: BudgetMovementListPr
   const t = useTranslations('budgets');
   const tCommon = useTranslations('common');
   const tErrors = useTranslations('errors');
+  // Localized type label resolver passed into the title-fallback helper.
+  // Same `transactions.types.*` namespace the transactions list uses, so a
+  // movement with no description and no category falls back to "Gasto"
+  // instead of the old "Sin descripción" copy.
+  const tTransactions = useTranslations('transactions');
+  const dateFormat = useDateFormat();
+
+  // Categories are needed for the second layer of the title fallback (when
+  // the user didn't type a description, show the category name). Same O(1)
+  // lookup pattern as TransactionList — `useCategories` is cached, so this
+  // doesn't add a network round-trip in normal navigation.
+  const { data: categories } = useCategories();
+  const categoriesById = useMemo(
+    () => new Map((categories ?? []).map((c) => [c.id, c])),
+    [categories],
+  );
 
   const deleteMutation = useDeleteTransaction();
 
@@ -62,31 +82,35 @@ export function BudgetMovementList({ movements, currency }: BudgetMovementListPr
 
   return (
     <ul className="divide-y divide-border rounded-xl border border-border bg-card">
-      {movements.map((tx) => (
-        <li
-          key={tx.id}
-          className="flex items-center gap-3 px-4 py-3 transition-colors hover:bg-muted/40"
-        >
-          <div className="min-w-0 flex-1">
-            <p className="truncate text-sm font-medium">
-              {tx.description ?? t('movements.noDescription')}
-            </p>
-            <p className="text-xs text-muted-foreground">{getOnlyDateFromApi(tx.date)}</p>
-          </div>
-          <p className="shrink-0 font-semibold tabular-nums text-destructive">
-            -{formatCurrency(tx.amount, currency)}
-          </p>
-          <button
-            type="button"
-            onClick={() => handleDelete(tx)}
-            disabled={deleteMutation.isPending}
-            className="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive disabled:opacity-50"
-            aria-label={tCommon('delete')}
+      {movements.map((tx) => {
+        const category = tx.categoryId ? categoriesById.get(tx.categoryId) : null;
+        const titleText = getTransactionDisplayTitle(tx, category, (type) =>
+          tTransactions(`types.${type}`),
+        );
+        return (
+          <li
+            key={tx.id}
+            className="flex items-center gap-3 px-4 py-3 transition-colors hover:bg-muted/40"
           >
-            <Trash2 className="size-4" />
-          </button>
-        </li>
-      ))}
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-medium">{titleText}</p>
+              <p className="text-xs text-muted-foreground">{formatDate(tx.date, dateFormat)}</p>
+            </div>
+            <p className="shrink-0 font-semibold tabular-nums text-destructive">
+              -{formatCurrency(tx.amount, currency)}
+            </p>
+            <button
+              type="button"
+              onClick={() => handleDelete(tx)}
+              disabled={deleteMutation.isPending}
+              className="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive disabled:opacity-50"
+              aria-label={tCommon('delete')}
+            >
+              <Trash2 className="size-4" />
+            </button>
+          </li>
+        );
+      })}
     </ul>
   );
 }

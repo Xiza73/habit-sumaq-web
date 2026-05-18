@@ -43,8 +43,14 @@ export function getTodayLocaleDate(): string {
   return `${year}-${month}-${day}`;
 }
 
-export function getOnlyDateFromApi(apiDate: string): string {
-  return new Date(apiDate.split('Z')[0]).toLocaleDateString();
+/**
+ * Current calendar month in the user's local timezone, formatted as `YYYY-MM`.
+ * Matches the period shape the backend uses for monthly-service flags
+ * (`nextDuePeriod`, `lastPaidPeriod`, etc.) so equality checks against those
+ * fields are sound.
+ */
+export function getCurrentPeriod(): string {
+  return getTodayLocaleDate().slice(0, 7);
 }
 
 const PERIOD_LOCALE: Record<string, string> = {

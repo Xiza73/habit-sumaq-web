@@ -38,9 +38,11 @@ onboarding para que más usuarios se enganchen.
 - [x] **Posthog setup** + 5 eventos críticos (`login_completed`,
       `transaction_created`, `habit_logged`, `report_viewed`, identify/reset)
 - [ ] Onboarding mejorado: tutorial post-login + datos demo opcionales
-- [ ] Templates de hábitos / categorías por arquetipo ("Estudiante",
-      "Freelancer", "Pareja")
-- [ ] Shareable streak cards (imagen exportable para postear)
+- [x] **Templates de hábitos / categorías** por arquetipo (Estudiante,
+      Freelancer, Pareja) — shipped en [PR #59](https://github.com/Xiza73/habit-sumaq-web/pull/59)
+- [x] **Shareable streak cards** — botón en HabitDetail (≥ 7 días) +
+      modal automático en milestones grandes (mes, 100, 365). SVG → PNG
+      con frases motivacionales rotativas en 8 tiers
 - [ ] Web Push notifications básicas (recordatorios de hábito, registro de
       gasto)
 
@@ -59,7 +61,8 @@ salvo el que diga lo contrario.
 | 2 ✅ | **Habit counter UX** (investigar)             | Polish  | 30min    | Investigated. El feature de contador (`+`/`-` botones con progress) **ya existe y funciona**. Lo que el user pedía era un **cronómetro** (modo basado en tiempo), que es un feature distinto — spec'd en [habit-timer-feature.md](habit-timer-feature.md), agendado para Fase 2. |
 | 3    | **Persistencia de secciones colapsadas en Tasks** | Bug     | ~5h (back+front) | `Section` entity no tiene `isCollapsed` → state es local → al refresh se pierde. Fix: nueva column en `sections` + endpoint PATCH + frontend con optimistic. Requiere coord backend. **Próximo en cola.** |
 | 4    | **Date format unificado en forms**            | Bug     | ~6-10h   | 8 forms usan `<input type="date">` que ignora `userSettings.dateFormat` (HTML5 renderiza en locale del SO). Wire format está OK (`YYYY-MM-DD`), display NO. Fix proper: custom `<DatePicker>` component (ej. con `react-day-picker`) que reemplace todos los `type="date"`. Refactor mediano. |
-| 5    | **Generar APK del PWA** (Bubblewrap)          | Ops     | 1-2h     | Documentado en [twa-deployment.md](twa-deployment.md). Falta ejecutar Bubblewrap en máquina del autor + subir a Play Store. Cuando haya momento.                                  |
+| 5 🟡 | **APK del PWA**                               | Ops     | 1-2h     | Path A (PWABuilder) ejecutado, APK generado y compartido con friends & family. Path B (Play Store) pendiente. Ver [twa-deployment.md](twa-deployment.md).                                       |
+| 6    | **Quitar URL bar del TWA** (`assetlinks.json`) | Ops     | ~1h      | El APK actual de Path A muestra una barra de URL de Chrome arriba — por falta de verificación de Digital Asset Links. Fix: subir `public/.well-known/assetlinks.json` con el SHA-256 del keystore generado por PWABuilder (está en `signing-key-info.txt` del ZIP) + redeploy. Vercel sirve el static automáticamente. |
 
 ### 📈 Fase 2 — Killer feature + crecimiento (6-8 semanas)
 
@@ -117,7 +120,10 @@ margen para reinvertir en growth).
 - TypeScript-first SDK
 - GDPR-friendly
 
-**Setup**: ver el siguiente PR (separado de este).
+**Comportamiento por ambiente:**
+- **Producción** (`NODE_ENV=production`) → init automático si hay `NEXT_PUBLIC_POSTHOG_KEY` seteada
+- **Desarrollo** (`pnpm dev`) → **NO** init por default. Eventos quedan no-op silencioso. Esto evita polución del dashboard de prod con eventos de testing + ruido en la consola.
+- **Override dev**: poner `NEXT_PUBLIC_POSTHOG_ENABLE_IN_DEV=true` en `.env.local` cuando quieras validar eventos end-to-end desde dev. Después borralo para no contaminar.
 
 ### Eventos a trackear
 

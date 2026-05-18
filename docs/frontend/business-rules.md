@@ -23,6 +23,20 @@ Reglas que el frontend debe conocer para construir la UI correctamente y preveni
 3. **Categorías por defecto** (`isDefault=true`) no se pueden eliminar ni modificar el tipo. Vienen precreadas para cada usuario.
 4. **Soft delete.** Las categorías eliminadas dejan de aparecer en la lista pero las transacciones que las referencian mantienen el `categoryId`.
 
+### Inline category creation
+
+Cualquier formulario que tenga un `<select>` de categoría **DEBE** ofrecer creación inline ("+ Crear nueva categoría") junto al campo. La meta es que el usuario nunca tenga que abandonar el flujo en el que está (registrar una transacción, agregar un movimiento a un presupuesto, crear un servicio mensual, etc.) solo porque la categoría que necesita todavía no existe.
+
+Reglas:
+
+1. **Usar `<CategorySelectField>`** (`src/presentation/features/categories/CategorySelectField.tsx`) en vez de un `<Select>` crudo. Encapsula label + Select + botón "+ Crear nueva" + el `<CategoryForm>` modal + auto-select tras crear.
+2. **Filtro por tipo es obligatorio.** El componente recibe `categoryType` y filtra el dropdown a ese tipo (INCOME o EXPENSE). Ese mismo `categoryType` se pasa al `defaultType` del `CategoryForm` para que el usuario no tenga que cambiarlo manualmente en el caso normal.
+3. **Auto-select tras crear.** Una vez creada la categoría, debe quedar pre-seleccionada en el form padre (`field.onChange(created.id)`). El usuario no tiene que volver a abrir el dropdown.
+4. **El modal no roba el contexto.** El `CategoryForm` se monta encima del form padre y al cerrarse el padre sigue intacto (con la nueva categoría seleccionada). No descartar el form padre cuando se abre el modal.
+5. **El i18n key vive en `categories.createNew`**, no en el namespace del form padre — es un componente genérico, no propiedad de transacciones.
+
+> Si vas a agregar un nuevo form que pickea categoría: usá `<CategorySelectField>` directamente. No copiar la lógica.
+
 ---
 
 ## Transacciones
@@ -73,6 +87,34 @@ Reglas que el frontend debe conocer para construir la UI correctamente y preveni
 
 1. **SETTLED bloquea edición.** Una transacción DEBT/LOAN con `status=SETTLED` no se puede modificar (PATCH).
 2. Las liquidaciones (transacciones con `relatedTransactionId`) se comportan como EXPENSE/INCOME normales para edición.
+
+### Date display
+
+Cualquier surface que renderice una **fecha calendario** del usuario (fecha de transacción, movimiento, hábito, chore, etc.) **DEBE** respetar la preferencia `userSettings.dateFormat` (`DD/MM/YYYY` / `MM/DD/YYYY` / `YYYY-MM-DD`). Reglas:
+
+1. **Single source of truth**: usar el hook `useDateFormat()` (`@/core/application/hooks/use-user-settings`) para leer la preferencia. No leer `useUserSettings().data?.dateFormat` manualmente — la cadena `settings?.dateFormat ?? 'YYYY-MM-DD'` ya vive dentro del hook.
+2. **Render**: pasar el resultado a `formatDate(date, dateFormat)` (`@/lib/format`). El helper acepta tanto `YYYY-MM-DD` como ISO completo (`YYYY-MM-DDTHH:mm:ss.sssZ`) — no hace falta slicear antes.
+3. **Prohibido**: `new Date(x).toLocaleDateString()` (lee la locale del navegador, ignora la pref del usuario), `${day}/${month}/${year}` hardcoded, o cualquier `Intl.DateTimeFormat` con shape de fecha calendario. Si no te respeta el `dateFormat`, está mal.
+
+**Excepciones legítimas** (no son fechas calendario del usuario — no aplica la regla):
+
+- **Labels de heatmap / calendar**: nombre corto de mes ("Apr"), letra de día ("M"), tooltip "Lunes, 3 de abril" — son labels de locale para visualización, no la fecha de un evento del usuario. Usar `Intl.DateTimeFormat(locale, { ... })` directamente.
+- **Reloj en vivo**: `new Date().toLocaleTimeString()` para mostrar la hora actual es válido — no es una fecha de dato.
+- **Período `YYYY-MM`** (servicios mensuales, presupuestos): usar `formatPeriodLabel(period, locale)`.
+
+### Transaction display title
+
+Cualquier surface que renderice una transacción (lista global, movimientos de presupuesto, historial de servicios, reportes, etc.) **DEBE** usar el helper `getTransactionDisplayTitle` (`src/lib/transaction-title.ts`) para el título. Tres capas, en orden:
+
+1. `transaction.description` — lo que el usuario escribió.
+2. Nombre de la categoría — "Comida", "Sueldo", "Servicios"…
+3. Label localizado del tipo — `t('transactions.types.${type}')` ("Gasto", "Ingreso", "Transferencia"…).
+
+Reglas:
+
+1. **No renderizar un placeholder genérico** ("Sin descripción", "No description", "—") cuando hay categoría. La mayoría de las transacciones tienen una categoría que ya las nombra bien — usarla.
+2. **El helper es locale-agnostic.** Recibe `getTypeLabel: (type) => string` para que el caller resuelva el `t(...)` y el helper quede trivialmente testeable.
+3. **Surfaces que rendericen una lista de transacciones** deben tener acceso a las categorías (vía `useCategories()` + lookup `Map<id, category>`). Cargar las categorías una sola vez en el padre y reutilizar el lookup — no llamar `useCategories()` por card.
 
 ### Eliminación y cascadas
 
