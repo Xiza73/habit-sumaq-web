@@ -76,7 +76,9 @@ local, sin cuenta de developer.**
 6. Download → ZIP con:
    - **`app-release-signed.apk`** ← lo que vas a compartir
    - `app-release-bundle.aab` ← guardar para futuro Play Store
-   - `assetlinks.json` ← para Path B futuro (deployar a `.well-known/`)
+   - `assetlinks.json` ← su contenido ya está deployado en
+     `public/.well-known/assetlinks.json` desde v0.2.2; sólo regenerar
+     si rotás keystore o cambia el `package_name`
    - **`signing-key.keystore`** ← **GUARDAR EN LUGAR SEGURO**
    - `signing-key-info.txt` ← password + alias del keystore (también guardar)
 
@@ -88,10 +90,11 @@ local, sin cuenta de developer.**
 2. En Android: Settings → Security → "Install unknown apps" →
    habilitar para WhatsApp/Telegram/Files (lo que usen).
 3. Tap el APK → "Install".
-4. **Heads up:** la primera vez que abre la app, podría aparecer una
-   barra de URL de Chrome arriba (porque no configuramos Digital Asset
-   Links — eso es Path B). Para alpha está bien, se siente "casi nativo"
-   pero con esa pista de que es web.
+4. La app abre full-screen sin barra de URL — el verification de Asset
+   Links ya está deployado contra el APK actual (ver §5 más abajo). Si
+   distribuís un APK firmado con OTRO keystore, sí va a aparecer la barra
+   hasta que actualices `public/.well-known/assetlinks.json` con el
+   SHA-256 nuevo.
 
 ### Lo que **funciona** vía Path A
 
@@ -99,14 +102,14 @@ local, sin cuenta de developer.**
 - ✅ Service worker / cache offline
 - ✅ Push notifications (Web Push)
 - ✅ Manifest icons / splash screen
-- ✅ Standalone mode (sin chrome del navegador, salvo lo del Asset Links)
+- ✅ Standalone mode sin barra de URL (Asset Links activo desde v0.2.2)
 
 ### Lo que **NO funciona** vía Path A (necesitás Path B)
 
 - ❌ Distribución masiva (no podés subir a Play Store)
-- ❌ Auto-updates (cada nueva versión = nuevo APK + reenvío manual)
-- ❌ Verified TWA (la barra de URL aparece la primera vez si no se setea
-  Asset Links + verificación)
+- ❌ Auto-updates (cada nueva versión del APK = nuevo APK + reenvío
+  manual a beta-testers). Asset Links no resuelve esto — solo Play Store
+  lo hace.
 - ❌ Search en Play Store (los amigos te encuentran solo por link)
 
 ### Updates en Path A
@@ -226,12 +229,25 @@ Output:
 
 ### 5. Configurar Digital Asset Links
 
+> **Estado actual: ACTIVO desde v0.2.2.** El archivo
+> [`public/.well-known/assetlinks.json`](../../public/.well-known/assetlinks.json)
+> ya está deployado contra el APK actual de PWABuilder
+> (`app.vercel.habit_sumaq_web.twa`). Si **rotás el keystore** o **cambiás
+> el `package_name`**, actualizá el archivo (los pasos abajo siguen
+> aplicando para el cambio).
+
 Para que el APK NO muestre la barra de URL de Chrome (verdadera experiencia
 "app"), tenés que probar que el dominio te pertenece:
 
-1. Bubblewrap genera el SHA-256 fingerprint del keystore. Copiarlo de la
-   salida de `bubblewrap fingerprint`.
-2. Crear el archivo `public/.well-known/assetlinks.json` en el repo
+1. Conseguir el SHA-256 fingerprint del keystore que firma el APK:
+   - **Desde PWABuilder.com**: cuando descargás el zip del APK, viene un
+     `assetlinks.json` adentro con el SHA-256 ya calculado — copialo
+     directo de ahí.
+   - **Desde Bubblewrap**: corre `bubblewrap fingerprint` y copia la
+     salida.
+   - **Desde el keystore a mano**: `keytool -list -v -keystore signing.keystore -alias <alias>`
+     y mirá `SHA256:`.
+2. Crear/actualizar `public/.well-known/assetlinks.json` en el repo
    `habit-sumaq-web`:
 
 ```json
@@ -240,18 +256,30 @@ Para que el APK NO muestre la barra de URL de Chrome (verdadera experiencia
     "relation": ["delegate_permission/common.handle_all_urls"],
     "target": {
       "namespace": "android_app",
-      "package_name": "com.habitsumaq.app",
-      "sha256_cert_fingerprints": ["AA:BB:CC:..."]
+      "package_name": "app.vercel.habit_sumaq_web.twa",
+      "sha256_cert_fingerprints": [
+        "3C:DE:B1:6E:11:B5:35:7A:E9:2E:AE:7A:9C:6C:FD:FB:FA:84:15:81:59:93:22:03:85:41:1A:25:18:F4:0A:E2"
+      ]
     }
   }
 ]
 ```
 
+> El `Content-Type: application/json` está pinneado en `next.config.ts`
+> via `headers()`. Por extensión Next ya lo serviría bien, pero la
+> spec de Android es estricta y dejarlo explícito asegura que cualquier
+> override futuro de MIME types no rompa la verificación silenciosamente.
+
 3. Deployar (push a master). Verificar que
-   `https://habitsumaq.com/.well-known/assetlinks.json` responde con el JSON.
+   `https://<dominio>/.well-known/assetlinks.json` responde con el JSON
+   literal y `Content-Type: application/json` (con `curl -I` o DevTools).
 
 4. Validar con la herramienta oficial:
    https://developers.google.com/digital-asset-links/tools/generator
+
+5. **Desinstalar y reinstalar el APK** en el celular. Android cachea el
+   resultado de verificación al instalar; sin re-instalar puede tardar
+   ~24h en re-verificar contra el archivo nuevo.
 
 ### 6. Testing local del APK
 
@@ -347,7 +375,7 @@ hayamos validado revenue en Android.
 | Tooling local                         | $0 (browser)        | $0 (Bubblewrap es local)    |
 | Cuenta de developer                   | —                   | Play Store: $25 USD one-time |
 | Apple Developer (futuro iOS)          | —                   | $99 USD/año                 |
-| Hosting de `assetlinks.json` (HTTPS)  | —                   | $0 (Vercel sirve el static) |
+| Hosting de `assetlinks.json` (HTTPS)  | $0 (Vercel)         | $0 (Vercel)                 |
 | Tiempo total                          | ~10 min             | 1-2 días                    |
 
 ---
