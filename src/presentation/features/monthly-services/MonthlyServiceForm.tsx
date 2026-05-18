@@ -9,7 +9,6 @@ import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { useAccounts } from '@/core/application/hooks/use-accounts';
-import { useCategories } from '@/core/application/hooks/use-categories';
 import {
   useCreateMonthlyService,
   useUpdateMonthlyService,
@@ -30,6 +29,7 @@ import { ApiError } from '@/infrastructure/api/api-error';
 import { Input } from '@/presentation/components/ui/Input';
 import { Modal } from '@/presentation/components/ui/Modal';
 import { Select } from '@/presentation/components/ui/Select';
+import { CategorySelectField } from '@/presentation/features/categories/CategorySelectField';
 
 interface MonthlyServiceFormProps {
   open: boolean;
@@ -56,7 +56,6 @@ export function MonthlyServiceForm({ open, service, onClose }: MonthlyServiceFor
   const isEditing = !!service;
 
   const { data: accounts } = useAccounts(false);
-  const { data: categories } = useCategories('EXPENSE');
 
   const createMutation = useCreateMonthlyService();
   const updateMutation = useUpdateMonthlyService();
@@ -199,22 +198,15 @@ export function MonthlyServiceForm({ open, service, onClose }: MonthlyServiceFor
           )}
         </div>
 
-        <div className="space-y-2">
-          <label htmlFor="msvc-category" className="text-sm font-medium">
-            {t('fields.category')}
-          </label>
-          <Select id="msvc-category" {...form.register('categoryId')}>
-            <option value="">—</option>
-            {categories?.map((category) => (
-              <option key={category.id} value={category.id}>
-                {category.name}
-              </option>
-            ))}
-          </Select>
-          {form.formState.errors.categoryId && (
-            <p className="text-xs text-destructive">{form.formState.errors.categoryId.message}</p>
-          )}
-        </div>
+        <CategorySelectField
+          control={form.control}
+          name="categoryId"
+          categoryType="EXPENSE"
+          id="msvc-category"
+          label={t('fields.category')}
+          emptyOptionLabel="—"
+          errorMessage={form.formState.errors.categoryId?.message}
+        />
 
         {!isEditing && (
           <div className="grid grid-cols-2 gap-4">

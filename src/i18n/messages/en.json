@@ -55,6 +55,7 @@
   "categories": {
     "title": "Categories",
     "createCategory": "New category",
+    "createNew": "Create new category",
     "editCategory": "Edit category",
     "deleteCategory": "Delete category",
     "name": "Name",
@@ -99,7 +100,6 @@
     "allAccounts": "All accounts",
     "allCategories": "All categories",
     "allStatuses": "All statuses",
-    "createNewCategory": "Create new category",
     "dateFrom": "From",
     "dateTo": "To",
     "filters": "Filters",

@@ -55,6 +55,7 @@
   "categories": {
     "title": "Categorías",
     "createCategory": "Nueva categoría",
+    "createNew": "Crear nueva categoría",
     "editCategory": "Editar categoría",
     "deleteCategory": "Eliminar categoría",
     "name": "Nombre",
@@ -99,7 +100,6 @@
     "allAccounts": "Todas las cuentas",
     "allCategories": "Todas las categorías",
     "allStatuses": "Todos los estados",
-    "createNewCategory": "Crear nueva categoría",
     "dateFrom": "Desde",
     "dateTo": "Hasta",
     "filters": "Filtros",
