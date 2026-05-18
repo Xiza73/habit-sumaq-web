@@ -88,6 +88,20 @@ Reglas:
 1. **SETTLED bloquea edición.** Una transacción DEBT/LOAN con `status=SETTLED` no se puede modificar (PATCH).
 2. Las liquidaciones (transacciones con `relatedTransactionId`) se comportan como EXPENSE/INCOME normales para edición.
 
+### Date display
+
+Cualquier surface que renderice una **fecha calendario** del usuario (fecha de transacción, movimiento, hábito, chore, etc.) **DEBE** respetar la preferencia `userSettings.dateFormat` (`DD/MM/YYYY` / `MM/DD/YYYY` / `YYYY-MM-DD`). Reglas:
+
+1. **Single source of truth**: usar el hook `useDateFormat()` (`@/core/application/hooks/use-user-settings`) para leer la preferencia. No leer `useUserSettings().data?.dateFormat` manualmente — la cadena `settings?.dateFormat ?? 'YYYY-MM-DD'` ya vive dentro del hook.
+2. **Render**: pasar el resultado a `formatDate(date, dateFormat)` (`@/lib/format`). El helper acepta tanto `YYYY-MM-DD` como ISO completo (`YYYY-MM-DDTHH:mm:ss.sssZ`) — no hace falta slicear antes.
+3. **Prohibido**: `new Date(x).toLocaleDateString()` (lee la locale del navegador, ignora la pref del usuario), `${day}/${month}/${year}` hardcoded, o cualquier `Intl.DateTimeFormat` con shape de fecha calendario. Si no te respeta el `dateFormat`, está mal.
+
+**Excepciones legítimas** (no son fechas calendario del usuario — no aplica la regla):
+
+- **Labels de heatmap / calendar**: nombre corto de mes ("Apr"), letra de día ("M"), tooltip "Lunes, 3 de abril" — son labels de locale para visualización, no la fecha de un evento del usuario. Usar `Intl.DateTimeFormat(locale, { ... })` directamente.
+- **Reloj en vivo**: `new Date().toLocaleTimeString()` para mostrar la hora actual es válido — no es una fecha de dato.
+- **Período `YYYY-MM`** (servicios mensuales, presupuestos): usar `formatPeriodLabel(period, locale)`.
+
 ### Transaction display title
 
 Cualquier surface que renderice una transacción (lista global, movimientos de presupuesto, historial de servicios, reportes, etc.) **DEBE** usar el helper `getTransactionDisplayTitle` (`src/lib/transaction-title.ts`) para el título. Tres capas, en orden:

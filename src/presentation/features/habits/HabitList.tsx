@@ -13,7 +13,7 @@ import {
   useHabits,
   useLogHabit,
 } from '@/core/application/hooks/use-habits';
-import { useUserSettings } from '@/core/application/hooks/use-user-settings';
+import { useDateFormat } from '@/core/application/hooks/use-user-settings';
 import { type HabitWithStats } from '@/core/domain/entities/habit';
 
 import { ApiError } from '@/infrastructure/api/api-error';
@@ -58,8 +58,7 @@ function shiftDate(dateStr: string, days: number): string {
 export function HabitList() {
   const t = useTranslations('habits');
   const tErrors = useTranslations('errors');
-  const { data: settings } = useUserSettings();
-  const dateFormat = settings?.dateFormat ?? 'YYYY-MM-DD';
+  const dateFormat = useDateFormat();
 
   const [showArchived, setShowArchived] = useState(false);
   const [formOpen, setFormOpen] = useState(false);

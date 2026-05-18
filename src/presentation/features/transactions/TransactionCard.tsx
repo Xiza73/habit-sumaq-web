@@ -5,11 +5,12 @@ import { useTranslations } from 'next-intl';
 
 import { HandCoins, MoreVertical, Pencil, PiggyBank, Trash2 } from 'lucide-react';
 
+import { useDateFormat } from '@/core/application/hooks/use-user-settings';
 import { type Category } from '@/core/domain/entities/category';
 import { type Transaction } from '@/core/domain/entities/transaction';
 import { type Currency } from '@/core/domain/enums/account.enums';
 
-import { formatCurrency, getOnlyDateFromApi } from '@/lib/format';
+import { formatCurrency, formatDate } from '@/lib/format';
 import { TRANSACTION_TYPE_COLORS, TRANSACTION_TYPE_ICONS } from '@/lib/transaction-icons';
 import { getTransactionDisplayTitle } from '@/lib/transaction-title';
 import { cn } from '@/lib/utils';
@@ -39,6 +40,7 @@ export function TransactionCard({
   onSettle,
 }: TransactionCardProps) {
   const t = useTranslations('transactions');
+  const dateFormat = useDateFormat();
   const [menuOpen, setMenuOpen] = useState(false);
 
   const Icon = TRANSACTION_TYPE_ICONS[transaction.type];
@@ -157,7 +159,7 @@ export function TransactionCard({
             {formatCurrency(transaction.amount, currency)}
           </p>
         )}
-        <p className="text-xs text-muted-foreground">{getOnlyDateFromApi(transaction.date)}</p>
+        <p className="text-xs text-muted-foreground">{formatDate(transaction.date, dateFormat)}</p>
       </div>
 
       {/* Hover devices: 3-dot button appears in flow only on hover */}
