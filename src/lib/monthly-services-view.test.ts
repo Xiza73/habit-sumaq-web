@@ -24,6 +24,7 @@ function makeService(overrides: Partial<MonthlyService> = {}): MonthlyService {
     nextDuePeriod: '2026-04',
     isOverdue: false,
     isPaidForCurrentMonth: false,
+    paidAmountForCurrentMonth: 0,
     ...overrides,
   };
 }

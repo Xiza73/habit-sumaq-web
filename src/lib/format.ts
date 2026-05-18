@@ -43,6 +43,16 @@ export function getTodayLocaleDate(): string {
   return `${year}-${month}-${day}`;
 }
 
+/**
+ * Current calendar month in the user's local timezone, formatted as `YYYY-MM`.
+ * Matches the period shape the backend uses for monthly-service flags
+ * (`nextDuePeriod`, `lastPaidPeriod`, etc.) so equality checks against those
+ * fields are sound.
+ */
+export function getCurrentPeriod(): string {
+  return getTodayLocaleDate().slice(0, 7);
+}
+
 const PERIOD_LOCALE: Record<string, string> = {
   es: 'es-PE',
   en: 'en-US',

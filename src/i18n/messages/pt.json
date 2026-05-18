@@ -381,6 +381,14 @@
       "pending": "{count, plural, one {# pendente} other {# pendentes}}",
       "overdue": "{count, plural, one {# atrasado} other {# atrasados}}"
     },
+    "spendKpi": {
+      "title": "Gasto do mês",
+      "paidLabel": "Pago",
+      "estimatedLabel": "Estimado",
+      "ofEstimated": "de {estimated}",
+      "missingEstimate": "{count, plural, one {# serviço sem estimativa} other {# serviços sem estimativa}}",
+      "noServicesHint": "Quando tiver serviços ativos para este mês, você vai ver o total aqui."
+    },
     "fields": {
       "name": "Nome",
       "defaultAccount": "Conta padrão",

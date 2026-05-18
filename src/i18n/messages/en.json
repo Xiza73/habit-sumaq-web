@@ -381,6 +381,14 @@
       "pending": "{count, plural, one {# pending} other {# pending}}",
       "overdue": "{count, plural, one {# overdue} other {# overdue}}"
     },
+    "spendKpi": {
+      "title": "This month's spend",
+      "paidLabel": "Paid",
+      "estimatedLabel": "Estimated",
+      "ofEstimated": "of {estimated}",
+      "missingEstimate": "{count, plural, one {# service without estimate} other {# services without estimate}}",
+      "noServicesHint": "When you have active services for this month, you'll see the total here."
+    },
     "fields": {
       "name": "Name",
       "defaultAccount": "Default account",
