@@ -505,7 +505,6 @@
       "addSubmit": "Registrar movimento",
       "addSuccess": "Movimento registrado",
       "empty": "Nenhum movimento registrado neste mês ainda",
-      "noDescription": "Sem descrição",
       "deleteConfirm": "Excluir este movimento? A conta vinculada será reembolsada.",
       "deleteSuccess": "Movimento excluído"
     },

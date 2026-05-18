@@ -88,6 +88,20 @@ Reglas:
 1. **SETTLED bloquea edición.** Una transacción DEBT/LOAN con `status=SETTLED` no se puede modificar (PATCH).
 2. Las liquidaciones (transacciones con `relatedTransactionId`) se comportan como EXPENSE/INCOME normales para edición.
 
+### Transaction display title
+
+Cualquier surface que renderice una transacción (lista global, movimientos de presupuesto, historial de servicios, reportes, etc.) **DEBE** usar el helper `getTransactionDisplayTitle` (`src/lib/transaction-title.ts`) para el título. Tres capas, en orden:
+
+1. `transaction.description` — lo que el usuario escribió.
+2. Nombre de la categoría — "Comida", "Sueldo", "Servicios"…
+3. Label localizado del tipo — `t('transactions.types.${type}')` ("Gasto", "Ingreso", "Transferencia"…).
+
+Reglas:
+
+1. **No renderizar un placeholder genérico** ("Sin descripción", "No description", "—") cuando hay categoría. La mayoría de las transacciones tienen una categoría que ya las nombra bien — usarla.
+2. **El helper es locale-agnostic.** Recibe `getTypeLabel: (type) => string` para que el caller resuelva el `t(...)` y el helper quede trivialmente testeable.
+3. **Surfaces que rendericen una lista de transacciones** deben tener acceso a las categorías (vía `useCategories()` + lookup `Map<id, category>`). Cargar las categorías una sola vez en el padre y reutilizar el lookup — no llamar `useCategories()` por card.
+
 ### Eliminación y cascadas
 
 1. **Eliminar DEBT/LOAN:** Elimina automáticamente **todas** las liquidaciones asociadas y revierte sus efectos en balance.
