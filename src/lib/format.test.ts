@@ -5,7 +5,6 @@ import {
   formatCurrency,
   formatDate,
   getEstimatedPaymentDate,
-  getOnlyDateFromApi,
   getTodayLocaleDate,
 } from './format';
 
@@ -77,19 +76,6 @@ describe('getTodayLocaleDate', () => {
     const month = String(today.getMonth() + 1).padStart(2, '0');
     const day = String(today.getDate()).padStart(2, '0');
     expect(result).toBe(`${year}-${month}-${day}`);
-  });
-});
-
-describe('getOnlyDateFromApi', () => {
-  it('extracts date from API string', () => {
-    const result = getOnlyDateFromApi('2026-03-13T10:30:00.000Z');
-    expect(result).toBeTruthy();
-    expect(typeof result).toBe('string');
-  });
-
-  it('handles date without Z suffix', () => {
-    const result = getOnlyDateFromApi('2026-03-13T10:30:00.000');
-    expect(result).toBeTruthy();
   });
 });
 

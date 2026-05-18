@@ -21,6 +21,10 @@ vi.mock('@/core/application/hooks/use-user-settings', () => ({
     data: { defaultCurrency: userDefaultCurrency },
     isLoading: false,
   }),
+  // BudgetMovementList (rendered when a budget exists) now consumes
+  // `useDateFormat` to honor the user's date-format preference. Tests
+  // don't assert on the rendered date string, so the safe default is fine.
+  useDateFormat: () => 'YYYY-MM-DD',
 }));
 
 vi.mock('@/core/application/hooks/use-budgets', () => ({

@@ -8,7 +8,7 @@ import { useLocale, useTranslations } from 'next-intl';
 import { enUS, es, type Locale, ptBR } from 'date-fns/locale';
 import { Calendar as CalendarIcon, X } from 'lucide-react';
 
-import { useUserSettings } from '@/core/application/hooks/use-user-settings';
+import { useDateFormat } from '@/core/application/hooks/use-user-settings';
 
 import { formatDate } from '@/lib/format';
 import { cn } from '@/lib/utils';
@@ -86,8 +86,7 @@ export function DatePicker({
 }: DatePickerProps) {
   const locale = useLocale();
   const tCommon = useTranslations('common');
-  const { data: settings } = useUserSettings();
-  const dateFormat = settings?.dateFormat ?? 'YYYY-MM-DD';
+  const dateFormat = useDateFormat();
 
   const [open, setOpen] = useState(false);
   const [popoverPos, setPopoverPos] = useState<{ top: number; left: number } | null>(null);

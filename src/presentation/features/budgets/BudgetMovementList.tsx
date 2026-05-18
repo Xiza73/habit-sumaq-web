@@ -8,12 +8,13 @@ import { toast } from 'sonner';
 
 import { useCategories } from '@/core/application/hooks/use-categories';
 import { useDeleteTransaction } from '@/core/application/hooks/use-transactions';
+import { useDateFormat } from '@/core/application/hooks/use-user-settings';
 import { type Transaction } from '@/core/domain/entities/transaction';
 import { type Currency } from '@/core/domain/enums/account.enums';
 
 import { ApiError } from '@/infrastructure/api/api-error';
 
-import { formatCurrency, getOnlyDateFromApi } from '@/lib/format';
+import { formatCurrency, formatDate } from '@/lib/format';
 import { getTransactionDisplayTitle } from '@/lib/transaction-title';
 
 interface BudgetMovementListProps {
@@ -41,6 +42,7 @@ export function BudgetMovementList({ movements, currency }: BudgetMovementListPr
   // movement with no description and no category falls back to "Gasto"
   // instead of the old "Sin descripción" copy.
   const tTransactions = useTranslations('transactions');
+  const dateFormat = useDateFormat();
 
   // Categories are needed for the second layer of the title fallback (when
   // the user didn't type a description, show the category name). Same O(1)
@@ -92,7 +94,7 @@ export function BudgetMovementList({ movements, currency }: BudgetMovementListPr
           >
             <div className="min-w-0 flex-1">
               <p className="truncate text-sm font-medium">{titleText}</p>
-              <p className="text-xs text-muted-foreground">{getOnlyDateFromApi(tx.date)}</p>
+              <p className="text-xs text-muted-foreground">{formatDate(tx.date, dateFormat)}</p>
             </div>
             <p className="shrink-0 font-semibold tabular-nums text-destructive">
               -{formatCurrency(tx.amount, currency)}

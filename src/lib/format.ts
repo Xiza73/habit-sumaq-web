@@ -43,10 +43,6 @@ export function getTodayLocaleDate(): string {
   return `${year}-${month}-${day}`;
 }
 
-export function getOnlyDateFromApi(apiDate: string): string {
-  return new Date(apiDate.split('Z')[0]).toLocaleDateString();
-}
-
 const PERIOD_LOCALE: Record<string, string> = {
   es: 'es-PE',
   en: 'en-US',
