@@ -38,9 +38,11 @@ onboarding para que más usuarios se enganchen.
 - [x] **Posthog setup** + 5 eventos críticos (`login_completed`,
       `transaction_created`, `habit_logged`, `report_viewed`, identify/reset)
 - [ ] Onboarding mejorado: tutorial post-login + datos demo opcionales
-- [ ] Templates de hábitos / categorías por arquetipo ("Estudiante",
-      "Freelancer", "Pareja")
-- [ ] Shareable streak cards (imagen exportable para postear)
+- [x] **Templates de hábitos / categorías** por arquetipo (Estudiante,
+      Freelancer, Pareja) — shipped en [PR #59](https://github.com/Xiza73/habit-sumaq-web/pull/59)
+- [x] **Shareable streak cards** — botón en HabitDetail (≥ 7 días) +
+      modal automático en milestones grandes (mes, 100, 365). SVG → PNG
+      con frases motivacionales rotativas en 8 tiers
 - [ ] Web Push notifications básicas (recordatorios de hábito, registro de
       gasto)
 

@@ -24,6 +24,7 @@ import { cn } from '@/lib/utils';
 
 import { HabitForm } from './HabitForm';
 import { HabitHeatmap } from './HabitHeatmap';
+import { ShareStreakButton } from './ShareStreakButton';
 
 interface HabitDetailProps {
   habitId: string;
@@ -248,6 +249,10 @@ export function HabitDetail({ habitId }: HabitDetailProps) {
                 : t('weeks', { count: habit.currentStreak }).split(' ')[1]}
             </span>
           </p>
+          {/* Share CTA — auto-hides below 7 days inside the component. */}
+          <div className="mt-3">
+            <ShareStreakButton habit={habit} />
+          </div>
         </div>
 
         <div className="rounded-xl border border-border bg-card p-5">

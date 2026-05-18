@@ -16,6 +16,8 @@ import { analytics } from '@/lib/analytics';
 import { fireCelebrationConfetti } from '@/lib/confetti';
 import { detectMilestoneCrossed } from '@/lib/streak-milestones';
 
+import { useCelebrationStore } from '../stores/celebration.store';
+
 export const habitKeys = {
   all: ['habits'] as const,
   lists: () => [...habitKeys.all, 'list'] as const,
@@ -130,6 +132,7 @@ function readStreakFromCache(
 export function useLogHabit() {
   const queryClient = useQueryClient();
   const t = useTranslations('habits.milestones');
+  const tShare = useTranslations('habits.streakCard');
 
   return useMutation({
     mutationFn: ({ habitId, data }: { habitId: string; data: HabitLogInput }) =>
@@ -217,8 +220,47 @@ export function useLogHabit() {
           ? t('century', { name: habitName, days: milestone.days })
           : t(milestone.kind, { name: habitName });
 
-      toast.success(message, { duration: 6000 });
+      const habitColor =
+        queryClient
+          .getQueryData<HabitWithStats[]>(habitKeys.daily(data.date))
+          ?.find((h) => h.id === habitId)?.color ?? null;
+
+      // Toast with a "Share now" action on every milestone:
+      //   - For week, this is the ONLY way to open the share modal
+      //     (the auto-modal is intentionally month+ only, to avoid
+      //     weekly noise).
+      //   - For month/century, the auto-modal already opens; the
+      //     action acts as a safety net in case the user dismissed the
+      //     modal too fast and wants to reopen it from the toast.
+      // Duration bumped to 10s so the user has time to register the
+      // milestone, read the message, and decide whether to share.
+      toast.success(message, {
+        duration: 10_000,
+        action: {
+          label: tShare('shareNow'),
+          onClick: () => {
+            useCelebrationStore.getState().trigger({
+              habitId,
+              habitName,
+              days: newStreak,
+              color: habitColor,
+            });
+          },
+        },
+      });
       fireCelebrationConfetti();
+
+      // For BIG milestones (month + century), also pop the modal
+      // automatically. The toast action above lets the user re-open it
+      // if they dismissed it.
+      if (milestone.kind !== 'week') {
+        useCelebrationStore.getState().trigger({
+          habitId,
+          habitName,
+          days: newStreak,
+          color: habitColor,
+        });
+      }
     },
     onSettled: (_, __, { habitId }) => {
       // daily + detail are already refetched in onSuccess; invalidate the
