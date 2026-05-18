@@ -182,6 +182,45 @@ Reglas:
 
 ---
 
+## Presupuestos
+
+1. **Uno por (usuario, año-mes, moneda).** El backend rechaza un segundo con esa misma terna.
+2. **`currency` es inmutable** después de crear. En edit el form no expone el campo.
+3. **Solo movimientos explícitos cuentan en `spent`.** El budget NO lee todos los `EXPENSE` del mes — solo los que se loggean contra él vía `POST /budgets/:id/movements` (que setea `transactions.budgetId`). Esto deja al usuario separar "gastos discrecionales" del resto.
+4. **Soft-delete nullifica `budgetId` en las transactions** del budget. Los gastos sobreviven como transacciones normales — la plata ya se movió, no se "deshace".
+5. **El picker de fecha del movimiento se clampea al mes del budget** (`min` = 1 del mes, `max` = último día). El backend valida con `BDGT_003` por defensa.
+6. **El picker de cuenta filtra por `currency === budget.currency`** — no hay conversión automática.
+
+### Locked-day allowance (UX del dashboard)
+
+El número grande del dashboard de Budget es **"Disponible hoy"**, NO "Disponible total". La distinción es load-bearing:
+
+- **Hoy tiene un pool fijo** `A = (amount - spent_hasta_ayer) / daysRemainingIncludingToday`. Calculado al inicio del día calendario en la TZ del usuario y **bloqueado por todo el día**.
+- **"Disponible hoy" = `A - spent_hoy`**. Cambia con cada movimiento que loggees hoy.
+- **"Resto del mes" = `(amount - spent_hasta_ayer) - A`**. **NO cambia** cuando gastás hoy — eso es lo importante. El plan futuro no se re-spread en tiempo real.
+- **Al cruzar la medianoche** en TZ del usuario, `A` se recalcula con el nuevo `spent_hasta_ayer`. Si gastaste menos que `A` viejo, el `A` nuevo es mayor (carryforward implícito). Si gastaste más, es menor (eats into future).
+- **Overspend hoy** marca el headline en rojo pero NO recorta el plan futuro hasta mañana — es señal visual, no penalización inmediata.
+
+Toda la matemática vive en `src/lib/budget-kpi.ts` (`getBudgetSpendBreakdown`, `getBudgetMonthHistory`, `getDailySpendHistory`). Pura, locale-agnostic, deriva todo de `budget.movements` + `budget.currentDate` (no lee reloj).
+
+### Layout: cuándo aplica el modelo
+
+| Estado del budget | Layout |
+|---|---|
+| Mes corriente, días restantes > 0 | **Locked-day** (hero "Disponible hoy" + breakdown desglosable) |
+| Mes cerrado (`daysRemainingIncludingToday = 0`) | Simple — hero "Disponible" con `remaining`, `dailyAllowance = null` |
+| Mes futuro (`currentDate` < primer día del budget) | Simple — el concepto de "hoy" no aplica |
+
+### Breakdown desglosable
+
+Cuando el budget está activo, el usuario puede expandir un panel con:
+- **Promedio diario real** (hasta ayer, `spent_hasta_ayer / días_transcurridos`)
+- **Objetivo diario original** (`amount / días_del_mes`)
+- **Diff vs original** (signo + emoji para señalar si va por debajo/encima del plan)
+- **Últimos 7 días** como mini bar chart, con línea de referencia en `A` y barra roja cuando ese día se pasó
+
+---
+
 ## Servicios mensuales
 
 1. **Nombre único por usuario para servicios activos.** No pueden existir dos servicios activos con el mismo nombre.
