@@ -111,16 +111,30 @@ export function DatePicker({
       const rect = triggerRef.current?.getBoundingClientRect();
       if (!rect) return;
 
-      // Mobile-aware size estimate. react-day-picker's default desktop
-      // layout is ~320×360 (7 cells × 44px + padding + nav). Below the
-      // `640px` breakpoint, the @media-query overrides in globals.css
-      // shrink day cells to 36px → calendar is roughly 260×320. Using the
-      // matching estimate per breakpoint prevents the placement code from
-      // over-shifting the popover when the actual rendered size is
-      // smaller than the desktop estimate.
+      // Two-pass placement to avoid the right-edge clipping bug that
+      // resurfaced post-0.2.0:
+      //
+      //   Pass 1 — placeholder estimate. The very first run happens
+      //   BEFORE the popover is in the DOM (we gate `<DayPicker>` on
+      //   `popoverPos !== null`), so there's no real bounding rect to
+      //   measure. Use a slightly generous estimate so the popover
+      //   appears close to its final spot on first paint.
+      //
+      //   Pass 2 — real measurement. Once the popover is mounted, the
+      //   ref is populated and we re-run with its true width/height.
+      //   That catches any drift between the estimate and what the
+      //   browser actually rendered (custom fonts, dropdown caption,
+      //   CSS var overrides, react-day-picker upgrades, etc.) — the
+      //   regression we just shipped was exactly this drift slipping
+      //   through.
+      //
+      // Bumped estimates from 260/320 → 300/360 (and 320/360 → 360/400
+      // height) so even users on viewports where the 1st pass is the
+      // one they perceive don't see the clipped state.
+      const popoverRect = popoverRef.current?.getBoundingClientRect();
       const isMobile = window.innerWidth < 640;
-      const POPOVER_WIDTH = isMobile ? 260 : 320;
-      const POPOVER_HEIGHT = isMobile ? 320 : 360;
+      const popoverWidth = popoverRect?.width ?? (isMobile ? 300 : 360);
+      const popoverHeight = popoverRect?.height ?? (isMobile ? 360 : 400);
       const EDGE_PADDING = 8;
 
       // Default placement: 4px below the trigger, left edges aligned.
@@ -139,12 +153,12 @@ export function DatePicker({
       // overflow the LEFT edge (very narrow viewports where the popover
       // is wider than the space between the trigger.right and viewport.left).
       const viewportRight = window.scrollX + window.innerWidth - EDGE_PADDING;
-      if (left + POPOVER_WIDTH > viewportRight) {
-        const rightAlignedLeft = triggerRight - POPOVER_WIDTH;
+      if (left + popoverWidth > viewportRight) {
+        const rightAlignedLeft = triggerRight - popoverWidth;
         if (rightAlignedLeft >= window.scrollX + EDGE_PADDING) {
           left = rightAlignedLeft;
         } else {
-          left = viewportRight - POPOVER_WIDTH;
+          left = viewportRight - popoverWidth;
         }
       }
       left = Math.max(window.scrollX + EDGE_PADDING, left);
@@ -155,14 +169,23 @@ export function DatePicker({
       // to scroll internally (react-day-picker doesn't, but the user can
       // still see the upper rows).
       const viewportBottom = window.scrollY + window.innerHeight - EDGE_PADDING;
-      if (top + POPOVER_HEIGHT > viewportBottom) {
-        const aboveTop = rect.top + window.scrollY - POPOVER_HEIGHT - 4;
+      if (top + popoverHeight > viewportBottom) {
+        const aboveTop = rect.top + window.scrollY - popoverHeight - 4;
         if (aboveTop >= window.scrollY + EDGE_PADDING) {
           top = aboveTop;
         }
       }
 
-      setPopoverPos({ top, left });
+      setPopoverPos((prev) => {
+        // Skip state update when the position hasn't moved — prevents an
+        // infinite loop between "pass 2 re-positions" and "popoverRef
+        // changes width because of new position". Using a 1px tolerance
+        // because sub-pixel rect values otherwise re-trigger forever.
+        if (prev && Math.abs(prev.top - top) < 1 && Math.abs(prev.left - left) < 1) {
+          return prev;
+        }
+        return { top, left };
+      });
     }
 
     reposition();
@@ -172,7 +195,7 @@ export function DatePicker({
       window.removeEventListener('scroll', reposition, true);
       window.removeEventListener('resize', reposition);
     };
-  }, [open]);
+  }, [open, popoverPos]);
 
   // Close on click-outside and Escape. Restores focus to the trigger so
   // keyboard users don't lose their place.
