@@ -228,3 +228,38 @@
     }
   }
 }
+
+/*
+ * react-day-picker (used by <DatePicker>) ships generous default sizes —
+ * 44×44px day cells, 36×36px nav buttons, 16px-ish text — that are great
+ * on desktop but oversized on mobile. We shrink the CSS variables it
+ * exposes on narrow viewports so the calendar fits comfortably without
+ * clipping. Desktop sizes stay at the package defaults.
+ *
+ * The variables are documented at:
+ * https://daypicker.dev/docs/styling#css-variables
+ */
+.rdp-root .rdp-month_caption {
+  /* The default month caption sits flush with the rdp-root edge. Give
+     the "May 2026" label a small breath of horizontal padding so it
+     doesn't kiss the popover's left border. Combined with the popover
+     container's p-3 (12px) padding, the title ends up at ~16px from
+     the popover edge. */
+  padding-left: 4px;
+}
+
+@media (max-width: 640px) {
+  .rdp-root {
+    --rdp-day-width: 36px;
+    --rdp-day-height: 36px;
+    --rdp-day_button-width: 34px;
+    --rdp-day_button-height: 34px;
+    --rdp-nav_button-width: 2rem;
+    --rdp-nav_button-height: 2rem;
+    --rdp-nav-height: 2.5rem;
+    font-size: 13px;
+  }
+  .rdp-root .rdp-weekday {
+    font-size: 11px;
+  }
+}

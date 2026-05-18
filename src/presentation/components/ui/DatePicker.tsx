@@ -97,16 +97,73 @@ export function DatePicker({
   // Compute popover position from the trigger's bounding rect on every open.
   // We reposition on scroll/resize so the popover follows the trigger if the
   // user scrolls a containing modal.
+  //
+  // The default placement is below the trigger, left-aligned with it. That
+  // works fine when the trigger is on the left of the viewport, but on
+  // mobile (or any narrow viewport) when the trigger sits on the right,
+  // the popover would spill past the right edge and clip the last day
+  // columns of the calendar. We clamp horizontally to keep the popover
+  // fully inside the viewport, and flip vertically (render ABOVE the
+  // trigger) when there's no room below.
   useEffect(() => {
     if (!open) return;
 
     function reposition() {
       const rect = triggerRef.current?.getBoundingClientRect();
       if (!rect) return;
-      setPopoverPos({
-        top: rect.bottom + window.scrollY + 4,
-        left: rect.left + window.scrollX,
-      });
+
+      // Mobile-aware size estimate. react-day-picker's default desktop
+      // layout is ~320×360 (7 cells × 44px + padding + nav). Below the
+      // `640px` breakpoint, the @media-query overrides in globals.css
+      // shrink day cells to 36px → calendar is roughly 260×320. Using the
+      // matching estimate per breakpoint prevents the placement code from
+      // over-shifting the popover when the actual rendered size is
+      // smaller than the desktop estimate.
+      const isMobile = window.innerWidth < 640;
+      const POPOVER_WIDTH = isMobile ? 260 : 320;
+      const POPOVER_HEIGHT = isMobile ? 320 : 360;
+      const EDGE_PADDING = 8;
+
+      // Default placement: 4px below the trigger, left edges aligned.
+      let top = rect.bottom + window.scrollY + 4;
+      let left = rect.left + window.scrollX;
+      const triggerRight = rect.right + window.scrollX;
+
+      // Horizontal overflow handling. The default left-align makes sense
+      // when there's room to the right of the trigger. When the popover
+      // would spill past the viewport edge, prefer aligning the popover's
+      // RIGHT edge with the trigger's right edge — that preserves the
+      // visual connection between the trigger and the popover (it looks
+      // like the popover hangs off the right corner of the date input,
+      // rather than being dumped somewhere in space). Fall back to
+      // viewport-edge clamping only when even right-alignment would
+      // overflow the LEFT edge (very narrow viewports where the popover
+      // is wider than the space between the trigger.right and viewport.left).
+      const viewportRight = window.scrollX + window.innerWidth - EDGE_PADDING;
+      if (left + POPOVER_WIDTH > viewportRight) {
+        const rightAlignedLeft = triggerRight - POPOVER_WIDTH;
+        if (rightAlignedLeft >= window.scrollX + EDGE_PADDING) {
+          left = rightAlignedLeft;
+        } else {
+          left = viewportRight - POPOVER_WIDTH;
+        }
+      }
+      left = Math.max(window.scrollX + EDGE_PADDING, left);
+
+      // Vertical flip: if "below" overflows the bottom edge, try rendering
+      // above the trigger instead. Only flip when there's actually room
+      // above; otherwise stay below and accept that the popover may need
+      // to scroll internally (react-day-picker doesn't, but the user can
+      // still see the upper rows).
+      const viewportBottom = window.scrollY + window.innerHeight - EDGE_PADDING;
+      if (top + POPOVER_HEIGHT > viewportBottom) {
+        const aboveTop = rect.top + window.scrollY - POPOVER_HEIGHT - 4;
+        if (aboveTop >= window.scrollY + EDGE_PADDING) {
+          top = aboveTop;
+        }
+      }
+
+      setPopoverPos({ top, left });
     }
 
     reposition();
@@ -226,9 +283,15 @@ export function DatePicker({
               position: 'absolute',
               top: popoverPos.top,
               left: popoverPos.left,
+              // Safety net: even if the placement estimate is off, the
+              // popover physically can't exceed the viewport width minus
+              // the edge padding either side. Combined with the smart
+              // placement above this catches any sizing surprise (custom
+              // fonts, dropdown caption, etc.).
+              maxWidth: 'calc(100vw - 16px)',
               zIndex: 60,
             }}
-            className="rounded-md border border-border bg-popover p-2 shadow-lg"
+            className="rounded-md border border-border bg-popover p-3 shadow-lg"
           >
             <DayPicker
               mode="single"
