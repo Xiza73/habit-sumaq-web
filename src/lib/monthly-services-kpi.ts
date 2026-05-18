@@ -30,8 +30,18 @@ export interface MonthlyServicesCurrencyKpi {
 
 /**
  * Whether a service counts toward the current-month KPI:
- *   - Already paid this month (`isPaidForCurrentMonth = true`), OR
- *   - Due this month (`nextDuePeriod === currentPeriod`).
+ *   - Due this month (`nextDuePeriod === currentPeriod`), OR
+ *   - **Actually** paid this month (real spend, not skip): `isPaidForCurrentMonth`
+ *     AND `paidAmountForCurrentMonth > 0`.
+ *
+ * The `paidAmountForCurrentMonth > 0` guard is what excludes **skipped**
+ * services. "Saltear este mes" advances `lastPaidPeriod` (so the service
+ * shows as "Al día") WITHOUT generating a transaction — so the paid sum
+ * for that service is 0. Including skipped services would inflate the
+ * `Estimado` bucket with bills that will never happen, making the
+ * "Pagado / Estimado" ratio meaningless. A service freshly created with
+ * a future `startPeriod` lives in the same bucket and is also excluded
+ * by this rule, which is what we want — it isn't billable yet either.
  *
  * Overdue-from-past-months services are intentionally **out** — they're
  * conceptually deuda heredada and have their own banner / counter. Lumping
@@ -39,10 +49,17 @@ export interface MonthlyServicesCurrencyKpi {
  * lived through.
  *
  * Inactive services are out too — they aren't being billed.
+ *
+ * Edge case: a "free month" with a real `S/0` transaction would also fail
+ * the `> 0` guard and be excluded. We accept that — distinguishing
+ * `skipped` from `free` requires data the API doesn't expose today
+ * (skipped doesn't create a transaction at all, so `paidAmountForCurrentMonth`
+ * is the most reliable signal we have).
  */
 function isInScope(service: MonthlyService, currentPeriod: string): boolean {
   if (!service.isActive) return false;
-  return service.isPaidForCurrentMonth || service.nextDuePeriod === currentPeriod;
+  if (service.nextDuePeriod === currentPeriod) return true;
+  return service.isPaidForCurrentMonth && service.paidAmountForCurrentMonth > 0;
 }
 
 /**
