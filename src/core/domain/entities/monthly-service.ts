@@ -48,4 +48,19 @@ export interface MonthlyService {
   isOverdue: boolean;
   /** True when `lastPaidPeriod === currentMonth` in the user timezone. */
   isPaidForCurrentMonth: boolean;
+  /**
+   * Sum of EXPENSE transactions linked to this service for the current
+   * calendar month, in the user's timezone. Drives the per-currency
+   * "Pagado / Estimado" KPI on the services dashboard.
+   *
+   * **Only authoritative on `GET /monthly-services` (the list endpoint).**
+   * Single-service endpoints (`GET /:id`, `POST`, `PATCH`, `POST /:id/pay`,
+   * etc.) emit `0` — the backend doesn't recompute the aggregate for those
+   * responses because the KPI lives on the list view. After a pay/skip the
+   * frontend must invalidate the list query to see the fresh sum.
+   *
+   * Always a number (never null) — services with no payments this month are
+   * `0`, not undefined. Lets the KPI reducer sum without nullish guards.
+   */
+  paidAmountForCurrentMonth: number;
 }

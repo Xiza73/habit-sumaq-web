@@ -23,12 +23,13 @@ import { ApiError } from '@/infrastructure/api/api-error';
 
 import { ConfirmDialog } from '@/presentation/components/feedback/ConfirmDialog';
 
-import { formatPeriodLabel } from '@/lib/format';
+import { formatPeriodLabel, getCurrentPeriod } from '@/lib/format';
 import { applyView } from '@/lib/monthly-services-view';
 import { cn } from '@/lib/utils';
 
 import { MonthlyServiceCard } from './MonthlyServiceCard';
 import { MonthlyServiceForm } from './MonthlyServiceForm';
+import { MonthlyServicesSpendKpi } from './MonthlyServicesSpendKpi';
 import { MonthlyServicesSummary } from './MonthlyServicesSummary';
 import { MonthlyServicesViewControls } from './MonthlyServicesViewControls';
 import { PayMonthlyServiceForm } from './PayMonthlyServiceForm';
@@ -248,7 +249,15 @@ export function MonthlyServicesList() {
       </div>
 
       {!showArchived && services && services.length > 0 && (
-        <MonthlyServicesSummary services={services} />
+        <>
+          <MonthlyServicesSummary services={services} />
+          {/* Per-currency "Pagado / Estimado" KPI. Lives BELOW the summary
+              pills (per the rule check at design time) so the user reads
+              "this month + status counts" first, then dives into the
+              numbers. Hides itself when no service is in-scope for the
+              current month. */}
+          <MonthlyServicesSpendKpi services={services} currentPeriod={getCurrentPeriod()} />
+        </>
       )}
 
       {isLoading ? (
