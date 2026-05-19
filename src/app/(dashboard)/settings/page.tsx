@@ -1,5 +1,6 @@
 import { useTranslations } from 'next-intl';
 
+import { FavoritesSection } from '@/presentation/features/settings/FavoritesSection';
 import { SettingsForm } from '@/presentation/features/settings/SettingsForm';
 import { TemplatesSection } from '@/presentation/features/settings/TemplatesSection';
 
@@ -10,6 +11,8 @@ export default function SettingsPage() {
     <div className="space-y-8">
       <h1 className="text-2xl font-bold">{t('title')}</h1>
       <SettingsForm />
+      <hr className="border-border" />
+      <FavoritesSection />
       <hr className="border-border" />
       <TemplatesSection />
     </div>

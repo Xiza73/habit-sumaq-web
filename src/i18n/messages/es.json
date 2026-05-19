@@ -207,7 +207,24 @@
       "sydney": "Sídney, Melbourne (UTC+10)",
       "auckland": "Auckland (UTC+12)",
       "utc": "UTC (sin offset)"
+    },
+    "favorites": {
+      "title": "Favoritos del menú",
+      "subtitle": "Elegí hasta {max} módulos para acceso rápido. Settings siempre está disponible.",
+      "maxReached": "Llegaste al máximo de {max}. Sacá uno para agregar otro.",
+      "saveSuccess": "Favoritos guardados",
+      "saveError": "No pudimos guardar tus favoritos. Intentá de nuevo.",
+      "rightClickHint": "Click derecho sobre un módulo para marcarlo como favorito"
     }
+  },
+  "mobileNav": {
+    "longPressHint": "Mantené presionado un ícono para cambiarlo"
+  },
+  "favoritePicker": {
+    "title": "Cambiar favorito",
+    "subtitle": "Tap en un módulo para asignarlo a este slot",
+    "alreadyInSlot": "(ya en otro slot — se intercambia)",
+    "cancel": "Cancelar"
   },
   "errors": {
     "ACC_001": "Cuenta no encontrada",
@@ -454,6 +471,7 @@
     "categories": "Categorías",
     "transactions": "Transacciones",
     "debts": "Deudas y préstamos",
+    "debtsShort": "Deudas",
     "services": "Servicios",
     "budgets": "Presupuesto",
     "routines": "Rutinas",

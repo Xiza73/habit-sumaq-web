@@ -247,6 +247,34 @@ Cuando el budget está activo, el usuario puede expandir un panel con:
 
 ---
 
+## Favoritos en nav
+
+Los favoritos manejan dos cosas:
+
+- **Mobile bottom nav:** 4 slots elegibles por el usuario + Settings fijo al final. Cuando el usuario tiene menos de 4 favoritos guardados, los slots vacíos se renderizan como placeholders con un ícono de estrella (no son links — long-press abre el picker para asignar).
+- **Desktop sidebar:** la sidebar sigue mostrando TODOS los módulos, pero los marcados como favorito muestran una ⭐ pequeña al lado del label. El layout no cambia.
+
+### Reglas
+
+1. **Cap duro: 4 favoritos máximo.** Backend lo enforza con `@ArrayMaxSize(4)` + SQL `CHECK`. Frontend deshabilita el botón "marcar como favorito" cuando se llegó al máximo (el usuario tiene que sacar uno primero).
+2. **Settings NO es favoritable.** Está fijo en mobile (siempre como último slot) y en sidebar (siempre al pie). El registry de `nav-registry.ts` lo excluye explícitamente.
+3. **Array vacío es válido.** Si el usuario saca todos sus favoritos, la mobile nav queda solo con el slot de Settings + 4 placeholders. UX honesta — "no marcaste nada todavía".
+4. **Single source of truth:** `src/lib/nav-registry.ts`. Mapea cada `FavoriteKey` a su `{ href, labelKey, icon }`. Toda surface que renderice favoritos pasa por acá.
+5. **Forward-compat con renames/removes:** `getNavEntries(keys)` filtra silenciosamente las keys que no estén en el registry. Un usuario con un favorito "ancient" que ya no existe simplemente ve ese slot como placeholder hasta que reconfigure — nada crashea.
+6. **Persistencia:** `user_settings.favoriteKeys: string[]`. Sincroniza entre devices. Backend no valida el contenido contra un set conocido (las keys son free-form strings) — eso desacopla los repos. Si se agrega o renombra una ruta en frontend, no hace falta migration de backend.
+
+### UX writes
+
+| Path | Trigger |
+|---|---|
+| Mobile slot | Long-press → modal "Cambiar favorito" → pick → swap o replace |
+| Sidebar item | Right-click → toggle on/off |
+| Settings page | Sección "Favoritos del menú" con grid de toggles |
+
+Los tres paths escriben al mismo `favoriteKeys`. La invalidación del query de settings refresca todos los consumers al instante.
+
+---
+
 ## Configuración de usuario
 
 1. **Auto-creación.** La configuración se crea automáticamente con valores por defecto la primera vez que se consulta (`GET`) o actualiza (`PATCH`). No es necesario un endpoint de creación.
