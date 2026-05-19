@@ -5,12 +5,14 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { type Account } from '@/core/domain/entities/account';
 import { type Budget } from '@/core/domain/entities/budget';
 import { type Category } from '@/core/domain/entities/category';
+import { type Transaction } from '@/core/domain/entities/transaction';
 
 import { TestProviders } from '@/test/utils';
 
-import { AddMovementForm } from './AddMovementForm';
+import { BudgetMovementForm } from './BudgetMovementForm';
 
 const mockAddMovementMutate = vi.fn();
+const mockUpdateTransactionMutate = vi.fn();
 
 let mockAccounts: Account[] = [];
 let mockCategories: Category[] = [];
@@ -32,11 +34,14 @@ vi.mock('@/core/application/hooks/use-budgets', () => ({
   useAddBudgetMovement: () => ({ mutate: mockAddMovementMutate, isPending: false }),
 }));
 
-// Mock the DatePicker so we can assert AddMovementForm passes the right
-// `min`/`max` for the budget month. The real DatePicker renders a button +
-// portal-based calendar — too much to inspect for a behavioral assertion
-// like "the bounds are correct". A thin stub that surfaces the props as
-// data-attrs is enough to test the parent's logic.
+vi.mock('@/core/application/hooks/use-transactions', () => ({
+  useUpdateTransaction: () => ({ mutate: mockUpdateTransactionMutate, isPending: false }),
+}));
+
+// Mock the DatePicker so we can assert the form passes the right `min`/`max`
+// for the budget month. The real DatePicker renders a button + portal-based
+// calendar — too much to inspect for a behavioral assertion like "the bounds
+// are correct". A thin stub that surfaces the props as data-attrs is enough.
 const datePickerProps = vi.fn<(props: { min?: string; max?: string; value: string }) => void>();
 vi.mock('@/presentation/components/ui/DatePicker', () => ({
   DatePicker: (props: {
@@ -111,19 +116,49 @@ const category: Category = {
   updatedAt: '2026-01-01T00:00:00.000Z',
 };
 
-function renderForm(overrides: { budget?: Budget | null; open?: boolean } = {}) {
+const baseMovement: Transaction = {
+  id: 'tx-1',
+  userId: 'user-1',
+  accountId: accountPen.id,
+  categoryId: category.id,
+  type: 'EXPENSE',
+  amount: 42,
+  description: 'Almuerzo',
+  date: '2026-04-12T12:00:00.000Z',
+  destinationAccountId: null,
+  reference: null,
+  status: null,
+  relatedTransactionId: null,
+  remainingAmount: null,
+  budgetId: baseBudget.id,
+  createdAt: '2026-04-12T12:00:00.000Z',
+  updatedAt: '2026-04-12T12:00:00.000Z',
+};
+
+function renderForm(
+  overrides: {
+    budget?: Budget | null;
+    movement?: Transaction | null;
+    open?: boolean;
+  } = {},
+) {
   const props = {
     open: true,
     budget: baseBudget as Budget | null,
+    movement: null as Transaction | null,
     onClose: vi.fn(),
     ...overrides,
   };
-  return { ...render(<AddMovementForm {...props} />, { wrapper: TestProviders }), ...props };
+  return {
+    ...render(<BudgetMovementForm {...props} />, { wrapper: TestProviders }),
+    ...props,
+  };
 }
 
-describe('AddMovementForm', () => {
+describe('BudgetMovementForm — create mode (default)', () => {
   beforeEach(() => {
     mockAddMovementMutate.mockClear();
+    mockUpdateTransactionMutate.mockClear();
     mockAccounts = [];
     mockCategories = [];
   });
@@ -206,5 +241,68 @@ describe('AddMovementForm', () => {
     expect(callArg.data.categoryId).toBe(category.id);
     // dateInputToBackendIso pins the picker value to noon UTC.
     expect(callArg.data.date).toMatch(/^\d{4}-\d{2}-\d{2}T12:00:00\.000Z$/);
+  });
+});
+
+describe('BudgetMovementForm — edit mode (movement prop set)', () => {
+  beforeEach(() => {
+    mockAddMovementMutate.mockClear();
+    mockUpdateTransactionMutate.mockClear();
+    mockAccounts = [accountPen];
+    mockCategories = [category];
+  });
+
+  it('switches the title to "Editar movimiento"', () => {
+    renderForm({ movement: baseMovement });
+    expect(screen.getByText(/editar movimiento/i)).toBeInTheDocument();
+  });
+
+  it('pre-populates amount / categoryId / description from the movement entity', () => {
+    renderForm({ movement: baseMovement });
+    expect(screen.getByLabelText(/monto/i)).toHaveValue(42);
+    expect(screen.getByLabelText(/categoría/i)).toHaveValue(category.id);
+    expect(screen.getByLabelText(/descripción/i)).toHaveValue('Almuerzo');
+  });
+
+  it('disables the account select and shows the immutable hint', () => {
+    renderForm({ movement: baseMovement });
+    const accountSelect = screen.getByLabelText(/cuenta/i);
+    expect(accountSelect).toBeDisabled();
+    expect(accountSelect).toHaveValue(accountPen.id);
+    expect(screen.getByText(/la cuenta no se puede cambiar/i)).toBeInTheDocument();
+  });
+
+  it('hides the "no eligible account" banner in edit mode (the original account is locked in anyway)', () => {
+    // Even when there are no eligible accounts (e.g. user archived theirs
+    // post-creation), edit mode must keep the form usable — the account
+    // is immutable and never gets resubmitted.
+    mockAccounts = [accountArchived]; // archived → eligibleAccounts is empty
+    renderForm({ movement: baseMovement });
+
+    expect(screen.queryByText(/no tienes cuentas activas/i)).not.toBeInTheDocument();
+    // Submit button is NOT disabled by the "no eligible" guard in edit mode.
+    expect(screen.getByRole('button', { name: /guardar cambios/i })).not.toBeDisabled();
+  });
+
+  it('routes the submit through useUpdateTransaction (NOT useAddBudgetMovement)', async () => {
+    const user = userEvent.setup();
+    renderForm({ movement: baseMovement });
+
+    // Bump the amount and submit. The update mutation should fire with the
+    // movement id and the PATCH payload — no call to add-movement.
+    await user.clear(screen.getByLabelText(/monto/i));
+    await user.type(screen.getByLabelText(/monto/i), '75');
+    await user.click(screen.getByRole('button', { name: /guardar cambios/i }));
+
+    expect(mockUpdateTransactionMutate).toHaveBeenCalledOnce();
+    expect(mockAddMovementMutate).not.toHaveBeenCalled();
+
+    const callArg = mockUpdateTransactionMutate.mock.calls[0][0] as {
+      id: string;
+      data: { amount: number; categoryId: string };
+    };
+    expect(callArg.id).toBe(baseMovement.id);
+    expect(callArg.data.amount).toBe(75);
+    expect(callArg.data.categoryId).toBe(category.id);
   });
 });

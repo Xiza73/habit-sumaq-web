@@ -531,6 +531,11 @@
       "descriptionPlaceholder": "e.g. Dinner with friends",
       "addSubmit": "Record movement",
       "addSuccess": "Movement recorded",
+      "editTitle": "Edit movement",
+      "editSubmit": "Save changes",
+      "editSuccess": "Movement updated",
+      "accountImmutableHint": "The account can't be changed after the movement is created",
+      "actionsAria": "Movement actions",
       "empty": "No movements logged for this month yet",
       "deleteConfirm": "Delete this movement? The linked account will be refunded.",
       "deleteSuccess": "Movement deleted"

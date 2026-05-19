@@ -531,6 +531,11 @@
       "descriptionPlaceholder": "Ej: Cena con amigos",
       "addSubmit": "Registrar movimiento",
       "addSuccess": "Movimiento registrado",
+      "editTitle": "Editar movimiento",
+      "editSubmit": "Guardar cambios",
+      "editSuccess": "Movimiento actualizado",
+      "accountImmutableHint": "La cuenta no se puede cambiar después de crear el movimiento",
+      "actionsAria": "Acciones del movimiento",
       "empty": "Todavía no cargaste ningún movimiento este mes",
       "deleteConfirm": "¿Seguro que quieres eliminar este movimiento? La cuenta vinculada se reembolsa.",
       "deleteSuccess": "Movimiento eliminado"

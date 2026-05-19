@@ -12,6 +12,7 @@ import {
 } from '@/core/application/hooks/use-budgets';
 import { useUserSettings } from '@/core/application/hooks/use-user-settings';
 import { type Budget } from '@/core/domain/entities/budget';
+import { type Transaction } from '@/core/domain/entities/transaction';
 import { type Currency } from '@/core/domain/enums/account.enums';
 
 import { ApiError } from '@/infrastructure/api/api-error';
@@ -20,10 +21,10 @@ import { ConfirmDialog } from '@/presentation/components/feedback/ConfirmDialog'
 
 import { cn } from '@/lib/utils';
 
-import { AddMovementForm } from './AddMovementForm';
 import { BudgetForm } from './BudgetForm';
 import { BudgetHistoryList } from './BudgetHistoryList';
 import { BudgetKpiCard } from './BudgetKpiCard';
+import { BudgetMovementForm } from './BudgetMovementForm';
 import { BudgetMovementList } from './BudgetMovementList';
 import { EmptyBudgetCta } from './EmptyBudgetCta';
 
@@ -50,6 +51,9 @@ export function BudgetDashboard() {
   const [createOpen, setCreateOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [movementOpen, setMovementOpen] = useState(false);
+  // Holds the movement being edited from the BudgetMovementList kebab menu.
+  // Null = not editing. Truthy = edit modal open with that movement loaded.
+  const [editingMovement, setEditingMovement] = useState<Transaction | null>(null);
   const [pendingDelete, setPendingDelete] = useState<Budget | null>(null);
 
   const { data: currentBudget, isLoading } = useCurrentBudget(currency);
@@ -127,7 +131,11 @@ export function BudgetDashboard() {
           />
           <div className="space-y-3">
             <h2 className="text-sm font-medium text-muted-foreground">{t('movements.title')}</h2>
-            <BudgetMovementList movements={currentBudget.movements} currency={currency} />
+            <BudgetMovementList
+              movements={currentBudget.movements}
+              currency={currency}
+              onEdit={setEditingMovement}
+            />
           </div>
         </>
       ) : (
@@ -155,10 +163,20 @@ export function BudgetDashboard() {
         budget={currentBudget ?? null}
         onClose={() => setEditOpen(false)}
       />
-      <AddMovementForm
+      <BudgetMovementForm
         open={movementOpen}
         budget={currentBudget ?? null}
         onClose={() => setMovementOpen(false)}
+      />
+      {/* Edit modal — opens with `movement` preselected from the kebab
+          menu in BudgetMovementList. Different instance from the create
+          modal above so each has its own RHF state, which avoids the form
+          re-using fields from one mode in the other. */}
+      <BudgetMovementForm
+        open={!!editingMovement}
+        budget={currentBudget ?? null}
+        movement={editingMovement}
+        onClose={() => setEditingMovement(null)}
       />
       <ConfirmDialog
         open={!!pendingDelete}
