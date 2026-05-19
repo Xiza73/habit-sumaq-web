@@ -156,6 +156,16 @@
         },
         "successReal": "Debts with {name} in {currency} settled and recorded in your account",
         "successInformal": "Debts with {name} in {currency} marked as settled"
+      },
+      "viewControls": {
+        "orderLabel": "Sort by",
+        "orderBy": {
+          "name": "Name",
+          "netOwed": "Net amount",
+          "pendingCount": "Pending"
+        },
+        "toggleToAsc": "Switch to ascending",
+        "toggleToDesc": "Switch to descending"
       }
     },
     "createDebt": "New debt",

@@ -156,6 +156,16 @@
         },
         "successReal": "Dívidas com {name} em {currency} liquidadas e registradas na sua conta",
         "successInformal": "Dívidas com {name} em {currency} marcadas como liquidadas"
+      },
+      "viewControls": {
+        "orderLabel": "Ordenar por",
+        "orderBy": {
+          "name": "Nome",
+          "netOwed": "Valor líquido",
+          "pendingCount": "Pendentes"
+        },
+        "toggleToAsc": "Mudar para ascendente",
+        "toggleToDesc": "Mudar para descendente"
       }
     },
     "createDebt": "Nova dívida",
