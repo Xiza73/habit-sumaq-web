@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 
@@ -17,6 +17,8 @@ import { cn } from '@/lib/utils';
 
 import { BulkSettleModal } from './BulkSettleModal';
 import { DebtCard } from './DebtCard';
+import { type DebtsViewPrefs, DEFAULT_DEBTS_VIEW_PREFS, sortDebtRows } from './debts-sort';
+import { DebtsViewControls } from './DebtsViewControls';
 import { TransactionForm } from './TransactionForm';
 
 const STATUS_OPTIONS: DebtsSummaryStatusFilter[] = ['pending', 'all', 'settled'];
@@ -28,10 +30,17 @@ export function DebtsDashboard() {
   const [settlingRow, setSettlingRow] = useState<DebtsSummaryRow | null>(null);
   // `null` closed; `'DEBT' | 'LOAN'` means the form is open in that mode.
   const [formMode, setFormMode] = useState<'DEBT' | 'LOAN' | null>(null);
+  const [viewPrefs, setViewPrefs] = useState<DebtsViewPrefs>(DEFAULT_DEBTS_VIEW_PREFS);
   const { data: rows = [], isLoading } = useDebtsSummary(status);
   const settleMutation = useSettleByReference();
 
+  const sortedRows = useMemo(() => sortDebtRows(rows, viewPrefs), [rows, viewPrefs]);
+
   const emptyMessage = status === 'pending' ? t('emptyPending') : t('empty');
+
+  function handlePrefsChange(partial: Partial<DebtsViewPrefs>) {
+    setViewPrefs((prev) => ({ ...prev, ...partial }));
+  }
 
   function handleSettleConfirm(mode: 'real' | 'informal', accountId?: string) {
     if (!settlingRow) return;
@@ -116,6 +125,8 @@ export function DebtsDashboard() {
               </button>
             ))}
           </div>
+
+          <DebtsViewControls prefs={viewPrefs} onChange={handlePrefsChange} />
         </div>
       </div>
 
@@ -125,13 +136,13 @@ export function DebtsDashboard() {
             <div key={i} className="h-32 animate-pulse rounded-xl bg-muted" />
           ))}
         </div>
-      ) : rows.length === 0 ? (
+      ) : sortedRows.length === 0 ? (
         <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-border py-16 text-center">
           <p className="max-w-sm text-muted-foreground">{emptyMessage}</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {rows.map((row) => (
+          {sortedRows.map((row) => (
             <DebtCard
               key={`${row.reference}-${row.currency}`}
               row={row}

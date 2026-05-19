@@ -156,6 +156,16 @@
         },
         "successReal": "Deudas con {name} en {currency} liquidadas y registradas en tu cuenta",
         "successInformal": "Deudas con {name} en {currency} marcadas como saldadas"
+      },
+      "viewControls": {
+        "orderLabel": "Ordenar por",
+        "orderBy": {
+          "name": "Nombre",
+          "netOwed": "Monto neto",
+          "pendingCount": "Pendientes"
+        },
+        "toggleToAsc": "Cambiar a ascendente",
+        "toggleToDesc": "Cambiar a descendente"
       }
     },
     "createDebt": "Nueva deuda",
