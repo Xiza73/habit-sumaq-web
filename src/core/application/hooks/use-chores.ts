@@ -8,6 +8,8 @@ import {
 
 import { choresApi } from '@/infrastructure/api/chores.api';
 
+import { alertKeys } from './use-alerts';
+
 export const choreKeys = {
   all: ['chores'] as const,
   lists: () => [...choreKeys.all, 'list'] as const,
@@ -53,6 +55,7 @@ export function useCreateChore() {
     mutationFn: (data: CreateChoreInput) => choresApi.create(data),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: choreKeys.lists() });
+      void queryClient.invalidateQueries({ queryKey: alertKeys.lists() });
     },
   });
 }
@@ -66,6 +69,7 @@ export function useUpdateChore() {
     onSuccess: (_, { id }) => {
       void queryClient.invalidateQueries({ queryKey: choreKeys.lists() });
       void queryClient.invalidateQueries({ queryKey: choreKeys.detail(id) });
+      void queryClient.invalidateQueries({ queryKey: alertKeys.lists() });
     },
   });
 }
@@ -73,7 +77,8 @@ export function useUpdateChore() {
 /**
  * Marks the chore done. Invalidates the list (so `nextDueDate` /
  * `lastDoneDate` refresh) and the chore's logs cache (so the history modal
- * picks up the new entry without a manual refetch).
+ * picks up the new entry without a manual refetch). Also invalidates
+ * alerts — completing a chore can resolve the `chore-overdue` row.
  */
 export function useMarkChoreDone() {
   const queryClient = useQueryClient();
@@ -85,6 +90,7 @@ export function useMarkChoreDone() {
       void queryClient.invalidateQueries({ queryKey: choreKeys.lists() });
       void queryClient.invalidateQueries({ queryKey: choreKeys.detail(id) });
       void queryClient.invalidateQueries({ queryKey: choreKeys.logs(id) });
+      void queryClient.invalidateQueries({ queryKey: alertKeys.lists() });
     },
   });
 }
@@ -97,6 +103,8 @@ export function useSkipChoreCycle() {
     onSuccess: (_, id) => {
       void queryClient.invalidateQueries({ queryKey: choreKeys.lists() });
       void queryClient.invalidateQueries({ queryKey: choreKeys.detail(id) });
+      // Skip advances `nextDueDate` past today → resolves chore-overdue.
+      void queryClient.invalidateQueries({ queryKey: alertKeys.lists() });
     },
   });
 }
@@ -108,6 +116,7 @@ export function useArchiveChore() {
     mutationFn: (id: string) => choresApi.toggleArchive(id),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: choreKeys.lists() });
+      void queryClient.invalidateQueries({ queryKey: alertKeys.lists() });
     },
   });
 }
@@ -119,6 +128,7 @@ export function useDeleteChore() {
     mutationFn: (id: string) => choresApi.delete(id),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: choreKeys.lists() });
+      void queryClient.invalidateQueries({ queryKey: alertKeys.lists() });
     },
   });
 }
