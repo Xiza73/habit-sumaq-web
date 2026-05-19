@@ -14,6 +14,7 @@ import { transactionsApi } from '@/infrastructure/api/transactions.api';
 import { analytics } from '@/lib/analytics';
 
 import { accountKeys } from './use-accounts';
+import { alertKeys } from './use-alerts';
 
 export const transactionKeys = {
   all: ['transactions'] as const,
@@ -74,6 +75,10 @@ export function useCreateTransaction() {
       void queryClient.invalidateQueries({ queryKey: transactionKeys.lists() });
       void queryClient.invalidateQueries({ queryKey: debtsSummaryPrefix });
       void queryClient.invalidateQueries({ queryKey: accountKeys.all });
+      // A new EXPENSE linked to a budget can push `spent` over `amount`,
+      // triggering `budget-overspent`. We don't know `budgetId` at call-time
+      // for every entry point — invalidate conservatively.
+      void queryClient.invalidateQueries({ queryKey: alertKeys.lists() });
       analytics.transactionCreated(variables.type);
     },
   });
@@ -91,6 +96,7 @@ export function useUpdateTransaction() {
       void queryClient.invalidateQueries({ queryKey: debtsSummaryPrefix });
       void queryClient.invalidateQueries({ queryKey: accountKeys.all });
       void queryClient.invalidateQueries({ queryKey: budgetsAllPrefix });
+      void queryClient.invalidateQueries({ queryKey: alertKeys.lists() });
     },
   });
 }
@@ -105,6 +111,8 @@ export function useDeleteTransaction() {
       void queryClient.invalidateQueries({ queryKey: debtsSummaryPrefix });
       void queryClient.invalidateQueries({ queryKey: accountKeys.all });
       void queryClient.invalidateQueries({ queryKey: budgetsAllPrefix });
+      // Deleting a budget-linked expense lowers `spent` and may resolve overspent.
+      void queryClient.invalidateQueries({ queryKey: alertKeys.lists() });
     },
   });
 }

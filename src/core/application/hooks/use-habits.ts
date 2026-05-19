@@ -18,6 +18,8 @@ import { detectMilestoneCrossed } from '@/lib/streak-milestones';
 
 import { useCelebrationStore } from '../stores/celebration.store';
 
+import { alertKeys } from './use-alerts';
+
 export const habitKeys = {
   all: ['habits'] as const,
   lists: () => [...habitKeys.all, 'list'] as const,
@@ -60,6 +62,7 @@ export function useCreateHabit() {
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: habitKeys.lists() });
       void queryClient.invalidateQueries({ queryKey: habitKeys.dailyAll() });
+      void queryClient.invalidateQueries({ queryKey: alertKeys.lists() });
     },
   });
 }
@@ -74,6 +77,7 @@ export function useUpdateHabit() {
       void queryClient.invalidateQueries({ queryKey: habitKeys.lists() });
       void queryClient.invalidateQueries({ queryKey: habitKeys.dailyAll() });
       void queryClient.invalidateQueries({ queryKey: habitKeys.detail(id) });
+      void queryClient.invalidateQueries({ queryKey: alertKeys.lists() });
     },
   });
 }
@@ -86,6 +90,7 @@ export function useArchiveHabit() {
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: habitKeys.lists() });
       void queryClient.invalidateQueries({ queryKey: habitKeys.dailyAll() });
+      void queryClient.invalidateQueries({ queryKey: alertKeys.lists() });
     },
   });
 }
@@ -98,6 +103,7 @@ export function useDeleteHabit() {
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: habitKeys.lists() });
       void queryClient.invalidateQueries({ queryKey: habitKeys.dailyAll() });
+      void queryClient.invalidateQueries({ queryKey: alertKeys.lists() });
     },
   });
 }
@@ -267,6 +273,9 @@ export function useLogHabit() {
       // rest here so they refetch on next access.
       void queryClient.invalidateQueries({ queryKey: habitKeys.lists() });
       void queryClient.invalidateQueries({ queryKey: habitKeys.logs(habitId) });
+      // Logging a habit can resolve the `habits-midday` alert (when it was
+      // the last unlogged DAILY for today). Invalidate so the bell drops.
+      void queryClient.invalidateQueries({ queryKey: alertKeys.lists() });
     },
   });
 }

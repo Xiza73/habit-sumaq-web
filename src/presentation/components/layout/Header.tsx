@@ -11,6 +11,8 @@ import { useUIStore } from '@/core/application/stores/ui.store';
 
 import { authApi } from '@/infrastructure/api/auth.api';
 
+import { AlertsBell } from '@/presentation/features/alerts/AlertsBell';
+
 export function Header() {
   const router = useRouter();
   const t = useTranslations('auth');
@@ -41,6 +43,8 @@ export function Header() {
       <div className="flex-1" />
 
       <div className="flex items-center gap-3">
+        <AlertsBell />
+
         {user && (
           <div className="flex items-center gap-2">
             {user.avatar ? (

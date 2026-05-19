@@ -14,6 +14,7 @@
     "noResults": "Sin resultados",
     "required": "Este campo es requerido",
     "back": "Volver",
+    "close": "Cerrar",
     "paginationTotal": "{total, plural, one {# resultado} other {# resultados}}",
     "paginationPage": "{page} de {totalPages}"
   },
@@ -840,6 +841,40 @@
       "salaryPerson1": "Sueldo persona 1",
       "salaryPerson2": "Sueldo persona 2",
       "other": "Otros"
+    }
+  },
+  "alerts": {
+    "toggleLabel": "Notificaciones",
+    "unreadCount": "{count, plural, one {# sin leer} other {# sin leer}}",
+    "popoverLabel": "Centro de notificaciones",
+    "title": "Notificaciones",
+    "loading": "Cargando alertas...",
+    "error": "No pudimos cargar las alertas",
+    "empty": "Estás al día, no hay alertas activas",
+    "items": {
+      "serviceDueToday": {
+        "title": "Vence hoy: {name}",
+        "subtitle": "Día {day} del mes",
+        "subtitleWithAmount": "Día {day} · {amount}"
+      },
+      "serviceOverdue": {
+        "title": "Atrasado: {name}",
+        "subtitle": "Pendiente desde {period}"
+      },
+      "habitsMidday": {
+        "title": "{count, plural, one {Te falta # hábito} other {Te faltan # hábitos}}",
+        "subtitleOne": "Empezá por {first}",
+        "subtitleMany": "Empezá por {first} y {rest} más"
+      },
+      "budgetOverspent": {
+        "title": "Te pasaste del presupuesto {currency}",
+        "subtitle": "Estás {amount} por encima",
+        "subtitleNoCurrency": "Revisá tus gastos del mes"
+      },
+      "choreOverdue": {
+        "title": "Atrasada: {name}",
+        "subtitle": "Vencía el {date}"
+      }
     }
   }
 }

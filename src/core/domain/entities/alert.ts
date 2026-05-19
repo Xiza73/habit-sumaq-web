@@ -1,0 +1,109 @@
+/**
+ * In-app pseudo-notification surfaced by `GET /alerts`. Computed on every
+ * request from the backend's monthly-services, habits, budgets and chores
+ * modules — there is NO alerts table. Two dismiss policies:
+ *
+ *   - `per-day`  → user can close it; reappears at midnight in their TZ
+ *   - `persistent` → can only be cleared by resolving the underlying condition
+ *
+ * The contract lives canonically in
+ * `habit-sumaq-backend/docs/frontend/api-reference.md#alerts`.
+ */
+
+export const ALERT_TYPES = [
+  'service-due-today',
+  'service-overdue',
+  'habits-midday',
+  'budget-overspent',
+  'chore-overdue',
+] as const;
+export type AlertType = (typeof ALERT_TYPES)[number];
+
+export const ALERT_SEVERITIES = ['info', 'warning'] as const;
+export type AlertSeverity = (typeof ALERT_SEVERITIES)[number];
+
+/**
+ * Discriminated payload per `AlertType`. The wire payload is loosely typed
+ * (`Record<string, string | number | null>`) on purpose so adding a new key
+ * server-side doesn't require an immediate frontend ship — readers narrow
+ * by `alert.type` and access only the fields they expect.
+ */
+export interface AlertPayloads {
+  'service-due-today': {
+    serviceId: string;
+    serviceName: string;
+    dueDay: number;
+    currency: string;
+    estimatedAmount: number | null;
+  };
+  'service-overdue': {
+    serviceId: string;
+    serviceName: string;
+    overduePeriod: string; // 'YYYY-MM'
+    currency: string;
+    estimatedAmount: number | null;
+  };
+  'habits-midday': {
+    missingCount: number;
+    firstHabitName: string;
+  };
+  'budget-overspent': {
+    budgetId: string;
+    currency: string;
+    amount: number;
+    spent: number;
+    remaining: number; // < 0
+  };
+  'chore-overdue': {
+    choreId: string;
+    choreName: string;
+    nextDueDate: string; // 'YYYY-MM-DD'
+  };
+}
+
+export interface Alert {
+  /** Stable string ID, e.g. `service-due-today:{uuid}:2026-05`. */
+  id: string;
+  type: AlertType;
+  severity: AlertSeverity;
+  /**
+   * True for per-day (`service-due-today`, `habits-midday`) — the UI shows
+   * the close button only when this is true. Server enforces it too: a
+   * dismiss against a persistent alert returns 409 `ALR_001`.
+   */
+  isDismissable: boolean;
+  /** UTC ISO. Compared against `lastSeenAt` to drive the bell badge. */
+  triggeredAt: string;
+  payload: Record<string, string | number | null>;
+}
+
+export interface AlertsListResponse {
+  alerts: Alert[];
+  /** UTC ISO of the user's last `mark-seen`, or `null` if they never opened it. */
+  lastSeenAt: string | null;
+}
+
+/**
+ * Maps an alert to the in-app route the user lands on when they click the
+ * item in the popover. Returns `null` when there's no useful destination
+ * (the item then renders as non-clickable).
+ *
+ * Deep-linking (e.g. `/budgets/{id}`) is a future iteration — today we
+ * land on the feature index page, which is the closest "thing to fix" the
+ * user expects to act on.
+ */
+export function getAlertHref(alert: Alert): string | null {
+  switch (alert.type) {
+    case 'service-due-today':
+    case 'service-overdue':
+      return '/monthly-services';
+    case 'habits-midday':
+      return '/habits';
+    case 'budget-overspent':
+      return '/budgets';
+    case 'chore-overdue':
+      return '/chores';
+    default:
+      return null;
+  }
+}

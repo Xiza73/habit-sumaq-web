@@ -14,6 +14,7 @@
     "noResults": "No results",
     "required": "This field is required",
     "back": "Back",
+    "close": "Close",
     "paginationTotal": "{total, plural, one {# result} other {# results}}",
     "paginationPage": "{page} of {totalPages}"
   },
@@ -840,6 +841,40 @@
       "salaryPerson1": "Salary person 1",
       "salaryPerson2": "Salary person 2",
       "other": "Other"
+    }
+  },
+  "alerts": {
+    "toggleLabel": "Notifications",
+    "unreadCount": "{count, plural, one {# unread} other {# unread}}",
+    "popoverLabel": "Notification center",
+    "title": "Notifications",
+    "loading": "Loading alerts...",
+    "error": "Couldn't load alerts",
+    "empty": "You're all caught up, no active alerts",
+    "items": {
+      "serviceDueToday": {
+        "title": "Due today: {name}",
+        "subtitle": "Day {day} of the month",
+        "subtitleWithAmount": "Day {day} · {amount}"
+      },
+      "serviceOverdue": {
+        "title": "Overdue: {name}",
+        "subtitle": "Pending since {period}"
+      },
+      "habitsMidday": {
+        "title": "{count, plural, one {# habit still to go} other {# habits still to go}}",
+        "subtitleOne": "Start with {first}",
+        "subtitleMany": "Start with {first} and {rest} more"
+      },
+      "budgetOverspent": {
+        "title": "You went over your {currency} budget",
+        "subtitle": "You're {amount} over",
+        "subtitleNoCurrency": "Review your spending for the month"
+      },
+      "choreOverdue": {
+        "title": "Overdue: {name}",
+        "subtitle": "Was due on {date}"
+      }
     }
   }
 }
