@@ -176,6 +176,30 @@ export function Sidebar() {
     }
   }, [pathname]);
 
+  // Lock the body scroll while the drawer is open on mobile. Desktop has
+  // the sidebar sticky as a permanent column (`md:sticky md:translate-x-0`)
+  // and `sidebarOpen` never flips there, so the media-query guard keeps
+  // the lock from leaking into the desktop layout. On resize across the
+  // breakpoint we re-evaluate so a rotation or DevTools-driven resize
+  // doesn't strand the page in `overflow: hidden`.
+  useEffect(() => {
+    if (!sidebarOpen) return;
+
+    const mql = window.matchMedia('(max-width: 767px)');
+    const previousOverflow = document.body.style.overflow;
+
+    function applyLock() {
+      document.body.style.overflow = mql.matches ? 'hidden' : previousOverflow;
+    }
+
+    applyLock();
+    mql.addEventListener('change', applyLock);
+    return () => {
+      mql.removeEventListener('change', applyLock);
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [sidebarOpen]);
+
   function isItemActive(item: NavItem): boolean {
     if (pathname === item.href) return true;
     if (!pathname.startsWith(item.href + '/')) return false;
