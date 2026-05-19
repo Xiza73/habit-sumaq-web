@@ -19,17 +19,30 @@ import {
   Receipt,
   Repeat2,
   Settings,
+  Star,
   Target,
 } from 'lucide-react';
+import { toast } from 'sonner';
 
+import { useFavoriteKeys, useUpdateUserSettings } from '@/core/application/hooks/use-user-settings';
 import { useUIStore } from '@/core/application/stores/ui.store';
 
+import { ApiError } from '@/infrastructure/api/api-error';
+
+import { isFavoriteKey, MAX_FAVORITES } from '@/lib/nav-registry';
 import { cn } from '@/lib/utils';
 
 interface NavItem {
   href: string;
   labelKey: string;
   icon: LucideIcon;
+  /**
+   * Favorite key (matches the `FavoriteKey` union in `nav-registry`). When
+   * present, the item can be marked as a favorite via right-click + shows
+   * the ★ when it's in `favoriteKeys`. `undefined` = not favoritable (e.g.
+   * Settings, or future grouped headers).
+   */
+  favoriteKey?: string;
   /** True = rendered indented, as a sub-item of the previous sibling. */
   indent?: boolean;
 }
@@ -43,40 +56,114 @@ const NAV_SECTIONS: NavSection[] = [
   {
     titleKey: 'routines',
     items: [
-      { href: '/habits', labelKey: 'habits', icon: Target },
-      { href: '/quick-tasks', labelKey: 'priorities', icon: CheckSquare },
-      { href: '/tasks', labelKey: 'tasks', icon: ListChecks },
-      { href: '/chores', labelKey: 'chores', icon: Repeat2 },
+      { href: '/habits', labelKey: 'habits', icon: Target, favoriteKey: 'habits' },
+      {
+        href: '/quick-tasks',
+        labelKey: 'priorities',
+        icon: CheckSquare,
+        favoriteKey: 'quick-tasks',
+      },
+      { href: '/tasks', labelKey: 'tasks', icon: ListChecks, favoriteKey: 'tasks' },
+      { href: '/chores', labelKey: 'chores', icon: Repeat2, favoriteKey: 'chores' },
     ],
   },
   {
     titleKey: 'finances',
     items: [
-      { href: '/accounts', labelKey: 'accounts', icon: CreditCard },
-      { href: '/categories', labelKey: 'categories', icon: FolderTree },
-      { href: '/transactions', labelKey: 'transactions', icon: ArrowLeftRight },
-      { href: '/transactions/debts', labelKey: 'debts', icon: HandCoins, indent: true },
-      { href: '/services', labelKey: 'services', icon: Receipt },
-      { href: '/budgets', labelKey: 'budgets', icon: PiggyBank },
+      { href: '/accounts', labelKey: 'accounts', icon: CreditCard, favoriteKey: 'accounts' },
+      { href: '/categories', labelKey: 'categories', icon: FolderTree, favoriteKey: 'categories' },
+      {
+        href: '/transactions',
+        labelKey: 'transactions',
+        icon: ArrowLeftRight,
+        favoriteKey: 'transactions',
+      },
+      {
+        href: '/transactions/debts',
+        labelKey: 'debts',
+        icon: HandCoins,
+        favoriteKey: 'debts',
+        indent: true,
+      },
+      { href: '/services', labelKey: 'services', icon: Receipt, favoriteKey: 'services' },
+      { href: '/budgets', labelKey: 'budgets', icon: PiggyBank, favoriteKey: 'budgets' },
     ],
   },
   {
     titleKey: 'reports',
     items: [
-      { href: '/reports/finances', labelKey: 'finances', icon: BarChart3 },
-      { href: '/reports/routines', labelKey: 'routines', icon: BarChart3 },
+      {
+        href: '/reports/finances',
+        labelKey: 'finances',
+        icon: BarChart3,
+        favoriteKey: 'reports-finances',
+      },
+      {
+        href: '/reports/routines',
+        labelKey: 'routines',
+        icon: BarChart3,
+        favoriteKey: 'reports-routines',
+      },
     ],
   },
 ];
 
+// Settings is intentionally not favoritable — it's always available
+// (mobile fixed slot, sidebar bottom). `favoriteKey: undefined`.
 const BOTTOM_ITEMS: NavItem[] = [{ href: '/settings', labelKey: 'settings', icon: Settings }];
 
 export function Sidebar() {
   const pathname = usePathname();
   const t = useTranslations('navigation');
+  const tFavorites = useTranslations('settings.favorites');
+  const tErrors = useTranslations('errors');
   const sidebarOpen = useUIStore((s) => s.sidebarOpen);
   const setSidebarOpen = useUIStore((s) => s.setSidebarOpen);
   const navRef = useRef<HTMLElement | null>(null);
+
+  const favoriteKeys = useFavoriteKeys();
+  const updateSettings = useUpdateUserSettings();
+  const favoriteKeysSet = new Set(favoriteKeys);
+
+  /**
+   * Toggle a key in/out of the user's favorites. Called from right-click on
+   * a sidebar item — gives a power-user-friendly path to manage favorites
+   * without going to settings.
+   *
+   * Rules:
+   *  - Toggle off: always allowed (remove from the array).
+   *  - Toggle on: rejected with a toast when already at MAX_FAVORITES.
+   *  - Unknown keys (somehow): no-op.
+   */
+  function toggleFavorite(key: string) {
+    if (!isFavoriteKey(key)) return;
+    const isCurrentlyFavorite = favoriteKeysSet.has(key);
+
+    if (!isCurrentlyFavorite && favoriteKeys.length >= MAX_FAVORITES) {
+      toast.error(tFavorites('maxReached', { max: MAX_FAVORITES }));
+      return;
+    }
+
+    const next = isCurrentlyFavorite
+      ? favoriteKeys.filter((k) => k !== key)
+      : [...favoriteKeys, key];
+
+    updateSettings.mutate(
+      { favoriteKeys: next },
+      {
+        // No success toast — the ★ marker appearing/disappearing IS the
+        // feedback. Toasts here would also overlap the bottom nav on
+        // mobile (same window) and add noise without value.
+        onError: (error) => {
+          toast.error(
+            error instanceof ApiError && error.code && tErrors.has(error.code)
+              ? tErrors(error.code as 'ACC_001')
+              : tFavorites('saveError'),
+          );
+        },
+      },
+    );
+  }
 
   // When the active route changes (or on mount with a deep route already
   // selected), scroll the active link into view INSIDE the nav. block:
@@ -88,6 +175,30 @@ export function Sidebar() {
       active.scrollIntoView({ block: 'nearest', behavior: 'auto' });
     }
   }, [pathname]);
+
+  // Lock the body scroll while the drawer is open on mobile. Desktop has
+  // the sidebar sticky as a permanent column (`md:sticky md:translate-x-0`)
+  // and `sidebarOpen` never flips there, so the media-query guard keeps
+  // the lock from leaking into the desktop layout. On resize across the
+  // breakpoint we re-evaluate so a rotation or DevTools-driven resize
+  // doesn't strand the page in `overflow: hidden`.
+  useEffect(() => {
+    if (!sidebarOpen) return;
+
+    const mql = window.matchMedia('(max-width: 767px)');
+    const previousOverflow = document.body.style.overflow;
+
+    function applyLock() {
+      document.body.style.overflow = mql.matches ? 'hidden' : previousOverflow;
+    }
+
+    applyLock();
+    mql.addEventListener('change', applyLock);
+    return () => {
+      mql.removeEventListener('change', applyLock);
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [sidebarOpen]);
 
   function isItemActive(item: NavItem): boolean {
     if (pathname === item.href) return true;
@@ -107,6 +218,16 @@ export function Sidebar() {
   function renderNavLink(item: NavItem) {
     const isActive = isItemActive(item);
     const Icon = item.icon;
+    // Favoritable items get a ★ next to the label when they're in
+    // `favoriteKeys`, and a right-click handler that toggles them. Settings
+    // (and any other non-favoritable items) get neither.
+    const isFavorite = item.favoriteKey != null && favoriteKeysSet.has(item.favoriteKey);
+    const handleContextMenu = item.favoriteKey
+      ? (e: React.MouseEvent) => {
+          e.preventDefault();
+          toggleFavorite(item.favoriteKey as string);
+        }
+      : undefined;
 
     if (item.indent) {
       return (
@@ -114,6 +235,7 @@ export function Sidebar() {
           key={item.href}
           href={item.href}
           onClick={() => setSidebarOpen(false)}
+          onContextMenu={handleContextMenu}
           aria-current={isActive ? 'page' : undefined}
           className={cn(
             'ml-6 flex items-center gap-2 border-l py-1.5 pl-3 pr-3 text-xs font-normal transition-colors',
@@ -126,7 +248,8 @@ export function Sidebar() {
           )}
         >
           <Icon className="size-3.5" />
-          {t(item.labelKey)}
+          <span className="flex-1">{t(item.labelKey)}</span>
+          {isFavorite && <Star className="size-3 fill-current opacity-60" aria-label="favorite" />}
         </Link>
       );
     }
@@ -136,6 +259,7 @@ export function Sidebar() {
         key={item.href}
         href={item.href}
         onClick={() => setSidebarOpen(false)}
+        onContextMenu={handleContextMenu}
         aria-current={isActive ? 'page' : undefined}
         className={cn(
           'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
@@ -145,7 +269,8 @@ export function Sidebar() {
         )}
       >
         <Icon className="size-5" />
-        {t(item.labelKey)}
+        <span className="flex-1">{t(item.labelKey)}</span>
+        {isFavorite && <Star className="size-3.5 fill-current opacity-60" aria-label="favorite" />}
       </Link>
     );
   }

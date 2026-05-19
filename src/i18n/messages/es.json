@@ -14,6 +14,7 @@
     "noResults": "Sin resultados",
     "required": "Este campo es requerido",
     "back": "Volver",
+    "close": "Cerrar",
     "paginationTotal": "{total, plural, one {# resultado} other {# resultados}}",
     "paginationPage": "{page} de {totalPages}"
   },
@@ -155,6 +156,16 @@
         },
         "successReal": "Deudas con {name} en {currency} liquidadas y registradas en tu cuenta",
         "successInformal": "Deudas con {name} en {currency} marcadas como saldadas"
+      },
+      "viewControls": {
+        "orderLabel": "Ordenar por",
+        "orderBy": {
+          "name": "Nombre",
+          "netOwed": "Monto neto",
+          "pendingCount": "Pendientes"
+        },
+        "toggleToAsc": "Cambiar a ascendente",
+        "toggleToDesc": "Cambiar a descendente"
       }
     },
     "createDebt": "Nueva deuda",
@@ -207,7 +218,24 @@
       "sydney": "Sídney, Melbourne (UTC+10)",
       "auckland": "Auckland (UTC+12)",
       "utc": "UTC (sin offset)"
+    },
+    "favorites": {
+      "title": "Favoritos del menú",
+      "subtitle": "Elegí hasta {max} módulos para acceso rápido. Settings siempre está disponible.",
+      "maxReached": "Llegaste al máximo de {max}. Sacá uno para agregar otro.",
+      "saveSuccess": "Favoritos guardados",
+      "saveError": "No pudimos guardar tus favoritos. Intentá de nuevo.",
+      "rightClickHint": "Click derecho sobre un módulo para marcarlo como favorito"
     }
+  },
+  "mobileNav": {
+    "longPressHint": "Mantené presionado un ícono para cambiarlo"
+  },
+  "favoritePicker": {
+    "title": "Cambiar favorito",
+    "subtitle": "Tap en un módulo para asignarlo a este slot",
+    "alreadyInSlot": "(ya en otro slot — se intercambia)",
+    "cancel": "Cancelar"
   },
   "errors": {
     "ACC_001": "Cuenta no encontrada",
@@ -454,6 +482,7 @@
     "categories": "Categorías",
     "transactions": "Transacciones",
     "debts": "Deudas y préstamos",
+    "debtsShort": "Deudas",
     "services": "Servicios",
     "budgets": "Presupuesto",
     "routines": "Rutinas",
@@ -477,10 +506,29 @@
       "dailyAllowance": "Por día",
       "dailyAllowanceHint": "Sugerido para los días que faltan",
       "dailyAllowanceClosedHint": "Mes cerrado",
-      "daysRemaining": "Días restantes",
+      "daysRemaining": "{count, plural, one {# día restante} other {# días restantes}}",
       "daysRemainingHint": "Incluye hoy",
       "spent": "Gastado",
-      "spentHint": "Suma de todos tus movimientos"
+      "spentHint": "Suma de todos tus movimientos",
+      "availableToday": "Disponible hoy",
+      "spentTodayOfPlanned": "{spent} gastado de {planned} planeados hoy",
+      "restOfMonth": "Resto del mes",
+      "restOfMonthHint": "Plan para los próximos días, sin contar hoy",
+      "dailyForFuture": "~{amount} al día",
+      "expandBreakdown": "Ver desglose",
+      "collapseBreakdown": "Ocultar desglose",
+      "monthSoFar": "Tu mes hasta ahora",
+      "spentSoFar": "Gastado en el mes",
+      "actualDailyAverage": "Promedio diario real",
+      "actualDailyAverageHint": "Hasta ayer · {days, plural, one {# día} other {# días}}",
+      "actualDailyAverageEmpty": "Todavía no hay días completos para promediar",
+      "originalDailyTarget": "Objetivo diario original",
+      "originalDailyTargetHint": "Si gastaras parejo todo el mes",
+      "diffVsOriginalLabel": "Diferencia vs tu plan",
+      "diffVsOriginalBelow": "Por DEBAJO al día — vas bien 🎉",
+      "diffVsOriginalAbove": "Por ENCIMA al día — atento",
+      "dailyHistoryTitle": "Últimos {count, plural, one {# día} other {# días}}",
+      "dailyHistoryReferenceHint": "La línea marca tu daily allowance de hoy ({amount})"
     },
     "empty": {
       "title": "No tienes presupuesto para {period} en {currency}",
@@ -512,6 +560,11 @@
       "descriptionPlaceholder": "Ej: Cena con amigos",
       "addSubmit": "Registrar movimiento",
       "addSuccess": "Movimiento registrado",
+      "editTitle": "Editar movimiento",
+      "editSubmit": "Guardar cambios",
+      "editSuccess": "Movimiento actualizado",
+      "accountImmutableHint": "La cuenta no se puede cambiar después de crear el movimiento",
+      "actionsAria": "Acciones del movimiento",
       "empty": "Todavía no cargaste ningún movimiento este mes",
       "deleteConfirm": "¿Seguro que quieres eliminar este movimiento? La cuenta vinculada se reembolsa.",
       "deleteSuccess": "Movimiento eliminado"
@@ -798,6 +851,40 @@
       "salaryPerson1": "Sueldo persona 1",
       "salaryPerson2": "Sueldo persona 2",
       "other": "Otros"
+    }
+  },
+  "alerts": {
+    "toggleLabel": "Notificaciones",
+    "unreadCount": "{count, plural, one {# sin leer} other {# sin leer}}",
+    "popoverLabel": "Centro de notificaciones",
+    "title": "Notificaciones",
+    "loading": "Cargando alertas...",
+    "error": "No pudimos cargar las alertas",
+    "empty": "Estás al día, no hay alertas activas",
+    "items": {
+      "serviceDueToday": {
+        "title": "Vence hoy: {name}",
+        "subtitle": "Día {day} del mes",
+        "subtitleWithAmount": "Día {day} · {amount}"
+      },
+      "serviceOverdue": {
+        "title": "Atrasado: {name}",
+        "subtitle": "Pendiente desde {period}"
+      },
+      "habitsMidday": {
+        "title": "{count, plural, one {Te falta # hábito} other {Te faltan # hábitos}}",
+        "subtitleOne": "Empezá por {first}",
+        "subtitleMany": "Empezá por {first} y {rest} más"
+      },
+      "budgetOverspent": {
+        "title": "Te pasaste del presupuesto {currency}",
+        "subtitle": "Estás {amount} por encima",
+        "subtitleNoCurrency": "Revisá tus gastos del mes"
+      },
+      "choreOverdue": {
+        "title": "Atrasada: {name}",
+        "subtitle": "Vencía el {date}"
+      }
     }
   }
 }

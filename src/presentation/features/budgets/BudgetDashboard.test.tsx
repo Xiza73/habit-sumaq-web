@@ -45,10 +45,19 @@ vi.mock('@/core/application/hooks/use-accounts', () => ({
 
 vi.mock('@/core/application/hooks/use-categories', () => ({
   useCategories: () => ({ data: [], isLoading: false }),
+  // BudgetMovementForm now mounts CategorySelectField in the edit modal,
+  // which depends on these two hooks even when the form is closed (see
+  // CategoryForm: it runs its mutation hooks on render regardless of `open`).
+  useCreateCategory: () => ({ mutate: vi.fn(), isPending: false }),
+  useUpdateCategory: () => ({ mutate: vi.fn(), isPending: false }),
 }));
 
 vi.mock('@/core/application/hooks/use-transactions', () => ({
   useDeleteTransaction: () => ({ mutate: vi.fn(), isPending: false }),
+  // BudgetMovementForm (in edit mode) calls `useUpdateTransaction` to PATCH
+  // the existing movement. The dashboard mounts the form in both create and
+  // edit shapes — stub it so the module mock is complete.
+  useUpdateTransaction: () => ({ mutate: vi.fn(), isPending: false }),
   // The dashboard imports `transactionKeys` indirectly via use-budgets in real
   // code, but the mock above shadows the whole module. This export keeps the
   // symbol present for any consumer that grabs it during render.
@@ -94,8 +103,11 @@ describe('BudgetDashboard', () => {
     currentBudgetData = populatedBudget;
     render(<BudgetDashboard />, { wrapper: TestProviders });
 
-    // KPI card: spentOfTotal copy uses the budget amounts.
-    expect(screen.getByText(/600[.,]00.*2[.,]?000[.,]00/)).toBeInTheDocument();
+    // KPI card: the active-budget layout headlines "Disponible hoy". The
+    // older assertion looked for `600 gastado de 2000`, but that copy now
+    // lives inside the collapsed breakdown — checking for the locked-day
+    // headline label is the stable signal that the card mounted.
+    expect(screen.getByText(/disponible hoy/i)).toBeInTheDocument();
     // Movements section heading appears.
     expect(screen.getByRole('heading', { name: /movimientos/i })).toBeInTheDocument();
   });

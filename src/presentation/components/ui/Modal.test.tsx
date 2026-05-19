@@ -88,4 +88,32 @@ describe('Modal', () => {
     expect(dialog).toHaveAttribute('aria-modal', 'true');
     expect(dialog).toHaveAttribute('aria-label', 'My Dialog');
   });
+
+  describe('submit isolation (CategoryForm-inside-TransactionForm regression)', () => {
+    it('does NOT bubble inner form submit to a parent form in the React tree', async () => {
+      // Reproduces the QA bug: TransactionForm hosts CategoryForm via a portal.
+      // Both wrap their content in <form>. Before the fix, submitting the
+      // inner form bubbled the event through React's component tree (portals
+      // preserve component-tree bubbling) and silently triggered the outer
+      // form's submit. The Modal now stops submit at the dialog boundary.
+      const outerSubmit = vi.fn((e: React.FormEvent) => e.preventDefault());
+      const innerSubmit = vi.fn((e: React.FormEvent) => e.preventDefault());
+      const user = userEvent.setup();
+
+      render(
+        <form onSubmit={outerSubmit} aria-label="outer">
+          <Modal open={true} onClose={vi.fn()} title="Inner">
+            <form onSubmit={innerSubmit} aria-label="inner">
+              <button type="submit">Save</button>
+            </form>
+          </Modal>
+        </form>,
+      );
+
+      await user.click(screen.getByRole('button', { name: 'Save' }));
+
+      expect(innerSubmit).toHaveBeenCalledTimes(1);
+      expect(outerSubmit).not.toHaveBeenCalled();
+    });
+  });
 });

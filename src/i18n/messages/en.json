@@ -14,6 +14,7 @@
     "noResults": "No results",
     "required": "This field is required",
     "back": "Back",
+    "close": "Close",
     "paginationTotal": "{total, plural, one {# result} other {# results}}",
     "paginationPage": "{page} of {totalPages}"
   },
@@ -155,6 +156,16 @@
         },
         "successReal": "Debts with {name} in {currency} settled and recorded in your account",
         "successInformal": "Debts with {name} in {currency} marked as settled"
+      },
+      "viewControls": {
+        "orderLabel": "Sort by",
+        "orderBy": {
+          "name": "Name",
+          "netOwed": "Net amount",
+          "pendingCount": "Pending"
+        },
+        "toggleToAsc": "Switch to ascending",
+        "toggleToDesc": "Switch to descending"
       }
     },
     "createDebt": "New debt",
@@ -207,7 +218,24 @@
       "sydney": "Sydney, Melbourne (UTC+10)",
       "auckland": "Auckland (UTC+12)",
       "utc": "UTC (no offset)"
+    },
+    "favorites": {
+      "title": "Menu favorites",
+      "subtitle": "Pick up to {max} modules for quick access. Settings is always there.",
+      "maxReached": "You hit the {max}-favorite limit. Remove one to add another.",
+      "saveSuccess": "Favorites saved",
+      "saveError": "We couldn't save your favorites. Try again.",
+      "rightClickHint": "Right-click a module to toggle it as a favorite"
     }
+  },
+  "mobileNav": {
+    "longPressHint": "Long-press an icon to change it"
+  },
+  "favoritePicker": {
+    "title": "Change favorite",
+    "subtitle": "Tap a module to assign it to this slot",
+    "alreadyInSlot": "(already in another slot — it'll swap)",
+    "cancel": "Cancel"
   },
   "errors": {
     "ACC_001": "Account not found",
@@ -454,6 +482,7 @@
     "categories": "Categories",
     "transactions": "Transactions",
     "debts": "Debts and loans",
+    "debtsShort": "Debts",
     "services": "Services",
     "budgets": "Budget",
     "routines": "Routines",
@@ -477,10 +506,29 @@
       "dailyAllowance": "Per day",
       "dailyAllowanceHint": "Suggested for the days remaining",
       "dailyAllowanceClosedHint": "Month closed",
-      "daysRemaining": "Days remaining",
+      "daysRemaining": "{count, plural, one {# day remaining} other {# days remaining}}",
       "daysRemainingHint": "Today included",
       "spent": "Spent",
-      "spentHint": "Sum of all your movements"
+      "spentHint": "Sum of all your movements",
+      "availableToday": "Available today",
+      "spentTodayOfPlanned": "{spent} of {planned} planned for today",
+      "restOfMonth": "Rest of the month",
+      "restOfMonthHint": "Plan for the upcoming days, today excluded",
+      "dailyForFuture": "~{amount} a day",
+      "expandBreakdown": "Show breakdown",
+      "collapseBreakdown": "Hide breakdown",
+      "monthSoFar": "Your month so far",
+      "spentSoFar": "Spent this month",
+      "actualDailyAverage": "Actual daily average",
+      "actualDailyAverageHint": "Through yesterday · {days, plural, one {# day} other {# days}}",
+      "actualDailyAverageEmpty": "No full days yet to average",
+      "originalDailyTarget": "Original daily target",
+      "originalDailyTargetHint": "If you spent evenly across the whole month",
+      "diffVsOriginalLabel": "Difference vs. plan",
+      "diffVsOriginalBelow": "BELOW per day — on track 🎉",
+      "diffVsOriginalAbove": "ABOVE per day — heads up",
+      "dailyHistoryTitle": "Last {count, plural, one {# day} other {# days}}",
+      "dailyHistoryReferenceHint": "The line marks today's daily allowance ({amount})"
     },
     "empty": {
       "title": "No budget for {period} in {currency}",
@@ -512,6 +560,11 @@
       "descriptionPlaceholder": "e.g. Dinner with friends",
       "addSubmit": "Record movement",
       "addSuccess": "Movement recorded",
+      "editTitle": "Edit movement",
+      "editSubmit": "Save changes",
+      "editSuccess": "Movement updated",
+      "accountImmutableHint": "The account can't be changed after the movement is created",
+      "actionsAria": "Movement actions",
       "empty": "No movements logged for this month yet",
       "deleteConfirm": "Delete this movement? The linked account will be refunded.",
       "deleteSuccess": "Movement deleted"
@@ -798,6 +851,40 @@
       "salaryPerson1": "Salary person 1",
       "salaryPerson2": "Salary person 2",
       "other": "Other"
+    }
+  },
+  "alerts": {
+    "toggleLabel": "Notifications",
+    "unreadCount": "{count, plural, one {# unread} other {# unread}}",
+    "popoverLabel": "Notification center",
+    "title": "Notifications",
+    "loading": "Loading alerts...",
+    "error": "Couldn't load alerts",
+    "empty": "You're all caught up, no active alerts",
+    "items": {
+      "serviceDueToday": {
+        "title": "Due today: {name}",
+        "subtitle": "Day {day} of the month",
+        "subtitleWithAmount": "Day {day} · {amount}"
+      },
+      "serviceOverdue": {
+        "title": "Overdue: {name}",
+        "subtitle": "Pending since {period}"
+      },
+      "habitsMidday": {
+        "title": "{count, plural, one {# habit still to go} other {# habits still to go}}",
+        "subtitleOne": "Start with {first}",
+        "subtitleMany": "Start with {first} and {rest} more"
+      },
+      "budgetOverspent": {
+        "title": "You went over your {currency} budget",
+        "subtitle": "You're {amount} over",
+        "subtitleNoCurrency": "Review your spending for the month"
+      },
+      "choreOverdue": {
+        "title": "Overdue: {name}",
+        "subtitle": "Was due on {date}"
+      }
     }
   }
 }

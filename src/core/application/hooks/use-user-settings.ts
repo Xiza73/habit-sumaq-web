@@ -7,6 +7,8 @@ import {
   userSettingsApi,
 } from '@/infrastructure/api/user-settings.api';
 
+import { DEFAULT_FAVORITES } from '@/lib/nav-registry';
+
 export const userSettingsKeys = {
   all: ['user-settings'] as const,
   detail: () => [...userSettingsKeys.all, 'detail'] as const,
@@ -38,6 +40,23 @@ export function useUserSettings() {
 export function useDateFormat(): DateFormat {
   const { data: settings } = useUserSettings();
   return settings?.dateFormat ?? 'YYYY-MM-DD';
+}
+
+/**
+ * Returns the user's favorite nav keys, falling back to `DEFAULT_FAVORITES`
+ * while the settings query is in flight or when the user hasn't customized
+ * them (the backend default matches anyway, but this keeps the first paint
+ * consistent without flicker).
+ *
+ * Companion to {@link useUpdateFavorites} for the write side. Both
+ * surfaces (mobile bottom nav + sidebar ★) read from here so they stay in
+ * sync the moment the mutation invalidates the settings query.
+ */
+export function useFavoriteKeys(): string[] {
+  const { data: settings } = useUserSettings();
+  // settings can be undefined (loading) or have `favoriteKeys: undefined`
+  // (older backend response shape, pre-migration). Defensive fallback either way.
+  return settings?.favoriteKeys ?? DEFAULT_FAVORITES;
 }
 
 export function useUpdateUserSettings() {

@@ -10,6 +10,7 @@ import {
 import { budgetsApi } from '@/infrastructure/api/budgets.api';
 
 import { accountKeys } from './use-accounts';
+import { alertKeys } from './use-alerts';
 import { transactionKeys } from './use-transactions';
 
 export const budgetKeys = {
@@ -59,6 +60,7 @@ export function useCreateBudget() {
       // dashboard switches from "no budget" CTA to the freshly created KPI.
       void queryClient.invalidateQueries({ queryKey: budgetKeys.current(variables.currency) });
       void queryClient.invalidateQueries({ queryKey: budgetKeys.lists() });
+      void queryClient.invalidateQueries({ queryKey: alertKeys.lists() });
     },
   });
 }
@@ -71,6 +73,8 @@ export function useUpdateBudget() {
       budgetsApi.update(id, data),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: budgetKeys.all });
+      // Bumping the `amount` can flip `remaining` positive → resolves overspent.
+      void queryClient.invalidateQueries({ queryKey: alertKeys.lists() });
     },
   });
 }
@@ -89,6 +93,7 @@ export function useDeleteBudget() {
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: budgetKeys.all });
       void queryClient.invalidateQueries({ queryKey: transactionKeys.lists() });
+      void queryClient.invalidateQueries({ queryKey: alertKeys.lists() });
     },
   });
 }
@@ -96,7 +101,8 @@ export function useDeleteBudget() {
 /**
  * Adding a movement creates an EXPENSE transaction + debits the account, so
  * we invalidate budgets (KPI changes), transactions (list refresh), and
- * accounts (balance update).
+ * accounts (balance update). Also invalidates alerts because the new
+ * movement can push `spent` over `amount` and trigger `budget-overspent`.
  */
 export function useAddBudgetMovement() {
   const queryClient = useQueryClient();
@@ -108,6 +114,7 @@ export function useAddBudgetMovement() {
       void queryClient.invalidateQueries({ queryKey: budgetKeys.all });
       void queryClient.invalidateQueries({ queryKey: transactionKeys.lists() });
       void queryClient.invalidateQueries({ queryKey: accountKeys.all });
+      void queryClient.invalidateQueries({ queryKey: alertKeys.lists() });
     },
   });
 }

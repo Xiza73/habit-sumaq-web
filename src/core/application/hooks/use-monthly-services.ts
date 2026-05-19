@@ -9,6 +9,7 @@ import {
 import { monthlyServicesApi } from '@/infrastructure/api/monthly-services.api';
 
 import { accountKeys } from './use-accounts';
+import { alertKeys } from './use-alerts';
 import { transactionKeys } from './use-transactions';
 
 export const monthlyServiceKeys = {
@@ -42,6 +43,7 @@ export function useCreateMonthlyService() {
     mutationFn: (data: CreateMonthlyServiceInput) => monthlyServicesApi.create(data),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: monthlyServiceKeys.lists() });
+      void queryClient.invalidateQueries({ queryKey: alertKeys.lists() });
     },
   });
 }
@@ -55,6 +57,7 @@ export function useUpdateMonthlyService() {
     onSuccess: (_, { id }) => {
       void queryClient.invalidateQueries({ queryKey: monthlyServiceKeys.lists() });
       void queryClient.invalidateQueries({ queryKey: monthlyServiceKeys.detail(id) });
+      void queryClient.invalidateQueries({ queryKey: alertKeys.lists() });
     },
   });
 }
@@ -74,6 +77,7 @@ export function usePayMonthlyService() {
       void queryClient.invalidateQueries({ queryKey: monthlyServiceKeys.detail(id) });
       void queryClient.invalidateQueries({ queryKey: transactionKeys.lists() });
       void queryClient.invalidateQueries({ queryKey: accountKeys.all });
+      void queryClient.invalidateQueries({ queryKey: alertKeys.lists() });
     },
   });
 }
@@ -86,6 +90,7 @@ export function useSkipMonthlyServiceMonth() {
     onSuccess: (_, id) => {
       void queryClient.invalidateQueries({ queryKey: monthlyServiceKeys.lists() });
       void queryClient.invalidateQueries({ queryKey: monthlyServiceKeys.detail(id) });
+      void queryClient.invalidateQueries({ queryKey: alertKeys.lists() });
     },
   });
 }
@@ -97,6 +102,7 @@ export function useArchiveMonthlyService() {
     mutationFn: (id: string) => monthlyServicesApi.toggleArchive(id),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: monthlyServiceKeys.lists() });
+      void queryClient.invalidateQueries({ queryKey: alertKeys.lists() });
     },
   });
 }
@@ -108,6 +114,7 @@ export function useDeleteMonthlyService() {
     mutationFn: (id: string) => monthlyServicesApi.delete(id),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: monthlyServiceKeys.lists() });
+      void queryClient.invalidateQueries({ queryKey: alertKeys.lists() });
     },
   });
 }

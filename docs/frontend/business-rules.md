@@ -182,6 +182,45 @@ Reglas:
 
 ---
 
+## Presupuestos
+
+1. **Uno por (usuario, año-mes, moneda).** El backend rechaza un segundo con esa misma terna.
+2. **`currency` es inmutable** después de crear. En edit el form no expone el campo.
+3. **Solo movimientos explícitos cuentan en `spent`.** El budget NO lee todos los `EXPENSE` del mes — solo los que se loggean contra él vía `POST /budgets/:id/movements` (que setea `transactions.budgetId`). Esto deja al usuario separar "gastos discrecionales" del resto.
+4. **Soft-delete nullifica `budgetId` en las transactions** del budget. Los gastos sobreviven como transacciones normales — la plata ya se movió, no se "deshace".
+5. **El picker de fecha del movimiento se clampea al mes del budget** (`min` = 1 del mes, `max` = último día). El backend valida con `BDGT_003` por defensa.
+6. **El picker de cuenta filtra por `currency === budget.currency`** — no hay conversión automática.
+
+### Locked-day allowance (UX del dashboard)
+
+El número grande del dashboard de Budget es **"Disponible hoy"**, NO "Disponible total". La distinción es load-bearing:
+
+- **Hoy tiene un pool fijo** `A = (amount - spent_hasta_ayer) / daysRemainingIncludingToday`. Calculado al inicio del día calendario en la TZ del usuario y **bloqueado por todo el día**.
+- **"Disponible hoy" = `A - spent_hoy`**. Cambia con cada movimiento que loggees hoy.
+- **"Resto del mes" = `(amount - spent_hasta_ayer) - A`**. **NO cambia** cuando gastás hoy — eso es lo importante. El plan futuro no se re-spread en tiempo real.
+- **Al cruzar la medianoche** en TZ del usuario, `A` se recalcula con el nuevo `spent_hasta_ayer`. Si gastaste menos que `A` viejo, el `A` nuevo es mayor (carryforward implícito). Si gastaste más, es menor (eats into future).
+- **Overspend hoy** marca el headline en rojo pero NO recorta el plan futuro hasta mañana — es señal visual, no penalización inmediata.
+
+Toda la matemática vive en `src/lib/budget-kpi.ts` (`getBudgetSpendBreakdown`, `getBudgetMonthHistory`, `getDailySpendHistory`). Pura, locale-agnostic, deriva todo de `budget.movements` + `budget.currentDate` (no lee reloj).
+
+### Layout: cuándo aplica el modelo
+
+| Estado del budget | Layout |
+|---|---|
+| Mes corriente, días restantes > 0 | **Locked-day** (hero "Disponible hoy" + breakdown desglosable) |
+| Mes cerrado (`daysRemainingIncludingToday = 0`) | Simple — hero "Disponible" con `remaining`, `dailyAllowance = null` |
+| Mes futuro (`currentDate` < primer día del budget) | Simple — el concepto de "hoy" no aplica |
+
+### Breakdown desglosable
+
+Cuando el budget está activo, el usuario puede expandir un panel con:
+- **Promedio diario real** (hasta ayer, `spent_hasta_ayer / días_transcurridos`)
+- **Objetivo diario original** (`amount / días_del_mes`)
+- **Diff vs original** (signo + emoji para señalar si va por debajo/encima del plan)
+- **Últimos 7 días** como mini bar chart, con línea de referencia en `A` y barra roja cuando ese día se pasó
+
+---
+
 ## Servicios mensuales
 
 1. **Nombre único por usuario para servicios activos.** No pueden existir dos servicios activos con el mismo nombre.
@@ -205,6 +244,34 @@ Reglas:
 1. **Las transferencias requieren misma moneda.** Si cuenta A es PEN y cuenta B es USD, no se puede transferir entre ellas.
 2. **El balance se muestra con la moneda de la cuenta.** No hay conversión.
 3. **Precisión:** todos los montos usan 2 decimales (`NUMERIC(15,2)` en DB).
+
+---
+
+## Favoritos en nav
+
+Los favoritos manejan dos cosas:
+
+- **Mobile bottom nav:** 4 slots elegibles por el usuario + Settings fijo al final. Cuando el usuario tiene menos de 4 favoritos guardados, los slots vacíos se renderizan como placeholders con un ícono de estrella (no son links — long-press abre el picker para asignar).
+- **Desktop sidebar:** la sidebar sigue mostrando TODOS los módulos, pero los marcados como favorito muestran una ⭐ pequeña al lado del label. El layout no cambia.
+
+### Reglas
+
+1. **Cap duro: 4 favoritos máximo.** Backend lo enforza con `@ArrayMaxSize(4)` + SQL `CHECK`. Frontend deshabilita el botón "marcar como favorito" cuando se llegó al máximo (el usuario tiene que sacar uno primero).
+2. **Settings NO es favoritable.** Está fijo en mobile (siempre como último slot) y en sidebar (siempre al pie). El registry de `nav-registry.ts` lo excluye explícitamente.
+3. **Array vacío es válido.** Si el usuario saca todos sus favoritos, la mobile nav queda solo con el slot de Settings + 4 placeholders. UX honesta — "no marcaste nada todavía".
+4. **Single source of truth:** `src/lib/nav-registry.ts`. Mapea cada `FavoriteKey` a su `{ href, labelKey, icon }`. Toda surface que renderice favoritos pasa por acá.
+5. **Forward-compat con renames/removes:** `getNavEntries(keys)` filtra silenciosamente las keys que no estén en el registry. Un usuario con un favorito "ancient" que ya no existe simplemente ve ese slot como placeholder hasta que reconfigure — nada crashea.
+6. **Persistencia:** `user_settings.favoriteKeys: string[]`. Sincroniza entre devices. Backend no valida el contenido contra un set conocido (las keys son free-form strings) — eso desacopla los repos. Si se agrega o renombra una ruta en frontend, no hace falta migration de backend.
+
+### UX writes
+
+| Path | Trigger |
+|---|---|
+| Mobile slot | Long-press → modal "Cambiar favorito" → pick → swap o replace |
+| Sidebar item | Right-click → toggle on/off |
+| Settings page | Sección "Favoritos del menú" con grid de toggles |
+
+Los tres paths escriben al mismo `favoriteKeys`. La invalidación del query de settings refresca todos los consumers al instante.
 
 ---
 
