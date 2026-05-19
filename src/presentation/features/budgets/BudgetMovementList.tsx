@@ -1,9 +1,9 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
 
-import { Trash2 } from 'lucide-react';
+import { MoreVertical, Pencil, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { useCategories } from '@/core/application/hooks/use-categories';
@@ -11,29 +11,32 @@ import { useDeleteTransaction } from '@/core/application/hooks/use-transactions'
 import { useDateFormat } from '@/core/application/hooks/use-user-settings';
 import { type Transaction } from '@/core/domain/entities/transaction';
 import { type Currency } from '@/core/domain/enums/account.enums';
+import { type DateFormat } from '@/core/domain/enums/common.enums';
 
 import { ApiError } from '@/infrastructure/api/api-error';
 
 import { formatCurrency, formatDate } from '@/lib/format';
 import { getTransactionDisplayTitle } from '@/lib/transaction-title';
+import { cn } from '@/lib/utils';
 
 interface BudgetMovementListProps {
   movements: Transaction[];
   currency: Currency;
+  /**
+   * Called when the user picks "Editar" from a row's kebab menu. Parent owns
+   * the form state — passing the movement back triggers the edit modal.
+   */
+  onEdit: (movement: Transaction) => void;
 }
 
 /**
  * Inline list of budget movements rendered under the KPI card. Movements are
- * just transactions tagged with `budgetId` — deleting a movement here calls
- * the standard `DELETE /transactions/:id` endpoint, which the
- * `useDeleteTransaction` hook also wires through to invalidate the budget
- * KPI query (because deleting changes `spent`).
- *
- * Editing is intentionally NOT exposed here — the user can still edit via the
- * generic transactions list. Keeps this view focused on "log a new gasto"
- * and "remove a mistake".
+ * just transactions tagged with `budgetId`. Each row exposes Edit + Delete
+ * via a kebab menu (same pattern as `TransactionCard`) — Edit hands the
+ * movement to the parent so the form opens preselected, Delete calls
+ * `DELETE /transactions/:id` directly and invalidates the budget KPI query.
  */
-export function BudgetMovementList({ movements, currency }: BudgetMovementListProps) {
+export function BudgetMovementList({ movements, currency, onEdit }: BudgetMovementListProps) {
   const t = useTranslations('budgets');
   const tCommon = useTranslations('common');
   const tErrors = useTranslations('errors');
@@ -82,35 +85,134 @@ export function BudgetMovementList({ movements, currency }: BudgetMovementListPr
 
   return (
     <ul className="divide-y divide-border rounded-xl border border-border bg-card">
-      {movements.map((tx) => {
+      {movements.map((tx, index) => {
         const category = tx.categoryId ? categoriesById.get(tx.categoryId) : null;
         const titleText = getTransactionDisplayTitle(tx, category, (type) =>
           tTransactions(`types.${type}`),
         );
         return (
-          <li
+          <MovementRow
             key={tx.id}
-            className="flex items-center gap-3 px-4 py-3 transition-colors hover:bg-muted/40"
-          >
-            <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-medium">{titleText}</p>
-              <p className="text-xs text-muted-foreground">{formatDate(tx.date, dateFormat)}</p>
-            </div>
-            <p className="shrink-0 font-semibold tabular-nums text-destructive">
-              -{formatCurrency(tx.amount, currency)}
-            </p>
-            <button
-              type="button"
-              onClick={() => handleDelete(tx)}
-              disabled={deleteMutation.isPending}
-              className="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive disabled:opacity-50"
-              aria-label={tCommon('delete')}
-            >
-              <Trash2 className="size-4" />
-            </button>
-          </li>
+            tx={tx}
+            titleText={titleText}
+            currency={currency}
+            dateFormat={dateFormat}
+            isLast={index === movements.length - 1}
+            deleting={deleteMutation.isPending}
+            onEdit={() => onEdit(tx)}
+            onDelete={() => handleDelete(tx)}
+            tCommon={tCommon}
+            tBudgets={t}
+          />
         );
       })}
     </ul>
+  );
+}
+
+interface MovementRowProps {
+  tx: Transaction;
+  titleText: string;
+  currency: Currency;
+  dateFormat: DateFormat;
+  /** Last row gets a slightly different menu anchor so it doesn't clip below. */
+  isLast: boolean;
+  deleting: boolean;
+  onEdit: () => void;
+  onDelete: () => void;
+  tCommon: ReturnType<typeof useTranslations<'common'>>;
+  tBudgets: ReturnType<typeof useTranslations<'budgets'>>;
+}
+
+function MovementRow({
+  tx,
+  titleText,
+  currency,
+  dateFormat,
+  isLast,
+  deleting,
+  onEdit,
+  onDelete,
+  tCommon,
+  tBudgets,
+}: MovementRowProps) {
+  // Each row owns its own menu state — opening one closes the others
+  // implicitly because the backdrop overlays the whole viewport (any click
+  // outside the menu cascades to the backdrop). Same UX as `TransactionCard`.
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  return (
+    <li className="relative flex items-center gap-3 px-4 py-3 transition-colors hover:bg-muted/40">
+      <div className="min-w-0 flex-1">
+        <p className="truncate text-sm font-medium">{titleText}</p>
+        <p className="text-xs text-muted-foreground">{formatDate(tx.date, dateFormat)}</p>
+      </div>
+      <p className="shrink-0 font-semibold tabular-nums text-destructive">
+        -{formatCurrency(tx.amount, currency)}
+      </p>
+      <button
+        type="button"
+        onClick={() => setMenuOpen((v) => !v)}
+        disabled={deleting}
+        className="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:opacity-50"
+        aria-label={tBudgets('movements.actionsAria')}
+        aria-haspopup="menu"
+        aria-expanded={menuOpen}
+      >
+        <MoreVertical className="size-4" />
+      </button>
+
+      {menuOpen && (
+        <>
+          {/* Backdrop — closes the menu on any click outside or Escape.
+              `fixed inset-0` so clicking ANYWHERE outside the menu hits it
+              (the menu itself sits above on a higher z-index). */}
+          <div
+            className="fixed inset-0 z-10"
+            onClick={() => setMenuOpen(false)}
+            onKeyDown={(e) => {
+              if (e.key === 'Escape') setMenuOpen(false);
+            }}
+            role="button"
+            tabIndex={0}
+            aria-label="Close menu"
+          />
+          <div
+            role="menu"
+            className={cn(
+              'absolute right-4 top-full z-20 mt-1 w-44 rounded-lg border border-border bg-popover py-1 shadow-lg',
+              // Last-row anchor: avoids the menu falling off the bottom of
+              // the card. Reroute upward by translating it above the row.
+              isLast && 'top-auto bottom-full mb-1 mt-0',
+            )}
+          >
+            <button
+              type="button"
+              role="menuitem"
+              onClick={() => {
+                setMenuOpen(false);
+                onEdit();
+              }}
+              className="flex w-full items-center gap-2 px-3 py-2 text-sm hover:bg-muted"
+            >
+              <Pencil className="size-4" />
+              {tCommon('edit')}
+            </button>
+            <button
+              type="button"
+              role="menuitem"
+              onClick={() => {
+                setMenuOpen(false);
+                onDelete();
+              }}
+              className="flex w-full items-center gap-2 px-3 py-2 text-sm text-destructive hover:bg-destructive/10"
+            >
+              <Trash2 className="size-4" />
+              {tCommon('delete')}
+            </button>
+          </div>
+        </>
+      )}
+    </li>
   );
 }

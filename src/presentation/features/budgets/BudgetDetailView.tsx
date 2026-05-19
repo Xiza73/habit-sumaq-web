@@ -9,14 +9,15 @@ import { ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { useBudget, useDeleteBudget } from '@/core/application/hooks/use-budgets';
+import { type Transaction } from '@/core/domain/entities/transaction';
 
 import { ApiError } from '@/infrastructure/api/api-error';
 
 import { ConfirmDialog } from '@/presentation/components/feedback/ConfirmDialog';
 
-import { AddMovementForm } from './AddMovementForm';
 import { BudgetForm } from './BudgetForm';
 import { BudgetKpiCard } from './BudgetKpiCard';
+import { BudgetMovementForm } from './BudgetMovementForm';
 import { BudgetMovementList } from './BudgetMovementList';
 
 interface BudgetDetailViewProps {
@@ -39,6 +40,8 @@ export function BudgetDetailView({ id }: BudgetDetailViewProps) {
 
   const [editOpen, setEditOpen] = useState(false);
   const [movementOpen, setMovementOpen] = useState(false);
+  // Holds the movement being edited from the kebab menu in BudgetMovementList.
+  const [editingMovement, setEditingMovement] = useState<Transaction | null>(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
 
   function handleConfirmDelete() {
@@ -89,11 +92,25 @@ export function BudgetDetailView({ id }: BudgetDetailViewProps) {
 
       <div className="space-y-3">
         <h2 className="text-sm font-medium text-muted-foreground">{t('movements.title')}</h2>
-        <BudgetMovementList movements={budget.movements} currency={budget.currency} />
+        <BudgetMovementList
+          movements={budget.movements}
+          currency={budget.currency}
+          onEdit={setEditingMovement}
+        />
       </div>
 
       <BudgetForm open={editOpen} budget={budget} onClose={() => setEditOpen(false)} />
-      <AddMovementForm open={movementOpen} budget={budget} onClose={() => setMovementOpen(false)} />
+      <BudgetMovementForm
+        open={movementOpen}
+        budget={budget}
+        onClose={() => setMovementOpen(false)}
+      />
+      <BudgetMovementForm
+        open={!!editingMovement}
+        budget={budget}
+        movement={editingMovement}
+        onClose={() => setEditingMovement(null)}
+      />
       <ConfirmDialog
         open={confirmDelete}
         title={t('delete.title')}
