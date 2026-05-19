@@ -207,7 +207,24 @@
       "sydney": "Sydney, Melbourne (UTC+10)",
       "auckland": "Auckland (UTC+12)",
       "utc": "UTC (no offset)"
+    },
+    "favorites": {
+      "title": "Menu favorites",
+      "subtitle": "Pick up to {max} modules for quick access. Settings is always there.",
+      "maxReached": "You hit the {max}-favorite limit. Remove one to add another.",
+      "saveSuccess": "Favorites saved",
+      "saveError": "We couldn't save your favorites. Try again.",
+      "rightClickHint": "Right-click a module to toggle it as a favorite"
     }
+  },
+  "mobileNav": {
+    "longPressHint": "Long-press an icon to change it"
+  },
+  "favoritePicker": {
+    "title": "Change favorite",
+    "subtitle": "Tap a module to assign it to this slot",
+    "alreadyInSlot": "(already in another slot — it'll swap)",
+    "cancel": "Cancel"
   },
   "errors": {
     "ACC_001": "Account not found",
@@ -454,6 +471,7 @@
     "categories": "Categories",
     "transactions": "Transactions",
     "debts": "Debts and loans",
+    "debtsShort": "Debts",
     "services": "Services",
     "budgets": "Budget",
     "routines": "Routines",

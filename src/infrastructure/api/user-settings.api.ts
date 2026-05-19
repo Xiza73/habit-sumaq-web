@@ -12,6 +12,12 @@ export interface UpdateUserSettingsDto {
   monthlyServicesGroupBy?: string;
   monthlyServicesOrderBy?: string;
   monthlyServicesOrderDir?: string;
+  /**
+   * Max 4 entries, no duplicates. Backend rejects with 400 (ArrayMaxSize /
+   * ArrayUnique). Empty array is valid — clears all favorites. Strings are
+   * free-form; the canonical set lives in `src/lib/nav-registry.ts`.
+   */
+  favoriteKeys?: string[];
 }
 
 export const userSettingsApi = {
