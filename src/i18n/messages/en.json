@@ -861,6 +861,8 @@
     "loading": "Loading alerts...",
     "error": "Couldn't load alerts",
     "empty": "You're all caught up, no active alerts",
+    "dismissAll": "Dismiss all",
+    "persistentHint": "Remaining alerts will clear themselves when you resolve them",
     "items": {
       "serviceDueToday": {
         "title": "Due today: {name}",

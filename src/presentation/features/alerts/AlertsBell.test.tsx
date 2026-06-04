@@ -139,4 +139,153 @@ describe('AlertsBell', () => {
       expect(alertsApi.markSeen).not.toHaveBeenCalled();
     });
   });
+
+  describe('"Cerrar todas" button', () => {
+    it('is HIDDEN when there are < 2 dismissable alerts (1 per-day → only the X)', async () => {
+      const user = userEvent.setup();
+      mockAlertsResponse({
+        alerts: [makeAlert({ id: 'a1', isDismissable: true })],
+        lastSeenAt: null,
+      });
+      render(
+        <TestProviders>
+          <AlertsBell />
+        </TestProviders>,
+      );
+      await waitFor(() => {
+        expect(screen.getByLabelText('1 sin leer')).toBeInTheDocument();
+      });
+
+      await user.click(screen.getByRole('button', { name: 'Notificaciones' }));
+
+      expect(screen.queryByRole('button', { name: 'Cerrar todas' })).not.toBeInTheDocument();
+    });
+
+    it('is HIDDEN when all alerts are persistent (no dismiss target)', async () => {
+      const user = userEvent.setup();
+      mockAlertsResponse({
+        alerts: [
+          makeAlert({ id: 'p1', isDismissable: false }),
+          makeAlert({ id: 'p2', isDismissable: false }),
+        ],
+        lastSeenAt: null,
+      });
+      render(
+        <TestProviders>
+          <AlertsBell />
+        </TestProviders>,
+      );
+      await waitFor(() => {
+        expect(alertsApi.getAll).toHaveBeenCalled();
+      });
+
+      await user.click(screen.getByRole('button', { name: 'Notificaciones' }));
+
+      expect(screen.queryByRole('button', { name: 'Cerrar todas' })).not.toBeInTheDocument();
+    });
+
+    it('SHOWS the button when there are >= 2 dismissable alerts', async () => {
+      const user = userEvent.setup();
+      mockAlertsResponse({
+        alerts: [
+          makeAlert({ id: 'a1', isDismissable: true }),
+          makeAlert({ id: 'a2', isDismissable: true }),
+        ],
+        lastSeenAt: null,
+      });
+      render(
+        <TestProviders>
+          <AlertsBell />
+        </TestProviders>,
+      );
+      await waitFor(() => {
+        expect(alertsApi.getAll).toHaveBeenCalled();
+      });
+
+      await user.click(screen.getByRole('button', { name: 'Notificaciones' }));
+
+      expect(screen.getByRole('button', { name: 'Cerrar todas' })).toBeInTheDocument();
+    });
+
+    it('dismisses every dismissable in parallel — persistent ones are NOT touched', async () => {
+      const user = userEvent.setup();
+      mockAlertsResponse({
+        alerts: [
+          makeAlert({ id: 'd1', isDismissable: true }),
+          makeAlert({ id: 'd2', isDismissable: true }),
+          // Persistent: server would reject this — the button must not even
+          // try.
+          makeAlert({ id: 'p1', isDismissable: false }),
+        ],
+        lastSeenAt: null,
+      });
+      render(
+        <TestProviders>
+          <AlertsBell />
+        </TestProviders>,
+      );
+      await waitFor(() => {
+        expect(alertsApi.getAll).toHaveBeenCalled();
+      });
+
+      await user.click(screen.getByRole('button', { name: 'Notificaciones' }));
+      await user.click(screen.getByRole('button', { name: 'Cerrar todas' }));
+
+      await waitFor(() => {
+        expect(alertsApi.dismiss).toHaveBeenCalledTimes(2);
+      });
+      const dismissedIds = vi
+        .mocked(alertsApi.dismiss)
+        .mock.calls.map(([id]) => id)
+        .sort();
+      expect(dismissedIds).toEqual(['d1', 'd2']);
+    });
+
+    it('shows the persistent hint footer when at least one persistent alert remains', async () => {
+      const user = userEvent.setup();
+      mockAlertsResponse({
+        alerts: [makeAlert({ id: 'p1', isDismissable: false })],
+        lastSeenAt: null,
+      });
+      render(
+        <TestProviders>
+          <AlertsBell />
+        </TestProviders>,
+      );
+      await waitFor(() => {
+        expect(alertsApi.getAll).toHaveBeenCalled();
+      });
+
+      await user.click(screen.getByRole('button', { name: 'Notificaciones' }));
+
+      expect(
+        screen.getByText('Las alertas restantes se cierran solas al resolverlas'),
+      ).toBeInTheDocument();
+    });
+
+    it('hides the persistent hint footer when there are no persistent alerts', async () => {
+      const user = userEvent.setup();
+      mockAlertsResponse({
+        alerts: [
+          makeAlert({ id: 'a1', isDismissable: true }),
+          makeAlert({ id: 'a2', isDismissable: true }),
+        ],
+        lastSeenAt: null,
+      });
+      render(
+        <TestProviders>
+          <AlertsBell />
+        </TestProviders>,
+      );
+      await waitFor(() => {
+        expect(alertsApi.getAll).toHaveBeenCalled();
+      });
+
+      await user.click(screen.getByRole('button', { name: 'Notificaciones' }));
+
+      expect(
+        screen.queryByText('Las alertas restantes se cierran solas al resolverlas'),
+      ).not.toBeInTheDocument();
+    });
+  });
 });
