@@ -42,7 +42,7 @@ interface AlertItemProps {
  * `isDismissable === false` (persistent alerts — server-enforced too).
  *
  * The row itself is clickable: it navigates to the feature index page that
- * lets the user act on the alert (`/monthly-services`, `/habits`, `/budgets`,
+ * lets the user act on the alert (`/services`, `/habits`, `/budgets`,
  * `/chores`). The close button stops propagation so dismissing doesn't also
  * navigate.
  */
