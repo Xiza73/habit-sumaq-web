@@ -861,6 +861,8 @@
     "loading": "Carregando alertas...",
     "error": "Não foi possível carregar os alertas",
     "empty": "Está tudo em dia, nenhum alerta ativo",
+    "dismissAll": "Fechar todas",
+    "persistentHint": "Os alertas restantes se fecham sozinhos quando você os resolver",
     "items": {
       "serviceDueToday": {
         "title": "Vence hoje: {name}",

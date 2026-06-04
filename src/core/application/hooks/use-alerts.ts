@@ -86,6 +86,56 @@ export function useDismissAlert() {
 }
 
 /**
+ * Bulk-dismiss every per-day alert visible in the cache.
+ *
+ * Receives the list of alert IDs that the caller wants to close — keeps
+ * the hook agnostic to the source of truth (the popover already filters
+ * `isDismissable === true`, so no defensive re-filtering here). Server
+ * still gates persistent alerts via `ALR_001`, so even if a misbehaving
+ * caller passed one through, the wrong row would just bounce.
+ *
+ * Fan-out via `Promise.all` so all dismisses fly in parallel — N requests
+ * is fine for the < 20 alerts/user cap; if that ever blows up we can swap
+ * for a `POST /alerts/dismiss-all` server endpoint without changing the
+ * hook's signature.
+ *
+ * Optimistic update mirrors `useDismissAlert`: instantly removes every
+ * targeted ID from the cached list. On error the previous snapshot is
+ * restored, and `onSettled` triggers a refetch so any partial success
+ * (one dismiss landed before another rejected) reconciles with the
+ * server's actual state.
+ */
+export function useDismissAllDismissable() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (alertIds: string[]) => {
+      await Promise.all(alertIds.map((id) => alertsApi.dismiss(id)));
+    },
+    onMutate: async (alertIds) => {
+      await queryClient.cancelQueries({ queryKey: alertKeys.lists() });
+      const previous = queryClient.getQueryData<AlertsListResponse>(alertKeys.list());
+      const ids = new Set(alertIds);
+      if (previous) {
+        queryClient.setQueryData<AlertsListResponse>(alertKeys.list(), {
+          ...previous,
+          alerts: previous.alerts.filter((a) => !ids.has(a.id)),
+        });
+      }
+      return { previous };
+    },
+    onError: (_err, _ids, ctx) => {
+      if (ctx?.previous) {
+        queryClient.setQueryData(alertKeys.list(), ctx.previous);
+      }
+    },
+    onSettled: () => {
+      void queryClient.invalidateQueries({ queryKey: alertKeys.lists() });
+    },
+  });
+}
+
+/**
  * Bump `lastSeenAt` server-side and update the cached value optimistically
  * so the bell badge drops to zero the instant the popover opens — no
  * waiting for a roundtrip.
