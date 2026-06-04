@@ -192,7 +192,7 @@ describe('AlertItem', () => {
   });
 
   describe('navigation (click → feature page)', () => {
-    it('navigates to /monthly-services on click for service alerts', async () => {
+    it('navigates to /services on click for service alerts', async () => {
       const user = userEvent.setup();
       const onNavigate = vi.fn();
       renderItem(
@@ -207,7 +207,10 @@ describe('AlertItem', () => {
       // exposes a labeled clickable region.
       await user.click(screen.getByRole('button', { name: /Netflix/i }));
 
-      expect(pushMock).toHaveBeenCalledWith('/monthly-services');
+      // Note: backend API path is /monthly-services, but the Next.js route
+      // for the UI is /services. NAV_SECTIONS in Sidebar.tsx is the source
+      // of truth for in-app routes.
+      expect(pushMock).toHaveBeenCalledWith('/services');
       expect(onNavigate).toHaveBeenCalledTimes(1);
     });
 
