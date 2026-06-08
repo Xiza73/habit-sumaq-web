@@ -14,7 +14,7 @@ import {
 } from 'recharts';
 
 import { type DailyFlowPoint } from '@/core/domain/entities/reports';
-import { type Currency } from '@/core/domain/enums/account.enums';
+import { type Currency } from '@/core/domain/enums/currency.enum';
 
 import { formatCurrency } from '@/lib/format';
 

@@ -1,5 +1,5 @@
 import { type MonthlyService } from '@/core/domain/entities/monthly-service';
-import { type Currency } from '@/core/domain/enums/account.enums';
+import { type Currency } from '@/core/domain/enums/currency.enum';
 
 /**
  * Per-currency totals for the "Pagado / Estimado" KPI on the services

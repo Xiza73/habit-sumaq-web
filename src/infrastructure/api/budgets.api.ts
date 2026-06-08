@@ -1,6 +1,6 @@
 import { type Budget, type BudgetWithKpi } from '@/core/domain/entities/budget';
 import { type Transaction } from '@/core/domain/entities/transaction';
-import { type Currency } from '@/core/domain/enums/account.enums';
+import { type Currency } from '@/core/domain/enums/currency.enum';
 import {
   type AddBudgetMovementInput,
   type CreateBudgetInput,

@@ -1,4 +1,4 @@
-import { type Currency } from '@/core/domain/enums/account.enums';
+import { type Currency } from '@/core/domain/enums/currency.enum';
 
 export const REPORT_PERIODS = ['week', '30d', 'month', '3m'] as const;
 export type ReportPeriod = (typeof REPORT_PERIODS)[number];

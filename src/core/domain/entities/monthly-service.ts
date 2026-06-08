@@ -1,4 +1,4 @@
-import { type Currency } from '@/core/domain/enums/account.enums';
+import { type Currency } from '@/core/domain/enums/currency.enum';
 
 /**
  * Allowed billing cadences for a MonthlyService. The backend stores these as

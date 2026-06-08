@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
 
-import { AccountType, Currency } from './account.enums';
+import { AccountType } from './account.enums';
+
+// Currency tests moved to `./currency.enum.test.ts` in Phase A2 of the
+// accounts-to-modular-finance v1.0.0 refactor (the enum itself was extracted).
 
 describe('AccountType', () => {
   it('has CHECKING value', () => {
@@ -25,23 +28,5 @@ describe('AccountType', () => {
 
   it('has exactly 5 values', () => {
     expect(Object.keys(AccountType)).toHaveLength(5);
-  });
-});
-
-describe('Currency', () => {
-  it('has PEN value', () => {
-    expect(Currency.PEN).toBe('PEN');
-  });
-
-  it('has USD value', () => {
-    expect(Currency.USD).toBe('USD');
-  });
-
-  it('has EUR value', () => {
-    expect(Currency.EUR).toBe('EUR');
-  });
-
-  it('has exactly 3 values', () => {
-    expect(Object.keys(Currency)).toHaveLength(3);
   });
 });
