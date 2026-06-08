@@ -1,4 +1,5 @@
-import { type AccountType, type Currency } from '@/core/domain/enums/account.enums';
+import { type AccountType } from '@/core/domain/enums/account.enums';
+import { type Currency } from '@/core/domain/enums/currency.enum';
 
 export interface Account {
   id: string;

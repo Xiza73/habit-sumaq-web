@@ -1,6 +1,6 @@
 import { z } from 'zod/v4';
 
-import { type Currency } from '@/core/domain/enums/account.enums';
+import { type Currency } from '@/core/domain/enums/currency.enum';
 
 export const createTransactionSchema = z
   .object({

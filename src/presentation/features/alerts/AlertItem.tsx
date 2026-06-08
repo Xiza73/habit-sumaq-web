@@ -20,7 +20,7 @@ import {
   type AlertType,
   getAlertHref,
 } from '@/core/domain/entities/alert';
-import { type Currency } from '@/core/domain/enums/account.enums';
+import { type Currency } from '@/core/domain/enums/currency.enum';
 
 import { formatCurrency } from '@/lib/format';
 import { cn } from '@/lib/utils';

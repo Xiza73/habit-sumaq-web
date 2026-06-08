@@ -1,4 +1,3 @@
-import { type Currency } from '@/core/domain/enums/account.enums';
 import {
   type DateFormat,
   type Language,
@@ -8,6 +7,7 @@ import {
   type StartOfWeek,
   type Theme,
 } from '@/core/domain/enums/common.enums';
+import { type Currency } from '@/core/domain/enums/currency.enum';
 
 export interface UserSettings {
   id: string;

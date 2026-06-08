@@ -4,7 +4,7 @@ import { useLocale, useTranslations } from 'next-intl';
 
 import { PiggyBank, Plus } from 'lucide-react';
 
-import { type Currency } from '@/core/domain/enums/account.enums';
+import { type Currency } from '@/core/domain/enums/currency.enum';
 
 import { formatPeriodLabel } from '@/lib/format';
 

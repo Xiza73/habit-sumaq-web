@@ -1,5 +1,5 @@
 import { type Transaction } from '@/core/domain/entities/transaction';
-import { type Currency } from '@/core/domain/enums/account.enums';
+import { type Currency } from '@/core/domain/enums/currency.enum';
 
 /**
  * Monthly discretionary spending plan, scoped to one (year, month, currency).

@@ -10,7 +10,7 @@ import { toast } from 'sonner';
 import { useAccounts } from '@/core/application/hooks/use-accounts';
 import { useSettleTransaction } from '@/core/application/hooks/use-transactions';
 import { type Transaction } from '@/core/domain/entities/transaction';
-import { type Currency } from '@/core/domain/enums/account.enums';
+import { type Currency } from '@/core/domain/enums/currency.enum';
 import {
   type SettleTransactionInput,
   settleTransactionSchema,

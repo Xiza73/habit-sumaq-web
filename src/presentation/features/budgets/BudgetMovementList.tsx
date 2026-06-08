@@ -10,8 +10,8 @@ import { useCategories } from '@/core/application/hooks/use-categories';
 import { useDeleteTransaction } from '@/core/application/hooks/use-transactions';
 import { useDateFormat } from '@/core/application/hooks/use-user-settings';
 import { type Transaction } from '@/core/domain/entities/transaction';
-import { type Currency } from '@/core/domain/enums/account.enums';
 import { type DateFormat } from '@/core/domain/enums/common.enums';
+import { type Currency } from '@/core/domain/enums/currency.enum';
 
 import { ApiError } from '@/infrastructure/api/api-error';
 

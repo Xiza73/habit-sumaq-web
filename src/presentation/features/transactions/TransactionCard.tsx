@@ -8,7 +8,7 @@ import { HandCoins, MoreVertical, Pencil, PiggyBank, Trash2 } from 'lucide-react
 import { useDateFormat } from '@/core/application/hooks/use-user-settings';
 import { type Category } from '@/core/domain/entities/category';
 import { type Transaction } from '@/core/domain/entities/transaction';
-import { type Currency } from '@/core/domain/enums/account.enums';
+import { type Currency } from '@/core/domain/enums/currency.enum';
 
 import { formatCurrency, formatDate } from '@/lib/format';
 import { TRANSACTION_TYPE_COLORS, TRANSACTION_TYPE_ICONS } from '@/lib/transaction-icons';
