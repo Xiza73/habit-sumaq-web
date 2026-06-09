@@ -888,5 +888,46 @@
         "subtitle": "Vencia em {date}"
       }
     }
+  },
+  "debts": {
+    "title": "Dívidas e Empréstimos",
+    "subtitle": "Agrupado por pessoa e moeda",
+    "empty": "Você não tem dívidas ou empréstimos registrados.",
+    "emptyPending": "Nada pendente. Tudo em ordem.",
+    "statusFilter": {
+      "pending": "Pendentes",
+      "all": "Todos",
+      "settled": "Liquidados"
+    },
+    "summary": {
+      "youOwe": "Você deve",
+      "theyOweYou": "Te devem",
+      "allSettled": "Tudo quitado.",
+      "net": "Líquido",
+      "pendingCount": "{count, plural, one {# pendente} other {# pendentes}}",
+      "settledCount": "{count, plural, one {# liquidado} other {# liquidados}}",
+      "settleAll": "Liquidar tudo"
+    },
+    "bulkSettle": {
+      "title": "Liquidar tudo com esta pessoa",
+      "totalPending": "Pendente total: {amount} em {count, plural, one {# operação} other {# operações}}.",
+      "netSummary": {
+        "theyOweYou": "A seu favor: {amount}.",
+        "youOwe": "Contra você: {amount}."
+      },
+      "mode": "Como você está fechando?",
+      "real": {
+        "title": "Pagamento real",
+        "description": "Dinheiro realmente mudou de mãos. Atualiza seu saldo interno em {currency}."
+      },
+      "informal": {
+        "title": "Fechamento informal",
+        "description": "Só marca como liquidado, sem mexer no saldo interno."
+      },
+      "cancel": "Cancelar",
+      "confirm": "Confirmar",
+      "successReal": "Dívidas com {name} ({currency}) liquidadas.",
+      "successInformal": "Dívidas com {name} ({currency}) marcadas como liquidadas."
+    }
   }
 }

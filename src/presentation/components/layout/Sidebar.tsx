@@ -79,7 +79,11 @@ const NAV_SECTIONS: NavSection[] = [
         favoriteKey: 'transactions',
       },
       {
-        href: '/transactions/debts',
+        // Swapped from `/transactions/debts` to `/debts` in Phase A3-W
+        // of the accounts-to-modular-finance v1.0.0 refactor. The legacy
+        // route is still reachable directly by URL until A6-W drops the
+        // transactions UI entirely.
+        href: '/debts',
         labelKey: 'debts',
         icon: HandCoins,
         favoriteKey: 'debts',
