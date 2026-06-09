@@ -888,5 +888,46 @@
         "subtitle": "Was due on {date}"
       }
     }
+  },
+  "debts": {
+    "title": "Debts and Loans",
+    "subtitle": "Grouped by person and currency",
+    "empty": "You have no debts or loans recorded.",
+    "emptyPending": "Nothing pending. You're all clear.",
+    "statusFilter": {
+      "pending": "Pending",
+      "all": "All",
+      "settled": "Settled"
+    },
+    "summary": {
+      "youOwe": "You owe",
+      "theyOweYou": "They owe you",
+      "allSettled": "All settled.",
+      "net": "Net",
+      "pendingCount": "{count, plural, one {# pending} other {# pending}}",
+      "settledCount": "{count, plural, one {# settled} other {# settled}}",
+      "settleAll": "Settle all"
+    },
+    "bulkSettle": {
+      "title": "Settle everything with this person",
+      "totalPending": "Total pending: {amount} across {count, plural, one {# entry} other {# entries}}.",
+      "netSummary": {
+        "theyOweYou": "Net in your favor: {amount}.",
+        "youOwe": "Net you owe: {amount}."
+      },
+      "mode": "How are you closing this?",
+      "real": {
+        "title": "Real payment",
+        "description": "Money actually changed hands. Updates your internal {currency} balance."
+      },
+      "informal": {
+        "title": "Informal close",
+        "description": "Just mark as settled. Internal balance is not touched."
+      },
+      "cancel": "Cancel",
+      "confirm": "Confirm",
+      "successReal": "Settled debts with {name} ({currency}).",
+      "successInformal": "Marked debts with {name} ({currency}) as settled."
+    }
   }
 }
