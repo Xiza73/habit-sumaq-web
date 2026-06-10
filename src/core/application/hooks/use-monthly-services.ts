@@ -2,15 +2,12 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import {
   type CreateMonthlyServiceInput,
-  type PayMonthlyServiceInput,
   type UpdateMonthlyServiceInput,
 } from '@/core/domain/schemas/monthly-service.schema';
 
 import { monthlyServicesApi } from '@/infrastructure/api/monthly-services.api';
 
-import { accountKeys } from './use-accounts';
 import { alertKeys } from './use-alerts';
-import { transactionKeys } from './use-transactions';
 
 export const monthlyServiceKeys = {
   all: ['monthly-services'] as const,
@@ -57,26 +54,6 @@ export function useUpdateMonthlyService() {
     onSuccess: (_, { id }) => {
       void queryClient.invalidateQueries({ queryKey: monthlyServiceKeys.lists() });
       void queryClient.invalidateQueries({ queryKey: monthlyServiceKeys.detail(id) });
-      void queryClient.invalidateQueries({ queryKey: alertKeys.lists() });
-    },
-  });
-}
-
-/**
- * Paying creates an EXPENSE transaction that debits the account, so we also
- * invalidate `transactions` (for the list page) and `accounts` (for balance).
- */
-export function usePayMonthlyService() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: PayMonthlyServiceInput }) =>
-      monthlyServicesApi.pay(id, data),
-    onSuccess: (_, { id }) => {
-      void queryClient.invalidateQueries({ queryKey: monthlyServiceKeys.lists() });
-      void queryClient.invalidateQueries({ queryKey: monthlyServiceKeys.detail(id) });
-      void queryClient.invalidateQueries({ queryKey: transactionKeys.lists() });
-      void queryClient.invalidateQueries({ queryKey: accountKeys.all });
       void queryClient.invalidateQueries({ queryKey: alertKeys.lists() });
     },
   });

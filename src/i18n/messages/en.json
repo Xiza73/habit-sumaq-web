@@ -272,6 +272,11 @@
     "BMV_002": "You don't have access to this movement.",
     "BMV_003": "The movement date must fall within the budget's month.",
     "BMV_004": "The movement currency does not match the budget's.",
+    "MSP_001": "Payment not found.",
+    "MSP_002": "You don't have access to this payment.",
+    "MSP_003": "You already registered a payment for that period.",
+    "MSP_004": "The payment currency does not match the service's.",
+    "MSP_005": "The period must follow the YYYY-MM format.",
     "VAL_002": "The account currency does not match the budget's.",
     "TSK_001": "Section not found.",
     "TSK_002": "Section name is required.",
@@ -475,8 +480,8 @@
       "period": "Period: {period}",
       "amount": "Amount",
       "date": "Date",
-      "description": "Description",
-      "account": "Pay from",
+      "details": "Details",
+      "detailsPlaceholder": "Additional notes (optional)",
       "confirm": "Confirm payment"
     }
   },
