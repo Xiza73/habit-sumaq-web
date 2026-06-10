@@ -8,20 +8,18 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
-import { useAccounts } from '@/core/application/hooks/use-accounts';
-import { usePayMonthlyService } from '@/core/application/hooks/use-monthly-services';
+import { useCreateMonthlyServicePayment } from '@/core/application/hooks/use-monthly-service-payments';
 import { type MonthlyService } from '@/core/domain/entities/monthly-service';
 import {
-  type PayMonthlyServiceInput,
-  payMonthlyServiceSchema,
-} from '@/core/domain/schemas/monthly-service.schema';
+  type CreateMonthlyServicePaymentInput,
+  createMonthlyServicePaymentSchema,
+} from '@/core/domain/schemas/monthly-service-payment.schema';
 
 import { ApiError } from '@/infrastructure/api/api-error';
 
 import { DatePicker } from '@/presentation/components/ui/DatePicker';
 import { Input } from '@/presentation/components/ui/Input';
 import { Modal } from '@/presentation/components/ui/Modal';
-import { Select } from '@/presentation/components/ui/Select';
 
 import {
   dateInputToBackendIso,
@@ -36,22 +34,41 @@ interface PayMonthlyServiceFormProps {
   onClose: () => void;
 }
 
+/**
+ * Modal that registers a payment for a monthly service.
+ *
+ * v1.0.0 (Phase A6-W.2 — accounts-to-modular-finance refactor):
+ *   - Writes go to `POST /monthly-service-payments` (the new v1.0.0
+ *     module) instead of the legacy `POST /monthly-services/:id/pay`.
+ *   - The "Cuenta" picker is REMOVED — payments debit the user's
+ *     currency pool. The currency is inherited from the service.
+ *   - `period` (YYYY-MM) is NOT user-editable. The backend enforces
+ *     sequential payment via `service.nextDuePeriod`; exposing an
+ *     input would let the user skip "Mayo" and pay "Junio" out of
+ *     order, contradicting the "Período: Mayo 2026" pill above. The
+ *     period is included in the POST payload as `service.nextDuePeriod`
+ *     so the schema validates, but the only way to advance the period
+ *     is to pay or skip the current one.
+ *   - The date picker is constrained to the period's calendar month —
+ *     same pattern as `BudgetMovementForm`. The user records WHEN they
+ *     paid the bill within that month, not which bill they're paying.
+ */
 export function PayMonthlyServiceForm({ open, service, onClose }: PayMonthlyServiceFormProps) {
   const t = useTranslations('monthlyServices');
   const tCommon = useTranslations('common');
   const tErrors = useTranslations('errors');
   const locale = useLocale();
 
-  const { data: accounts } = useAccounts(false);
-  const payMutation = usePayMonthlyService();
+  const createMutation = useCreateMonthlyServicePayment();
 
-  const form = useForm<PayMonthlyServiceInput>({
-    resolver: zodResolver(payMonthlyServiceSchema),
+  const form = useForm<CreateMonthlyServicePaymentInput>({
+    resolver: zodResolver(createMonthlyServicePaymentSchema),
     defaultValues: {
+      monthlyServiceId: '',
+      period: '',
       amount: 0,
       date: getTodayLocaleDate(),
       description: null,
-      accountIdOverride: undefined,
     },
   });
 
@@ -63,49 +80,67 @@ export function PayMonthlyServiceForm({ open, service, onClose }: PayMonthlyServ
     // open the form. Falls back to today when dueDay is null.
     const estimatedDate = getEstimatedPaymentDate(service.nextDuePeriod, service.dueDay);
     form.reset({
+      monthlyServiceId: service.id,
+      period: service.nextDuePeriod,
       amount: service.estimatedAmount ?? 0,
       date: estimatedDate ?? getTodayLocaleDate(),
-      description: service.name,
-      accountIdOverride: service.defaultAccountId,
+      // Notes start EMPTY by design — the service name (e.g. "Sedapal")
+      // already identifies the payment. Pre-filling here would mirror the
+      // service name back to the user as if it were custom input. The field
+      // is optional; users add real value only when there's something to
+      // say (e.g. "incluye recargo" or "pago en efectivo").
+      description: null,
     });
   }, [open, service, form]);
 
   if (!service) return null;
 
-  function handleSubmit(values: PayMonthlyServiceInput) {
+  // Constrain the date picker to the period being paid. Same pattern as
+  // `BudgetMovementForm` — pinning min/max stops a user from picking a
+  // date that doesn't match the period they're recording.
+  const monthFirst = `${service.nextDuePeriod}-01`;
+  const monthLast = lastDayOfPeriod(service.nextDuePeriod);
+
+  function handleSubmit(values: CreateMonthlyServicePaymentInput) {
     if (!service) return;
 
-    const cleaned: PayMonthlyServiceInput = {
+    const cleaned: CreateMonthlyServicePaymentInput = {
+      monthlyServiceId: service.id,
+      // Period is NOT user-editable — always the service's nextDuePeriod.
+      // The schema requires it, so we read it off the service directly
+      // (not from form state) so even a stale form value can't override it.
+      period: service.nextDuePeriod,
       amount: values.amount,
       // Pin to 12:00 UTC so the backend reads the same calendar day across
       // every realistic timezone — sending the raw YYYY-MM-DD makes it
       // parse as UTC midnight which shifts to the previous day in negative
       // offsets (e.g. paying the 3rd in America/Lima ended up stored as
       // the 2nd, breaking the dueDay recompute).
-      date: dateInputToBackendIso(values.date),
+      date: dateInputToBackendIso(values.date ?? '') ?? values.date,
       description: values.description === '' ? null : (values.description ?? null),
-      accountIdOverride: values.accountIdOverride || undefined,
     };
 
-    payMutation.mutate(
-      { id: service.id, data: cleaned },
-      {
-        onSuccess: () => {
-          toast.success(t('paySuccess', { name: service.name }));
-          onClose();
-        },
-        onError: (error) => {
-          toast.error(
-            error instanceof ApiError && error.code && tErrors.has(error.code)
-              ? tErrors(error.code as 'MSVC_001')
-              : tErrors('generic'),
-          );
-        },
+    createMutation.mutate(cleaned, {
+      onSuccess: () => {
+        toast.success(t('paySuccess', { name: service.name }));
+        onClose();
       },
-    );
+      onError: (error) => {
+        // MSP_003 = already-paid-for-period (UQ_msp_service_period_active).
+        // Attach to the `period` field so the user can pick another month
+        // instead of being kicked back to a global toast.
+        if (error instanceof ApiError && error.code === 'MSP_003') {
+          form.setError('period', { message: tErrors('MSP_003') });
+          return;
+        }
+        toast.error(
+          error instanceof ApiError && error.code && tErrors.has(error.code)
+            ? tErrors(error.code as 'MSP_001')
+            : tErrors('generic'),
+        );
+      },
+    });
   }
-
-  const accountOptions = accounts?.filter((a) => !a.isArchived && a.currency === service.currency);
 
   return (
     <Modal open={open} onClose={onClose} title={t('payForm.title', { name: service.name })}>
@@ -139,34 +174,31 @@ export function PayMonthlyServiceForm({ open, service, onClose }: PayMonthlyServ
               control={form.control}
               name="date"
               render={({ field }) => (
-                <DatePicker id="pay-date" value={field.value ?? ''} onChange={field.onChange} />
+                <DatePicker
+                  id="pay-date"
+                  min={monthFirst}
+                  max={monthLast}
+                  value={field.value ?? ''}
+                  onChange={field.onChange}
+                />
               )}
             />
           </div>
         </div>
 
         <div className="space-y-2">
-          <label htmlFor="pay-account" className="text-sm font-medium">
-            {t('payForm.account')}
+          <label htmlFor="pay-details" className="text-sm font-medium">
+            {t('payForm.details')}
           </label>
-          <Select id="pay-account" {...form.register('accountIdOverride')}>
-            {accountOptions?.map((account) => (
-              <option key={account.id} value={account.id}>
-                {account.name} ({account.currency})
-              </option>
-            ))}
-          </Select>
-        </div>
-
-        <div className="space-y-2">
-          <label htmlFor="pay-description" className="text-sm font-medium">
-            {t('payForm.description')}
-          </label>
+          {/* "Detalles" intentionally renamed from "Descripción" — the
+              payment is already named by the service (e.g. "Sedapal"), so
+              this field is now strictly OPTIONAL notes on top of that
+              (recargos, partial payments, boleta refs, etc.). */}
           <Input
-            id="pay-description"
+            id="pay-details"
             type="text"
             {...form.register('description')}
-            placeholder={t('payForm.description')}
+            placeholder={t('payForm.detailsPlaceholder')}
           />
         </div>
 
@@ -180,14 +212,25 @@ export function PayMonthlyServiceForm({ open, service, onClose }: PayMonthlyServ
           </button>
           <button
             type="submit"
-            disabled={payMutation.isPending}
+            disabled={createMutation.isPending}
             className="inline-flex items-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50"
           >
-            {payMutation.isPending && <Loader2 className="mr-2 size-4 animate-spin" />}
+            {createMutation.isPending && <Loader2 className="mr-2 size-4 animate-spin" />}
             {t('payForm.confirm')}
           </button>
         </div>
       </form>
     </Modal>
   );
+}
+
+/**
+ * Last calendar day of a period (`YYYY-MM`) formatted as `YYYY-MM-DD`.
+ * Day 0 of the next month = last day of the current. Same trick the
+ * budgets form uses.
+ */
+function lastDayOfPeriod(period: string): string {
+  const [yyyy, mm] = period.split('-').map(Number);
+  const last = new Date(Date.UTC(yyyy, mm, 0));
+  return `${yyyy}-${String(mm).padStart(2, '0')}-${String(last.getUTCDate()).padStart(2, '0')}`;
 }

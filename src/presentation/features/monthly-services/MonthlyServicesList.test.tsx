@@ -65,7 +65,13 @@ vi.mock('@/core/application/hooks/use-monthly-services', () => ({
   useSkipMonthlyServiceMonth: () => ({ mutate: vi.fn(), isPending: false }),
   useCreateMonthlyService: () => ({ mutate: vi.fn(), isPending: false }),
   useUpdateMonthlyService: () => ({ mutate: vi.fn(), isPending: false }),
-  usePayMonthlyService: () => ({ mutate: vi.fn(), isPending: false }),
+}));
+
+// v1.0.0 (Phase A6-W.2): PayMonthlyServiceForm now calls the new
+// `useCreateMonthlyServicePayment` hook instead of the legacy
+// `usePayMonthlyService`. Mounted by this list inside <PayMonthlyServiceForm>.
+vi.mock('@/core/application/hooks/use-monthly-service-payments', () => ({
+  useCreateMonthlyServicePayment: () => ({ mutate: vi.fn(), isPending: false }),
 }));
 
 vi.mock('@/core/application/hooks/use-accounts', () => ({

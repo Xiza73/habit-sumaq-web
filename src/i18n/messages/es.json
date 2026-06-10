@@ -272,6 +272,11 @@
     "BMV_002": "No tienes acceso a este movimiento.",
     "BMV_003": "La fecha del movimiento debe estar dentro del mes del presupuesto.",
     "BMV_004": "La moneda del movimiento no coincide con la del presupuesto.",
+    "MSP_001": "Pago no encontrado.",
+    "MSP_002": "No tienes acceso a este pago.",
+    "MSP_003": "Ya registraste un pago para ese período.",
+    "MSP_004": "La moneda del pago no coincide con la del servicio.",
+    "MSP_005": "El período debe tener formato YYYY-MM.",
     "VAL_002": "La moneda de la cuenta no coincide con la del presupuesto.",
     "TSK_001": "Sección no encontrada.",
     "TSK_002": "El nombre de la sección es obligatorio.",
@@ -475,8 +480,8 @@
       "period": "Período: {period}",
       "amount": "Monto",
       "date": "Fecha",
-      "description": "Descripción",
-      "account": "Pagar desde",
+      "details": "Detalles",
+      "detailsPlaceholder": "Notas adicionales (opcional)",
       "confirm": "Confirmar pago"
     }
   },
