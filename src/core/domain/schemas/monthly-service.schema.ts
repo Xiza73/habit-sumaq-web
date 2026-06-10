@@ -19,7 +19,10 @@ const frequencyMonthsSchema = z
 
 export const createMonthlyServiceSchema = z.object({
   name: z.string().min(1, 'required').max(100, 'max_length'),
-  defaultAccountId: z.string().regex(UUID_REGEX, 'invalid_uuid'),
+  // v1.0.0 (A6-W.4): optional — backend accepts null. The form no longer
+  // collects this field (drops the account picker). Kept in the schema
+  // so direct API consumers can still send it.
+  defaultAccountId: z.string().regex(UUID_REGEX, 'invalid_uuid').optional(),
   categoryId: z.string().regex(UUID_REGEX, 'invalid_uuid'),
   currency: z.string().length(3, 'invalid_currency'),
   frequencyMonths: frequencyMonthsSchema,

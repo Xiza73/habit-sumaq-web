@@ -1,14 +1,13 @@
 'use client';
 
 import { useEffect } from 'react';
-import { useForm, useWatch } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { useTranslations } from 'next-intl';
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
-import { useAccounts } from '@/core/application/hooks/use-accounts';
 import {
   useCreateMonthlyService,
   useUpdateMonthlyService,
@@ -55,17 +54,18 @@ export function MonthlyServiceForm({ open, service, onClose }: MonthlyServiceFor
   const tErrors = useTranslations('errors');
   const isEditing = !!service;
 
-  const { data: accounts } = useAccounts(false);
-
   const createMutation = useCreateMonthlyService();
   const updateMutation = useUpdateMonthlyService();
   const isPending = createMutation.isPending || updateMutation.isPending;
 
+  // v1.0.0 (A6-W.4): the account picker is gone. `defaultAccountId` no
+  // longer participates in form state — the create DTO accepts it as
+  // optional and we submit `undefined`. Currency is now an explicit
+  // user choice (no longer derived from an account).
   const form = useForm<CreateMonthlyServiceInput>({
     resolver: zodResolver(createMonthlyServiceSchema),
     defaultValues: {
       name: '',
-      defaultAccountId: '',
       categoryId: '',
       currency: 'PEN',
       frequencyMonths: 1,
@@ -75,22 +75,12 @@ export function MonthlyServiceForm({ open, service, onClose }: MonthlyServiceFor
     },
   });
 
-  const selectedAccountId = useWatch({ control: form.control, name: 'defaultAccountId' });
-
-  // In create mode the currency is locked to the selected account's currency.
-  useEffect(() => {
-    if (isEditing || !selectedAccountId) return;
-    const account = accounts?.find((a) => a.id === selectedAccountId);
-    if (account) form.setValue('currency', account.currency);
-  }, [selectedAccountId, accounts, isEditing, form]);
-
   useEffect(() => {
     if (!open) return;
 
     if (service) {
       form.reset({
         name: service.name,
-        defaultAccountId: service.defaultAccountId,
         categoryId: service.categoryId,
         currency: service.currency,
         frequencyMonths: service.frequencyMonths,
@@ -101,7 +91,6 @@ export function MonthlyServiceForm({ open, service, onClose }: MonthlyServiceFor
     } else {
       form.reset({
         name: '',
-        defaultAccountId: '',
         categoryId: '',
         currency: 'PEN',
         frequencyMonths: 1,
@@ -116,7 +105,6 @@ export function MonthlyServiceForm({ open, service, onClose }: MonthlyServiceFor
     if (isEditing && service) {
       const updateData: UpdateMonthlyServiceInput = {
         name: values.name,
-        defaultAccountId: values.defaultAccountId,
         categoryId: values.categoryId,
         estimatedAmount: emptyToUndefined(values.estimatedAmount) ?? null,
         dueDay: emptyToUndefined(values.dueDay) ?? null,
@@ -177,27 +165,6 @@ export function MonthlyServiceForm({ open, service, onClose }: MonthlyServiceFor
           )}
         </div>
 
-        <div className="space-y-2">
-          <label htmlFor="msvc-account" className="text-sm font-medium">
-            {t('fields.defaultAccount')}
-          </label>
-          <Select id="msvc-account" {...form.register('defaultAccountId')}>
-            <option value="">—</option>
-            {accounts
-              ?.filter((a) => !a.isArchived)
-              .map((account) => (
-                <option key={account.id} value={account.id}>
-                  {account.name} ({account.currency})
-                </option>
-              ))}
-          </Select>
-          {form.formState.errors.defaultAccountId && (
-            <p className="text-xs text-destructive">
-              {form.formState.errors.defaultAccountId.message}
-            </p>
-          )}
-        </div>
-
         <CategorySelectField
           control={form.control}
           name="categoryId"
@@ -214,7 +181,11 @@ export function MonthlyServiceForm({ open, service, onClose }: MonthlyServiceFor
               <label htmlFor="msvc-currency" className="text-sm font-medium">
                 {t('fields.currency')}
               </label>
-              <Select id="msvc-currency" {...form.register('currency')} disabled>
+              {/* v1.0.0 (A6-W.4): currency es ahora user-pickable.
+                  Antes se derivaba automáticamente de la cuenta seleccionada
+                  (que ya no existe). Inmutable post-creación — backend la
+                  rechaza en updates. */}
+              <Select id="msvc-currency" {...form.register('currency')}>
                 <option value="PEN">PEN</option>
                 <option value="USD">USD</option>
                 <option value="EUR">EUR</option>
