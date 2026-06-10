@@ -13,7 +13,13 @@ export interface DateRange {
 export interface BalanceByCurrency {
   currency: Currency;
   amount: number;
-  accountCount: number;
+  /**
+   * DEPRECATED — backend deja de emitir este field cuando A6-B drop el
+   * módulo accounts. Mientras tanto el FinancesDashboard ignora el valor
+   * y la web ya no lo consume (la Balance Total card mira solo el pool
+   * por currency, no por cuenta).
+   */
+  accountCount?: number;
 }
 
 export interface FlowByCurrency {

@@ -9,7 +9,6 @@ import { useTranslations } from 'next-intl';
 import {
   BarChart3,
   CheckSquare,
-  CreditCard,
   FolderTree,
   HandCoins,
   ListChecks,
@@ -69,12 +68,12 @@ const NAV_SECTIONS: NavSection[] = [
   {
     titleKey: 'finances',
     items: [
-      { href: '/accounts', labelKey: 'accounts', icon: CreditCard, favoriteKey: 'accounts' },
+      // A6-W.5 (`accounts-to-modular-finance` v1.0.0): the legacy
+      // `/accounts` route is gone. Balance Total reads from the
+      // currency_pool now, and individual account management is no longer
+      // a concept in the app. The remaining finance routes are all
+      // module-aligned with v1.0.0 (categories, debts, services, budgets).
       { href: '/categories', labelKey: 'categories', icon: FolderTree, favoriteKey: 'categories' },
-      // A6-W.3 (`accounts-to-modular-finance` v1.0.0): the legacy
-      // `/transactions` route is gone. The `/debts` item no longer hangs
-      // off it — promoted to a top-level finances item. The next slice
-      // (A6-W.5) drops `/accounts` and merges Balance Total with the pool.
       { href: '/debts', labelKey: 'debts', icon: HandCoins, favoriteKey: 'debts' },
       { href: '/services', labelKey: 'services', icon: Receipt, favoriteKey: 'services' },
       { href: '/budgets', labelKey: 'budgets', icon: PiggyBank, favoriteKey: 'budgets' },
