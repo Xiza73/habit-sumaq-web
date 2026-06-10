@@ -15,7 +15,6 @@ import {
 import { ApiError } from '@/infrastructure/api/api-error';
 
 import { ConfirmDialog } from '@/presentation/components/feedback/ConfirmDialog';
-import { TransactionList } from '@/presentation/features/transactions/TransactionList';
 
 import { ACCOUNT_TYPE_ICONS } from '@/lib/account-icons';
 import { formatCurrency } from '@/lib/format';
@@ -132,7 +131,9 @@ export function AccountDetail({ accountId }: AccountDetailProps) {
         </div>
       </div>
 
-      <TransactionList accountId={accountId} />
+      {/* A6-W.3: removed embedded transactions list — the legacy
+          `/transactions` module is gone. The whole `/accounts` route
+          will follow in A6-W.5. */}
 
       <AccountForm open={editOpen} account={account} onClose={() => setEditOpen(false)} />
 

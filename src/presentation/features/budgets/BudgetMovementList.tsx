@@ -42,10 +42,6 @@ export function BudgetMovementList({ movements, currency, onEdit }: BudgetMoveme
   const t = useTranslations('budgets');
   const tCommon = useTranslations('common');
   const tErrors = useTranslations('errors');
-  // We keep the localized "Gasto" label under the `transactions.types.*`
-  // namespace until A6-W.3 reorganizes i18n. A budget movement IS always
-  // an expense, so this fallback is constant per-locale.
-  const tTransactions = useTranslations('transactions');
   const dateFormat = useDateFormat();
 
   // Categories are needed for the second layer of the title fallback (when
@@ -92,7 +88,7 @@ export function BudgetMovementList({ movements, currency, onEdit }: BudgetMoveme
         // localized "Gasto". A BudgetMovement has no `type`, so this is
         // the equivalent of `getTransactionDisplayTitle` minus the type
         // branch (always EXPENSE).
-        const titleText = movement.description ?? category?.name ?? tTransactions('types.EXPENSE');
+        const titleText = movement.description ?? category?.name ?? t('movements.fallbackTitle');
         return (
           <MovementRow
             key={movement.id}

@@ -9,7 +9,6 @@ import {
 import { budgetsApi } from '@/infrastructure/api/budgets.api';
 
 import { alertKeys } from './use-alerts';
-import { transactionKeys } from './use-transactions';
 
 export const budgetKeys = {
   all: ['budgets'] as const,
@@ -78,10 +77,10 @@ export function useUpdateBudget() {
 }
 
 /**
- * Soft-deletes the budget AND nullifies `budgetId` on every linked transaction
- * server-side. We invalidate the entire budget cache, plus transactions and
- * accounts (the linked txs surface in the global tx list with `budgetId: null`
- * after deletion).
+ * Soft-deletes the budget. Server-side this also drops the link on every
+ * `budget_movement` of the budget (legacy: nullified `budgetId` on
+ * transactions; A6-W.3 dropped the legacy cache invalidation since the
+ * transactions module is gone from the web).
  */
 export function useDeleteBudget() {
   const queryClient = useQueryClient();
@@ -90,7 +89,6 @@ export function useDeleteBudget() {
     mutationFn: (id: string) => budgetsApi.delete(id),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: budgetKeys.all });
-      void queryClient.invalidateQueries({ queryKey: transactionKeys.lists() });
       void queryClient.invalidateQueries({ queryKey: alertKeys.lists() });
     },
   });

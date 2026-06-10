@@ -7,7 +7,6 @@ import { usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 
 import {
-  ArrowLeftRight,
   BarChart3,
   CheckSquare,
   CreditCard,
@@ -72,23 +71,11 @@ const NAV_SECTIONS: NavSection[] = [
     items: [
       { href: '/accounts', labelKey: 'accounts', icon: CreditCard, favoriteKey: 'accounts' },
       { href: '/categories', labelKey: 'categories', icon: FolderTree, favoriteKey: 'categories' },
-      {
-        href: '/transactions',
-        labelKey: 'transactions',
-        icon: ArrowLeftRight,
-        favoriteKey: 'transactions',
-      },
-      {
-        // Swapped from `/transactions/debts` to `/debts` in Phase A3-W
-        // of the accounts-to-modular-finance v1.0.0 refactor. The legacy
-        // route is still reachable directly by URL until A6-W drops the
-        // transactions UI entirely.
-        href: '/debts',
-        labelKey: 'debts',
-        icon: HandCoins,
-        favoriteKey: 'debts',
-        indent: true,
-      },
+      // A6-W.3 (`accounts-to-modular-finance` v1.0.0): the legacy
+      // `/transactions` route is gone. The `/debts` item no longer hangs
+      // off it — promoted to a top-level finances item. The next slice
+      // (A6-W.5) drops `/accounts` and merges Balance Total with the pool.
+      { href: '/debts', labelKey: 'debts', icon: HandCoins, favoriteKey: 'debts' },
       { href: '/services', labelKey: 'services', icon: Receipt, favoriteKey: 'services' },
       { href: '/budgets', labelKey: 'budgets', icon: PiggyBank, favoriteKey: 'budgets' },
     ],

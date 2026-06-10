@@ -3,28 +3,22 @@ import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 
 import { type BudgetWithKpi } from '@/core/domain/entities/budget';
-import { type Transaction } from '@/core/domain/entities/transaction';
+import { type BudgetMovement } from '@/core/domain/entities/budget-movement';
 
 import { TestProviders } from '@/test/utils';
 
 import { BudgetKpiCard } from './BudgetKpiCard';
 
-function makeMovement(date: string, amount: number, id = `mv-${date}-${amount}`): Transaction {
+function makeMovement(date: string, amount: number, id = `mv-${date}-${amount}`): BudgetMovement {
   return {
     id,
     userId: 'user-1',
-    accountId: 'acc-1',
+    budgetId: 'b-1',
+    currency: 'PEN',
     categoryId: 'cat-1',
-    type: 'EXPENSE',
     amount,
     description: null,
     date: `${date}T12:00:00.000Z`,
-    destinationAccountId: null,
-    reference: null,
-    status: null,
-    relatedTransactionId: null,
-    remainingAmount: null,
-    budgetId: 'b-1',
     createdAt: `${date}T12:00:00.000Z`,
     updatedAt: `${date}T12:00:00.000Z`,
   };

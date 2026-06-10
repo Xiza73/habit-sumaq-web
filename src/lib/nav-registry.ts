@@ -1,5 +1,4 @@
 import {
-  ArrowLeftRight,
   BarChart3,
   CheckSquare,
   CreditCard,
@@ -29,9 +28,12 @@ import {
  * to the new one. Adding NEW keys (e.g. a new route) is safe.
  */
 export const FAVORITE_KEYS = [
-  // Finances
+  // Finances — `transactions` was dropped in A6-W.3 (accounts-to-modular-
+  // finance v1.0.0). Users with `'transactions'` persisted in their
+  // favoriteKeys still survive: `getNavEntries` silently filters unknown
+  // keys, so the slot stays empty until they re-pick. Same will happen
+  // to `accounts` in A6-W.5.
   'accounts',
-  'transactions',
   'debts',
   'categories',
   'services',
@@ -77,15 +79,11 @@ export interface NavEntry {
 export const NAV_REGISTRY: Record<FavoriteKey, NavEntry> = {
   // Finances
   accounts: { key: 'accounts', href: '/accounts', labelKey: 'accounts', icon: CreditCard },
-  transactions: {
-    key: 'transactions',
-    href: '/transactions',
-    labelKey: 'transactions',
-    icon: ArrowLeftRight,
-  },
   debts: {
     key: 'debts',
-    href: '/transactions/debts',
+    // Promoted to top-level finances route in A6-W.3 (was `/transactions/debts`
+    // before the legacy transactions UI got dropped).
+    href: '/debts',
     labelKey: 'debts',
     // "Deudas y préstamos" wraps to 2 lines in the mobile slot and pushes
     // the icon off-center. Short label keeps everything single-line.
@@ -131,8 +129,11 @@ export const NAV_REGISTRY: Record<FavoriteKey, NavEntry> = {
  * settings query hasn't loaded yet.
  */
 export const DEFAULT_FAVORITES: FavoriteKey[] = [
+  // `transactions` was the second slot before A6-W.3; swapped to `budgets`
+  // since the legacy /transactions route is gone. Budgets is the v1.0.0
+  // surface where the typical user spends most of their finance time.
   'accounts',
-  'transactions',
+  'budgets',
   'habits',
   'quick-tasks',
 ];

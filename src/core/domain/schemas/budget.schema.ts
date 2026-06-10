@@ -1,7 +1,5 @@
 import { z } from 'zod/v4';
 
-const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-
 const currencySchema = z.enum(['PEN', 'USD', 'EUR']);
 
 export const createBudgetSchema = z.object({
@@ -25,14 +23,3 @@ export const updateBudgetSchema = z.object({
 });
 
 export type UpdateBudgetInput = z.infer<typeof updateBudgetSchema>;
-
-export const addBudgetMovementSchema = z.object({
-  amount: z.number().positive('min_amount'),
-  accountId: z.string().regex(UUID_REGEX, 'invalid_uuid'),
-  categoryId: z.string().regex(UUID_REGEX, 'invalid_uuid'),
-  /** YYYY-MM-DD — must fall inside the budget's calendar month. */
-  date: z.string().min(1, 'required'),
-  description: z.string().max(255).nullable().optional(),
-});
-
-export type AddBudgetMovementInput = z.infer<typeof addBudgetMovementSchema>;
