@@ -2,14 +2,12 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { type Currency } from '@/core/domain/enums/currency.enum';
 import {
-  type AddBudgetMovementInput,
   type CreateBudgetInput,
   type UpdateBudgetInput,
 } from '@/core/domain/schemas/budget.schema';
 
 import { budgetsApi } from '@/infrastructure/api/budgets.api';
 
-import { accountKeys } from './use-accounts';
 import { alertKeys } from './use-alerts';
 import { transactionKeys } from './use-transactions';
 
@@ -93,27 +91,6 @@ export function useDeleteBudget() {
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: budgetKeys.all });
       void queryClient.invalidateQueries({ queryKey: transactionKeys.lists() });
-      void queryClient.invalidateQueries({ queryKey: alertKeys.lists() });
-    },
-  });
-}
-
-/**
- * Adding a movement creates an EXPENSE transaction + debits the account, so
- * we invalidate budgets (KPI changes), transactions (list refresh), and
- * accounts (balance update). Also invalidates alerts because the new
- * movement can push `spent` over `amount` and trigger `budget-overspent`.
- */
-export function useAddBudgetMovement() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: AddBudgetMovementInput }) =>
-      budgetsApi.addMovement(id, data),
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: budgetKeys.all });
-      void queryClient.invalidateQueries({ queryKey: transactionKeys.lists() });
-      void queryClient.invalidateQueries({ queryKey: accountKeys.all });
       void queryClient.invalidateQueries({ queryKey: alertKeys.lists() });
     },
   });

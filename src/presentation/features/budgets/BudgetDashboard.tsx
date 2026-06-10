@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 
 import { toast } from 'sonner';
 
+import { useBudgetMovements } from '@/core/application/hooks/use-budget-movements';
 import {
   useBudgets,
   useCurrentBudget,
@@ -12,7 +13,7 @@ import {
 } from '@/core/application/hooks/use-budgets';
 import { useUserSettings } from '@/core/application/hooks/use-user-settings';
 import { type Budget } from '@/core/domain/entities/budget';
-import { type Transaction } from '@/core/domain/entities/transaction';
+import { type BudgetMovement } from '@/core/domain/entities/budget-movement';
 import { type Currency } from '@/core/domain/enums/currency.enum';
 
 import { ApiError } from '@/infrastructure/api/api-error';
@@ -53,11 +54,17 @@ export function BudgetDashboard() {
   const [movementOpen, setMovementOpen] = useState(false);
   // Holds the movement being edited from the BudgetMovementList kebab menu.
   // Null = not editing. Truthy = edit modal open with that movement loaded.
-  const [editingMovement, setEditingMovement] = useState<Transaction | null>(null);
+  const [editingMovement, setEditingMovement] = useState<BudgetMovement | null>(null);
   const [pendingDelete, setPendingDelete] = useState<Budget | null>(null);
 
   const { data: currentBudget, isLoading } = useCurrentBudget(currency);
   const { data: allBudgets = [] } = useBudgets();
+  // v1.0.0 (Phase A6-W.1): read movements from the new `/budget-movements`
+  // endpoint instead of relying on the legacy embedded `currentBudget.movements`
+  // (which is a `Transaction[]` shape from the dying transactions module).
+  // The hook short-circuits to `undefined` while `currentBudget?.id` is
+  // missing — the UI handles the empty-list state below.
+  const { data: budgetMovements = [] } = useBudgetMovements(currentBudget?.id);
   const deleteMutation = useDeleteBudget();
 
   // Compute "what month should we show in the empty CTA?" — fall back to
@@ -132,7 +139,7 @@ export function BudgetDashboard() {
           <div className="space-y-3">
             <h2 className="text-sm font-medium text-muted-foreground">{t('movements.title')}</h2>
             <BudgetMovementList
-              movements={currentBudget.movements}
+              movements={budgetMovements}
               currency={currency}
               onEdit={setEditingMovement}
             />

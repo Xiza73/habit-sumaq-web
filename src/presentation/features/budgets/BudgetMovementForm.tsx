@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo } from 'react';
+import { useEffect } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { useTranslations } from 'next-intl';
 
@@ -8,23 +8,22 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
-import { useAccounts } from '@/core/application/hooks/use-accounts';
-import { useAddBudgetMovement } from '@/core/application/hooks/use-budgets';
-import { useUpdateTransaction } from '@/core/application/hooks/use-transactions';
-import { type Budget } from '@/core/domain/entities/budget';
-import { type Transaction } from '@/core/domain/entities/transaction';
 import {
-  type AddBudgetMovementInput,
-  addBudgetMovementSchema,
-} from '@/core/domain/schemas/budget.schema';
-import { type UpdateTransactionInput } from '@/core/domain/schemas/transaction.schema';
+  useCreateBudgetMovement,
+  useUpdateBudgetMovement,
+} from '@/core/application/hooks/use-budget-movements';
+import { type Budget } from '@/core/domain/entities/budget';
+import { type BudgetMovement } from '@/core/domain/entities/budget-movement';
+import {
+  type CreateBudgetMovementInput,
+  createBudgetMovementSchema,
+} from '@/core/domain/schemas/budget-movement.schema';
 
 import { ApiError } from '@/infrastructure/api/api-error';
 
 import { DatePicker } from '@/presentation/components/ui/DatePicker';
 import { Input } from '@/presentation/components/ui/Input';
 import { Modal } from '@/presentation/components/ui/Modal';
-import { Select } from '@/presentation/components/ui/Select';
 import { CategorySelectField } from '@/presentation/features/categories/CategorySelectField';
 
 import { dateInputToBackendIso, getTodayLocaleDate } from '@/lib/format';
@@ -33,27 +32,32 @@ interface BudgetMovementFormProps {
   open: boolean;
   budget: Budget | null;
   /**
-   * When set, the form opens in EDIT mode for that specific movement. The
-   * account is shown but disabled (the backend's `UpdateTransactionInput`
-   * doesn't accept `accountId`). Category, amount, date and description
-   * remain editable.
+   * When set, the form opens in EDIT mode for that specific movement.
+   * `budgetId` and `currency` are immutable in v1.0.0 — only `amount`,
+   * `date`, `description`, and `categoryId` are sent on PATCH.
    *
    * Leave `null` / `undefined` for the standard create flow.
    */
-  movement?: Transaction | null;
+  movement?: BudgetMovement | null;
   onClose: () => void;
 }
 
 /**
- * Modal that creates OR edits a budget movement. Validates 3 things on top
- * of the Zod schema:
- *  1. Account must be active and in the budget's currency. (Edit mode keeps
- *     the original account regardless — only `categoryId / amount / date /
- *     description` are sent on PATCH.)
- *  2. Category must exist (filtered by EXPENSE type — same convention as
- *     the transactions form).
- *  3. Date must fall in the budget's calendar month — we constrain the
- *     `<DatePicker>` `min`/`max` to enforce this client-side.
+ * Modal that creates OR edits a budget movement.
+ *
+ * v1.0.0 (Phase A6-W.1 — accounts-to-modular-finance refactor):
+ *   - Writes go to `POST/PATCH /budget-movements` (the new v1.0.0 module)
+ *     instead of the legacy `/transactions` endpoints.
+ *   - The "Cuenta" picker is REMOVED — budget movements debit the user's
+ *     currency pool (per-user, per-currency aggregate balance), not a
+ *     specific account. The currency is inherited from the budget.
+ *
+ * Client-side validation:
+ *   1. Category (filtered by EXPENSE type) — same convention as the
+ *      legacy form.
+ *   2. Date must fall in the budget's calendar month — we constrain the
+ *      `<DatePicker>` `min`/`max` to enforce it client-side (the backend
+ *      double-checks with BMV_003).
  *
  * The submit pins the date to noon UTC via `dateInputToBackendIso` so the
  * backend reads the same calendar day across every realistic timezone.
@@ -63,30 +67,19 @@ export function BudgetMovementForm({ open, budget, movement, onClose }: BudgetMo
   const tCommon = useTranslations('common');
   const tErrors = useTranslations('errors');
 
-  const { data: accounts } = useAccounts(false);
-  const addMovementMutation = useAddBudgetMovement();
-  const updateTransactionMutation = useUpdateTransaction();
+  const createMutation = useCreateBudgetMovement();
+  const updateMutation = useUpdateBudgetMovement();
 
   const isEditing = !!movement;
 
-  // Pre-pick the first eligible account in the budget's currency. The form is
-  // disabled until at least one such account exists (banner inline below).
-  // In edit mode we don't filter — the movement's account is locked, even
-  // if the user has since archived it.
-  const eligibleAccounts = useMemo(
-    () =>
-      (accounts ?? []).filter(
-        (a) => !a.isArchived && budget != null && a.currency === budget.currency,
-      ),
-    [accounts, budget],
-  );
-
-  const form = useForm<AddBudgetMovementInput>({
-    resolver: zodResolver(addBudgetMovementSchema),
+  // Form shape matches the create payload. In edit mode we ignore
+  // `budgetId` at submit time (it's immutable per the v1.0.0 contract).
+  const form = useForm<CreateBudgetMovementInput>({
+    resolver: zodResolver(createBudgetMovementSchema),
     defaultValues: {
+      budgetId: '',
       amount: 0,
-      accountId: '',
-      categoryId: '',
+      categoryId: undefined,
       date: getTodayLocaleDate(),
       description: null,
     },
@@ -99,9 +92,9 @@ export function BudgetMovementForm({ open, budget, movement, onClose }: BudgetMo
       // Edit mode — pre-populate from the existing movement. Date is sliced
       // back to YYYY-MM-DD because the entity stores the full ISO.
       form.reset({
+        budgetId: movement.budgetId,
         amount: movement.amount,
-        accountId: movement.accountId,
-        categoryId: movement.categoryId ?? '',
+        categoryId: movement.categoryId ?? undefined,
         date: movement.date.slice(0, 10),
         description: movement.description,
       });
@@ -117,42 +110,44 @@ export function BudgetMovementForm({ open, budget, movement, onClose }: BudgetMo
     const fallback = `${budget.year}-${String(budget.month).padStart(2, '0')}-01`;
 
     form.reset({
+      budgetId: budget.id,
       amount: 0,
-      accountId: eligibleAccounts[0]?.id ?? '',
-      categoryId: '',
+      categoryId: undefined,
       date: inMonth ? today : fallback,
       description: null,
     });
-  }, [open, budget, eligibleAccounts, form, movement]);
+  }, [open, budget, form, movement]);
 
   if (!budget) return null;
 
   // Constrain the date picker to the budget's calendar month. Backend also
-  // validates with BDGT_003, but pinning the picker stops the typo at the UI.
+  // validates with BMV_003, but pinning the picker stops the typo at the UI.
   const monthFirst = `${budget.year}-${String(budget.month).padStart(2, '0')}-01`;
   const monthLast = lastDayOfMonth(budget.year, budget.month);
 
-  function handleSubmit(values: AddBudgetMovementInput) {
+  function handleSubmit(values: CreateBudgetMovementInput) {
     if (!budget) return;
 
     const cleanedDescription =
       values.description === '' || values.description == null ? null : values.description;
     const cleanedDate = dateInputToBackendIso(values.date) ?? values.date;
+    const cleanedCategoryId =
+      values.categoryId === '' || values.categoryId == null ? undefined : values.categoryId;
 
     if (movement) {
-      // Edit flow — patch the existing transaction. Account isn't sent
-      // because `UpdateTransactionInput` doesn't accept it (immutable
-      // after creation per the backend contract). `reference` stays null
-      // because a budget movement is always an EXPENSE.
-      const updateData: UpdateTransactionInput = {
-        categoryId: values.categoryId,
-        amount: values.amount,
-        description: cleanedDescription,
-        date: cleanedDate,
-        reference: null,
-      };
-      updateTransactionMutation.mutate(
-        { id: movement.id, data: updateData },
+      // Edit flow — PATCH the existing movement. `budgetId` and `currency`
+      // are immutable in v1.0.0; categoryId can be cleared (nullable on
+      // the update DTO).
+      updateMutation.mutate(
+        {
+          id: movement.id,
+          data: {
+            amount: values.amount,
+            description: cleanedDescription,
+            date: cleanedDate,
+            categoryId: cleanedCategoryId ?? null,
+          },
+        },
         {
           onSuccess: () => {
             toast.success(t('movements.editSuccess'));
@@ -164,13 +159,14 @@ export function BudgetMovementForm({ open, budget, movement, onClose }: BudgetMo
       return;
     }
 
-    const cleaned: AddBudgetMovementInput = {
-      ...values,
-      date: cleanedDate,
-      description: cleanedDescription,
-    };
-    addMovementMutation.mutate(
-      { id: budget.id, data: cleaned },
+    createMutation.mutate(
+      {
+        budgetId: budget.id,
+        amount: values.amount,
+        description: cleanedDescription,
+        date: cleanedDate,
+        categoryId: cleanedCategoryId,
+      },
       {
         onSuccess: () => {
           toast.success(t('movements.addSuccess'));
@@ -182,25 +178,20 @@ export function BudgetMovementForm({ open, budget, movement, onClose }: BudgetMo
   }
 
   function handleError(error: Error) {
-    if (error instanceof ApiError && error.code === 'BDGT_003') {
-      form.setError('date', { message: tErrors('BDGT_003') });
-      return;
-    }
-    if (error instanceof ApiError && error.code === 'VAL_002') {
-      form.setError('accountId', { message: tErrors('VAL_002') });
+    // BMV_003 = date out of budget range. Same UX as the legacy BDGT_003
+    // path: attach the message to the `date` field instead of a global toast.
+    if (error instanceof ApiError && error.code === 'BMV_003') {
+      form.setError('date', { message: tErrors('BMV_003') });
       return;
     }
     toast.error(
       error instanceof ApiError && error.code && tErrors.has(error.code)
-        ? tErrors(error.code as 'BDGT_001')
+        ? tErrors(error.code as 'BMV_001')
         : tErrors('generic'),
     );
   }
 
-  const isPending = addMovementMutation.isPending || updateTransactionMutation.isPending;
-  // Edit mode CAN submit even when there are no eligible accounts: the
-  // movement already has its account locked in. Create needs at least one.
-  const disableSubmit = isPending || (!isEditing && eligibleAccounts.length === 0);
+  const isPending = createMutation.isPending || updateMutation.isPending;
 
   return (
     <Modal
@@ -212,12 +203,6 @@ export function BudgetMovementForm({ open, budget, movement, onClose }: BudgetMo
         <p className="rounded-lg bg-muted px-3 py-2 text-xs text-muted-foreground">
           {t('movements.currencyHint', { currency: budget.currency })}
         </p>
-
-        {!isEditing && eligibleAccounts.length === 0 ? (
-          <p className="rounded-md bg-destructive/10 px-3 py-2 text-xs text-destructive">
-            {t('movements.noEligibleAccount', { currency: budget.currency })}
-          </p>
-        ) : null}
 
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
@@ -248,7 +233,7 @@ export function BudgetMovementForm({ open, budget, movement, onClose }: BudgetMo
                   id="mv-date"
                   min={monthFirst}
                   max={monthLast}
-                  value={field.value}
+                  value={field.value ?? ''}
                   onChange={field.onChange}
                 />
               )}
@@ -257,38 +242,6 @@ export function BudgetMovementForm({ open, budget, movement, onClose }: BudgetMo
               <p className="text-xs text-destructive">{form.formState.errors.date.message}</p>
             )}
           </div>
-        </div>
-
-        <div className="space-y-2">
-          <label htmlFor="mv-account" className="text-sm font-medium">
-            {t('movements.account')}
-          </label>
-          <Select id="mv-account" {...form.register('accountId')} disabled={isEditing}>
-            <option value="">—</option>
-            {eligibleAccounts.map((account) => (
-              <option key={account.id} value={account.id}>
-                {account.name}
-              </option>
-            ))}
-            {/* Edit mode: the original account may not be in `eligibleAccounts`
-                anymore (archived, currency-changed, etc.). Render it as a
-                fallback option so the select still shows the right label. */}
-            {isEditing &&
-              movement &&
-              !eligibleAccounts.some((a) => a.id === movement.accountId) && (
-                <option value={movement.accountId}>
-                  {accounts?.find((a) => a.id === movement.accountId)?.name ?? movement.accountId}
-                </option>
-              )}
-          </Select>
-          {isEditing && (
-            <p className="text-[11px] text-muted-foreground">
-              {t('movements.accountImmutableHint')}
-            </p>
-          )}
-          {form.formState.errors.accountId && (
-            <p className="text-xs text-destructive">{form.formState.errors.accountId.message}</p>
-          )}
         </div>
 
         <CategorySelectField
@@ -323,7 +276,7 @@ export function BudgetMovementForm({ open, budget, movement, onClose }: BudgetMo
           </button>
           <button
             type="submit"
-            disabled={disableSubmit}
+            disabled={isPending}
             className="inline-flex items-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50"
           >
             {isPending && <Loader2 className="mr-2 size-4 animate-spin" />}

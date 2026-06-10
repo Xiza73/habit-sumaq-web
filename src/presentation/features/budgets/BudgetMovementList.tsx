@@ -6,44 +6,45 @@ import { useTranslations } from 'next-intl';
 import { MoreVertical, Pencil, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 
+import { useDeleteBudgetMovement } from '@/core/application/hooks/use-budget-movements';
 import { useCategories } from '@/core/application/hooks/use-categories';
-import { useDeleteTransaction } from '@/core/application/hooks/use-transactions';
 import { useDateFormat } from '@/core/application/hooks/use-user-settings';
-import { type Transaction } from '@/core/domain/entities/transaction';
+import { type BudgetMovement } from '@/core/domain/entities/budget-movement';
 import { type DateFormat } from '@/core/domain/enums/common.enums';
 import { type Currency } from '@/core/domain/enums/currency.enum';
 
 import { ApiError } from '@/infrastructure/api/api-error';
 
 import { formatCurrency, formatDate } from '@/lib/format';
-import { getTransactionDisplayTitle } from '@/lib/transaction-title';
 import { cn } from '@/lib/utils';
 
 interface BudgetMovementListProps {
-  movements: Transaction[];
+  movements: BudgetMovement[];
   currency: Currency;
   /**
    * Called when the user picks "Editar" from a row's kebab menu. Parent owns
    * the form state — passing the movement back triggers the edit modal.
    */
-  onEdit: (movement: Transaction) => void;
+  onEdit: (movement: BudgetMovement) => void;
 }
 
 /**
- * Inline list of budget movements rendered under the KPI card. Movements are
- * just transactions tagged with `budgetId`. Each row exposes Edit + Delete
- * via a kebab menu (same pattern as `TransactionCard`) — Edit hands the
- * movement to the parent so the form opens preselected, Delete calls
- * `DELETE /transactions/:id` directly and invalidates the budget KPI query.
+ * Inline list of budget movements rendered under the KPI card.
+ *
+ * v1.0.0 (Phase A6-W.1): reads `BudgetMovement[]` from the new
+ * `/budget-movements` endpoint and deletes via `useDeleteBudgetMovement`.
+ * Replaces the legacy "transactions tagged with budgetId" surface — the
+ * domain entity no longer has `type` or `accountId`, so the title
+ * fallback chain inlines: description → category → "Gasto" (always
+ * EXPENSE by definition for a budget movement).
  */
 export function BudgetMovementList({ movements, currency, onEdit }: BudgetMovementListProps) {
   const t = useTranslations('budgets');
   const tCommon = useTranslations('common');
   const tErrors = useTranslations('errors');
-  // Localized type label resolver passed into the title-fallback helper.
-  // Same `transactions.types.*` namespace the transactions list uses, so a
-  // movement with no description and no category falls back to "Gasto"
-  // instead of the old "Sin descripción" copy.
+  // We keep the localized "Gasto" label under the `transactions.types.*`
+  // namespace until A6-W.3 reorganizes i18n. A budget movement IS always
+  // an expense, so this fallback is constant per-locale.
   const tTransactions = useTranslations('transactions');
   const dateFormat = useDateFormat();
 
@@ -57,18 +58,18 @@ export function BudgetMovementList({ movements, currency, onEdit }: BudgetMoveme
     [categories],
   );
 
-  const deleteMutation = useDeleteTransaction();
+  const deleteMutation = useDeleteBudgetMovement();
 
-  function handleDelete(tx: Transaction) {
+  function handleDelete(movement: BudgetMovement) {
     if (!confirm(t('movements.deleteConfirm'))) return;
-    deleteMutation.mutate(tx.id, {
+    deleteMutation.mutate(movement.id, {
       onSuccess: () => {
         toast.success(t('movements.deleteSuccess'));
       },
       onError: (error) => {
         toast.error(
           error instanceof ApiError && error.code && tErrors.has(error.code)
-            ? tErrors(error.code as 'TXN_001')
+            ? tErrors(error.code as 'BMV_001')
             : tErrors('generic'),
         );
       },
@@ -85,22 +86,24 @@ export function BudgetMovementList({ movements, currency, onEdit }: BudgetMoveme
 
   return (
     <ul className="divide-y divide-border rounded-xl border border-border bg-card">
-      {movements.map((tx, index) => {
-        const category = tx.categoryId ? categoriesById.get(tx.categoryId) : null;
-        const titleText = getTransactionDisplayTitle(tx, category, (type) =>
-          tTransactions(`types.${type}`),
-        );
+      {movements.map((movement, index) => {
+        const category = movement.categoryId ? categoriesById.get(movement.categoryId) : null;
+        // Two-layer fallback inline: description → category name →
+        // localized "Gasto". A BudgetMovement has no `type`, so this is
+        // the equivalent of `getTransactionDisplayTitle` minus the type
+        // branch (always EXPENSE).
+        const titleText = movement.description ?? category?.name ?? tTransactions('types.EXPENSE');
         return (
           <MovementRow
-            key={tx.id}
-            tx={tx}
+            key={movement.id}
+            movement={movement}
             titleText={titleText}
             currency={currency}
             dateFormat={dateFormat}
             isLast={index === movements.length - 1}
             deleting={deleteMutation.isPending}
-            onEdit={() => onEdit(tx)}
-            onDelete={() => handleDelete(tx)}
+            onEdit={() => onEdit(movement)}
+            onDelete={() => handleDelete(movement)}
             tCommon={tCommon}
             tBudgets={t}
           />
@@ -111,7 +114,7 @@ export function BudgetMovementList({ movements, currency, onEdit }: BudgetMoveme
 }
 
 interface MovementRowProps {
-  tx: Transaction;
+  movement: BudgetMovement;
   titleText: string;
   currency: Currency;
   dateFormat: DateFormat;
@@ -125,7 +128,7 @@ interface MovementRowProps {
 }
 
 function MovementRow({
-  tx,
+  movement,
   titleText,
   currency,
   dateFormat,
@@ -145,10 +148,10 @@ function MovementRow({
     <li className="relative flex items-center gap-3 px-4 py-3 transition-colors hover:bg-muted/40">
       <div className="min-w-0 flex-1">
         <p className="truncate text-sm font-medium">{titleText}</p>
-        <p className="text-xs text-muted-foreground">{formatDate(tx.date, dateFormat)}</p>
+        <p className="text-xs text-muted-foreground">{formatDate(movement.date, dateFormat)}</p>
       </div>
       <p className="shrink-0 font-semibold tabular-nums text-destructive">
-        -{formatCurrency(tx.amount, currency)}
+        -{formatCurrency(movement.amount, currency)}
       </p>
       <button
         type="button"
