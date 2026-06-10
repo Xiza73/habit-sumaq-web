@@ -8,8 +8,9 @@ import { useTranslations } from 'next-intl';
 import { ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
 
+import { useBudgetMovements } from '@/core/application/hooks/use-budget-movements';
 import { useBudget, useDeleteBudget } from '@/core/application/hooks/use-budgets';
-import { type Transaction } from '@/core/domain/entities/transaction';
+import { type BudgetMovement } from '@/core/domain/entities/budget-movement';
 
 import { ApiError } from '@/infrastructure/api/api-error';
 
@@ -36,12 +37,15 @@ export function BudgetDetailView({ id }: BudgetDetailViewProps) {
   const router = useRouter();
 
   const { data: budget, isLoading, isError } = useBudget(id);
+  // v1.0.0 (Phase A6-W.1): read movements from `/budget-movements` instead
+  // of the legacy embedded `budget.movements` array (which is a Transaction[]).
+  const { data: budgetMovements = [] } = useBudgetMovements(budget?.id);
   const deleteMutation = useDeleteBudget();
 
   const [editOpen, setEditOpen] = useState(false);
   const [movementOpen, setMovementOpen] = useState(false);
   // Holds the movement being edited from the kebab menu in BudgetMovementList.
-  const [editingMovement, setEditingMovement] = useState<Transaction | null>(null);
+  const [editingMovement, setEditingMovement] = useState<BudgetMovement | null>(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
 
   function handleConfirmDelete() {
@@ -93,7 +97,7 @@ export function BudgetDetailView({ id }: BudgetDetailViewProps) {
       <div className="space-y-3">
         <h2 className="text-sm font-medium text-muted-foreground">{t('movements.title')}</h2>
         <BudgetMovementList
-          movements={budget.movements}
+          movements={budgetMovements}
           currency={budget.currency}
           onEdit={setEditingMovement}
         />
