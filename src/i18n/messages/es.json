@@ -24,35 +24,6 @@
     "logout": "Cerrar sesión",
     "sessionExpired": "Tu sesión expiró. Inicia sesión nuevamente."
   },
-  "accounts": {
-    "title": "Cuentas",
-    "createAccount": "Nueva cuenta",
-    "editAccount": "Editar cuenta",
-    "deleteAccount": "Eliminar cuenta",
-    "archiveAccount": "Archivar cuenta",
-    "name": "Nombre",
-    "type": "Tipo",
-    "currency": "Moneda",
-    "balance": "Balance",
-    "initialBalance": "Balance inicial",
-    "color": "Color",
-    "icon": "Ícono",
-    "emptyState": "No tienes cuentas. Crea tu primera cuenta para comenzar.",
-    "deleteConfirm": "¿Estás seguro de que quieres eliminar esta cuenta?",
-    "hasTransactions": "No se puede eliminar porque tiene transacciones activas.",
-    "types": {
-      "checking": "Cuenta corriente",
-      "savings": "Cuenta de ahorros",
-      "cash": "Efectivo",
-      "credit_card": "Tarjeta de crédito",
-      "investment": "Inversiones"
-    },
-    "currencies": {
-      "PEN": "Sol peruano (PEN)",
-      "USD": "Dólar (USD)",
-      "EUR": "Euro (EUR)"
-    }
-  },
   "categories": {
     "title": "Categorías",
     "createCategory": "Nueva categoría",
@@ -386,7 +357,6 @@
   },
   "navigation": {
     "finances": "Finanzas",
-    "accounts": "Cuentas",
     "categories": "Categorías",
     "debts": "Deudas y préstamos",
     "debtsShort": "Deudas",
@@ -573,10 +543,9 @@
     },
     "finances": {
       "title": "Reporte de Finanzas",
-      "subtitle": "Resumen agregado de tus cuentas y transacciones en el período seleccionado.",
+      "subtitle": "Resumen agregado de tus finanzas en el período seleccionado.",
       "totalBalance": "Balance total",
-      "totalBalanceEmpty": "Todavía no tienes cuentas activas.",
-      "accountCount": "{count, plural, one {# cuenta} other {# cuentas}}",
+      "totalBalanceEmpty": "Todavía no tienes balance en ninguna moneda.",
       "periodFlow": "Ingresos vs Gastos",
       "periodFlowEmpty": "Sin movimientos en el período.",
       "income": "Ingresos",

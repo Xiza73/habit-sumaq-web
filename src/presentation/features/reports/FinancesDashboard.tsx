@@ -47,11 +47,14 @@ export function FinancesDashboard() {
             ) : (
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3">
                 {data.totalBalance.map((bal) => (
+                  // A6-W.5: dropped "X cuentas" subtitle — the v1.0.0 Balance
+                  // Total reads from the currency pool which is per-currency,
+                  // not per-account. The accounts module is gone from the
+                  // web; A6-B drops `accountCount` from the response.
                   <KpiCard
                     key={bal.currency}
                     label={bal.currency}
                     value={formatCurrency(bal.amount, bal.currency)}
-                    subtitle={t('accountCount', { count: bal.accountCount })}
                   />
                 ))}
               </div>

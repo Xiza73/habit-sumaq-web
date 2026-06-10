@@ -50,16 +50,18 @@ describe('isFavoriteKey', () => {
 describe('getNavEntries', () => {
   it('returns the entries for known keys, preserving input order', () => {
     // Order matters — mobile uses it for slot order.
-    const result = getNavEntries(['habits', 'accounts', 'budgets']);
-    expect(result.map((e) => e.key)).toEqual(['habits', 'accounts', 'budgets']);
+    const result = getNavEntries(['habits', 'debts', 'budgets']);
+    expect(result.map((e) => e.key)).toEqual(['habits', 'debts', 'budgets']);
   });
 
   it('silently drops unknown keys (forward-compat with deprecated/renamed routes)', () => {
     // Repro: a user has an old favorite key stored that no longer exists in
     // the registry (we removed a route between releases). We want the
     // remaining favorites to still render — not a runtime crash.
-    const result = getNavEntries(['habits', 'this-route-was-removed', 'accounts']);
-    expect(result.map((e) => e.key)).toEqual(['habits', 'accounts']);
+    // A6-W.5 dropped `accounts` — perfect candidate for the "removed key
+    // survives" test.
+    const result = getNavEntries(['habits', 'this-route-was-removed', 'accounts', 'debts']);
+    expect(result.map((e) => e.key)).toEqual(['habits', 'debts']);
   });
 
   it('returns an empty array when no keys are given', () => {

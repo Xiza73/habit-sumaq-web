@@ -1,7 +1,6 @@
 import {
   BarChart3,
   CheckSquare,
-  CreditCard,
   FolderTree,
   HandCoins,
   ListChecks,
@@ -28,12 +27,11 @@ import {
  * to the new one. Adding NEW keys (e.g. a new route) is safe.
  */
 export const FAVORITE_KEYS = [
-  // Finances — `transactions` was dropped in A6-W.3 (accounts-to-modular-
-  // finance v1.0.0). Users with `'transactions'` persisted in their
-  // favoriteKeys still survive: `getNavEntries` silently filters unknown
-  // keys, so the slot stays empty until they re-pick. Same will happen
-  // to `accounts` in A6-W.5.
-  'accounts',
+  // Finances — `transactions` was dropped in A6-W.3 and `accounts` in
+  // A6-W.5 of the accounts-to-modular-finance v1.0.0 refactor. Users with
+  // either key persisted in their favoriteKeys still survive:
+  // `getNavEntries` silently filters unknown keys, so the slot stays
+  // empty until they re-pick.
   'debts',
   'categories',
   'services',
@@ -78,7 +76,6 @@ export interface NavEntry {
  */
 export const NAV_REGISTRY: Record<FavoriteKey, NavEntry> = {
   // Finances
-  accounts: { key: 'accounts', href: '/accounts', labelKey: 'accounts', icon: CreditCard },
   debts: {
     key: 'debts',
     // Promoted to top-level finances route in A6-W.3 (was `/transactions/debts`
@@ -129,10 +126,10 @@ export const NAV_REGISTRY: Record<FavoriteKey, NavEntry> = {
  * settings query hasn't loaded yet.
  */
 export const DEFAULT_FAVORITES: FavoriteKey[] = [
-  // `transactions` was the second slot before A6-W.3; swapped to `budgets`
-  // since the legacy /transactions route is gone. Budgets is the v1.0.0
-  // surface where the typical user spends most of their finance time.
-  'accounts',
+  // v1.0.0 defaults — `accounts` got dropped in A6-W.5 (the route is gone)
+  // and `transactions` in A6-W.3. The slot is filled by `debts` which
+  // surfaces the v1.0.0 `debts_loans` module.
+  'debts',
   'budgets',
   'habits',
   'quick-tasks',

@@ -53,25 +53,31 @@ describe('FinancesDashboard', () => {
     hookState.data = buildData();
     render(<FinancesDashboard />, { wrapper: TestProviders });
 
-    expect(screen.getByText(/todavía no tienes cuentas activas/i)).toBeInTheDocument();
+    // A6-W.5 swapped the empty copy: "no tienes cuentas activas" →
+    // "no tienes balance en ninguna moneda". Balance Total no longer
+    // talks about accounts.
+    expect(screen.getByText(/todavía no tienes balance en ninguna moneda/i)).toBeInTheDocument();
     expect(screen.getByText(/sin movimientos en el período/i)).toBeInTheDocument();
     expect(screen.getByText(/sin gastos categorizados en el período/i)).toBeInTheDocument();
     expect(screen.getByText(/todo al día/i)).toBeInTheDocument();
     expect(screen.getByText(/sin movimientos para graficar en el período/i)).toBeInTheDocument();
   });
 
-  it('renders a KPI card per currency in total balance', () => {
+  it('renders a KPI card per currency in total balance (no "X cuentas" subtitle anymore)', () => {
+    // A6-W.5 dropped the per-card "X cuentas" subtitle. The card now
+    // shows ONLY the currency label and the amount — the v1.0.0 Balance
+    // Total maps to the currency pool, not to individual accounts.
     hookState.data = buildData({
       totalBalance: [
-        { currency: 'PEN', amount: 1000, accountCount: 2 },
-        { currency: 'USD', amount: 500, accountCount: 1 },
+        { currency: 'PEN', amount: 1000 },
+        { currency: 'USD', amount: 500 },
       ],
     });
     render(<FinancesDashboard />, { wrapper: TestProviders });
 
-    // Two cards → two subtitles with account counts.
-    expect(screen.getByText('2 cuentas')).toBeInTheDocument();
-    expect(screen.getByText('1 cuenta')).toBeInTheDocument();
+    expect(screen.getByText('PEN')).toBeInTheDocument();
+    expect(screen.getByText('USD')).toBeInTheDocument();
+    expect(screen.queryByText(/cuenta/i)).not.toBeInTheDocument();
   });
 
   it('renders income/expense/net triplet per currency in period flow', () => {
@@ -169,7 +175,9 @@ describe('FinancesDashboard', () => {
 
     expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument();
     // No section copy should surface while loading.
-    expect(screen.queryByText(/todavía no tienes cuentas activas/i)).not.toBeInTheDocument();
+    expect(
+      screen.queryByText(/todavía no tienes balance en ninguna moneda/i),
+    ).not.toBeInTheDocument();
   });
 
   it('shows the error message when the query fails', () => {
