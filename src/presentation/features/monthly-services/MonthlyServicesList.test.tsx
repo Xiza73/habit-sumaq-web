@@ -74,10 +74,6 @@ vi.mock('@/core/application/hooks/use-monthly-service-payments', () => ({
   useCreateMonthlyServicePayment: () => ({ mutate: vi.fn(), isPending: false }),
 }));
 
-vi.mock('@/core/application/hooks/use-accounts', () => ({
-  useAccounts: () => ({ data: [], isLoading: false }),
-}));
-
 vi.mock('@/core/application/hooks/use-categories', () => ({
   useCategories: () => ({ data: [], isLoading: false }),
 }));

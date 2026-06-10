@@ -2,27 +2,12 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 
-import { type Account } from '@/core/domain/entities/account';
 import { type Category } from '@/core/domain/entities/category';
 import { type MonthlyService } from '@/core/domain/entities/monthly-service';
 
 import { TestProviders } from '@/test/utils';
 
 import { MonthlyServiceCard } from './MonthlyServiceCard';
-
-const mockAccount: Account = {
-  id: 'acc-1',
-  userId: 'user-1',
-  name: 'Cuenta corriente',
-  type: 'checking',
-  currency: 'PEN',
-  balance: 1000,
-  color: null,
-  icon: null,
-  isArchived: false,
-  createdAt: '2026-01-01T00:00:00.000Z',
-  updatedAt: '2026-01-01T00:00:00.000Z',
-};
 
 const mockCategory: Category = {
   id: 'cat-1',
@@ -65,15 +50,9 @@ function renderCard(service: MonthlyService = baseService) {
     onArchive: vi.fn(),
     onDelete: vi.fn(),
   };
-  render(
-    <MonthlyServiceCard
-      service={service}
-      account={mockAccount}
-      category={mockCategory}
-      {...handlers}
-    />,
-    { wrapper: TestProviders },
-  );
+  render(<MonthlyServiceCard service={service} category={mockCategory} {...handlers} />, {
+    wrapper: TestProviders,
+  });
   return handlers;
 }
 

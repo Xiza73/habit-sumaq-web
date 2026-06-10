@@ -6,7 +6,6 @@ import { useLocale, useTranslations } from 'next-intl';
 import { Plus } from 'lucide-react';
 import { toast } from 'sonner';
 
-import { useAccounts } from '@/core/application/hooks/use-accounts';
 import { useCategories } from '@/core/application/hooks/use-categories';
 import {
   useArchiveMonthlyService,
@@ -15,7 +14,6 @@ import {
   useSkipMonthlyServiceMonth,
 } from '@/core/application/hooks/use-monthly-services';
 import { useMonthlyServicesViewPrefs } from '@/core/application/hooks/use-monthly-services-view-prefs';
-import { type Account } from '@/core/domain/entities/account';
 import { type Category } from '@/core/domain/entities/category';
 import { type MonthlyService } from '@/core/domain/entities/monthly-service';
 
@@ -102,18 +100,11 @@ export function MonthlyServicesList() {
   const [deleteError, setDeleteError] = useState<string | null>(null);
 
   const { data: services, isLoading } = useMonthlyServices(showArchived);
-  const { data: accounts } = useAccounts(true);
   const { data: categories } = useCategories();
   const archiveMutation = useArchiveMonthlyService();
   const deleteMutation = useDeleteMonthlyService();
   const skipMutation = useSkipMonthlyServiceMonth();
   const { prefs, setPrefs } = useMonthlyServicesViewPrefs();
-
-  const accountsById = useMemo(() => {
-    const map = new Map<string, Account>();
-    accounts?.forEach((a) => map.set(a.id, a));
-    return map;
-  }, [accounts]);
 
   const categoriesById = useMemo(() => {
     const map = new Map<string, Category>();
@@ -299,7 +290,6 @@ export function MonthlyServicesList() {
                   <MonthlyServiceCard
                     key={service.id}
                     service={service}
-                    account={accountsById.get(service.defaultAccountId)}
                     category={categoriesById.get(service.categoryId)}
                     onPay={setPayingService}
                     onSkip={setSkippingService}

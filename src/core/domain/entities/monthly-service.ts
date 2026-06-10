@@ -23,7 +23,13 @@ export interface MonthlyService {
   id: string;
   userId: string;
   name: string;
-  defaultAccountId: string;
+  /**
+   * DEPRECATED en v1.0.0 (A6-W.4). El campo se mantiene en la shape del
+   * API hasta A7-B porque hay rows viejas con valor. La UI ya NO lo lee
+   * ni lo escribe — los pagos debitan al currency pool. Servicios creados
+   * post-A6-W.4 lo persisten como `null`.
+   */
+  defaultAccountId: string | null;
   categoryId: string;
   currency: Currency;
   /**
