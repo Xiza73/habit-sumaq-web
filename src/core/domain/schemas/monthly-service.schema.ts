@@ -40,12 +40,3 @@ export const updateMonthlyServiceSchema = z.object({
 });
 
 export type UpdateMonthlyServiceInput = z.infer<typeof updateMonthlyServiceSchema>;
-
-export const payMonthlyServiceSchema = z.object({
-  amount: z.number().positive('min_amount'),
-  date: z.string().min(1).optional(),
-  description: z.string().max(255).nullable().optional(),
-  accountIdOverride: z.string().regex(UUID_REGEX, 'invalid_uuid').optional(),
-});
-
-export type PayMonthlyServiceInput = z.infer<typeof payMonthlyServiceSchema>;

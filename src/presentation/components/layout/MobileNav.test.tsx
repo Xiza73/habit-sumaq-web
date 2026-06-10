@@ -33,16 +33,20 @@ function renderNav() {
 describe('MobileNav', () => {
   beforeEach(() => {
     mockUpdateMutate.mockClear();
-    mockFavoriteKeys = ['accounts', 'transactions', 'habits', 'quick-tasks'];
+    // A6-W.3 dropped `transactions` from the registry. Defaults now use
+    // `budgets` in slot 2.
+    mockFavoriteKeys = ['accounts', 'budgets', 'habits', 'quick-tasks'];
   });
 
   it('renders one slot per favorite key + a fixed Settings slot', () => {
     renderNav();
 
     // The 4 default favorites + Settings = 5 link/buttons in total.
-    // We probe by visible labels (i18n value, Spanish default).
+    // We probe by visible labels (i18n value, Spanish default). A6-W.3
+    // dropped `transactions` from DEFAULT_FAVORITES and replaced it with
+    // `budgets`.
     expect(screen.getByText(/cuentas/i)).toBeInTheDocument();
-    expect(screen.getByText(/transacciones/i)).toBeInTheDocument();
+    expect(screen.getByText(/presupuesto/i)).toBeInTheDocument();
     expect(screen.getByText(/hábitos/i)).toBeInTheDocument();
     expect(screen.getByText(/prioridades/i)).toBeInTheDocument();
     expect(screen.getByText(/configuración/i)).toBeInTheDocument();
@@ -52,7 +56,7 @@ describe('MobileNav', () => {
     // User has only 2 favorites set — slots 3 and 4 should be empty
     // placeholders with the dash label, NOT silently missing. Keeps the
     // bottom nav layout consistent regardless of customization state.
-    mockFavoriteKeys = ['accounts', 'transactions'];
+    mockFavoriteKeys = ['accounts', 'budgets'];
     renderNav();
 
     const dashLabels = screen.getAllByText('—');

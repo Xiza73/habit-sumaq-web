@@ -1,10 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import {
-  createMonthlyServiceSchema,
-  payMonthlyServiceSchema,
-  updateMonthlyServiceSchema,
-} from './monthly-service.schema';
+import { createMonthlyServiceSchema, updateMonthlyServiceSchema } from './monthly-service.schema';
 
 const VALID_UUID = '123e4567-e89b-12d3-a456-426614174000';
 const ANOTHER_UUID = '223e4567-e89b-12d3-a456-426614174000';
@@ -170,53 +166,5 @@ describe('updateMonthlyServiceSchema', () => {
     const parsed = updateMonthlyServiceSchema.parse(payload);
     expect(parsed).not.toHaveProperty('currency');
     expect(parsed).not.toHaveProperty('startPeriod');
-  });
-});
-
-describe('payMonthlyServiceSchema', () => {
-  it('accepts valid minimal input (amount only)', () => {
-    const result = payMonthlyServiceSchema.safeParse({ amount: 120 });
-    expect(result.success).toBe(true);
-  });
-
-  it('accepts valid input with all fields', () => {
-    const result = payMonthlyServiceSchema.safeParse({
-      amount: 120,
-      date: '2026-04-15',
-      description: 'Pago luz abril',
-      accountIdOverride: VALID_UUID,
-    });
-    expect(result.success).toBe(true);
-  });
-
-  it('rejects zero amount', () => {
-    const result = payMonthlyServiceSchema.safeParse({ amount: 0 });
-    expect(result.success).toBe(false);
-  });
-
-  it('rejects negative amount', () => {
-    const result = payMonthlyServiceSchema.safeParse({ amount: -10 });
-    expect(result.success).toBe(false);
-  });
-
-  it('accepts null description', () => {
-    const result = payMonthlyServiceSchema.safeParse({ amount: 120, description: null });
-    expect(result.success).toBe(true);
-  });
-
-  it('rejects non-uuid accountIdOverride', () => {
-    const result = payMonthlyServiceSchema.safeParse({
-      amount: 120,
-      accountIdOverride: 'not-a-uuid',
-    });
-    expect(result.success).toBe(false);
-  });
-
-  it('rejects description exceeding 255 chars', () => {
-    const result = payMonthlyServiceSchema.safeParse({
-      amount: 120,
-      description: 'a'.repeat(256),
-    });
-    expect(result.success).toBe(false);
   });
 });

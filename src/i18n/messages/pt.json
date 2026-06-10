@@ -70,107 +70,6 @@
     "cannotDeleteDefault": "Categorias padrão não podem ser excluídas.",
     "default": "Padrão"
   },
-  "transactions": {
-    "title": "Transações",
-    "createTransaction": "Nova transação",
-    "editTransaction": "Editar transação",
-    "deleteTransaction": "Excluir transação",
-    "types": {
-      "INCOME": "Receita",
-      "EXPENSE": "Despesa",
-      "TRANSFER": "Transferência",
-      "DEBT": "Dívida (você deve)",
-      "LOAN": "Empréstimo (devem a você)"
-    },
-    "status": {
-      "PENDING": "Pendente",
-      "SETTLED": "Liquidada"
-    },
-    "settle": "Liquidar",
-    "settleDebt": "Liquidar dívida",
-    "settleLoan": "Liquidar empréstimo",
-    "amount": "Valor",
-    "date": "Data",
-    "description": "Descrição",
-    "reference": "Referência",
-    "destinationAccount": "Conta destino",
-    "account": "Conta",
-    "category": "Categoria",
-    "type": "Tipo",
-    "allTypes": "Todos os tipos",
-    "allAccounts": "Todas as contas",
-    "allCategories": "Todas as categorias",
-    "allStatuses": "Todos os status",
-    "dateFrom": "De",
-    "dateTo": "Até",
-    "filters": "Filtros",
-    "clearFilters": "Limpar filtros",
-    "emptyState": "Você não tem transações. Crie sua primeira transação para começar.",
-    "emptyStateFiltered": "Nenhuma transação encontrada com estes filtros.",
-    "deleteConfirm": "Tem certeza de que deseja excluir esta transação?",
-    "deleteDebtWarning": "Isso também excluirá todas as liquidações associadas.",
-    "settleAccount": "Conta de pagamento",
-    "settleAmount": "Valor a liquidar",
-    "remaining": "Pendente",
-    "ofTotal": "de {total}",
-    "budgetBadge": "Orçamento",
-    "budgetBadgeTitle": "Movimento do orçamento mensal",
-    "searchPlaceholder": "Buscar por nome, descrição ou referência…",
-    "debtsSummary": {
-      "title": "Dívidas e empréstimos",
-      "subtitle": "Resumo agrupado por pessoa (referência)",
-      "backToList": "Voltar às transações",
-      "viewDebts": "Ver dívidas",
-      "empty": "Nenhuma dívida para mostrar.",
-      "emptyPending": "Nenhuma dívida pendente. Tudo em dia.",
-      "owesYou": "Te deve",
-      "youOwe": "Você deve",
-      "net": "Líquido",
-      "inYourFavor": "a seu favor",
-      "inTheirFavor": "a favor dele(a)",
-      "allSettled": "Tudo liquidado",
-      "pendingCount": "{count, plural, one {# pendente} other {# pendentes}}",
-      "settleAll": "Liquidar tudo",
-      "newDebt": "Nova dívida",
-      "newLoan": "Novo empréstimo",
-      "statusFilter": {
-        "pending": "Pendentes",
-        "all": "Todas",
-        "settled": "Liquidadas"
-      },
-      "bulkSettle": {
-        "title": "Liquidar tudo com {name} ({currency})",
-        "intro": "Você vai processar {count, plural, one {# transação pendente} other {# transações pendentes}} em {currency}.",
-        "modeLabel": "Modo de liquidação",
-        "confirm": "Confirmar",
-        "real": {
-          "title": "Pagamento real",
-          "description": "Cria movimentos na sua conta (despesas para dívidas, receitas para empréstimos) e atualiza o saldo.",
-          "accountLabel": "Conta em {currency}",
-          "summary": "Você vai gerar {count, plural, one {# liquidação} other {# liquidações}} no total de {total} da conta {account}.",
-          "noEligibleAccount": "Você não tem nenhuma conta ativa em {currency}. Crie uma ou use o fechamento informal."
-        },
-        "informal": {
-          "title": "Fechamento informal",
-          "description": "Apenas marca como liquidadas. Não mexe nas suas contas nem movimenta dinheiro. Útil quando já acertaram pessoalmente."
-        },
-        "successReal": "Dívidas com {name} em {currency} liquidadas e registradas na sua conta",
-        "successInformal": "Dívidas com {name} em {currency} marcadas como liquidadas"
-      },
-      "viewControls": {
-        "orderLabel": "Ordenar por",
-        "orderBy": {
-          "name": "Nome",
-          "netOwed": "Valor líquido",
-          "pendingCount": "Pendentes"
-        },
-        "toggleToAsc": "Mudar para ascendente",
-        "toggleToDesc": "Mudar para descendente"
-      }
-    },
-    "createDebt": "Nova dívida",
-    "createLoan": "Novo empréstimo"
-  },
   "settings": {
     "title": "Configurações",
     "language": "Idioma",
@@ -489,7 +388,6 @@
     "finances": "Finanças",
     "accounts": "Contas",
     "categories": "Categorias",
-    "transactions": "Transações",
     "debts": "Dívidas e empréstimos",
     "debtsShort": "Dívidas",
     "services": "Serviços",
@@ -576,7 +474,8 @@
       "actionsAria": "Ações do movimento",
       "empty": "Nenhum movimento registrado neste mês ainda",
       "deleteConfirm": "Excluir este movimento? A conta vinculada será reembolsada.",
-      "deleteSuccess": "Movimento excluído"
+      "deleteSuccess": "Movimento excluído",
+      "fallbackTitle": "Despesa"
     },
     "history": {
       "title": "Histórico"
