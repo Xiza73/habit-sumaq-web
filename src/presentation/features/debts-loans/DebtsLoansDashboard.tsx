@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
 
 import { Plus } from 'lucide-react';
@@ -23,6 +23,8 @@ import { DebtLoanBulkSettleModal } from './DebtLoanBulkSettleModal';
 import { DebtLoanDetailModal } from './DebtLoanDetailModal';
 import { DebtLoanForm } from './DebtLoanForm';
 import { DebtLoanSummaryCard } from './DebtLoanSummaryCard';
+import { type DebtsViewPrefs, DEFAULT_DEBTS_VIEW_PREFS, sortDebtRows } from './debts-sort';
+import { DebtsViewControls } from './DebtsViewControls';
 
 const STATUS_OPTIONS: DebtLoanStatusFilter[] = ['pending', 'all', 'settled'];
 
@@ -49,10 +51,12 @@ export function DebtsLoansDashboard() {
   const [formOpen, setFormOpen] = useState(false);
   const [formInitialType, setFormInitialType] = useState<DebtLoanType>('DEBT');
   const [editingDebtLoan, setEditingDebtLoan] = useState<DebtLoan | null>(null);
+  const [viewPrefs, setViewPrefs] = useState<DebtsViewPrefs>(DEFAULT_DEBTS_VIEW_PREFS);
 
   const { data: rows = [], isLoading } = useDebtsLoansSummary(status);
   const settleMutation = useBulkSettleByReference();
 
+  const sortedRows = useMemo(() => sortDebtRows(rows, viewPrefs), [rows, viewPrefs]);
   const emptyMessage = status === 'pending' ? t('emptyPending') : t('empty');
 
   function openCreate(type: DebtLoanType) {
@@ -123,22 +127,26 @@ export function DebtsLoansDashboard() {
         </div>
       </div>
 
-      <div className="flex w-full rounded-lg border border-border p-1 sm:inline-flex sm:w-auto">
-        {STATUS_OPTIONS.map((opt) => (
-          <button
-            key={opt}
-            type="button"
-            onClick={() => setStatus(opt)}
-            className={cn(
-              'flex-1 rounded-md px-3 py-1.5 text-xs font-medium transition-colors sm:flex-none',
-              status === opt
-                ? 'bg-primary text-primary-foreground'
-                : 'text-muted-foreground hover:text-foreground',
-            )}
-          >
-            {t(`statusFilter.${opt}`)}
-          </button>
-        ))}
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex w-full rounded-lg border border-border p-1 sm:inline-flex sm:w-auto">
+          {STATUS_OPTIONS.map((opt) => (
+            <button
+              key={opt}
+              type="button"
+              onClick={() => setStatus(opt)}
+              className={cn(
+                'flex-1 rounded-md px-3 py-1.5 text-xs font-medium transition-colors sm:flex-none',
+                status === opt
+                  ? 'bg-primary text-primary-foreground'
+                  : 'text-muted-foreground hover:text-foreground',
+              )}
+            >
+              {t(`statusFilter.${opt}`)}
+            </button>
+          ))}
+        </div>
+
+        <DebtsViewControls prefs={viewPrefs} onChange={setViewPrefs} />
       </div>
 
       {isLoading ? (
@@ -147,13 +155,13 @@ export function DebtsLoansDashboard() {
             <div key={i} className="h-32 animate-pulse rounded-xl bg-muted" />
           ))}
         </div>
-      ) : rows.length === 0 ? (
+      ) : sortedRows.length === 0 ? (
         <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-border py-16 text-center">
           <p className="max-w-sm text-muted-foreground">{emptyMessage}</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {rows.map((row) => (
+          {sortedRows.map((row) => (
             <DebtLoanSummaryCard
               key={`${row.reference}-${row.currency}`}
               row={row}
