@@ -45,9 +45,6 @@ const baseService: MonthlyService = {
   id: 'svc-1',
   userId: 'user-1',
   name: 'Netflix',
-  // v1.0.0 (A6-W.4): defaultAccountId is nullable and the UI no longer
-  // reads it. Pre-A6-W.4 services keep their value; new ones are null.
-  defaultAccountId: null,
   categoryId: categoryServicios.id,
   currency: 'PEN',
   frequencyMonths: 1,
@@ -111,7 +108,7 @@ describe('MonthlyServiceForm', () => {
       expect(currencySelect).toHaveValue('USD');
     });
 
-    it('submits a cleaned create payload without defaultAccountId', async () => {
+    it('submits a cleaned create payload', async () => {
       const user = userEvent.setup();
       renderForm();
 
@@ -130,9 +127,6 @@ describe('MonthlyServiceForm', () => {
       expect(payload.currency).toBe('PEN');
       expect(payload.estimatedAmount).toBe(45);
       expect(payload.dueDay).toBe(15);
-      // v1.0.0: account field is gone from the form. Backend accepts the
-      // create DTO with `defaultAccountId` absent.
-      expect(payload.defaultAccountId).toBeUndefined();
     });
 
     it('does not submit when required fields are empty', async () => {

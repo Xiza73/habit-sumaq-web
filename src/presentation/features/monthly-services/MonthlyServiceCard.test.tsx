@@ -25,7 +25,6 @@ const baseService: MonthlyService = {
   id: 'svc-1',
   userId: 'user-1',
   name: 'Luz',
-  defaultAccountId: 'acc-1',
   categoryId: 'cat-1',
   currency: 'PEN',
   frequencyMonths: 1,
