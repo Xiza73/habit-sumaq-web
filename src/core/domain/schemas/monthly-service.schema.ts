@@ -19,10 +19,6 @@ const frequencyMonthsSchema = z
 
 export const createMonthlyServiceSchema = z.object({
   name: z.string().min(1, 'required').max(100, 'max_length'),
-  // v1.0.0 (A6-W.4): optional — backend accepts null. The form no longer
-  // collects this field (drops the account picker). Kept in the schema
-  // so direct API consumers can still send it.
-  defaultAccountId: z.string().regex(UUID_REGEX, 'invalid_uuid').optional(),
   categoryId: z.string().regex(UUID_REGEX, 'invalid_uuid'),
   currency: z.string().length(3, 'invalid_currency'),
   frequencyMonths: frequencyMonthsSchema,
@@ -36,7 +32,6 @@ export type CreateMonthlyServiceInput = z.infer<typeof createMonthlyServiceSchem
 // Editable fields only — `currency` and `startPeriod` are immutable after creation.
 export const updateMonthlyServiceSchema = z.object({
   name: z.string().min(1, 'required').max(100, 'max_length').optional(),
-  defaultAccountId: z.string().regex(UUID_REGEX, 'invalid_uuid').optional(),
   categoryId: z.string().regex(UUID_REGEX, 'invalid_uuid').optional(),
   estimatedAmount: z.number().positive('min_amount').nullable().optional(),
   dueDay: z.number().int().min(1).max(31).nullable().optional(),

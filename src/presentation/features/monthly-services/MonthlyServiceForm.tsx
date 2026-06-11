@@ -58,10 +58,6 @@ export function MonthlyServiceForm({ open, service, onClose }: MonthlyServiceFor
   const updateMutation = useUpdateMonthlyService();
   const isPending = createMutation.isPending || updateMutation.isPending;
 
-  // v1.0.0 (A6-W.4): the account picker is gone. `defaultAccountId` no
-  // longer participates in form state — the create DTO accepts it as
-  // optional and we submit `undefined`. Currency is now an explicit
-  // user choice (no longer derived from an account).
   const form = useForm<CreateMonthlyServiceInput>({
     resolver: zodResolver(createMonthlyServiceSchema),
     defaultValues: {

@@ -9,7 +9,6 @@ function makeService(overrides: Partial<MonthlyService> = {}): MonthlyService {
     id: overrides.id ?? 'svc',
     userId: 'user-1',
     name: 'Service',
-    defaultAccountId: 'acc-1',
     categoryId: 'cat-1',
     currency: 'PEN',
     frequencyMonths: 1,

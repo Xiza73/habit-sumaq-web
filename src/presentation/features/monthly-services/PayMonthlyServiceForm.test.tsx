@@ -52,7 +52,6 @@ const baseService: MonthlyService = {
   id: '77777777-7777-4777-a777-777777777777',
   userId: 'user-1',
   name: 'Netflix',
-  defaultAccountId: '00000000-0000-4000-8000-000000000000',
   categoryId: '00000000-0000-4000-8000-000000000001',
   currency: 'PEN',
   frequencyMonths: 1,
@@ -95,8 +94,8 @@ describe('PayMonthlyServiceForm', () => {
   it('does NOT render an account picker in v1.0.0 (debits the currency pool, not an account)', () => {
     renderForm();
     // The legacy form had a `<label>Pagar desde</label>` + `<select>` to
-    // override the service's defaultAccountId. v1.0.0 has no per-account
-    // choice — payments debit the currency pool.
+    // override the account. v1.0.0 has no per-account choice — payments
+    // debit the currency pool.
     expect(screen.queryByLabelText(/pagar desde/i)).not.toBeInTheDocument();
   });
 

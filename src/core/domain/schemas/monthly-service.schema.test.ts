@@ -2,13 +2,11 @@ import { describe, expect, it } from 'vitest';
 
 import { createMonthlyServiceSchema, updateMonthlyServiceSchema } from './monthly-service.schema';
 
-const VALID_UUID = '123e4567-e89b-12d3-a456-426614174000';
 const ANOTHER_UUID = '223e4567-e89b-12d3-a456-426614174000';
 
 describe('createMonthlyServiceSchema', () => {
   const validInput = {
     name: 'Luz',
-    defaultAccountId: VALID_UUID,
     categoryId: ANOTHER_UUID,
     currency: 'PEN',
   };
@@ -48,14 +46,6 @@ describe('createMonthlyServiceSchema', () => {
     const result = createMonthlyServiceSchema.safeParse({
       ...validInput,
       name: 'a'.repeat(101),
-    });
-    expect(result.success).toBe(false);
-  });
-
-  it('rejects non-uuid defaultAccountId', () => {
-    const result = createMonthlyServiceSchema.safeParse({
-      ...validInput,
-      defaultAccountId: 'not-a-uuid',
     });
     expect(result.success).toBe(false);
   });
