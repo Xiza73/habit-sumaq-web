@@ -12,6 +12,7 @@ import { cn } from '@/lib/utils';
 interface DebtLoanSummaryCardProps {
   row: DebtLoanSummaryRow;
   onSettleAll?: (row: DebtLoanSummaryRow) => void;
+  onClick?: (row: DebtLoanSummaryRow) => void;
 }
 
 /**
@@ -20,7 +21,7 @@ interface DebtLoanSummaryCardProps {
  * design) but typed against the new domain entity and pulling i18n from
  * the `debts` namespace.
  */
-export function DebtLoanSummaryCard({ row, onSettleAll }: DebtLoanSummaryCardProps) {
+export function DebtLoanSummaryCard({ row, onSettleAll, onClick }: DebtLoanSummaryCardProps) {
   const t = useTranslations('debts.summary');
   const hasDebt = row.pendingDebt > 0;
   const hasLoan = row.pendingLoan > 0;
@@ -31,7 +32,25 @@ export function DebtLoanSummaryCard({ row, onSettleAll }: DebtLoanSummaryCardPro
   const netIsZero = netAmount === 0;
 
   return (
-    <div className="group flex h-full flex-col rounded-xl border border-border bg-card p-5 transition-shadow hover:shadow-md">
+    <div
+      tabIndex={onClick ? 0 : undefined}
+      onClick={onClick ? () => onClick(row) : undefined}
+      onKeyDown={
+        onClick
+          ? (e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                onClick(row);
+              }
+            }
+          : undefined
+      }
+      className={cn(
+        'group flex h-full flex-col rounded-xl border border-border bg-card p-5 transition-shadow hover:shadow-md',
+        onClick &&
+          'cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary',
+      )}
+    >
       <div className="flex items-center gap-3">
         <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-muted">
           <User className="size-5 text-muted-foreground" />
@@ -92,7 +111,10 @@ export function DebtLoanSummaryCard({ row, onSettleAll }: DebtLoanSummaryCardPro
         {onSettleAll && hasAny && (
           <button
             type="button"
-            onClick={() => onSettleAll(row)}
+            onClick={(e) => {
+              e.stopPropagation();
+              onSettleAll(row);
+            }}
             className="font-medium text-primary hover:underline"
           >
             {t('settleAll')}
