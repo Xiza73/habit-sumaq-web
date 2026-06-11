@@ -33,9 +33,11 @@ function CallbackHandler() {
         // `isNewUser` flag, also call `analytics.signupCompleted('google')`.
         analytics.identify(user.id, { email: user.email });
         analytics.loginCompleted('google');
-        // Landing post-login → dashboard de Rutinas. Ver comentario en
-        // src/app/page.tsx sobre por qué no lleva a /accounts.
-        router.replace('/reports/routines');
+        // Landing post-login goes to `/`, which resolves to the user's
+        // first favorite via the redirect at (dashboard)/page.tsx. Keeping
+        // the resolution logic in one place (the home route) so this and
+        // the 404 button can't drift.
+        router.replace('/');
       } catch {
         clearAuth();
         router.replace('/login');

@@ -7,6 +7,7 @@ import {
   isFavoriteKey,
   MAX_FAVORITES,
   NAV_REGISTRY,
+  resolveFirstFavoriteRoute,
 } from './nav-registry';
 
 describe('nav-registry — invariants', () => {
@@ -73,5 +74,34 @@ describe('getNavEntries', () => {
     // through, we render it twice rather than silently swallow it.
     const result = getNavEntries(['habits', 'habits']);
     expect(result).toHaveLength(2);
+  });
+});
+
+describe('resolveFirstFavoriteRoute', () => {
+  it("returns the href of the user's first favorite when known", () => {
+    // Single source of truth for the landing/404 redirect — picks habits
+    // because that's the user's first slot, not whatever the hardcoded
+    // default used to be.
+    expect(resolveFirstFavoriteRoute(['habits', 'debts'])).toBe('/habits');
+  });
+
+  it('skips unknown keys at the head of the list and returns the first known one', () => {
+    // Repro: user has a legacy key persisted (e.g. `accounts`, removed in
+    // A6-W.5) followed by valid ones. We should land on the next valid key
+    // instead of falling all the way through to the default chain.
+    expect(resolveFirstFavoriteRoute(['accounts', 'debts'])).toBe('/debts');
+  });
+
+  it('falls back to the first DEFAULT_FAVORITES route when every user key is unknown', () => {
+    // Same scenario as the unknown-key drop test on getNavEntries, but at the
+    // redirect layer. Today DEFAULT_FAVORITES[0] === 'debts' → /debts.
+    expect(resolveFirstFavoriteRoute(['totally-removed', 'also-removed'])).toBe('/debts');
+  });
+
+  it('falls back to the first DEFAULT_FAVORITES route when keys is empty', () => {
+    // Hits during loading state — useUserSettings returns undefined and
+    // the favorites hook falls through to DEFAULT_FAVORITES anyway, but the
+    // helper has to be safe to call with [] too.
+    expect(resolveFirstFavoriteRoute([])).toBe('/debts');
   });
 });
