@@ -1,8 +1,6 @@
 import { type Budget, type BudgetWithKpi } from '@/core/domain/entities/budget';
-import { type Transaction } from '@/core/domain/entities/transaction';
-import { type Currency } from '@/core/domain/enums/account.enums';
+import { type Currency } from '@/core/domain/enums/currency.enum';
 import {
-  type AddBudgetMovementInput,
   type CreateBudgetInput,
   type UpdateBudgetInput,
 } from '@/core/domain/schemas/budget.schema';
@@ -40,13 +38,5 @@ export const budgetsApi = {
 
   delete(id: string): Promise<void> {
     return httpClient.delete<void>(`/budgets/${id}`);
-  },
-
-  /**
-   * Adds a movement to the budget. Backend creates an EXPENSE transaction
-   * tagged with `budgetId` and debits the chosen account.
-   */
-  addMovement(id: string, data: AddBudgetMovementInput): Promise<{ transaction: Transaction }> {
-    return httpClient.post<{ transaction: Transaction }>(`/budgets/${id}/movements`, data);
   },
 };

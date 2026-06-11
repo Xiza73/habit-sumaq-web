@@ -1,5 +1,5 @@
-import { type Currency } from '@/core/domain/enums/account.enums';
 import { type DateFormat } from '@/core/domain/enums/common.enums';
+import { type Currency } from '@/core/domain/enums/currency.enum';
 
 const CURRENCY_CONFIG: Record<Currency, { locale: string; currency: string }> = {
   PEN: { locale: 'es-PE', currency: 'PEN' },

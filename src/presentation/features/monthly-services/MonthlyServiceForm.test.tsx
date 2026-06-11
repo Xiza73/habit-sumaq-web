@@ -2,7 +2,6 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { type Account } from '@/core/domain/entities/account';
 import { type Category } from '@/core/domain/entities/category';
 import { type MonthlyService } from '@/core/domain/entities/monthly-service';
 
@@ -15,12 +14,7 @@ import { MonthlyServiceForm } from './MonthlyServiceForm';
 const mockCreateMutate = vi.fn();
 const mockUpdateMutate = vi.fn();
 
-let mockAccounts: Account[] = [];
 let mockCategories: Category[] = [];
-
-vi.mock('@/core/application/hooks/use-accounts', () => ({
-  useAccounts: () => ({ data: mockAccounts, isLoading: false }),
-}));
 
 vi.mock('@/core/application/hooks/use-categories', () => ({
   useCategories: () => ({ data: mockCategories, isLoading: false }),
@@ -34,27 +28,6 @@ vi.mock('@/core/application/hooks/use-monthly-services', () => ({
   useCreateMonthlyService: () => ({ mutate: mockCreateMutate, isPending: false }),
   useUpdateMonthlyService: () => ({ mutate: mockUpdateMutate, isPending: false }),
 }));
-
-const accountPen: Account = {
-  id: '11111111-1111-4111-a111-111111111111',
-  userId: 'user-1',
-  name: 'BCP Soles',
-  type: 'checking',
-  currency: 'PEN',
-  balance: 1000,
-  color: null,
-  icon: null,
-  isArchived: false,
-  createdAt: '2026-01-01T00:00:00.000Z',
-  updatedAt: '2026-01-01T00:00:00.000Z',
-};
-
-const accountUsd: Account = {
-  ...accountPen,
-  id: '22222222-2222-4222-a222-222222222222',
-  name: 'BCP Dólares',
-  currency: 'USD',
-};
 
 const categoryServicios: Category = {
   id: '44444444-4444-4444-a444-444444444444',
@@ -72,7 +45,9 @@ const baseService: MonthlyService = {
   id: 'svc-1',
   userId: 'user-1',
   name: 'Netflix',
-  defaultAccountId: accountPen.id,
+  // v1.0.0 (A6-W.4): defaultAccountId is nullable and the UI no longer
+  // reads it. Pre-A6-W.4 services keep their value; new ones are null.
+  defaultAccountId: null,
   categoryId: categoryServicios.id,
   currency: 'PEN',
   frequencyMonths: 1,
@@ -103,7 +78,6 @@ describe('MonthlyServiceForm', () => {
   beforeEach(() => {
     mockCreateMutate.mockClear();
     mockUpdateMutate.mockClear();
-    mockAccounts = [accountPen, accountUsd];
     mockCategories = [categoryServicios];
   });
 
@@ -118,27 +92,30 @@ describe('MonthlyServiceForm', () => {
       expect(screen.getByLabelText(/cadencia/i)).toBeEnabled();
     });
 
-    it('locks currency to the selected default account', async () => {
-      // The currency input is rendered disabled and its value should follow
-      // the picked account. Useful guard against a UI that lets a user pay a
-      // PEN service from a USD account by accident.
+    it('does NOT render an account picker in v1.0.0 (defaults debit the currency pool)', () => {
+      renderForm();
+      // Legacy form had a `<label>Cuenta por defecto</label>` + `<select>`.
+      // Removed in A6-W.4 — services no longer carry an account.
+      expect(screen.queryByLabelText(/cuenta por defecto/i)).not.toBeInTheDocument();
+    });
+
+    it('lets the user pick currency explicitly (no longer derived from an account)', async () => {
       const user = userEvent.setup();
       renderForm();
 
       const currencySelect = screen.getByLabelText(/^moneda$/i);
-      expect(currencySelect).toBeDisabled();
-
-      // Pick the USD account → currency should flip to USD.
-      await user.selectOptions(screen.getByLabelText(/cuenta por defecto/i), accountUsd.id);
+      // Pre-A6-W.4 this was disabled (currency followed the account pick).
+      // Post-A6-W.4 it is user-editable.
+      expect(currencySelect).toBeEnabled();
+      await user.selectOptions(currencySelect, 'USD');
       expect(currencySelect).toHaveValue('USD');
     });
 
-    it('submits a cleaned create payload', async () => {
+    it('submits a cleaned create payload without defaultAccountId', async () => {
       const user = userEvent.setup();
       renderForm();
 
       await user.type(screen.getByLabelText(/^nombre$/i), 'Netflix');
-      await user.selectOptions(screen.getByLabelText(/cuenta por defecto/i), accountPen.id);
       await user.selectOptions(screen.getByLabelText(/categor/i), categoryServicios.id);
       await user.type(screen.getByLabelText(/monto estimado/i), '45');
       await user.type(screen.getByLabelText(/d[ií]a aproximado/i), '15');
@@ -149,11 +126,13 @@ describe('MonthlyServiceForm', () => {
       expect(mockCreateMutate).toHaveBeenCalledOnce();
       const payload = mockCreateMutate.mock.calls[0][0] as Record<string, unknown>;
       expect(payload.name).toBe('Netflix');
-      expect(payload.defaultAccountId).toBe(accountPen.id);
       expect(payload.categoryId).toBe(categoryServicios.id);
       expect(payload.currency).toBe('PEN');
       expect(payload.estimatedAmount).toBe(45);
       expect(payload.dueDay).toBe(15);
+      // v1.0.0: account field is gone from the form. Backend accepts the
+      // create DTO with `defaultAccountId` absent.
+      expect(payload.defaultAccountId).toBeUndefined();
     });
 
     it('does not submit when required fields are empty', async () => {

@@ -1,4 +1,4 @@
-import { type Currency } from '@/core/domain/enums/account.enums';
+import { type Currency } from '@/core/domain/enums/currency.enum';
 
 export const REPORT_PERIODS = ['week', '30d', 'month', '3m'] as const;
 export type ReportPeriod = (typeof REPORT_PERIODS)[number];
@@ -13,7 +13,13 @@ export interface DateRange {
 export interface BalanceByCurrency {
   currency: Currency;
   amount: number;
-  accountCount: number;
+  /**
+   * DEPRECATED — backend deja de emitir este field cuando A6-B drop el
+   * módulo accounts. Mientras tanto el FinancesDashboard ignora el valor
+   * y la web ya no lo consume (la Balance Total card mira solo el pool
+   * por currency, no por cuenta).
+   */
+  accountCount?: number;
 }
 
 export interface FlowByCurrency {

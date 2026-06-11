@@ -1,11 +1,12 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslations } from 'next-intl';
 
 import { BellOff } from 'lucide-react';
 
+import { useDismissAllDismissable } from '@/core/application/hooks/use-alerts';
 import { type Alert } from '@/core/domain/entities/alert';
 
 import { AlertItem } from './AlertItem';
@@ -40,6 +41,23 @@ export function AlertsPopover({
   const t = useTranslations('alerts');
   const [pos, setPos] = useState<{ top: number; left: number } | null>(null);
   const popoverRef = useRef<HTMLDivElement | null>(null);
+  const dismissAll = useDismissAllDismissable();
+
+  // Split the visible list into "user can close them" vs "user can't" so
+  // the header button and the footer hint can render conditionally without
+  // recomputing on every paint. `useMemo` is overkill for this size, but
+  // it lines up with the codebase's preference (and keeps the deps array
+  // explicit).
+  const dismissableIds = useMemo(
+    () => alerts.filter((a) => a.isDismissable).map((a) => a.id),
+    [alerts],
+  );
+  const hasPersistent = useMemo(() => alerts.some((a) => !a.isDismissable), [alerts]);
+
+  function handleDismissAll() {
+    if (dismissableIds.length === 0 || dismissAll.isPending) return;
+    dismissAll.mutate(dismissableIds);
+  }
 
   // Position the popover relative to the trigger. We right-align by default
   // (bell sits in the top-right of the header), and reposition on
@@ -133,8 +151,21 @@ export function AlertsPopover({
       }}
       className="w-80 rounded-md border border-border bg-popover shadow-lg sm:w-96"
     >
-      <header className="border-b border-border px-4 py-3">
+      <header className="flex items-center justify-between gap-3 border-b border-border px-4 py-3">
         <h2 className="text-sm font-semibold text-foreground">{t('title')}</h2>
+        {/* The "dismiss all" affordance only earns its space when there's >= 2
+            per-day alerts to close. With 0 or 1, the individual X covers it
+            and adding a second control would just be noise. */}
+        {dismissableIds.length >= 2 && (
+          <button
+            type="button"
+            onClick={handleDismissAll}
+            disabled={dismissAll.isPending}
+            className="text-xs font-medium text-primary transition-colors hover:text-primary/80 disabled:opacity-50"
+          >
+            {t('dismissAll')}
+          </button>
+        )}
       </header>
 
       <div className="max-h-96 overflow-y-auto p-3" role="list">
@@ -163,6 +194,17 @@ export function AlertsPopover({
           </ul>
         )}
       </div>
+
+      {/* Hint that surfaces only when there are persistent alerts staying put.
+          The whole point of distinguishing per-day vs persistent is the
+          user-facing promise that persistent goes away "when you fix it" —
+          this footer says so out loud after a dismiss-all, so the leftover
+          rows don't read like the button failed. */}
+      {!isLoading && !isError && hasPersistent && (
+        <footer className="border-t border-border px-4 py-2">
+          <p className="text-xs text-muted-foreground">{t('persistentHint')}</p>
+        </footer>
+      )}
     </div>,
     document.body,
   );

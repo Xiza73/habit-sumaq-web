@@ -7,7 +7,6 @@ import {
   Archive,
   ArchiveRestore,
   CalendarDays,
-  CreditCard,
   FolderTree,
   MoreVertical,
   Pencil,
@@ -17,7 +16,6 @@ import {
   Wallet,
 } from 'lucide-react';
 
-import { type Account } from '@/core/domain/entities/account';
 import { type Category } from '@/core/domain/entities/category';
 import {
   MONTHLY_SERVICE_FREQUENCY_LABEL_KEYS,
@@ -29,7 +27,6 @@ import { cn } from '@/lib/utils';
 
 interface MonthlyServiceCardProps {
   service: MonthlyService;
-  account?: Account;
   category?: Category;
   onPay: (service: MonthlyService) => void;
   onSkip: (service: MonthlyService) => void;
@@ -54,7 +51,6 @@ const STATUS_CLASSES: Record<StatusTone, string> = {
 
 export function MonthlyServiceCard({
   service,
-  account,
   category,
   onPay,
   onSkip,
@@ -205,12 +201,6 @@ export function MonthlyServiceCard({
           <div className="flex items-center gap-1.5">
             <CalendarDays className="size-3.5" />
             <span>~{service.dueDay}</span>
-          </div>
-        )}
-        {account && (
-          <div className="flex items-center gap-1.5">
-            <CreditCard className="size-3.5" />
-            <span className="truncate">{account.name}</span>
           </div>
         )}
         {category && (

@@ -1,0 +1,63 @@
+import {
+  type BulkSettleResult,
+  type DebtLoan,
+  type DebtLoanStatusFilter,
+  type DebtLoanSummaryRow,
+} from '@/core/domain/entities/debt-loan';
+import {
+  type BulkSettleByReferenceInput,
+  type CreateDebtLoanInput,
+  type SettleDebtLoanInput,
+  type UpdateDebtLoanInput,
+} from '@/core/domain/schemas/debt-loan.schema';
+
+import { httpClient } from './http-client';
+
+function buildStatusQuery(status?: DebtLoanStatusFilter): string {
+  if (!status || status === 'pending') return '';
+  return `?status=${status}`;
+}
+
+/**
+ * API client for the v1.0.0 `debts_loans` backend module. Mirrors the 8
+ * endpoints from
+ * `habit-sumaq-backend/docs/frontend/api-reference.md#debts-and-loans`.
+ *
+ * During the parallel-run window (Phases A3–A6), this client coexists
+ * with the legacy `transactionsApi` DEBT/LOAN endpoints. The web is
+ * expected to call THIS module for the new `/debts` route; the legacy
+ * route in `/transactions/debts` keeps calling `transactionsApi`.
+ */
+export const debtsLoansApi = {
+  list(status?: DebtLoanStatusFilter): Promise<DebtLoan[]> {
+    return httpClient.get<DebtLoan[]>(`/debts${buildStatusQuery(status)}`);
+  },
+
+  summary(status?: DebtLoanStatusFilter): Promise<DebtLoanSummaryRow[]> {
+    return httpClient.get<DebtLoanSummaryRow[]>(`/debts/summary${buildStatusQuery(status)}`);
+  },
+
+  getById(id: string): Promise<DebtLoan> {
+    return httpClient.get<DebtLoan>(`/debts/${id}`);
+  },
+
+  create(data: CreateDebtLoanInput): Promise<DebtLoan> {
+    return httpClient.post<DebtLoan>('/debts', data);
+  },
+
+  update(id: string, data: UpdateDebtLoanInput): Promise<DebtLoan> {
+    return httpClient.patch<DebtLoan>(`/debts/${id}`, data);
+  },
+
+  delete(id: string): Promise<void> {
+    return httpClient.delete<void>(`/debts/${id}`);
+  },
+
+  settle(id: string, data: SettleDebtLoanInput): Promise<DebtLoan> {
+    return httpClient.post<DebtLoan>(`/debts/${id}/settle`, data);
+  },
+
+  bulkSettleByReference(data: BulkSettleByReferenceInput): Promise<BulkSettleResult> {
+    return httpClient.post<BulkSettleResult>('/debts/settle-by-reference', data);
+  },
+};

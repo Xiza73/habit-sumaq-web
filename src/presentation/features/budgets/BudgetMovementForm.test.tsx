@@ -2,24 +2,18 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { type Account } from '@/core/domain/entities/account';
 import { type Budget } from '@/core/domain/entities/budget';
+import { type BudgetMovement } from '@/core/domain/entities/budget-movement';
 import { type Category } from '@/core/domain/entities/category';
-import { type Transaction } from '@/core/domain/entities/transaction';
 
 import { TestProviders } from '@/test/utils';
 
 import { BudgetMovementForm } from './BudgetMovementForm';
 
-const mockAddMovementMutate = vi.fn();
-const mockUpdateTransactionMutate = vi.fn();
+const mockCreateMutate = vi.fn();
+const mockUpdateMutate = vi.fn();
 
-let mockAccounts: Account[] = [];
 let mockCategories: Category[] = [];
-
-vi.mock('@/core/application/hooks/use-accounts', () => ({
-  useAccounts: () => ({ data: mockAccounts, isLoading: false }),
-}));
 
 vi.mock('@/core/application/hooks/use-categories', () => ({
   useCategories: () => ({ data: mockCategories, isLoading: false }),
@@ -30,12 +24,12 @@ vi.mock('@/core/application/hooks/use-categories', () => ({
   useUpdateCategory: () => ({ mutate: vi.fn(), isPending: false }),
 }));
 
-vi.mock('@/core/application/hooks/use-budgets', () => ({
-  useAddBudgetMovement: () => ({ mutate: mockAddMovementMutate, isPending: false }),
-}));
-
-vi.mock('@/core/application/hooks/use-transactions', () => ({
-  useUpdateTransaction: () => ({ mutate: mockUpdateTransactionMutate, isPending: false }),
+// v1.0.0 (Phase A6-W.1): writes go through the new
+// `useCreateBudgetMovement` / `useUpdateBudgetMovement` hooks. The legacy
+// `useAddBudgetMovement` + `useUpdateTransaction` paths are dead.
+vi.mock('@/core/application/hooks/use-budget-movements', () => ({
+  useCreateBudgetMovement: () => ({ mutate: mockCreateMutate, isPending: false }),
+  useUpdateBudgetMovement: () => ({ mutate: mockUpdateMutate, isPending: false }),
 }));
 
 // Mock the DatePicker so we can assert the form passes the right `min`/`max`
@@ -66,7 +60,10 @@ vi.mock('@/presentation/components/ui/DatePicker', () => ({
 }));
 
 const baseBudget: Budget = {
-  id: 'b-1',
+  // Real UUID — the v1.0.0 `createBudgetMovementSchema` requires the
+  // `budgetId` to pass `z.string().uuid()`. A non-UUID id silently fails
+  // the submit and the mutation never fires.
+  id: '99999999-9999-4999-a999-999999999999',
   userId: 'user-1',
   year: 2026,
   month: 4,
@@ -74,34 +71,6 @@ const baseBudget: Budget = {
   amount: 2000,
   createdAt: '2026-04-01T00:00:00.000Z',
   updatedAt: '2026-04-01T00:00:00.000Z',
-};
-
-const accountPen: Account = {
-  id: '11111111-1111-4111-a111-111111111111',
-  userId: 'user-1',
-  name: 'BCP Soles',
-  type: 'checking',
-  currency: 'PEN',
-  balance: 1000,
-  color: null,
-  icon: null,
-  isArchived: false,
-  createdAt: '2026-01-01T00:00:00.000Z',
-  updatedAt: '2026-01-01T00:00:00.000Z',
-};
-
-const accountUsd: Account = {
-  ...accountPen,
-  id: '22222222-2222-4222-a222-222222222222',
-  name: 'BCP Dólares',
-  currency: 'USD',
-};
-
-const accountArchived: Account = {
-  ...accountPen,
-  id: '33333333-3333-4333-a333-333333333333',
-  name: 'Cuenta vieja',
-  isArchived: true,
 };
 
 const category: Category = {
@@ -116,21 +85,15 @@ const category: Category = {
   updatedAt: '2026-01-01T00:00:00.000Z',
 };
 
-const baseMovement: Transaction = {
-  id: 'tx-1',
+const baseMovement: BudgetMovement = {
+  id: '88888888-8888-4888-a888-888888888888',
   userId: 'user-1',
-  accountId: accountPen.id,
-  categoryId: category.id,
-  type: 'EXPENSE',
+  budgetId: baseBudget.id,
+  currency: 'PEN',
   amount: 42,
   description: 'Almuerzo',
+  categoryId: category.id,
   date: '2026-04-12T12:00:00.000Z',
-  destinationAccountId: null,
-  reference: null,
-  status: null,
-  relatedTransactionId: null,
-  remainingAmount: null,
-  budgetId: baseBudget.id,
   createdAt: '2026-04-12T12:00:00.000Z',
   updatedAt: '2026-04-12T12:00:00.000Z',
 };
@@ -138,14 +101,14 @@ const baseMovement: Transaction = {
 function renderForm(
   overrides: {
     budget?: Budget | null;
-    movement?: Transaction | null;
+    movement?: BudgetMovement | null;
     open?: boolean;
   } = {},
 ) {
   const props = {
     open: true,
     budget: baseBudget as Budget | null,
-    movement: null as Transaction | null,
+    movement: null as BudgetMovement | null,
     onClose: vi.fn(),
     ...overrides,
   };
@@ -157,9 +120,8 @@ function renderForm(
 
 describe('BudgetMovementForm — create mode (default)', () => {
   beforeEach(() => {
-    mockAddMovementMutate.mockClear();
-    mockUpdateTransactionMutate.mockClear();
-    mockAccounts = [];
+    mockCreateMutate.mockClear();
+    mockUpdateMutate.mockClear();
     mockCategories = [];
   });
 
@@ -168,32 +130,16 @@ describe('BudgetMovementForm — create mode (default)', () => {
     expect(container.firstChild).toBeNull();
   });
 
-  it('shows the "no eligible account" banner when there are no accounts in the budget currency', () => {
-    mockAccounts = [accountUsd, accountArchived]; // wrong currency + archived
+  it('does NOT render an account picker in v1.0.0 (debits the currency pool, not an account)', () => {
     mockCategories = [category];
     renderForm();
-
-    expect(screen.getByText(/no tienes cuentas activas en pen/i)).toBeInTheDocument();
-    // Submit button must be disabled in this state to prevent invalid POSTs.
-    expect(screen.getByRole('button', { name: /registrar movimiento/i })).toBeDisabled();
-  });
-
-  it('only lists accounts that match the budget currency in the account select', () => {
-    mockAccounts = [accountPen, accountUsd, accountArchived];
-    mockCategories = [category];
-    renderForm();
-
-    const accountSelect = screen.getByLabelText(/cuenta/i);
-    // Options include the placeholder "—" plus the matching account. The
-    // USD account and the archived one are filtered out of the dropdown.
-    expect(accountSelect).toHaveValue(accountPen.id);
-    expect(screen.getByRole('option', { name: /bcp soles/i })).toBeInTheDocument();
-    expect(screen.queryByRole('option', { name: /bcp dólares/i })).not.toBeInTheDocument();
-    expect(screen.queryByRole('option', { name: /cuenta vieja/i })).not.toBeInTheDocument();
+    // The legacy form had a `<label>Cuenta</label>` + `<select>`. In
+    // v1.0.0, budget movements debit the currency pool — there is no
+    // per-account choice anymore.
+    expect(screen.queryByLabelText(/cuenta/i)).not.toBeInTheDocument();
   });
 
   it('passes the budget-month bounds to the DatePicker as min/max', () => {
-    mockAccounts = [accountPen];
     mockCategories = [category];
     renderForm();
 
@@ -207,18 +153,16 @@ describe('BudgetMovementForm — create mode (default)', () => {
   });
 
   it('does not submit when amount is missing or zero', async () => {
-    mockAccounts = [accountPen];
     mockCategories = [category];
     const user = userEvent.setup();
     renderForm();
 
     await user.click(screen.getByRole('button', { name: /registrar movimiento/i }));
 
-    expect(mockAddMovementMutate).not.toHaveBeenCalled();
+    expect(mockCreateMutate).not.toHaveBeenCalled();
   });
 
-  it('submits the cleaned payload with the budget id when valid', async () => {
-    mockAccounts = [accountPen];
+  it('routes the submit through useCreateBudgetMovement with the new v1.0.0 payload shape', async () => {
     mockCategories = [category];
     const user = userEvent.setup();
     renderForm();
@@ -228,27 +172,29 @@ describe('BudgetMovementForm — create mode (default)', () => {
     await user.selectOptions(screen.getByLabelText(/categoría/i), category.id);
     await user.click(screen.getByRole('button', { name: /registrar movimiento/i }));
 
-    expect(mockAddMovementMutate).toHaveBeenCalledOnce();
+    expect(mockCreateMutate).toHaveBeenCalledOnce();
+    expect(mockUpdateMutate).not.toHaveBeenCalled();
     // Cast off the mock type to inspect the payload — same pattern as the
     // tasks tests (no-unsafe-member-access otherwise).
-    const callArg = mockAddMovementMutate.mock.calls[0][0] as {
-      id: string;
-      data: { amount: number; accountId: string; categoryId: string; date: string };
+    const callArg = mockCreateMutate.mock.calls[0][0] as {
+      budgetId: string;
+      amount: number;
+      categoryId: string;
+      date: string;
+      description: string | null;
     };
-    expect(callArg.id).toBe(baseBudget.id);
-    expect(callArg.data.amount).toBe(50);
-    expect(callArg.data.accountId).toBe(accountPen.id);
-    expect(callArg.data.categoryId).toBe(category.id);
+    expect(callArg.budgetId).toBe(baseBudget.id);
+    expect(callArg.amount).toBe(50);
+    expect(callArg.categoryId).toBe(category.id);
     // dateInputToBackendIso pins the picker value to noon UTC.
-    expect(callArg.data.date).toMatch(/^\d{4}-\d{2}-\d{2}T12:00:00\.000Z$/);
+    expect(callArg.date).toMatch(/^\d{4}-\d{2}-\d{2}T12:00:00\.000Z$/);
   });
 });
 
 describe('BudgetMovementForm — edit mode (movement prop set)', () => {
   beforeEach(() => {
-    mockAddMovementMutate.mockClear();
-    mockUpdateTransactionMutate.mockClear();
-    mockAccounts = [accountPen];
+    mockCreateMutate.mockClear();
+    mockUpdateMutate.mockClear();
     mockCategories = [category];
   });
 
@@ -264,45 +210,29 @@ describe('BudgetMovementForm — edit mode (movement prop set)', () => {
     expect(screen.getByLabelText(/descripción/i)).toHaveValue('Almuerzo');
   });
 
-  it('disables the account select and shows the immutable hint', () => {
-    renderForm({ movement: baseMovement });
-    const accountSelect = screen.getByLabelText(/cuenta/i);
-    expect(accountSelect).toBeDisabled();
-    expect(accountSelect).toHaveValue(accountPen.id);
-    expect(screen.getByText(/la cuenta no se puede cambiar/i)).toBeInTheDocument();
-  });
-
-  it('hides the "no eligible account" banner in edit mode (the original account is locked in anyway)', () => {
-    // Even when there are no eligible accounts (e.g. user archived theirs
-    // post-creation), edit mode must keep the form usable — the account
-    // is immutable and never gets resubmitted.
-    mockAccounts = [accountArchived]; // archived → eligibleAccounts is empty
-    renderForm({ movement: baseMovement });
-
-    expect(screen.queryByText(/no tienes cuentas activas/i)).not.toBeInTheDocument();
-    // Submit button is NOT disabled by the "no eligible" guard in edit mode.
-    expect(screen.getByRole('button', { name: /guardar cambios/i })).not.toBeDisabled();
-  });
-
-  it('routes the submit through useUpdateTransaction (NOT useAddBudgetMovement)', async () => {
+  it('routes the submit through useUpdateBudgetMovement with the v1.0.0 PATCH shape', async () => {
     const user = userEvent.setup();
     renderForm({ movement: baseMovement });
 
     // Bump the amount and submit. The update mutation should fire with the
-    // movement id and the PATCH payload — no call to add-movement.
+    // movement id and a PATCH payload — no call to create.
     await user.clear(screen.getByLabelText(/monto/i));
     await user.type(screen.getByLabelText(/monto/i), '75');
     await user.click(screen.getByRole('button', { name: /guardar cambios/i }));
 
-    expect(mockUpdateTransactionMutate).toHaveBeenCalledOnce();
-    expect(mockAddMovementMutate).not.toHaveBeenCalled();
+    expect(mockUpdateMutate).toHaveBeenCalledOnce();
+    expect(mockCreateMutate).not.toHaveBeenCalled();
 
-    const callArg = mockUpdateTransactionMutate.mock.calls[0][0] as {
+    const callArg = mockUpdateMutate.mock.calls[0][0] as {
       id: string;
-      data: { amount: number; categoryId: string };
+      data: { amount: number; categoryId: string | null; date: string; description: string | null };
     };
     expect(callArg.id).toBe(baseMovement.id);
     expect(callArg.data.amount).toBe(75);
     expect(callArg.data.categoryId).toBe(category.id);
+    // budgetId and currency are immutable in v1.0.0 — they MUST NOT appear
+    // in the PATCH payload.
+    expect(callArg.data).not.toHaveProperty('budgetId');
+    expect(callArg.data).not.toHaveProperty('currency');
   });
 });

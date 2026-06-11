@@ -6,7 +6,9 @@ import { TestProviders } from '@/test/utils';
 
 import { FavoritesSection } from './FavoritesSection';
 
-let mockFavoriteKeys: string[] = ['accounts', 'transactions', 'habits', 'quick-tasks'];
+// A6-W.5 dropped `accounts` (after A6-W.3 dropped `transactions`). Use
+// v1.0.0-valid keys throughout.
+let mockFavoriteKeys: string[] = ['debts', 'budgets', 'habits', 'quick-tasks'];
 const mockUpdateMutate = vi.fn();
 
 vi.mock('@/core/application/hooks/use-user-settings', () => ({
@@ -27,14 +29,14 @@ function renderSection() {
 describe('FavoritesSection', () => {
   beforeEach(() => {
     mockUpdateMutate.mockClear();
-    mockFavoriteKeys = ['accounts', 'transactions', 'habits', 'quick-tasks'];
+    mockFavoriteKeys = ['debts', 'budgets', 'habits', 'quick-tasks'];
   });
 
   it('renders every favoritable key with its label', () => {
     renderSection();
 
     // Spot-check a few keys from different sections of the registry.
-    expect(screen.getByRole('button', { name: /cuentas/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /deudas/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /presupuesto/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /hábitos/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /quehaceres/i })).toBeInTheDocument();
@@ -63,24 +65,24 @@ describe('FavoritesSection', () => {
   });
 
   it('enables every button when the user is under the max (3 favorites)', () => {
-    mockFavoriteKeys = ['accounts', 'transactions', 'habits']; // 3 < 4
+    mockFavoriteKeys = ['debts', 'budgets', 'habits']; // 3 < 4
     renderSection();
 
     expect(screen.getByRole('button', { name: /quehaceres/i })).not.toBeDisabled();
-    expect(screen.getByRole('button', { name: /presupuesto/i })).not.toBeDisabled();
+    expect(screen.getByRole('button', { name: /servicios/i })).not.toBeDisabled();
   });
 
   it('toggles a favorite ON when clicked (appends to favoriteKeys, preserves order)', async () => {
-    mockFavoriteKeys = ['accounts', 'transactions']; // 2/4 — room to add
+    mockFavoriteKeys = ['debts', 'budgets']; // 2/4 — room to add
     const user = userEvent.setup();
     renderSection();
 
-    await user.click(screen.getByRole('button', { name: /presupuesto/i }));
+    await user.click(screen.getByRole('button', { name: /servicios/i }));
 
     expect(mockUpdateMutate).toHaveBeenCalledOnce();
     const arg = mockUpdateMutate.mock.calls[0][0] as { favoriteKeys: string[] };
     // Appended, NOT prepended — keeps the user's pre-existing slot order.
-    expect(arg.favoriteKeys).toEqual(['accounts', 'transactions', 'budgets']);
+    expect(arg.favoriteKeys).toEqual(['debts', 'budgets', 'services']);
   });
 
   it('toggles a favorite OFF when clicked (removes from favoriteKeys, preserves remaining order)', async () => {
@@ -92,7 +94,7 @@ describe('FavoritesSection', () => {
 
     expect(mockUpdateMutate).toHaveBeenCalledOnce();
     const arg = mockUpdateMutate.mock.calls[0][0] as { favoriteKeys: string[] };
-    expect(arg.favoriteKeys).toEqual(['accounts', 'transactions', 'quick-tasks']);
+    expect(arg.favoriteKeys).toEqual(['debts', 'budgets', 'quick-tasks']);
   });
 
   it('shows the subtitle with the max embedded (so the i18n change with MAX_FAVORITES surfaces)', () => {

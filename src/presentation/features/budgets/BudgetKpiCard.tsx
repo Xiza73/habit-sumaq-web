@@ -14,7 +14,7 @@ import {
 } from 'lucide-react';
 
 import { type BudgetWithKpi } from '@/core/domain/entities/budget';
-import { type Currency } from '@/core/domain/enums/account.enums';
+import { type Currency } from '@/core/domain/enums/currency.enum';
 
 import {
   type BudgetMonthHistory,

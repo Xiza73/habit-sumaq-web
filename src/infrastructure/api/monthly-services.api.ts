@@ -1,8 +1,6 @@
 import { type MonthlyService } from '@/core/domain/entities/monthly-service';
-import { type Transaction } from '@/core/domain/entities/transaction';
 import {
   type CreateMonthlyServiceInput,
-  type PayMonthlyServiceInput,
   type UpdateMonthlyServiceInput,
 } from '@/core/domain/schemas/monthly-service.schema';
 
@@ -26,16 +24,7 @@ export const monthlyServicesApi = {
     return httpClient.patch<MonthlyService>(`/monthly-services/${id}`, data);
   },
 
-  /**
-   * Registers a payment for the service's next due period. Backend creates
-   * an EXPENSE transaction against `accountIdOverride ?? service.defaultAccountId`
-   * and advances `lastPaidPeriod`.
-   */
-  pay(id: string, data: PayMonthlyServiceInput): Promise<Transaction> {
-    return httpClient.post<Transaction>(`/monthly-services/${id}/pay`, data);
-  },
-
-  /** Skips the current period without creating a transaction. */
+  /** Skips the current period without creating a payment. */
   skip(id: string): Promise<MonthlyService> {
     return httpClient.post<MonthlyService>(`/monthly-services/${id}/skip`);
   },

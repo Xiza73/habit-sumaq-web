@@ -33,16 +33,17 @@ function renderNav() {
 describe('MobileNav', () => {
   beforeEach(() => {
     mockUpdateMutate.mockClear();
-    mockFavoriteKeys = ['accounts', 'transactions', 'habits', 'quick-tasks'];
+    // A6-W.5 dropped `accounts` (after A6-W.3 dropped `transactions`).
+    // Defaults now lead with `debts` + `budgets` for the finances slots.
+    mockFavoriteKeys = ['debts', 'budgets', 'habits', 'quick-tasks'];
   });
 
   it('renders one slot per favorite key + a fixed Settings slot', () => {
     renderNav();
 
     // The 4 default favorites + Settings = 5 link/buttons in total.
-    // We probe by visible labels (i18n value, Spanish default).
-    expect(screen.getByText(/cuentas/i)).toBeInTheDocument();
-    expect(screen.getByText(/transacciones/i)).toBeInTheDocument();
+    expect(screen.getByText(/deudas/i)).toBeInTheDocument();
+    expect(screen.getByText(/presupuesto/i)).toBeInTheDocument();
     expect(screen.getByText(/hábitos/i)).toBeInTheDocument();
     expect(screen.getByText(/prioridades/i)).toBeInTheDocument();
     expect(screen.getByText(/configuración/i)).toBeInTheDocument();
@@ -52,7 +53,7 @@ describe('MobileNav', () => {
     // User has only 2 favorites set — slots 3 and 4 should be empty
     // placeholders with the dash label, NOT silently missing. Keeps the
     // bottom nav layout consistent regardless of customization state.
-    mockFavoriteKeys = ['accounts', 'transactions'];
+    mockFavoriteKeys = ['debts', 'budgets'];
     renderNav();
 
     const dashLabels = screen.getAllByText('—');
@@ -61,15 +62,14 @@ describe('MobileNav', () => {
 
   it('silently drops unknown keys (forward-compat with removed routes)', () => {
     // A user with a stale favorite from a removed route shouldn't see a
-    // broken slot. Empty placeholder takes its place.
-    mockFavoriteKeys = ['accounts', 'i-was-deleted', 'habits', 'quick-tasks'];
+    // broken slot. Empty placeholder takes its place. `accounts` is a
+    // real removed-in-A6-W.5 key.
+    mockFavoriteKeys = ['debts', 'accounts', 'habits', 'quick-tasks'];
     renderNav();
 
     // Position 2 (the deleted key) should render as the empty placeholder.
-    // We assert by checking we have exactly 1 dash (the deleted slot)
-    // alongside the 3 known favorites + Settings.
     expect(screen.getAllByText('—')).toHaveLength(1);
-    expect(screen.getByText(/cuentas/i)).toBeInTheDocument();
+    expect(screen.getByText(/deudas/i)).toBeInTheDocument();
     expect(screen.getByText(/hábitos/i)).toBeInTheDocument();
     expect(screen.getByText(/prioridades/i)).toBeInTheDocument();
   });

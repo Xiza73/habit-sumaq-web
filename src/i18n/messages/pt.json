@@ -24,35 +24,6 @@
     "logout": "Sair",
     "sessionExpired": "Sua sessão expirou. Faça login novamente."
   },
-  "accounts": {
-    "title": "Contas",
-    "createAccount": "Nova conta",
-    "editAccount": "Editar conta",
-    "deleteAccount": "Excluir conta",
-    "archiveAccount": "Arquivar conta",
-    "name": "Nome",
-    "type": "Tipo",
-    "currency": "Moeda",
-    "balance": "Saldo",
-    "initialBalance": "Saldo inicial",
-    "color": "Cor",
-    "icon": "Ícone",
-    "emptyState": "Você não tem contas. Crie sua primeira conta para começar.",
-    "deleteConfirm": "Tem certeza de que deseja excluir esta conta?",
-    "hasTransactions": "Não é possível excluir porque possui transações ativas.",
-    "types": {
-      "checking": "Conta corrente",
-      "savings": "Poupança",
-      "cash": "Dinheiro",
-      "credit_card": "Cartão de crédito",
-      "investment": "Investimentos"
-    },
-    "currencies": {
-      "PEN": "Sol peruano (PEN)",
-      "USD": "Dólar (USD)",
-      "EUR": "Euro (EUR)"
-    }
-  },
   "categories": {
     "title": "Categorias",
     "createCategory": "Nova categoria",
@@ -69,107 +40,6 @@
     "deleteConfirm": "Tem certeza de que deseja excluir esta categoria?",
     "cannotDeleteDefault": "Categorias padrão não podem ser excluídas.",
     "default": "Padrão"
-  },
-  "transactions": {
-    "title": "Transações",
-    "createTransaction": "Nova transação",
-    "editTransaction": "Editar transação",
-    "deleteTransaction": "Excluir transação",
-    "types": {
-      "INCOME": "Receita",
-      "EXPENSE": "Despesa",
-      "TRANSFER": "Transferência",
-      "DEBT": "Dívida (você deve)",
-      "LOAN": "Empréstimo (devem a você)"
-    },
-    "status": {
-      "PENDING": "Pendente",
-      "SETTLED": "Liquidada"
-    },
-    "settle": "Liquidar",
-    "settleDebt": "Liquidar dívida",
-    "settleLoan": "Liquidar empréstimo",
-    "amount": "Valor",
-    "date": "Data",
-    "description": "Descrição",
-    "reference": "Referência",
-    "destinationAccount": "Conta destino",
-    "account": "Conta",
-    "category": "Categoria",
-    "type": "Tipo",
-    "allTypes": "Todos os tipos",
-    "allAccounts": "Todas as contas",
-    "allCategories": "Todas as categorias",
-    "allStatuses": "Todos os status",
-    "dateFrom": "De",
-    "dateTo": "Até",
-    "filters": "Filtros",
-    "clearFilters": "Limpar filtros",
-    "emptyState": "Você não tem transações. Crie sua primeira transação para começar.",
-    "emptyStateFiltered": "Nenhuma transação encontrada com estes filtros.",
-    "deleteConfirm": "Tem certeza de que deseja excluir esta transação?",
-    "deleteDebtWarning": "Isso também excluirá todas as liquidações associadas.",
-    "settleAccount": "Conta de pagamento",
-    "settleAmount": "Valor a liquidar",
-    "remaining": "Pendente",
-    "ofTotal": "de {total}",
-    "budgetBadge": "Orçamento",
-    "budgetBadgeTitle": "Movimento do orçamento mensal",
-    "searchPlaceholder": "Buscar por nome, descrição ou referência…",
-    "debtsSummary": {
-      "title": "Dívidas e empréstimos",
-      "subtitle": "Resumo agrupado por pessoa (referência)",
-      "backToList": "Voltar às transações",
-      "viewDebts": "Ver dívidas",
-      "empty": "Nenhuma dívida para mostrar.",
-      "emptyPending": "Nenhuma dívida pendente. Tudo em dia.",
-      "owesYou": "Te deve",
-      "youOwe": "Você deve",
-      "net": "Líquido",
-      "inYourFavor": "a seu favor",
-      "inTheirFavor": "a favor dele(a)",
-      "allSettled": "Tudo liquidado",
-      "pendingCount": "{count, plural, one {# pendente} other {# pendentes}}",
-      "settleAll": "Liquidar tudo",
-      "newDebt": "Nova dívida",
-      "newLoan": "Novo empréstimo",
-      "statusFilter": {
-        "pending": "Pendentes",
-        "all": "Todas",
-        "settled": "Liquidadas"
-      },
-      "bulkSettle": {
-        "title": "Liquidar tudo com {name} ({currency})",
-        "intro": "Você vai processar {count, plural, one {# transação pendente} other {# transações pendentes}} em {currency}.",
-        "modeLabel": "Modo de liquidação",
-        "confirm": "Confirmar",
-        "real": {
-          "title": "Pagamento real",
-          "description": "Cria movimentos na sua conta (despesas para dívidas, receitas para empréstimos) e atualiza o saldo.",
-          "accountLabel": "Conta em {currency}",
-          "summary": "Você vai gerar {count, plural, one {# liquidação} other {# liquidações}} no total de {total} da conta {account}.",
-          "noEligibleAccount": "Você não tem nenhuma conta ativa em {currency}. Crie uma ou use o fechamento informal."
-        },
-        "informal": {
-          "title": "Fechamento informal",
-          "description": "Apenas marca como liquidadas. Não mexe nas suas contas nem movimenta dinheiro. Útil quando já acertaram pessoalmente."
-        },
-        "successReal": "Dívidas com {name} em {currency} liquidadas e registradas na sua conta",
-        "successInformal": "Dívidas com {name} em {currency} marcadas como liquidadas"
-      },
-      "viewControls": {
-        "orderLabel": "Ordenar por",
-        "orderBy": {
-          "name": "Nome",
-          "netOwed": "Valor líquido",
-          "pendingCount": "Pendentes"
-        },
-        "toggleToAsc": "Mudar para ascendente",
-        "toggleToDesc": "Mudar para descendente"
-      }
-    },
-    "createDebt": "Nova dívida",
-    "createLoan": "Novo empréstimo"
   },
   "settings": {
     "title": "Configurações",
@@ -268,6 +138,15 @@
     "BDGT_001": "Orçamento não encontrado.",
     "BDGT_002": "Você já tem um orçamento para esse mês e moeda.",
     "BDGT_003": "A data do movimento deve estar dentro do mês do orçamento.",
+    "BMV_001": "Movimento não encontrado.",
+    "BMV_002": "Você não tem acesso a este movimento.",
+    "BMV_003": "A data do movimento deve estar dentro do mês do orçamento.",
+    "BMV_004": "A moeda do movimento não coincide com a do orçamento.",
+    "MSP_001": "Pagamento não encontrado.",
+    "MSP_002": "Você não tem acesso a este pagamento.",
+    "MSP_003": "Você já registrou um pagamento para esse período.",
+    "MSP_004": "A moeda do pagamento não coincide com a do serviço.",
+    "MSP_005": "O período deve seguir o formato YYYY-MM.",
     "VAL_002": "A moeda da conta não coincide com a do orçamento.",
     "TSK_001": "Seção não encontrada.",
     "TSK_002": "O nome da seção é obrigatório.",
@@ -471,16 +350,14 @@
       "period": "Período: {period}",
       "amount": "Valor",
       "date": "Data",
-      "description": "Descrição",
-      "account": "Pagar com",
+      "details": "Detalhes",
+      "detailsPlaceholder": "Notas adicionais (opcional)",
       "confirm": "Confirmar pagamento"
     }
   },
   "navigation": {
     "finances": "Finanças",
-    "accounts": "Contas",
     "categories": "Categorias",
-    "transactions": "Transações",
     "debts": "Dívidas e empréstimos",
     "debtsShort": "Dívidas",
     "services": "Serviços",
@@ -567,7 +444,8 @@
       "actionsAria": "Ações do movimento",
       "empty": "Nenhum movimento registrado neste mês ainda",
       "deleteConfirm": "Excluir este movimento? A conta vinculada será reembolsada.",
-      "deleteSuccess": "Movimento excluído"
+      "deleteSuccess": "Movimento excluído",
+      "fallbackTitle": "Despesa"
     },
     "history": {
       "title": "Histórico"
@@ -665,10 +543,9 @@
     },
     "finances": {
       "title": "Relatório de Finanças",
-      "subtitle": "Visão agregada das suas contas e transações no período selecionado.",
+      "subtitle": "Visão agregada das suas finanças no período selecionado.",
       "totalBalance": "Saldo total",
-      "totalBalanceEmpty": "Você ainda não tem contas ativas.",
-      "accountCount": "{count, plural, one {# conta} other {# contas}}",
+      "totalBalanceEmpty": "Você ainda não tem saldo em nenhuma moeda.",
       "periodFlow": "Receitas vs Despesas",
       "periodFlowEmpty": "Sem movimentos no período.",
       "income": "Receitas",
@@ -861,6 +738,8 @@
     "loading": "Carregando alertas...",
     "error": "Não foi possível carregar os alertas",
     "empty": "Está tudo em dia, nenhum alerta ativo",
+    "dismissAll": "Fechar todas",
+    "persistentHint": "Os alertas restantes se fecham sozinhos quando você os resolver",
     "items": {
       "serviceDueToday": {
         "title": "Vence hoje: {name}",
@@ -885,6 +764,92 @@
         "title": "Atrasada: {name}",
         "subtitle": "Vencia em {date}"
       }
+    }
+  },
+  "debts": {
+    "title": "Dívidas e Empréstimos",
+    "subtitle": "Agrupado por pessoa e moeda",
+    "empty": "Você não tem dívidas ou empréstimos registrados.",
+    "emptyPending": "Nada pendente. Tudo em ordem.",
+    "statusFilter": {
+      "pending": "Pendentes",
+      "all": "Todos",
+      "settled": "Liquidados"
+    },
+    "summary": {
+      "youOwe": "Você deve",
+      "theyOweYou": "Te devem",
+      "allSettled": "Tudo quitado.",
+      "net": "Líquido",
+      "pendingCount": "{count, plural, one {# pendente} other {# pendentes}}",
+      "settledCount": "{count, plural, one {# liquidado} other {# liquidados}}",
+      "settleAll": "Liquidar tudo"
+    },
+    "newDebt": "Nova dívida",
+    "newLoan": "Novo empréstimo",
+    "form": {
+      "createDebtTitle": "Nova dívida",
+      "createLoanTitle": "Novo empréstimo",
+      "editTitle": "Editar",
+      "type": "Tipo",
+      "typeDebt": "Dívida (você deve)",
+      "typeLoan": "Empréstimo (devem a você)",
+      "currency": "Moeda",
+      "amount": "Valor",
+      "reference": "Pessoa",
+      "referencePlaceholder": "Nome ou referência (ex: João)",
+      "description": "Descrição",
+      "descriptionPlaceholder": "Ex: jantar, empréstimo de segunda",
+      "date": "Data",
+      "category": "Categoria (opcional)",
+      "createSubmit": "Criar",
+      "editSubmit": "Salvar",
+      "createSuccess": "Registrado",
+      "editSuccess": "Atualizado"
+    },
+    "detail": {
+      "title": "{name} ({currency})",
+      "rowsPending": "Pendentes",
+      "rowsSettled": "Liquidados",
+      "amount": "Valor",
+      "remaining": "Pendente",
+      "settle": "Liquidar",
+      "settleTitle": "Liquidar {reference}",
+      "settleAmount": "Valor a liquidar",
+      "settleMode": "Modo",
+      "settleReal": "Pagamento real",
+      "settleRealHint": "Movimenta seu saldo interno em {currency}.",
+      "settleInformal": "Fechamento informal",
+      "settleInformalHint": "Apenas marca como liquidado, sem mover saldo.",
+      "settleConfirm": "Confirmar",
+      "settleSuccess": "Liquidado",
+      "invalidAmount": "Valor inválido.",
+      "edit": "Editar",
+      "delete": "Excluir",
+      "deleteConfirm": "Excluir este registro?",
+      "deleteSuccess": "Excluído",
+      "empty": "Sem registros."
+    },
+    "bulkSettle": {
+      "title": "Liquidar tudo com esta pessoa",
+      "totalPending": "Pendente total: {amount} em {count, plural, one {# operação} other {# operações}}.",
+      "netSummary": {
+        "theyOweYou": "A seu favor: {amount}.",
+        "youOwe": "Contra você: {amount}."
+      },
+      "mode": "Como você está fechando?",
+      "real": {
+        "title": "Pagamento real",
+        "description": "Dinheiro realmente mudou de mãos. Atualiza seu saldo interno em {currency}."
+      },
+      "informal": {
+        "title": "Fechamento informal",
+        "description": "Só marca como liquidado, sem mexer no saldo interno."
+      },
+      "cancel": "Cancelar",
+      "confirm": "Confirmar",
+      "successReal": "Dívidas com {name} ({currency}) liquidadas.",
+      "successInformal": "Dívidas com {name} ({currency}) marcadas como liquidadas."
     }
   }
 }

@@ -10,7 +10,7 @@ import { toast } from 'sonner';
 
 import { useCreateBudget, useUpdateBudget } from '@/core/application/hooks/use-budgets';
 import { type Budget } from '@/core/domain/entities/budget';
-import { type Currency } from '@/core/domain/enums/account.enums';
+import { type Currency } from '@/core/domain/enums/currency.enum';
 import {
   type CreateBudgetInput,
   createBudgetSchema,

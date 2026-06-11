@@ -36,11 +36,6 @@ vi.mock('@/core/application/hooks/use-budgets', () => ({
   useCreateBudget: () => ({ mutate: vi.fn(), isPending: false }),
   useUpdateBudget: () => ({ mutate: vi.fn(), isPending: false }),
   useDeleteBudget: () => ({ mutate: vi.fn(), isPending: false }),
-  useAddBudgetMovement: () => ({ mutate: vi.fn(), isPending: false }),
-}));
-
-vi.mock('@/core/application/hooks/use-accounts', () => ({
-  useAccounts: () => ({ data: [], isLoading: false }),
 }));
 
 vi.mock('@/core/application/hooks/use-categories', () => ({
@@ -52,16 +47,16 @@ vi.mock('@/core/application/hooks/use-categories', () => ({
   useUpdateCategory: () => ({ mutate: vi.fn(), isPending: false }),
 }));
 
-vi.mock('@/core/application/hooks/use-transactions', () => ({
-  useDeleteTransaction: () => ({ mutate: vi.fn(), isPending: false }),
-  // BudgetMovementForm (in edit mode) calls `useUpdateTransaction` to PATCH
-  // the existing movement. The dashboard mounts the form in both create and
-  // edit shapes — stub it so the module mock is complete.
-  useUpdateTransaction: () => ({ mutate: vi.fn(), isPending: false }),
-  // The dashboard imports `transactionKeys` indirectly via use-budgets in real
-  // code, but the mock above shadows the whole module. This export keeps the
-  // symbol present for any consumer that grabs it during render.
-  transactionKeys: { all: ['transactions'], lists: () => ['transactions', 'list'] },
+// v1.0.0 (Phase A6-W.1): the dashboard reads movements from the new
+// `/budget-movements` endpoint via `useBudgetMovements`, and the form +
+// list mutate through `useCreateBudgetMovement` / `useUpdateBudgetMovement`
+// / `useDeleteBudgetMovement`. The legacy `useAccounts` + `useTransactions`
+// dependencies are gone.
+vi.mock('@/core/application/hooks/use-budget-movements', () => ({
+  useBudgetMovements: () => ({ data: [], isLoading: false }),
+  useCreateBudgetMovement: () => ({ mutate: vi.fn(), isPending: false }),
+  useUpdateBudgetMovement: () => ({ mutate: vi.fn(), isPending: false }),
+  useDeleteBudgetMovement: () => ({ mutate: vi.fn(), isPending: false }),
 }));
 
 const populatedBudget: BudgetWithKpi = {

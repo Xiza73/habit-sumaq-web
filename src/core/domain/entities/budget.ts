@@ -1,13 +1,14 @@
-import { type Transaction } from '@/core/domain/entities/transaction';
-import { type Currency } from '@/core/domain/enums/account.enums';
+import { type BudgetMovement } from '@/core/domain/entities/budget-movement';
+import { type Currency } from '@/core/domain/enums/currency.enum';
 
 /**
  * Monthly discretionary spending plan, scoped to one (year, month, currency).
  *
- * Movements are EXPENSE transactions tagged with `budgetId`. This is NOT a
+ * v1.0.0 (`accounts-to-modular-finance` refactor): "movements" are now rows
+ * in the dedicated `budget_movements` table (see `BudgetMovement`), not the
+ * legacy `transactions` rows tagged with `budgetId`. This is still NOT a
  * tracker that reads every expense of the month — only the ones the user
- * explicitly logs against the budget count toward `spent`. Lets the user
- * separate "money for free spending" from rent / services / etc.
+ * explicitly logs against the budget count toward `spent`.
  */
 export interface Budget {
   id: string;
@@ -24,6 +25,11 @@ export interface Budget {
 /**
  * Budget detail view returned by `GET /budgets/current` and `GET /budgets/:id`.
  * Embeds KPI snapshot + movements so the dashboard renders in a single fetch.
+ *
+ * The web ALSO fetches movements separately via `useBudgetMovements(budget.id)`
+ * — that's the canonical surface since A6-W.1. The `movements` field here
+ * stays for backwards-compat with the legacy API shape but no consumer reads
+ * it. A6-B will drop it from the response entirely.
  */
 export interface BudgetWithKpi extends Budget {
   spent: number;
@@ -41,5 +47,5 @@ export interface BudgetWithKpi extends Budget {
   dailyAllowance: number | null;
   /** `YYYY-MM-DD` — today's date in the client timezone. */
   currentDate: string;
-  movements: Transaction[];
+  movements: BudgetMovement[];
 }

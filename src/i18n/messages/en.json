@@ -24,35 +24,6 @@
     "logout": "Sign out",
     "sessionExpired": "Your session has expired. Please sign in again."
   },
-  "accounts": {
-    "title": "Accounts",
-    "createAccount": "New account",
-    "editAccount": "Edit account",
-    "deleteAccount": "Delete account",
-    "archiveAccount": "Archive account",
-    "name": "Name",
-    "type": "Type",
-    "currency": "Currency",
-    "balance": "Balance",
-    "initialBalance": "Initial balance",
-    "color": "Color",
-    "icon": "Icon",
-    "emptyState": "You don't have any accounts. Create your first one to get started.",
-    "deleteConfirm": "Are you sure you want to delete this account?",
-    "hasTransactions": "Cannot delete because it has active transactions.",
-    "types": {
-      "checking": "Checking account",
-      "savings": "Savings account",
-      "cash": "Cash",
-      "credit_card": "Credit card",
-      "investment": "Investments"
-    },
-    "currencies": {
-      "PEN": "Peruvian Sol (PEN)",
-      "USD": "US Dollar (USD)",
-      "EUR": "Euro (EUR)"
-    }
-  },
   "categories": {
     "title": "Categories",
     "createCategory": "New category",
@@ -69,107 +40,6 @@
     "deleteConfirm": "Are you sure you want to delete this category?",
     "cannotDeleteDefault": "Default categories cannot be deleted.",
     "default": "Default"
-  },
-  "transactions": {
-    "title": "Transactions",
-    "createTransaction": "New transaction",
-    "editTransaction": "Edit transaction",
-    "deleteTransaction": "Delete transaction",
-    "types": {
-      "INCOME": "Income",
-      "EXPENSE": "Expense",
-      "TRANSFER": "Transfer",
-      "DEBT": "Debt (you owe)",
-      "LOAN": "Loan (owed to you)"
-    },
-    "status": {
-      "PENDING": "Pending",
-      "SETTLED": "Settled"
-    },
-    "settle": "Settle",
-    "settleDebt": "Settle debt",
-    "settleLoan": "Settle loan",
-    "amount": "Amount",
-    "date": "Date",
-    "description": "Description",
-    "reference": "Reference",
-    "destinationAccount": "Destination account",
-    "account": "Account",
-    "category": "Category",
-    "type": "Type",
-    "allTypes": "All types",
-    "allAccounts": "All accounts",
-    "allCategories": "All categories",
-    "allStatuses": "All statuses",
-    "dateFrom": "From",
-    "dateTo": "To",
-    "filters": "Filters",
-    "clearFilters": "Clear filters",
-    "emptyState": "You don't have any transactions. Create your first one to get started.",
-    "emptyStateFiltered": "No transactions match these filters.",
-    "deleteConfirm": "Are you sure you want to delete this transaction?",
-    "deleteDebtWarning": "This will also delete all associated settlements.",
-    "settleAccount": "Payment account",
-    "settleAmount": "Amount to settle",
-    "remaining": "Remaining",
-    "ofTotal": "of {total}",
-    "budgetBadge": "Budget",
-    "budgetBadgeTitle": "Movement of the monthly budget",
-    "searchPlaceholder": "Search by name, description, or reference…",
-    "debtsSummary": {
-      "title": "Debts and loans",
-      "subtitle": "Summary grouped by person (reference)",
-      "backToList": "Back to transactions",
-      "viewDebts": "View debts",
-      "empty": "No debts to show.",
-      "emptyPending": "No pending debts. All caught up.",
-      "owesYou": "Owes you",
-      "youOwe": "You owe",
-      "net": "Net",
-      "inYourFavor": "in your favor",
-      "inTheirFavor": "in their favor",
-      "allSettled": "All settled",
-      "pendingCount": "{count, plural, one {# pending} other {# pending}}",
-      "settleAll": "Settle all",
-      "newDebt": "New debt",
-      "newLoan": "New loan",
-      "statusFilter": {
-        "pending": "Pending",
-        "all": "All",
-        "settled": "Settled"
-      },
-      "bulkSettle": {
-        "title": "Settle everything with {name} ({currency})",
-        "intro": "You'll process {count, plural, one {# pending transaction} other {# pending transactions}} in {currency}.",
-        "modeLabel": "Settlement mode",
-        "confirm": "Confirm",
-        "real": {
-          "title": "Real payment",
-          "description": "Creates account movements (expenses for debts, income for loans) and updates your balance.",
-          "accountLabel": "Account in {currency}",
-          "summary": "You'll generate {count, plural, one {# settlement} other {# settlements}} for a total of {total} from {account}.",
-          "noEligibleAccount": "You don't have any active account in {currency}. Create one or use informal close."
-        },
-        "informal": {
-          "title": "Informal close",
-          "description": "Just marks them settled. Doesn't touch your accounts or move money. Useful when you already squared up face-to-face."
-        },
-        "successReal": "Debts with {name} in {currency} settled and recorded in your account",
-        "successInformal": "Debts with {name} in {currency} marked as settled"
-      },
-      "viewControls": {
-        "orderLabel": "Sort by",
-        "orderBy": {
-          "name": "Name",
-          "netOwed": "Net amount",
-          "pendingCount": "Pending"
-        },
-        "toggleToAsc": "Switch to ascending",
-        "toggleToDesc": "Switch to descending"
-      }
-    },
-    "createDebt": "New debt",
-    "createLoan": "New loan"
   },
   "settings": {
     "title": "Settings",
@@ -268,6 +138,15 @@
     "BDGT_001": "Budget not found.",
     "BDGT_002": "You already have a budget for that month and currency.",
     "BDGT_003": "The movement date must fall within the budget's month.",
+    "BMV_001": "Movement not found.",
+    "BMV_002": "You don't have access to this movement.",
+    "BMV_003": "The movement date must fall within the budget's month.",
+    "BMV_004": "The movement currency does not match the budget's.",
+    "MSP_001": "Payment not found.",
+    "MSP_002": "You don't have access to this payment.",
+    "MSP_003": "You already registered a payment for that period.",
+    "MSP_004": "The payment currency does not match the service's.",
+    "MSP_005": "The period must follow the YYYY-MM format.",
     "VAL_002": "The account currency does not match the budget's.",
     "TSK_001": "Section not found.",
     "TSK_002": "Section name is required.",
@@ -471,16 +350,14 @@
       "period": "Period: {period}",
       "amount": "Amount",
       "date": "Date",
-      "description": "Description",
-      "account": "Pay from",
+      "details": "Details",
+      "detailsPlaceholder": "Additional notes (optional)",
       "confirm": "Confirm payment"
     }
   },
   "navigation": {
     "finances": "Finances",
-    "accounts": "Accounts",
     "categories": "Categories",
-    "transactions": "Transactions",
     "debts": "Debts and loans",
     "debtsShort": "Debts",
     "services": "Services",
@@ -567,7 +444,8 @@
       "actionsAria": "Movement actions",
       "empty": "No movements logged for this month yet",
       "deleteConfirm": "Delete this movement? The linked account will be refunded.",
-      "deleteSuccess": "Movement deleted"
+      "deleteSuccess": "Movement deleted",
+      "fallbackTitle": "Expense"
     },
     "history": {
       "title": "History"
@@ -665,10 +543,9 @@
     },
     "finances": {
       "title": "Finances report",
-      "subtitle": "Aggregated view of your accounts and transactions in the selected period.",
+      "subtitle": "Aggregated view of your finances in the selected period.",
       "totalBalance": "Total balance",
-      "totalBalanceEmpty": "You don't have any active accounts yet.",
-      "accountCount": "{count, plural, one {# account} other {# accounts}}",
+      "totalBalanceEmpty": "You don't have any balance in any currency yet.",
       "periodFlow": "Income vs Expense",
       "periodFlowEmpty": "No movements in the period.",
       "income": "Income",
@@ -861,6 +738,8 @@
     "loading": "Loading alerts...",
     "error": "Couldn't load alerts",
     "empty": "You're all caught up, no active alerts",
+    "dismissAll": "Dismiss all",
+    "persistentHint": "Remaining alerts will clear themselves when you resolve them",
     "items": {
       "serviceDueToday": {
         "title": "Due today: {name}",
@@ -885,6 +764,92 @@
         "title": "Overdue: {name}",
         "subtitle": "Was due on {date}"
       }
+    }
+  },
+  "debts": {
+    "title": "Debts and Loans",
+    "subtitle": "Grouped by person and currency",
+    "empty": "You have no debts or loans recorded.",
+    "emptyPending": "Nothing pending. You're all clear.",
+    "statusFilter": {
+      "pending": "Pending",
+      "all": "All",
+      "settled": "Settled"
+    },
+    "summary": {
+      "youOwe": "You owe",
+      "theyOweYou": "They owe you",
+      "allSettled": "All settled.",
+      "net": "Net",
+      "pendingCount": "{count, plural, one {# pending} other {# pending}}",
+      "settledCount": "{count, plural, one {# settled} other {# settled}}",
+      "settleAll": "Settle all"
+    },
+    "newDebt": "New debt",
+    "newLoan": "New loan",
+    "form": {
+      "createDebtTitle": "New debt",
+      "createLoanTitle": "New loan",
+      "editTitle": "Edit",
+      "type": "Type",
+      "typeDebt": "Debt (you owe)",
+      "typeLoan": "Loan (you're owed)",
+      "currency": "Currency",
+      "amount": "Amount",
+      "reference": "Person",
+      "referencePlaceholder": "Name or reference (e.g. John)",
+      "description": "Description",
+      "descriptionPlaceholder": "e.g. dinner, Monday loan",
+      "date": "Date",
+      "category": "Category (optional)",
+      "createSubmit": "Create",
+      "editSubmit": "Save",
+      "createSuccess": "Recorded",
+      "editSuccess": "Updated"
+    },
+    "detail": {
+      "title": "{name} ({currency})",
+      "rowsPending": "Pending",
+      "rowsSettled": "Settled",
+      "amount": "Amount",
+      "remaining": "Pending",
+      "settle": "Settle",
+      "settleTitle": "Settle {reference}",
+      "settleAmount": "Amount to settle",
+      "settleMode": "Mode",
+      "settleReal": "Real payment",
+      "settleRealHint": "Moves your internal {currency} balance.",
+      "settleInformal": "Informal close",
+      "settleInformalHint": "Only marks as settled, no balance change.",
+      "settleConfirm": "Confirm",
+      "settleSuccess": "Settled",
+      "invalidAmount": "Invalid amount.",
+      "edit": "Edit",
+      "delete": "Delete",
+      "deleteConfirm": "Delete this record?",
+      "deleteSuccess": "Deleted",
+      "empty": "No records."
+    },
+    "bulkSettle": {
+      "title": "Settle everything with this person",
+      "totalPending": "Total pending: {amount} across {count, plural, one {# entry} other {# entries}}.",
+      "netSummary": {
+        "theyOweYou": "Net in your favor: {amount}.",
+        "youOwe": "Net you owe: {amount}."
+      },
+      "mode": "How are you closing this?",
+      "real": {
+        "title": "Real payment",
+        "description": "Money actually changed hands. Updates your internal {currency} balance."
+      },
+      "informal": {
+        "title": "Informal close",
+        "description": "Just mark as settled. Internal balance is not touched."
+      },
+      "cancel": "Cancel",
+      "confirm": "Confirm",
+      "successReal": "Settled debts with {name} ({currency}).",
+      "successInformal": "Marked debts with {name} ({currency}) as settled."
     }
   }
 }

@@ -91,12 +91,18 @@ export interface AlertsListResponse {
  * Deep-linking (e.g. `/budgets/{id}`) is a future iteration — today we
  * land on the feature index page, which is the closest "thing to fix" the
  * user expects to act on.
+ *
+ * Note the asymmetry between API path and frontend route for services: the
+ * backend exposes `/monthly-services` (matches `MonthlyServicesModule`),
+ * but the Next.js route is `/services` (see `src/app/(dashboard)/services/`).
+ * NAV_SECTIONS in Sidebar.tsx is the source of truth — keep this mapping
+ * in sync with that file.
  */
 export function getAlertHref(alert: Alert): string | null {
   switch (alert.type) {
     case 'service-due-today':
     case 'service-overdue':
-      return '/monthly-services';
+      return '/services';
     case 'habits-midday':
       return '/habits';
     case 'budget-overspent':
