@@ -9,7 +9,7 @@ export default function NotFound() {
       <h1 className="text-2xl font-bold">404</h1>
       <p className="max-w-xs text-muted-foreground">La página que buscas no existe o fue movida.</p>
       <Link
-        href="/accounts"
+        href="/reports/routines"
         className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
       >
         Ir al inicio
