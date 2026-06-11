@@ -789,16 +789,13 @@
     "newLoan": "Nuevo préstamo",
     "view": {
       "sortBy": "Ordenar",
-      "direction": "Dirección",
       "orderBy": {
         "name": "Nombre",
         "netOwed": "Neto",
         "pendingCount": "Pendientes"
       },
-      "orderDir": {
-        "asc": "↑",
-        "desc": "↓"
-      }
+      "toggleToAsc": "Ordenar ascendente",
+      "toggleToDesc": "Ordenar descendente"
     },
     "form": {
       "createDebtTitle": "Nueva deuda",
