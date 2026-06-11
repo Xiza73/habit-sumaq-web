@@ -787,6 +787,16 @@
     },
     "newDebt": "New debt",
     "newLoan": "New loan",
+    "view": {
+      "sortBy": "Sort",
+      "orderBy": {
+        "name": "Name",
+        "netOwed": "Net",
+        "pendingCount": "Pending"
+      },
+      "toggleToAsc": "Sort ascending",
+      "toggleToDesc": "Sort descending"
+    },
     "form": {
       "createDebtTitle": "New debt",
       "createLoanTitle": "New loan",
@@ -811,6 +821,8 @@
       "title": "{name} ({currency})",
       "rowsPending": "Pending",
       "rowsSettled": "Settled",
+      "showSettled": "Show settled ({count})",
+      "hideSettled": "Hide settled",
       "amount": "Amount",
       "remaining": "Pending",
       "settle": "Settle",
