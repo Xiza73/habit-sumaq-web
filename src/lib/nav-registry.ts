@@ -144,6 +144,32 @@ export function isFavoriteKey(value: string): value is FavoriteKey {
 }
 
 /**
+ * Resolve the route the app should land on when the user has no explicit
+ * destination (root `/`, 404 home button, post-login callback). Picks the
+ * first registry-known entry from `keys` so each user lands on the surface
+ * they actually care about, instead of a hardcoded dashboard.
+ *
+ * Fallback chain:
+ *   1. First registry-known key in `keys`.
+ *   2. First key in `DEFAULT_FAVORITES` (the same default the backend
+ *      ships in `user_settings.favoriteKeys`).
+ *   3. `/services` — last-resort hardcoded route that always exists and
+ *      requires no setup. Only reached if both the user prefs AND the
+ *      defaults somehow resolve to zero registry-known keys, which today
+ *      would mean someone dropped every entry from the registry; the
+ *      fallback exists so the redirect never returns `undefined`.
+ */
+export function resolveFirstFavoriteRoute(keys: readonly string[]): string {
+  for (const key of keys) {
+    if (isFavoriteKey(key)) return NAV_REGISTRY[key].href;
+  }
+  for (const key of DEFAULT_FAVORITES) {
+    if (isFavoriteKey(key)) return NAV_REGISTRY[key].href;
+  }
+  return '/services';
+}
+
+/**
  * Resolve a list of persisted keys into rendering-ready `NavEntry` objects.
  *
  * Drops unknown keys silently — that's how we tolerate a user whose
