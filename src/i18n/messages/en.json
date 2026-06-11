@@ -789,16 +789,13 @@
     "newLoan": "New loan",
     "view": {
       "sortBy": "Sort",
-      "direction": "Direction",
       "orderBy": {
         "name": "Name",
         "netOwed": "Net",
         "pendingCount": "Pending"
       },
-      "orderDir": {
-        "asc": "↑",
-        "desc": "↓"
-      }
+      "toggleToAsc": "Sort ascending",
+      "toggleToDesc": "Sort descending"
     },
     "form": {
       "createDebtTitle": "New debt",
