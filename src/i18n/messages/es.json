@@ -787,6 +787,19 @@
     },
     "newDebt": "Nueva deuda",
     "newLoan": "Nuevo préstamo",
+    "view": {
+      "sortBy": "Ordenar",
+      "direction": "Dirección",
+      "orderBy": {
+        "name": "Nombre",
+        "netOwed": "Neto",
+        "pendingCount": "Pendientes"
+      },
+      "orderDir": {
+        "asc": "↑",
+        "desc": "↓"
+      }
+    },
     "form": {
       "createDebtTitle": "Nueva deuda",
       "createLoanTitle": "Nuevo préstamo",
@@ -811,6 +824,8 @@
       "title": "{name} ({currency})",
       "rowsPending": "Pendientes",
       "rowsSettled": "Liquidados",
+      "showSettled": "Mostrar liquidados ({count})",
+      "hideSettled": "Ocultar liquidados",
       "amount": "Monto",
       "remaining": "Pendiente",
       "settle": "Liquidar",

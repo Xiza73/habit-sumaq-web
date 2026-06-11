@@ -3,7 +3,16 @@
 import { useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
 
-import { ArrowDownLeft, ArrowUpRight, CheckCircle2, Loader2, Pencil, Trash2 } from 'lucide-react';
+import {
+  ArrowDownLeft,
+  ArrowUpRight,
+  CheckCircle2,
+  ChevronDown,
+  ChevronRight,
+  Loader2,
+  Pencil,
+  Trash2,
+} from 'lucide-react';
 import { toast } from 'sonner';
 
 import {
@@ -42,10 +51,14 @@ interface DebtLoanDetailModalProps {
 
 /**
  * Modal showing every `DebtLoan` row that belongs to a single
- * `(reference, currency)` group. Driven by `useDebtsLoans('all')` and
- * filtered client-side — the backend doesn't expose a group-by-reference
- * detail endpoint, but the list is small enough that a single fetch is
- * cheap.
+ * `(reference, currency)` group. Filtered client-side — the backend
+ * doesn't expose a group-by-reference detail endpoint, but the per-status
+ * list is small enough that a single fetch is cheap.
+ *
+ * Fetch is deferred by status: PENDING rows load with the modal, SETTLED
+ * rows only load when the user opens the "Mostrar liquidados" collapse —
+ * lots of users never need to see settled history, so we don't pay for
+ * the wider fetch by default.
  *
  * Per-row actions:
  *   - Settle individual row (dual-mode: real-payment / informal-close).
@@ -56,11 +69,15 @@ export function DebtLoanDetailModal({ row, onClose, onEdit }: DebtLoanDetailModa
   const t = useTranslations('debts.detail');
   const tErrors = useTranslations('errors');
 
-  const { data: allRows = [], isLoading } = useDebtsLoans('all');
+  const [settlingRow, setSettlingRow] = useState<DebtLoan | null>(null);
+  const [showSettled, setShowSettled] = useState(false);
+
+  // Once the user opens "Show settled" we switch to status='all' so the
+  // pending rows AND the settled ones come down in a single fetch — the
+  // backend already serves a status=all endpoint, no point in two calls.
+  const { data: allRows = [], isLoading } = useDebtsLoans(showSettled ? 'all' : 'pending');
   const deleteMutation = useDeleteDebtLoan();
   const settleMutation = useSettleDebtLoan();
-
-  const [settlingRow, setSettlingRow] = useState<DebtLoan | null>(null);
 
   const filtered = useMemo(() => {
     if (!row) return [];
@@ -125,7 +142,7 @@ export function DebtLoanDetailModal({ row, onClose, onEdit }: DebtLoanDetailModa
           <div className="flex justify-center py-8">
             <Loader2 className="size-6 animate-spin text-muted-foreground" />
           </div>
-        ) : filtered.length === 0 ? (
+        ) : filtered.length === 0 && row.settledCount === 0 ? (
           <p className="py-6 text-center text-sm text-muted-foreground">{t('empty')}</p>
         ) : (
           <div className="space-y-4">
@@ -141,17 +158,33 @@ export function DebtLoanDetailModal({ row, onClose, onEdit }: DebtLoanDetailModa
                 onDelete={handleDelete}
               />
             )}
-            {settled.length > 0 && (
-              <Section
-                label={t('rowsSettled')}
-                rows={settled}
-                onSettle={null}
-                onEdit={(d) => {
-                  onClose();
-                  onEdit(d);
-                }}
-                onDelete={handleDelete}
-              />
+            {row.settledCount > 0 && (
+              <div className="space-y-2">
+                <button
+                  type="button"
+                  onClick={() => setShowSettled((v) => !v)}
+                  className="inline-flex items-center gap-1 text-xs font-medium text-muted-foreground hover:text-foreground"
+                >
+                  {showSettled ? (
+                    <ChevronDown className="size-3.5" aria-hidden />
+                  ) : (
+                    <ChevronRight className="size-3.5" aria-hidden />
+                  )}
+                  {showSettled ? t('hideSettled') : t('showSettled', { count: row.settledCount })}
+                </button>
+                {showSettled && settled.length > 0 && (
+                  <Section
+                    label={t('rowsSettled')}
+                    rows={settled}
+                    onSettle={null}
+                    onEdit={(d) => {
+                      onClose();
+                      onEdit(d);
+                    }}
+                    onDelete={handleDelete}
+                  />
+                )}
+              </div>
             )}
           </div>
         )}
