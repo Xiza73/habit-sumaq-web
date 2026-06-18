@@ -157,6 +157,11 @@
     "TSK_007": "El título de la tarea es demasiado largo.",
     "TSK_008": "La descripción de la tarea es demasiado larga.",
     "TSK_009": "Algunas tareas no existen, no te pertenecen, o no están en esta sección.",
+    "DBT_002": "No tenés permisos para modificar este pago.",
+    "DBT_006": "El monto excede el saldo de la deuda.",
+    "DBT_008": "El pago ya fue borrado.",
+    "DBT_009": "Debés modificar al menos un campo.",
+    "DBT_010": "El monto excede el saldo de la deuda.",
     "generic": "Ocurrió un error inesperado. Intenta de nuevo."
   },
   "habits": {
@@ -840,7 +845,24 @@
       "delete": "Eliminar",
       "deleteConfirm": "¿Eliminar este registro?",
       "deleteSuccess": "Eliminado",
-      "empty": "Sin registros."
+      "empty": "Sin registros.",
+      "payments": {
+        "show": "Ver pagos",
+        "hide": "Ocultar pagos",
+        "loading": "Cargando pagos…",
+        "loadError": "No se pudieron cargar los pagos.",
+        "informal": "Cierre informal",
+        "amountLabel": "Monto",
+        "noteLabel": "Nota",
+        "notePlaceholder": "Nota (opcional)",
+        "save": "Guardar",
+        "cancel": "Cancelar",
+        "edit": "Editar pago",
+        "delete": "Eliminar pago",
+        "deleteConfirm": "¿Eliminar este pago?",
+        "updateSuccess": "Pago actualizado",
+        "deleteSuccess": "Pago eliminado"
+      }
     },
     "bulkSettle": {
       "title": "Liquidar todo con esta persona",

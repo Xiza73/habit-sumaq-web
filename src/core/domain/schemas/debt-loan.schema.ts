@@ -42,3 +42,23 @@ export const bulkSettleByReferenceSchema = z.object({
   currency: currencySchema.optional(),
 });
 export type BulkSettleByReferenceInput = z.infer<typeof bulkSettleByReferenceSchema>;
+
+/**
+ * PATCH /debts/payments/:paymentId — edit amount and/or note of a
+ * payment in the history. The backend enforces "at least one field"
+ * (DBT_009); we mirror it via `.refine` so the form rejects empty
+ * submits before the network hop.
+ *
+ * `currency` is immutable post-creation by design — settles that hit
+ * the pool can't switch currencies without unwinding the delta, and the
+ * UI never exposes a currency editor here.
+ */
+export const updateDebtLoanPaymentSchema = z
+  .object({
+    amount: z.number().min(0.01, 'min_amount').optional(),
+    note: z.string().max(255).nullable().optional(),
+  })
+  .refine((v) => v.amount !== undefined || v.note !== undefined, {
+    message: 'at_least_one_field',
+  });
+export type UpdateDebtLoanPaymentInput = z.infer<typeof updateDebtLoanPaymentSchema>;

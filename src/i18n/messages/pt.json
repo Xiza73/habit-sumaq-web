@@ -157,6 +157,11 @@
     "TSK_007": "O título da tarefa é muito longo.",
     "TSK_008": "A descrição da tarefa é muito longa.",
     "TSK_009": "Algumas tarefas não existem, não pertencem a você ou não estão nesta seção.",
+    "DBT_002": "Você não tem permissão para modificar este pagamento.",
+    "DBT_006": "O valor excede o saldo da dívida.",
+    "DBT_008": "Este pagamento já foi excluído.",
+    "DBT_009": "Você precisa modificar ao menos um campo.",
+    "DBT_010": "O valor excede o saldo da dívida.",
     "generic": "Ocorreu um erro inesperado. Tente novamente."
   },
   "habits": {
@@ -840,7 +845,24 @@
       "delete": "Excluir",
       "deleteConfirm": "Excluir este registro?",
       "deleteSuccess": "Excluído",
-      "empty": "Sem registros."
+      "empty": "Sem registros.",
+      "payments": {
+        "show": "Ver pagamentos",
+        "hide": "Ocultar pagamentos",
+        "loading": "Carregando pagamentos…",
+        "loadError": "Não foi possível carregar os pagamentos.",
+        "informal": "Fechamento informal",
+        "amountLabel": "Valor",
+        "noteLabel": "Nota",
+        "notePlaceholder": "Nota (opcional)",
+        "save": "Salvar",
+        "cancel": "Cancelar",
+        "edit": "Editar pagamento",
+        "delete": "Excluir pagamento",
+        "deleteConfirm": "Excluir este pagamento?",
+        "updateSuccess": "Pagamento atualizado",
+        "deleteSuccess": "Pagamento excluído"
+      }
     },
     "bulkSettle": {
       "title": "Liquidar tudo com esta pessoa",

@@ -29,6 +29,7 @@ import { Modal } from '@/presentation/components/ui/Modal';
 import { formatCurrency } from '@/lib/format';
 import { cn } from '@/lib/utils';
 
+import { DebtLoanPaymentsList } from './DebtLoanPaymentsList';
 import { DebtLoanRowSettleModal } from './DebtLoanRowSettleModal';
 
 /**
@@ -214,6 +215,20 @@ function Section({
   onDelete: (row: DebtLoan) => void;
 }) {
   const t = useTranslations('debts.detail');
+  const tPayments = useTranslations('debts.detail.payments');
+
+  // Tracks which row(s) the user has opened to see payment history.
+  // Per-row Set so the user can keep several rows expanded at once.
+  const [openPayments, setOpenPayments] = useState<Set<string>>(new Set());
+
+  function togglePayments(rowId: string) {
+    setOpenPayments((prev) => {
+      const next = new Set(prev);
+      if (next.has(rowId)) next.delete(rowId);
+      else next.add(rowId);
+      return next;
+    });
+  }
 
   return (
     <div className="space-y-2">
@@ -221,79 +236,105 @@ function Section({
         {label}
       </h3>
       <ul className="space-y-2">
-        {rows.map((r) => (
-          <li
-            key={r.id}
-            className="flex items-start justify-between gap-3 rounded-lg border border-border bg-card p-3"
-          >
-            <div className="min-w-0 flex-1">
-              <div className="flex items-center gap-2 text-sm">
-                {r.type === 'DEBT' ? (
-                  <ArrowUpRight className="size-3.5 shrink-0 text-destructive" aria-hidden />
-                ) : (
-                  <ArrowDownLeft
-                    className="size-3.5 shrink-0 text-green-700 dark:text-green-400"
-                    aria-hidden
-                  />
-                )}
-                <span
-                  className={cn(
-                    'font-semibold',
-                    r.type === 'DEBT' ? 'text-destructive' : 'text-green-700 dark:text-green-400',
+        {rows.map((r) => {
+          // Only active rows that have already received at least one
+          // settle expose the payment history toggle. SETTLED rows go
+          // through the historical section above and don't show this UI.
+          const hasPayments = r.status === 'PENDING' && r.remainingAmount !== r.amount;
+          const isOpen = openPayments.has(r.id);
+          return (
+            <li key={r.id} className="rounded-lg border border-border bg-card p-3">
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2 text-sm">
+                    {r.type === 'DEBT' ? (
+                      <ArrowUpRight className="size-3.5 shrink-0 text-destructive" aria-hidden />
+                    ) : (
+                      <ArrowDownLeft
+                        className="size-3.5 shrink-0 text-green-700 dark:text-green-400"
+                        aria-hidden
+                      />
+                    )}
+                    <span
+                      className={cn(
+                        'font-semibold',
+                        r.type === 'DEBT'
+                          ? 'text-destructive'
+                          : 'text-green-700 dark:text-green-400',
+                      )}
+                    >
+                      {formatCurrency(r.amount, r.currency)}
+                    </span>
+                    {r.status === 'PENDING' && r.remainingAmount !== r.amount && (
+                      <span className="text-xs text-muted-foreground">
+                        · {t('remaining')}: {formatCurrency(r.remainingAmount, r.currency)}
+                      </span>
+                    )}
+                    {r.status === 'SETTLED' && (
+                      <CheckCircle2
+                        className="size-3.5 text-green-700 dark:text-green-400"
+                        aria-hidden
+                      />
+                    )}
+                  </div>
+                  <p className="mt-0.5 text-xs text-muted-foreground">
+                    {new Date(r.date).toLocaleDateString()}
+                    {r.description ? ` · ${r.description}` : ''}
+                  </p>
+                  {hasPayments && (
+                    <button
+                      type="button"
+                      onClick={() => togglePayments(r.id)}
+                      className="mt-1 inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
+                      aria-expanded={isOpen}
+                    >
+                      {isOpen ? (
+                        <ChevronDown className="size-3.5" aria-hidden />
+                      ) : (
+                        <ChevronRight className="size-3.5" aria-hidden />
+                      )}
+                      {isOpen ? tPayments('hide') : tPayments('show')}
+                    </button>
                   )}
-                >
-                  {formatCurrency(r.amount, r.currency)}
-                </span>
-                {r.status === 'PENDING' && r.remainingAmount !== r.amount && (
-                  <span className="text-xs text-muted-foreground">
-                    · {t('remaining')}: {formatCurrency(r.remainingAmount, r.currency)}
-                  </span>
-                )}
-                {r.status === 'SETTLED' && (
-                  <CheckCircle2
-                    className="size-3.5 text-green-700 dark:text-green-400"
-                    aria-hidden
-                  />
-                )}
+                </div>
+                <div className="flex shrink-0 items-center gap-1">
+                  {onSettle && (
+                    <button
+                      type="button"
+                      onClick={() => onSettle(r)}
+                      className="rounded-md p-1.5 text-primary hover:bg-muted"
+                      title={t('settle')}
+                      aria-label={t('settle')}
+                    >
+                      <CheckCircle2 className="size-4" />
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => onEdit(r)}
+                    className="rounded-md p-1.5 text-muted-foreground hover:bg-muted"
+                    title={t('edit')}
+                    aria-label={t('edit')}
+                  >
+                    <Pencil className="size-4" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => onDelete(r)}
+                    className="rounded-md p-1.5 text-destructive hover:bg-destructive/10"
+                    title={t('delete')}
+                    aria-label={t('delete')}
+                  >
+                    <Trash2 className="size-4" />
+                  </button>
+                </div>
               </div>
-              <p className="mt-0.5 text-xs text-muted-foreground">
-                {new Date(r.date).toLocaleDateString()}
-                {r.description ? ` · ${r.description}` : ''}
-              </p>
-            </div>
-            <div className="flex shrink-0 items-center gap-1">
-              {onSettle && (
-                <button
-                  type="button"
-                  onClick={() => onSettle(r)}
-                  className="rounded-md p-1.5 text-primary hover:bg-muted"
-                  title={t('settle')}
-                  aria-label={t('settle')}
-                >
-                  <CheckCircle2 className="size-4" />
-                </button>
+              {hasPayments && isOpen && (
+                <DebtLoanPaymentsList debtId={r.id} fallbackCurrency={r.currency} />
               )}
-              <button
-                type="button"
-                onClick={() => onEdit(r)}
-                className="rounded-md p-1.5 text-muted-foreground hover:bg-muted"
-                title={t('edit')}
-                aria-label={t('edit')}
-              >
-                <Pencil className="size-4" />
-              </button>
-              <button
-                type="button"
-                onClick={() => onDelete(r)}
-                className="rounded-md p-1.5 text-destructive hover:bg-destructive/10"
-                title={t('delete')}
-                aria-label={t('delete')}
-              >
-                <Trash2 className="size-4" />
-              </button>
-            </div>
-          </li>
-        ))}
+            </li>
+          );
+        })}
       </ul>
     </div>
   );

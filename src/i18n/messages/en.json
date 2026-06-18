@@ -157,6 +157,11 @@
     "TSK_007": "Task title is too long.",
     "TSK_008": "Task description is too long.",
     "TSK_009": "Some tasks do not exist, do not belong to you, or are not in this section.",
+    "DBT_002": "You don't have permission to modify this payment.",
+    "DBT_006": "Amount exceeds the debt balance.",
+    "DBT_008": "This payment has already been deleted.",
+    "DBT_009": "You must modify at least one field.",
+    "DBT_010": "Amount exceeds the debt balance.",
     "generic": "An unexpected error occurred. Please try again."
   },
   "habits": {
@@ -840,7 +845,24 @@
       "delete": "Delete",
       "deleteConfirm": "Delete this record?",
       "deleteSuccess": "Deleted",
-      "empty": "No records."
+      "empty": "No records.",
+      "payments": {
+        "show": "Show payments",
+        "hide": "Hide payments",
+        "loading": "Loading payments…",
+        "loadError": "Could not load payments.",
+        "informal": "Informal close",
+        "amountLabel": "Amount",
+        "noteLabel": "Note",
+        "notePlaceholder": "Note (optional)",
+        "save": "Save",
+        "cancel": "Cancel",
+        "edit": "Edit payment",
+        "delete": "Delete payment",
+        "deleteConfirm": "Delete this payment?",
+        "updateSuccess": "Payment updated",
+        "deleteSuccess": "Payment deleted"
+      }
     },
     "bulkSettle": {
       "title": "Settle everything with this person",

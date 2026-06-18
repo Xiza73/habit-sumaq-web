@@ -70,3 +70,16 @@ export interface BulkSettleResult {
   currency: Currency | null;
   settledIds: string[];
 }
+
+/**
+ * Row shape from `GET /debts/:id/payments`. One per settle event applied
+ * to a debt/loan, ordered by `createdAt` DESC by the backend. `currency`
+ * is `null` for informal-close settles (the settle didn't touch the pool).
+ */
+export interface DebtLoanPayment {
+  id: string;
+  amount: number;
+  currency: Currency | null;
+  note: string | null;
+  createdAt: string;
+}
