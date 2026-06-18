@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import {
   type DebtLoan,
+  type DebtLoanPayment,
   type DebtLoanStatusFilter,
   type DebtLoanSummaryRow,
 } from '@/core/domain/entities/debt-loan';
@@ -10,6 +11,7 @@ import {
   type CreateDebtLoanInput,
   type SettleDebtLoanInput,
   type UpdateDebtLoanInput,
+  type UpdateDebtLoanPaymentInput,
 } from '@/core/domain/schemas/debt-loan.schema';
 
 import { debtsLoansApi } from '@/infrastructure/api/debts-loans.api';
@@ -27,6 +29,7 @@ export const debtLoanKeys = {
   summary: (status: DebtLoanStatusFilter) => [...debtLoanKeys.summaries(), status] as const,
   details: () => [...debtLoanKeys.all, 'detail'] as const,
   detail: (id: string) => [...debtLoanKeys.details(), id] as const,
+  payments: (debtId: string) => [...debtLoanKeys.all, 'payments', debtId] as const,
 };
 
 /** Same 5 min stale-time as the alerts hooks — derived data, cheap refetch. */
@@ -111,6 +114,49 @@ export function useBulkSettleByReference() {
   const invalidate = useInvalidateAll();
   return useMutation({
     mutationFn: (data: BulkSettleByReferenceInput) => debtsLoansApi.bulkSettleByReference(data),
+    onSuccess: () => {
+      void invalidate();
+    },
+  });
+}
+
+/**
+ * Lazy-fetch — the per-row payment history is only useful when the user
+ * actually expands a row, so `enabled` lets the caller defer the request
+ * until then. Once fetched, follows the same 5-min stale-time as the
+ * other debt-loan queries.
+ */
+export function useDebtLoanPayments(debtId: string, enabled = true) {
+  return useQuery({
+    queryKey: debtLoanKeys.payments(debtId),
+    queryFn: () => debtsLoansApi.listPayments(debtId),
+    enabled: Boolean(debtId) && enabled,
+    staleTime: DEBTS_STALE_TIME_MS,
+  });
+}
+
+export function useUpdateDebtLoanPayment() {
+  const invalidate = useInvalidateAll();
+  return useMutation<
+    DebtLoanPayment,
+    Error,
+    { paymentId: string; data: UpdateDebtLoanPaymentInput }
+  >({
+    mutationFn: ({ paymentId, data }) => debtsLoansApi.updatePayment(paymentId, data),
+    onSuccess: () => {
+      // PATCH can flip the parent's status (SETTLED ↔ PENDING) and move
+      // pool balances, so invalidating everything under `debts-loans` is
+      // intentional — the summary, the list, and the payment history all
+      // depend on the same write.
+      void invalidate();
+    },
+  });
+}
+
+export function useDeleteDebtLoanPayment() {
+  const invalidate = useInvalidateAll();
+  return useMutation<void, Error, string>({
+    mutationFn: (paymentId) => debtsLoansApi.deletePayment(paymentId),
     onSuccess: () => {
       void invalidate();
     },

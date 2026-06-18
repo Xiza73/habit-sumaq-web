@@ -1,6 +1,7 @@
 import {
   type BulkSettleResult,
   type DebtLoan,
+  type DebtLoanPayment,
   type DebtLoanStatusFilter,
   type DebtLoanSummaryRow,
 } from '@/core/domain/entities/debt-loan';
@@ -9,6 +10,7 @@ import {
   type CreateDebtLoanInput,
   type SettleDebtLoanInput,
   type UpdateDebtLoanInput,
+  type UpdateDebtLoanPaymentInput,
 } from '@/core/domain/schemas/debt-loan.schema';
 
 import { httpClient } from './http-client';
@@ -59,5 +61,21 @@ export const debtsLoansApi = {
 
   bulkSettleByReference(data: BulkSettleByReferenceInput): Promise<BulkSettleResult> {
     return httpClient.post<BulkSettleResult>('/debts/settle-by-reference', data);
+  },
+
+  /**
+   * Backend orders DESC by `createdAt` — the UI keeps that order, so
+   * the most recent payment is always at the top of the list.
+   */
+  listPayments(debtId: string): Promise<DebtLoanPayment[]> {
+    return httpClient.get<DebtLoanPayment[]>(`/debts/${debtId}/payments`);
+  },
+
+  updatePayment(paymentId: string, data: UpdateDebtLoanPaymentInput): Promise<DebtLoanPayment> {
+    return httpClient.patch<DebtLoanPayment>(`/debts/payments/${paymentId}`, data);
+  },
+
+  deletePayment(paymentId: string): Promise<void> {
+    return httpClient.delete<void>(`/debts/payments/${paymentId}`);
   },
 };

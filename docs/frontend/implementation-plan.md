@@ -302,6 +302,14 @@ Desarrollo progresivo por fases. Cada fase produce un incremento funcional y tes
 
 ---
 
+## Fase D — Payment history UI (debts-loans) ✅
+
+**Objetivo:** Permitir ver, editar y borrar pagos parciales individuales de deudas/préstamos PENDING desde la lista de `/transactions/debts`, sin tener que cancelar y recrear la deuda entera.
+
+**Entregable:** `DebtLoanPaymentsList` expandible inline en cada row PENDING con saldo parcial (toggle con chevron, fetch lazy on-open). Hooks `useDebtLoanPayments`, `useUpdateDebtLoanPayment`, `useDeleteDebtLoanPayment` (TanStack Query, invalidan `transactions` + `accounts` en mutation success). Edit form inline (amount + note) con no-op detection — el botón Save queda disabled si nada cambió. Delete con confirm nativo. i18n es/en/pt para error codes `DBT_002/006/008/009/010` + strings de la lista, edit form y empty/error states. Backend en `habit-sumaq-backend` PRs #58 (v0.6.0 — `GET /debts/:id/payments`) y #59 (v0.7.0 — `PATCH/DELETE /debts/payments/:paymentId` + error codes DBT_008/009/010).
+
+---
+
 ## Módulos Futuros (fuera del MVP actual)
 
 Estos módulos se planificarán después de las fases anteriores:
