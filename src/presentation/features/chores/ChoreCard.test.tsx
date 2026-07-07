@@ -3,10 +3,18 @@ import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { type Chore } from '@/core/domain/entities/chore';
+import { type DateFormat } from '@/core/domain/enums/common.enums';
 
 import { TestProviders } from '@/test/utils';
 
 import { ChoreCard } from './ChoreCard';
+
+// Mutable date-format so most tests keep the default (YYYY-MM-DD) while one can
+// flip it to prove dates honor the user's setting.
+const dateFormatMock = vi.hoisted<{ value: DateFormat }>(() => ({ value: 'YYYY-MM-DD' }));
+vi.mock('@/core/application/hooks/use-user-settings', () => ({
+  useDateFormat: () => dateFormatMock.value,
+}));
 
 // Pin only `Date` (not the timers) so `getTodayLocaleDate()` is deterministic
 // while leaving real timers in place — userEvent interactions deadlock under
@@ -19,6 +27,7 @@ beforeEach(() => {
 
 afterEach(() => {
   vi.useRealTimers();
+  dateFormatMock.value = 'YYYY-MM-DD';
 });
 
 const baseChore: Chore = {
@@ -96,6 +105,14 @@ describe('ChoreCard', () => {
   it('renders the last done date when present', () => {
     renderCard({ ...baseChore, lastDoneDate: '2026-03-04' });
     expect(screen.getByText(/última vez:\s*2026-03-04/i)).toBeInTheDocument();
+  });
+
+  it('formats next-due and last-done dates with the user date-format setting', () => {
+    dateFormatMock.value = 'DD/MM/YYYY';
+    renderCard({ ...baseChore, lastDoneDate: '2026-03-04' });
+    // nextDueDate 2026-04-22 → 22/04/2026, lastDoneDate 2026-03-04 → 04/03/2026
+    expect(screen.getByText(/próxima:\s*22\/04\/2026/i)).toBeInTheDocument();
+    expect(screen.getByText(/última vez:\s*04\/03\/2026/i)).toBeInTheDocument();
   });
 
   it('renders the category chip when category is set', () => {

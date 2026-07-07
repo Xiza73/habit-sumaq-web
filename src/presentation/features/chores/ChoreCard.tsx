@@ -18,10 +18,11 @@ import {
   Trash2,
 } from 'lucide-react';
 
+import { useDateFormat } from '@/core/application/hooks/use-user-settings';
 import { type Chore } from '@/core/domain/entities/chore';
 
 import { type ChoreStatus, getChoreStatus } from '@/lib/chore-status';
-import { getTodayLocaleDate } from '@/lib/format';
+import { formatDate, getTodayLocaleDate } from '@/lib/format';
 import { cn } from '@/lib/utils';
 
 interface ChoreCardProps {
@@ -52,6 +53,7 @@ export function ChoreCard({
   onViewHistory,
 }: ChoreCardProps) {
   const t = useTranslations('chores');
+  const dateFormat = useDateFormat();
   const [menuOpen, setMenuOpen] = useState(false);
 
   const isArchived = !chore.isActive;
@@ -224,13 +226,17 @@ export function ChoreCard({
         </div>
         <div className="flex items-center gap-1.5">
           <CalendarDays className="size-3.5" />
-          <span className="text-foreground">{t('nextDue', { date: chore.nextDueDate })}</span>
+          <span className="text-foreground">
+            {t('nextDue', { date: formatDate(chore.nextDueDate, dateFormat) })}
+          </span>
         </div>
         <div className="col-span-full flex items-center gap-1.5">
           <Check className="size-3.5" />
           <span>
             {t('lastDone', {
-              date: chore.lastDoneDate ?? t('lastDoneNever'),
+              date: chore.lastDoneDate
+                ? formatDate(chore.lastDoneDate, dateFormat)
+                : t('lastDoneNever'),
             })}
           </span>
         </div>

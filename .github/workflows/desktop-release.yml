@@ -56,10 +56,12 @@ jobs:
           workspaces: ./src-tauri -> target
 
       - name: Install frontend dependencies
-        # The desktop app loads the deployed site remotely (frontendDist is a
-        # URL), so there is NO frontend build step — this only installs the
-        # Tauri CLI + JS plugins needed to package.
-        run: pnpm install --frozen-lockfile
+        # Loads the frontend remotely (frontendDist is a URL) — no frontend
+        # build here, just the Tauri CLI + JS plugins needed to package.
+        # `--config.strict-dep-builds=false` stops pnpm 11 from failing on the
+        # un-approved (and unneeded) native build scripts under CI. Must be the
+        # flag — the env-var form does not suppress it for an explicit install.
+        run: pnpm install --frozen-lockfile --config.strict-dep-builds=false
 
       - name: Build and release desktop installers
         uses: tauri-apps/tauri-action@v0
@@ -78,4 +80,12 @@ jobs:
             > macOS Gatekeeper mostrarán una advertencia en la primera apertura.
             > La firma de código es un paso posterior.
           releaseDraft: true
+          # Invoke the Tauri CLI directly with node — NOT through pnpm. Under
+          # the CI pnpm (pnpm/action-setup), every pnpm invocation (run, exec,
+          # even install) triggers a verify-deps check that re-hits
+          # ERR_PNPM_IGNORED_BUILDS and aborts. Calling the CLI's JS entrypoint
+          # with node removes pnpm from the build path entirely. Deps are
+          # already installed by the step above. (Forward slashes work on
+          # Windows node too.)
+          tauriScript: node node_modules/@tauri-apps/cli/tauri.js
           args: ${{ matrix.args }}
