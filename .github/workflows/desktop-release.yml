@@ -80,9 +80,12 @@ jobs:
             > macOS Gatekeeper mostrarán una advertencia en la primera apertura.
             > La firma de código es un paso posterior.
           releaseDraft: true
-          # Run the tauri CLI through `pnpm exec` rather than the default
-          # `pnpm tauri` (a package script). `pnpm exec` does NOT run pnpm's
-          # verify-deps-before-run pre-check, which would otherwise re-hit
-          # ERR_PNPM_IGNORED_BUILDS and abort. Deps are already installed above.
-          tauriScript: pnpm exec tauri
+          # Invoke the Tauri CLI directly with node — NOT through pnpm. Under
+          # the CI pnpm (pnpm/action-setup), every pnpm invocation (run, exec,
+          # even install) triggers a verify-deps check that re-hits
+          # ERR_PNPM_IGNORED_BUILDS and aborts. Calling the CLI's JS entrypoint
+          # with node removes pnpm from the build path entirely. Deps are
+          # already installed by the step above. (Forward slashes work on
+          # Windows node too.)
+          tauriScript: node node_modules/@tauri-apps/cli/tauri.js
           args: ${{ matrix.args }}
