@@ -12,12 +12,14 @@ import {
   useDeleteChore,
   useSkipChoreCycle,
 } from '@/core/application/hooks/use-chores';
+import { useDateFormat } from '@/core/application/hooks/use-user-settings';
 import { type Chore } from '@/core/domain/entities/chore';
 
 import { ApiError } from '@/infrastructure/api/api-error';
 
 import { ConfirmDialog } from '@/presentation/components/feedback/ConfirmDialog';
 
+import { formatDate } from '@/lib/format';
 import { cn } from '@/lib/utils';
 
 import { ChoreCard } from './ChoreCard';
@@ -49,6 +51,7 @@ type Tab = 'active' | 'archived';
 export function ChoresList() {
   const t = useTranslations('chores');
   const tErrors = useTranslations('errors');
+  const dateFormat = useDateFormat();
 
   const [tab, setTab] = useState<Tab>('active');
   const showArchived = tab === 'archived';
@@ -254,7 +257,11 @@ export function ChoresList() {
       <ConfirmDialog
         open={!!skipTarget}
         title={skipTarget ? t('skipConfirm.title') : ''}
-        description={skipTarget ? t('skipConfirm.body', { nextDate: skipTarget.nextDueDate }) : ''}
+        description={
+          skipTarget
+            ? t('skipConfirm.body', { nextDate: formatDate(skipTarget.nextDueDate, dateFormat) })
+            : ''
+        }
         confirmLabel={t('skipConfirm.confirm')}
         loading={skipMutation.isPending}
         onConfirm={handleSkipConfirm}

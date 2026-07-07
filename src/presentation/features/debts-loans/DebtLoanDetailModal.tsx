@@ -20,13 +20,14 @@ import {
   useDeleteDebtLoan,
   useSettleDebtLoan,
 } from '@/core/application/hooks/use-debts-loans';
+import { useDateFormat } from '@/core/application/hooks/use-user-settings';
 import { type DebtLoan, type DebtLoanSummaryRow } from '@/core/domain/entities/debt-loan';
 
 import { ApiError } from '@/infrastructure/api/api-error';
 
 import { Modal } from '@/presentation/components/ui/Modal';
 
-import { formatCurrency } from '@/lib/format';
+import { formatCurrency, formatDate } from '@/lib/format';
 import { cn } from '@/lib/utils';
 
 import { DebtLoanPaymentsList } from './DebtLoanPaymentsList';
@@ -216,6 +217,7 @@ function Section({
 }) {
   const t = useTranslations('debts.detail');
   const tPayments = useTranslations('debts.detail.payments');
+  const dateFormat = useDateFormat();
 
   // Tracks which row(s) the user has opened to see payment history.
   // Per-row Set so the user can keep several rows expanded at once.
@@ -278,7 +280,7 @@ function Section({
                     )}
                   </div>
                   <p className="mt-0.5 text-xs text-muted-foreground">
-                    {new Date(r.date).toLocaleDateString()}
+                    {formatDate(r.date, dateFormat)}
                     {r.description ? ` · ${r.description}` : ''}
                   </p>
                   {hasPayments && (
