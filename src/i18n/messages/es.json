@@ -310,7 +310,7 @@
       "frequencyHint": "Cada cuánto se cobra. Esto no se puede cambiar después.",
       "frequencyHintEdit": "La cadencia es inmutable. Para cambiarla, archiva este servicio y crea uno nuevo.",
       "estimatedAmount": "Monto estimado",
-      "estimatedAmountHint": "Se autocompleta con el promedio de tus pagos",
+      "estimatedAmountHint": "Se actualiza con el monto de tu último pago",
       "dueDay": "Día aproximado de vencimiento",
       "dueDayHint": "Solo para ordenar y recordar",
       "dueDayOutOfRange": "El día debe estar entre 1 y 31",
