@@ -17,17 +17,6 @@ permissions:
 
 jobs:
   build:
-    # pnpm 11 aborts scripts under CI when dependencies have un-approved build
-    # scripts (ERR_PNPM_IGNORED_BUILDS → exit 1), and it re-checks deps before
-    # every `pnpm <script>` — including tauri-action's internal `pnpm tauri
-    # build`. The desktop app loads the frontend remotely and needs no native
-    # builds, so skip that pre-run check and don't treat ignored builds as
-    # fatal. Scoped to this job via env — pnpm-workspace.yaml (and therefore the
-    # Vercel web build) is untouched.
-    env:
-      # Skip pnpm's pre-run dependency check so tauri-action's internal
-      # `pnpm tauri build` doesn't re-trigger the ignored-builds error.
-      npm_config_verify_deps_before_run: 'false'
     strategy:
       fail-fast: false
       matrix:
@@ -91,4 +80,9 @@ jobs:
             > macOS Gatekeeper mostrarán una advertencia en la primera apertura.
             > La firma de código es un paso posterior.
           releaseDraft: true
+          # Run the tauri CLI through `pnpm exec` rather than the default
+          # `pnpm tauri` (a package script). `pnpm exec` does NOT run pnpm's
+          # verify-deps-before-run pre-check, which would otherwise re-hit
+          # ERR_PNPM_IGNORED_BUILDS and abort. Deps are already installed above.
+          tauriScript: pnpm exec tauri
           args: ${{ matrix.args }}
