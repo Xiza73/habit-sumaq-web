@@ -1,5 +1,6 @@
 import { useTranslations } from 'next-intl';
 
+import { AutostartSection } from '@/presentation/features/settings/AutostartSection';
 import { FavoritesSection } from '@/presentation/features/settings/FavoritesSection';
 import { SettingsForm } from '@/presentation/features/settings/SettingsForm';
 import { TemplatesSection } from '@/presentation/features/settings/TemplatesSection';
@@ -15,6 +16,7 @@ export default function SettingsPage() {
       <FavoritesSection />
       <hr className="border-border" />
       <TemplatesSection />
+      <AutostartSection />
     </div>
   );
 }
