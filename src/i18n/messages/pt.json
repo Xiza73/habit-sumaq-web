@@ -42,6 +42,13 @@
     "default": "Padrão"
   },
   "settings": {
+    "autostart": {
+      "title": "Iniciar com o computador",
+      "subtitle": "Abra o Habit Sumaq automaticamente quando o computador liga.",
+      "label": "Iniciar ao ligar o PC",
+      "hint": "Disponível apenas no app de desktop.",
+      "error": "Não foi possível alterar o início automático."
+    },
     "title": "Configurações",
     "language": "Idioma",
     "theme": "Tema",

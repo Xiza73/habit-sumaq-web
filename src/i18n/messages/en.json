@@ -42,6 +42,13 @@
     "default": "Default"
   },
   "settings": {
+    "autostart": {
+      "title": "Start with your computer",
+      "subtitle": "Open Habit Sumaq automatically when your computer starts.",
+      "label": "Launch at login",
+      "hint": "Only available in the desktop app.",
+      "error": "We couldn't change the startup setting."
+    },
     "title": "Settings",
     "language": "Language",
     "theme": "Theme",

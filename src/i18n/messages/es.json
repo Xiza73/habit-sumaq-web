@@ -42,6 +42,13 @@
     "default": "Por defecto"
   },
   "settings": {
+    "autostart": {
+      "title": "Iniciar con el equipo",
+      "subtitle": "Abrí Habit Sumaq automáticamente cuando prendés la computadora.",
+      "label": "Iniciar al encender la PC",
+      "hint": "Solo disponible en la app de escritorio.",
+      "error": "No pudimos cambiar el inicio automático."
+    },
     "title": "Configuración",
     "language": "Idioma",
     "theme": "Tema",
