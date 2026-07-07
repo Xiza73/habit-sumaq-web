@@ -11,15 +11,10 @@ const nextConfig: NextConfig = {
   headers() {
     return Promise.resolve([
       {
-        // Digital Asset Links file — Android reads this off the user's domain
-        // to verify the TWA APK is allowed to render the site without the
-        // Chrome URL bar. The spec mandates `application/json`; Vercel + Next
-        // already serve `public/.well-known/assetlinks.json` with that MIME
-        // by file extension, but pinning it here makes the contract explicit
-        // (and survives any future override of static-asset content types).
-        //
-        // The matching APK is signed with the keystore whose SHA-256
-        // fingerprint is listed in the file. Rotating that keystore means
+        // Digital Asset Links file — Android reads it off the user's domain to
+        // verify the TWA APK is allowed to render the site without the Chrome
+        // URL bar. The APK is signed with the keystore whose SHA-256
+        // fingerprint is listed in the file; rotating that keystore means
         // updating BOTH the keystore-side signing AND this file's hash.
         source: '/.well-known/assetlinks.json',
         headers: [

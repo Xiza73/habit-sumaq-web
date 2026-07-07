@@ -42,6 +42,13 @@
     "default": "Padrão"
   },
   "settings": {
+    "autostart": {
+      "title": "Iniciar com o computador",
+      "subtitle": "Abra o Habit Sumaq automaticamente quando o computador liga.",
+      "label": "Iniciar ao ligar o PC",
+      "hint": "Disponível apenas no app de desktop.",
+      "error": "Não foi possível alterar o início automático."
+    },
     "title": "Configurações",
     "language": "Idioma",
     "theme": "Tema",
@@ -310,7 +317,7 @@
       "frequencyHint": "Com que frequência é cobrado. Não pode ser alterado depois.",
       "frequencyHintEdit": "A cadência é imutável. Para alterá-la, arquive este serviço e crie um novo.",
       "estimatedAmount": "Valor estimado",
-      "estimatedAmountHint": "Preenchido com a média dos seus pagamentos",
+      "estimatedAmountHint": "Atualizado com o valor do seu último pagamento",
       "dueDay": "Dia aproximado de vencimento",
       "dueDayHint": "Apenas para ordenar e lembrar",
       "dueDayOutOfRange": "O dia deve estar entre 1 e 31",

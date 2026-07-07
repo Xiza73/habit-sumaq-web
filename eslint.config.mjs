@@ -9,7 +9,16 @@ import globals from 'globals';
 import tseslint from 'typescript-eslint';
 
 export default tseslint.config(
-  globalIgnores(['.next/**', 'out/**', 'build/**', 'coverage/**', 'next-env.d.ts']),
+  globalIgnores([
+    '.next/**',
+    'out/**',
+    'build/**',
+    'coverage/**',
+    'next-env.d.ts',
+    // Tauri desktop shell: Rust sources + generated build artifacts, no JS/TS
+    // we author or lint here.
+    'src-tauri/**',
+  ]),
   eslint.configs.recommended,
   ...nextVitals,
   ...nextTs,
