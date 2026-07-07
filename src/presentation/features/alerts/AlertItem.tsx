@@ -14,15 +14,17 @@ import {
 } from 'lucide-react';
 
 import { useDismissAlert } from '@/core/application/hooks/use-alerts';
+import { useDateFormat } from '@/core/application/hooks/use-user-settings';
 import {
   type Alert,
   type AlertSeverity,
   type AlertType,
   getAlertHref,
 } from '@/core/domain/entities/alert';
+import { type DateFormat } from '@/core/domain/enums/common.enums';
 import { type Currency } from '@/core/domain/enums/currency.enum';
 
-import { formatCurrency } from '@/lib/format';
+import { formatCurrency, formatDate } from '@/lib/format';
 import { cn } from '@/lib/utils';
 
 interface AlertItemProps {
@@ -49,6 +51,7 @@ interface AlertItemProps {
 export function AlertItem({ alert, onNavigate }: AlertItemProps) {
   const t = useTranslations('alerts.items');
   const tCommon = useTranslations('common');
+  const dateFormat = useDateFormat();
   const router = useRouter();
   const dismiss = useDismissAlert();
 
@@ -93,7 +96,7 @@ export function AlertItem({ alert, onNavigate }: AlertItemProps) {
       <div className="min-w-0 flex-1">
         <p className="text-sm font-medium leading-snug text-foreground">{renderTitle(alert, t)}</p>
         <p className="mt-0.5 text-xs leading-snug text-muted-foreground">
-          {renderSubtitle(alert, t)}
+          {renderSubtitle(alert, t, dateFormat)}
         </p>
       </div>
 
@@ -162,7 +165,7 @@ function renderTitle(alert: Alert, t: Translator): string {
   }
 }
 
-function renderSubtitle(alert: Alert, t: Translator): string {
+function renderSubtitle(alert: Alert, t: Translator, dateFormat: DateFormat): string {
   switch (alert.type) {
     case 'service-due-today': {
       const dueDay = numberOf(alert.payload.dueDay) ?? 0;
@@ -198,8 +201,8 @@ function renderSubtitle(alert: Alert, t: Translator): string {
       return t('budgetOverspent.subtitleNoCurrency');
     }
     case 'chore-overdue': {
-      const date = stringOf(alert.payload.nextDueDate) ?? '';
-      return t('choreOverdue.subtitle', { date });
+      const date = stringOf(alert.payload.nextDueDate);
+      return t('choreOverdue.subtitle', { date: date ? formatDate(date, dateFormat) : '' });
     }
   }
 }
