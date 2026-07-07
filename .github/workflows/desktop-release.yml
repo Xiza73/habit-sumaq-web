@@ -58,8 +58,15 @@ jobs:
       - name: Install frontend dependencies
         # The desktop app loads the deployed site remotely (frontendDist is a
         # URL), so there is NO frontend build step — this only installs the
-        # Tauri CLI + JS plugins needed to package.
-        run: pnpm install --frozen-lockfile
+        # Tauri CLI + JS plugins needed to package. None of the optional native
+        # deps (sharp, msw, swc…) need their build scripts here.
+        #
+        # pnpm 11 treats un-approved build scripts as a HARD ERROR under CI
+        # (ERR_PNPM_IGNORED_BUILDS → exit 1) even though the install succeeds.
+        # `strict-dep-builds=false` downgrades it to a warning. This is scoped
+        # to this command only — it does NOT touch pnpm-workspace.yaml, so the
+        # Vercel web build is unaffected.
+        run: pnpm install --frozen-lockfile --config.strict-dep-builds=false
 
       - name: Build and release desktop installers
         uses: tauri-apps/tauri-action@v0
