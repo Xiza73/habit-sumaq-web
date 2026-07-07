@@ -5,6 +5,11 @@
   "windows": [
     "main"
   ],
+  "remote": {
+    "urls": [
+      "https://habit-sumaq-web.vercel.app"
+    ]
+  },
   "permissions": [
     "core:default",
     "autostart:allow-enable",
