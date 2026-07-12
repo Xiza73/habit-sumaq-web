@@ -4,11 +4,17 @@ name: Desktop Release
 # attaches them to a GitHub Release. A Windows `.exe`/`.msi` cannot be built
 # from macOS, so cross-platform packaging must happen in CI.
 #
-# Trigger by pushing a tag like `desktop-v0.3.0` (kept separate from the web
-# release flow, which deploys via Vercel on `master`). Can also be run manually.
+# Triggers on:
+#   - `v*` tags        → the app release cut from `master`; the installers ride
+#     along, versioned to match the tag, so web + desktop stay aligned.
+#   - `desktop-v*` tags → a desktop-only rebuild (native shell / icon changes)
+#     between app releases.
+# Both build installers whose version is synced from the tag. Also runnable
+# manually (keeps the committed tauri.conf version in that case).
 on:
   push:
     tags:
+      - 'v*'
       - 'desktop-v*'
   workflow_dispatch:
 
@@ -45,6 +51,21 @@ jobs:
           node-version: 22
           cache: pnpm
 
+      # Make the installer's version match the release tag so web + desktop are
+      # aligned. Accepts `v0.6.2` and `desktop-v0.6.2` → 0.6.2. Only on tag runs
+      # with a valid semver; otherwise the committed tauri.conf version stands.
+      - name: Sync app version to the release tag
+        if: startsWith(github.ref, 'refs/tags/')
+        shell: bash
+        run: |
+          VERSION="$(printf '%s' "${GITHUB_REF_NAME}" | sed -E 's/^.*v//')"
+          if printf '%s' "$VERSION" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+$'; then
+            echo "Setting app version to $VERSION"
+            node -e "const fs=require('fs');const f='src-tauri/tauri.conf.json';const c=JSON.parse(fs.readFileSync(f,'utf8'));c.version='$VERSION';fs.writeFileSync(f,JSON.stringify(c,null,2)+'\n');"
+          else
+            echo "Tag '$GITHUB_REF_NAME' has no semver version; keeping tauri.conf version."
+          fi
+
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@stable
         with:
@@ -69,9 +90,9 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tagName: ${{ github.ref_name }}
-          releaseName: 'Habit Sumaq Desktop ${{ github.ref_name }}'
+          releaseName: ${{ github.ref_name }}
           releaseBody: |
-            Instaladores de escritorio de Habit Sumaq.
+            ## Instaladores de escritorio
 
             - **Windows:** `.exe` (NSIS) / `.msi`
             - **macOS:** `.dmg` (universal — Apple Silicon + Intel)
@@ -79,6 +100,9 @@ jobs:
             > Los instaladores no están firmados todavía: Windows SmartScreen y
             > macOS Gatekeeper mostrarán una advertencia en la primera apertura.
             > La firma de código es un paso posterior.
+          # Creates the GitHub Release as a DRAFT with the installers attached,
+          # so `v*` (app) releases don't need a separate `gh release create` —
+          # the tag push builds installers AND drafts the release to review.
           releaseDraft: true
           # Invoke the Tauri CLI directly with node — NOT through pnpm. Under
           # the CI pnpm (pnpm/action-setup), every pnpm invocation (run, exec,
