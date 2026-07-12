@@ -172,6 +172,24 @@
     "generic": "Ocurrió un error inesperado. Intenta de nuevo."
   },
   "habits": {
+    "timer": {
+      "title": "Cronómetro de foco",
+      "habit": "Hábito",
+      "habitPlaceholder": "Elegí un hábito",
+      "duration": "Duración",
+      "minutes": "min",
+      "seconds": "seg",
+      "start": "Iniciar",
+      "pause": "Pausar",
+      "resume": "Reanudar",
+      "cancel": "Cancelar",
+      "doneTitle": "¡Se acabó el tiempo!",
+      "markDone": "Marcar como listo",
+      "close": "Cerrar",
+      "logged": "¡+1 en {habit}!",
+      "logError": "No pudimos registrar el hábito",
+      "noHabits": "No tenés hábitos para cronometrar"
+    },
     "title": "Hábitos",
     "createHabit": "Nuevo hábito",
     "editHabit": "Editar hábito",
