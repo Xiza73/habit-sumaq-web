@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
 
-import { ChevronLeft, ChevronRight, Clock, Eye, EyeOff, Plus } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Clock, Eye, EyeOff, Plus, Timer } from 'lucide-react';
 import { toast } from 'sonner';
 
 import {
@@ -26,6 +26,7 @@ import { cn } from '@/lib/utils';
 import { HabitCard } from './HabitCard';
 import { HabitCardSkeleton } from './HabitCardSkeleton';
 import { HabitForm } from './HabitForm';
+import { HabitTimerModal } from './HabitTimerModal';
 
 function LiveClock() {
   const [currentTime, setCurrentTime] = useState(() => new Date().toLocaleTimeString());
@@ -62,6 +63,7 @@ export function HabitList() {
 
   const [showArchived, setShowArchived] = useState(false);
   const [formOpen, setFormOpen] = useState(false);
+  const [timerOpen, setTimerOpen] = useState(false);
   const [editingHabit, setEditingHabit] = useState<HabitWithStats | null>(null);
   const [deletingHabit, setDeletingHabit] = useState<HabitWithStats | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
@@ -195,6 +197,15 @@ export function HabitList() {
           </button>
           <button
             type="button"
+            onClick={() => setTimerOpen(true)}
+            className="flex items-center gap-2 rounded-lg border border-border px-3 py-2 text-sm transition-colors hover:bg-muted"
+            title={t('timer.title')}
+            aria-label={t('timer.title')}
+          >
+            <Timer className="size-4" />
+          </button>
+          <button
+            type="button"
             onClick={() => {
               setEditingHabit(null);
               setFormOpen(true);
@@ -289,6 +300,12 @@ export function HabitList() {
       )}
 
       <HabitForm open={formOpen} habit={editingHabit} onClose={handleCloseForm} />
+
+      <HabitTimerModal
+        open={timerOpen}
+        onClose={() => setTimerOpen(false)}
+        habits={dailyHabits ?? []}
+      />
 
       <ConfirmDialog
         open={!!deletingHabit}

@@ -172,6 +172,24 @@
     "generic": "An unexpected error occurred. Please try again."
   },
   "habits": {
+    "timer": {
+      "title": "Focus timer",
+      "habit": "Habit",
+      "habitPlaceholder": "Pick a habit",
+      "duration": "Duration",
+      "minutes": "min",
+      "seconds": "sec",
+      "start": "Start",
+      "pause": "Pause",
+      "resume": "Resume",
+      "cancel": "Cancel",
+      "doneTitle": "Time's up!",
+      "markDone": "Mark as done",
+      "close": "Close",
+      "logged": "+1 on {habit}!",
+      "logError": "Couldn't log the habit",
+      "noHabits": "You have no habits to time"
+    },
     "title": "Habits",
     "createHabit": "New habit",
     "editHabit": "Edit habit",
