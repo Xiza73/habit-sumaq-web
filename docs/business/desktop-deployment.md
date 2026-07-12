@@ -63,15 +63,29 @@ git push origin desktop-v0.3.0
 
 Esto dispara el workflow, que:
 
-1. Compila en `windows-latest` y `macos-latest`.
-2. Genera los instaladores:
+1. Sincroniza la versión del `tauri.conf.json` con el tag (para que el
+   instalador diga la versión correcta).
+2. Compila en `windows-latest` y `macos-latest`.
+3. Genera los instaladores:
    - **Windows:** `.exe` (NSIS) + `.msi` (WiX)
    - **macOS:** `.dmg` universal (Apple Silicon + Intel)
-3. Crea un **GitHub Release en borrador** con los instaladores adjuntos, para
+4. Crea un **GitHub Release en borrador** con los instaladores adjuntos, para
    revisar antes de publicar.
 
-> El tag `desktop-v*` es independiente del flujo de release web (`master` →
-> Vercel). Un release de escritorio no toca el deploy web ni viceversa.
+### Instaladores en cada release web (versiones alineadas)
+
+El workflow **también dispara con tags `v*`** (los del release web/app). Así,
+al cortar un release web, los instaladores se generan solos con **la misma
+versión**, y web + desktop quedan alineados.
+
+> **Importante para el release web:** como el workflow crea el GitHub Release
+> (borrador con los instaladores), el flujo web ya **no** debe hacer
+> `gh release create` manual para ese tag — chocaría. El proceso pasa a ser:
+> `merge dev → master`, `push master` (deploy Vercel), `push tag vX.Y.Z` → el
+> workflow compila los instaladores y arma el release borrador para publicar.
+
+El tag `desktop-v*` sigue disponible para un rebuild **solo de escritorio**
+(cambios del shell nativo / íconos) entre releases web.
 
 ## Follow-ups conocidos
 
