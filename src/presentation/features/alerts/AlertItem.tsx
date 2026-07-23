@@ -7,8 +7,8 @@ import {
   AlertTriangle,
   CalendarClock,
   CheckCircle2,
+  Receipt,
   Sparkles,
-  TrendingDown,
   Wallet,
   X,
 } from 'lucide-react';
@@ -129,8 +129,8 @@ function AlertIcon({ type }: { type: AlertType }) {
       return <CalendarClock className="size-5" aria-hidden="true" />;
     case 'habits-midday':
       return <Sparkles className="size-5" aria-hidden="true" />;
-    case 'budget-overspent':
-      return <TrendingDown className="size-5" aria-hidden="true" />;
+    case 'budget-unlogged':
+      return <Receipt className="size-5" aria-hidden="true" />;
     case 'chore-overdue':
       return <AlertTriangle className="size-5" aria-hidden="true" />;
     default:
@@ -154,10 +154,8 @@ function renderTitle(alert: Alert, t: Translator): string {
       const count = numberOf(alert.payload.missingCount) ?? 0;
       return t('habitsMidday.title', { count });
     }
-    case 'budget-overspent':
-      return t('budgetOverspent.title', {
-        currency: stringOf(alert.payload.currency) ?? '',
-      });
+    case 'budget-unlogged':
+      return t('budgetUnlogged.title');
     case 'chore-overdue':
       return t('choreOverdue.title', {
         name: stringOf(alert.payload.choreName) ?? '',
@@ -190,15 +188,10 @@ function renderSubtitle(alert: Alert, t: Translator, dateFormat: DateFormat): st
         ? t('habitsMidday.subtitleMany', { first, rest: count - 1 })
         : t('habitsMidday.subtitleOne', { first });
     }
-    case 'budget-overspent': {
-      const currency = stringOf(alert.payload.currency);
-      const overBy = Math.abs(numberOf(alert.payload.remaining) ?? 0);
-      if (isCurrency(currency)) {
-        return t('budgetOverspent.subtitle', {
-          amount: formatCurrency(overBy, currency),
-        });
-      }
-      return t('budgetOverspent.subtitleNoCurrency');
+    case 'budget-unlogged': {
+      const days = numberOf(alert.payload.days) ?? 0;
+      const currency = stringOf(alert.payload.currency) ?? '';
+      return t('budgetUnlogged.subtitle', { days, currency });
     }
     case 'chore-overdue': {
       const date = stringOf(alert.payload.nextDueDate);
