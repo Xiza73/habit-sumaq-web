@@ -70,7 +70,7 @@ export function useUpdateBudget() {
       budgetsApi.update(id, data),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: budgetKeys.all });
-      // Bumping the `amount` can flip `remaining` positive → resolves overspent.
+      // Bumping the `amount` changes `remaining` — invalidate so the KPI card refreshes.
       void queryClient.invalidateQueries({ queryKey: alertKeys.lists() });
     },
   });
