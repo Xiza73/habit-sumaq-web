@@ -90,6 +90,32 @@ describe('DebtsLoansDashboard', () => {
     });
   });
 
+  it('feeds the reference autocomplete with the original casing (displayName), not the lowercased key', async () => {
+    const user = userEvent.setup();
+    // Persistent mock: the dashboard queries the summary twice (current filter
+    // + an "all" pull that feeds the autocomplete) — both must resolve.
+    vi.mocked(debtsLoansApi.summary).mockResolvedValue([
+      makeRow({ reference: 'juan', displayName: 'Juan', currency: 'PEN' }),
+      makeRow({ reference: 'pedro', displayName: 'Pedro', currency: 'PEN' }),
+    ]);
+
+    renderDashboard();
+
+    // Open the create form so the <datalist> mounts.
+    await user.click(
+      await screen.findByRole('button', { name: /nueva deuda|new debt|nova dívida/i }),
+    );
+
+    await waitFor(() => {
+      const options = Array.from(
+        document.querySelectorAll<HTMLOptionElement>('#dl-reference-list option'),
+      ).map((o) => o.value);
+      expect(options).toContain('Juan');
+      expect(options).toContain('Pedro');
+      expect(options).not.toContain('juan');
+    });
+  });
+
   it('opens the bulk-settle modal when a card requests it, and fires the API on confirm', async () => {
     const user = userEvent.setup();
     vi.mocked(debtsLoansApi.summary).mockResolvedValueOnce([
