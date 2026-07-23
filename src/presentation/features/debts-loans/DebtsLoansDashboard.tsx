@@ -63,9 +63,12 @@ export function DebtsLoansDashboard() {
   const sortedRows = useMemo(() => sortDebtRows(rows, viewPrefs), [rows, viewPrefs]);
 
   const knownReferences = useMemo(() => {
+    // Use `displayName` (original casing shown on the card), NOT `reference`
+    // (the lowercased/unaccented grouping key) — otherwise suggestions render
+    // all-lowercase.
     const set = new Set<string>();
     allRows.forEach((r) => {
-      if (r.reference) set.add(r.reference);
+      if (r.displayName) set.add(r.displayName);
     });
     return Array.from(set).sort((a, b) => a.localeCompare(b));
   }, [allRows]);
