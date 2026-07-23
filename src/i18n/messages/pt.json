@@ -785,10 +785,9 @@
         "subtitleOne": "Comece por {first}",
         "subtitleMany": "Comece por {first} e mais {rest}"
       },
-      "budgetOverspent": {
-        "title": "Você passou do orçamento {currency}",
-        "subtitle": "Está {amount} acima",
-        "subtitleNoCurrency": "Reveja seus gastos do mês"
+      "budgetUnlogged": {
+        "title": "Esqueceu de registrar um gasto?",
+        "subtitle": "Já são {days} dias sem registros no seu orçamento {currency}"
       },
       "choreOverdue": {
         "title": "Atrasada: {name}",

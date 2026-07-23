@@ -24,7 +24,7 @@ describe('getAlertHref', () => {
     'service-due-today': '/services',
     'service-overdue': '/services',
     'habits-midday': '/habits',
-    'budget-overspent': '/budgets',
+    'budget-unlogged': '/budgets',
     'chore-overdue': '/chores',
   };
 

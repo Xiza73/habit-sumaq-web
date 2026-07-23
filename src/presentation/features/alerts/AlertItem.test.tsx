@@ -111,25 +111,23 @@ describe('AlertItem', () => {
       expect(screen.getByText('Empezá por Tomar agua y 2 más')).toBeInTheDocument();
     });
 
-    it('renders budget-overspent with formatted absolute overage', () => {
+    it('renders budget-unlogged with the day streak + currency', () => {
       renderItem(
         makeAlert({
-          id: 'budget-overspent:abc',
-          type: 'budget-overspent',
-          severity: 'warning',
-          isDismissable: false,
+          id: 'budget-unlogged:abc:2026-05-19',
+          type: 'budget-unlogged',
+          severity: 'info',
+          isDismissable: true,
           payload: {
             budgetId: 'abc',
             currency: 'PEN',
-            amount: 2000,
-            spent: 2250,
-            remaining: -250,
+            remaining: 900,
+            days: 3,
           },
         }),
       );
-      // Currency formatting in es-PE uses non-breaking spaces — match the
-      // number digits we control, not the exact glyph.
-      expect(screen.getByText(/250/)).toBeInTheDocument();
+      expect(screen.getByText('¿Olvidaste registrar un gasto?')).toBeInTheDocument();
+      expect(screen.getByText(/3 días sin registrar en tu presupuesto PEN/)).toBeInTheDocument();
     });
 
     it('renders chore-overdue with the due date in the subtitle', () => {

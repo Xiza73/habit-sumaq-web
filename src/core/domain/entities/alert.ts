@@ -14,7 +14,7 @@ export const ALERT_TYPES = [
   'service-due-today',
   'service-overdue',
   'habits-midday',
-  'budget-overspent',
+  'budget-unlogged',
   'chore-overdue',
 ] as const;
 export type AlertType = (typeof ALERT_TYPES)[number];
@@ -47,12 +47,11 @@ export interface AlertPayloads {
     missingCount: number;
     firstHabitName: string;
   };
-  'budget-overspent': {
+  'budget-unlogged': {
     budgetId: string;
     currency: string;
-    amount: number;
-    spent: number;
-    remaining: number; // < 0
+    remaining: number; // > 0
+    days: number; // consecutive no-movement days ending today, >= 2
   };
   'chore-overdue': {
     choreId: string;
@@ -67,7 +66,7 @@ export interface Alert {
   type: AlertType;
   severity: AlertSeverity;
   /**
-   * True for per-day (`service-due-today`, `habits-midday`) — the UI shows
+   * True for per-day (`service-due-today`, `habits-midday`, `budget-unlogged`) — the UI shows
    * the close button only when this is true. Server enforces it too: a
    * dismiss against a persistent alert returns 409 `ALR_001`.
    */
@@ -105,7 +104,7 @@ export function getAlertHref(alert: Alert): string | null {
       return '/services';
     case 'habits-midday':
       return '/habits';
-    case 'budget-overspent':
+    case 'budget-unlogged':
       return '/budgets';
     case 'chore-overdue':
       return '/chores';

@@ -54,9 +54,21 @@ export function DebtsLoansDashboard() {
   const [viewPrefs, setViewPrefs] = useState<DebtsViewPrefs>(DEFAULT_DEBTS_VIEW_PREFS);
 
   const { data: rows = [], isLoading } = useDebtsLoansSummary(status);
+  // Always pull the full set (any status) just to feed the reference
+  // autocomplete, so past persons stay suggestible even when the current
+  // filter hides them.
+  const { data: allRows = [] } = useDebtsLoansSummary('all');
   const settleMutation = useBulkSettleByReference();
 
   const sortedRows = useMemo(() => sortDebtRows(rows, viewPrefs), [rows, viewPrefs]);
+
+  const knownReferences = useMemo(() => {
+    const set = new Set<string>();
+    allRows.forEach((r) => {
+      if (r.reference) set.add(r.reference);
+    });
+    return Array.from(set).sort((a, b) => a.localeCompare(b));
+  }, [allRows]);
   const emptyMessage = status === 'pending' ? t('emptyPending') : t('empty');
 
   function openCreate(type: DebtLoanType) {
@@ -186,6 +198,7 @@ export function DebtsLoansDashboard() {
         debtLoan={editingDebtLoan}
         initialType={formInitialType}
         onClose={closeForm}
+        knownReferences={knownReferences}
       />
     </div>
   );
