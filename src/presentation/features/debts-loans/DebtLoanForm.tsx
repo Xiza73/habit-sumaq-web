@@ -35,9 +35,21 @@ interface DebtLoanFormProps {
   debtLoan: DebtLoan | null;
   initialType?: DebtLoanType;
   onClose: () => void;
+  /**
+   * Prior `reference` values across the user's debts/loans, offered as
+   * autocomplete suggestions (soft — the field stays free-text). Same UX as
+   * the Chores category field.
+   */
+  knownReferences?: string[];
 }
 
-export function DebtLoanForm({ open, debtLoan, initialType = 'DEBT', onClose }: DebtLoanFormProps) {
+export function DebtLoanForm({
+  open,
+  debtLoan,
+  initialType = 'DEBT',
+  onClose,
+  knownReferences = [],
+}: DebtLoanFormProps) {
   const t = useTranslations('debts.form');
   const tCommon = useTranslations('common');
   const tErrors = useTranslations('errors');
@@ -224,9 +236,15 @@ export function DebtLoanForm({ open, debtLoan, initialType = 'DEBT', onClose }: 
           <Input
             id="dl-reference"
             type="text"
+            list="dl-reference-list"
             placeholder={t('referencePlaceholder')}
             {...form.register('reference')}
           />
+          <datalist id="dl-reference-list">
+            {knownReferences.map((ref) => (
+              <option key={ref} value={ref} />
+            ))}
+          </datalist>
           {form.formState.errors.reference && (
             <p className="text-xs text-destructive">{form.formState.errors.reference.message}</p>
           )}
