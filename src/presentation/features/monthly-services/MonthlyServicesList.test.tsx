@@ -26,6 +26,7 @@ const mockServices: MonthlyService[] = [
     isOverdue: false,
     isPaidForCurrentMonth: false,
     paidAmountForCurrentMonth: 0,
+    linkedDebts: [],
   },
   {
     id: 'svc-2',
@@ -45,6 +46,7 @@ const mockServices: MonthlyService[] = [
     isOverdue: false,
     isPaidForCurrentMonth: true,
     paidAmountForCurrentMonth: 80,
+    linkedDebts: [],
   },
 ];
 

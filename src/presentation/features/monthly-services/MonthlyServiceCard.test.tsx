@@ -39,6 +39,7 @@ const baseService: MonthlyService = {
   isOverdue: false,
   isPaidForCurrentMonth: false,
   paidAmountForCurrentMonth: 0,
+  linkedDebts: [],
 };
 
 function renderCard(service: MonthlyService = baseService) {
