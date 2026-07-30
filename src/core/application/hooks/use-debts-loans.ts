@@ -16,6 +16,8 @@ import {
 
 import { debtsLoansApi } from '@/infrastructure/api/debts-loans.api';
 
+import { monthlyServiceKeys } from './use-monthly-services';
+
 /**
  * Query keys for the v1.0.0 `debts_loans` module. Kept in their own
  * namespace (`['debts-loans']`) so they don't collide with the legacy
@@ -70,6 +72,23 @@ function useInvalidateAll() {
   return () => qc.invalidateQueries({ queryKey: debtLoanKeys.all });
 }
 
+/**
+ * Same as `useInvalidateAll`, but ALSO invalidates `['monthly-services']`.
+ * A MonthlyService's `linkedDebts[]` only lists PENDING loans, so settling
+ * or deleting a linked loan from THIS (debts) side flips it out of that
+ * array — the service card/detail would otherwise keep showing a stale
+ * "still pending" linked debt until an unrelated refetch. Used by the
+ * settle/delete/bulk-settle mutations so "settle from either side stays in
+ * sync". Mirrors the dual-invalidation in `use-monthly-service-payments`.
+ */
+function useInvalidateAllAndMonthlyServices() {
+  const qc = useQueryClient();
+  return () => {
+    void qc.invalidateQueries({ queryKey: debtLoanKeys.all });
+    void qc.invalidateQueries({ queryKey: monthlyServiceKeys.all });
+  };
+}
+
 export function useCreateDebtLoan() {
   const invalidate = useInvalidateAll();
   return useMutation<DebtLoan, Error, CreateDebtLoanInput>({
@@ -91,31 +110,31 @@ export function useUpdateDebtLoan() {
 }
 
 export function useDeleteDebtLoan() {
-  const invalidate = useInvalidateAll();
+  const invalidate = useInvalidateAllAndMonthlyServices();
   return useMutation<void, Error, string>({
     mutationFn: (id) => debtsLoansApi.delete(id),
     onSuccess: () => {
-      void invalidate();
+      invalidate();
     },
   });
 }
 
 export function useSettleDebtLoan() {
-  const invalidate = useInvalidateAll();
+  const invalidate = useInvalidateAllAndMonthlyServices();
   return useMutation<DebtLoan, Error, { id: string; data: SettleDebtLoanInput }>({
     mutationFn: ({ id, data }) => debtsLoansApi.settle(id, data),
     onSuccess: () => {
-      void invalidate();
+      invalidate();
     },
   });
 }
 
 export function useBulkSettleByReference() {
-  const invalidate = useInvalidateAll();
+  const invalidate = useInvalidateAllAndMonthlyServices();
   return useMutation({
     mutationFn: (data: BulkSettleByReferenceInput) => debtsLoansApi.bulkSettleByReference(data),
     onSuccess: () => {
-      void invalidate();
+      invalidate();
     },
   });
 }
