@@ -288,7 +288,10 @@
     "editService": "Edit service",
     "empty": "You haven't added any service yet",
     "emptyArchived": "No archived services",
-    "tabs": { "active": "Active", "archived": "Archived" },
+    "tabs": {
+      "active": "Active",
+      "archived": "Archived"
+    },
     "status": {
       "paid": "Up to date",
       "pending": "Pending",
@@ -406,7 +409,10 @@
       "addRow": "Add row",
       "removeRow": "Remove {reference}'s row",
       "save": "Save participants",
-      "createHint": "Participants are saved together with the service when you press \"Create\"."
+      "createHint": "Participants are saved together with the service when you press \"Create\".",
+      "referenceRequired": "Reference is required.",
+      "amountInvalid": "The amount must be greater than 0.",
+      "serverErrorHint": "Check the participants' amounts and references."
     },
     "linkedDebts": {
       "badge": "{count, plural, one {# pending loan} other {# pending loans}} · {amount}",
@@ -526,7 +532,10 @@
     "editChore": "Edit chore",
     "empty": "You haven't added any chore yet",
     "emptyArchived": "No archived chores",
-    "tabs": { "active": "Active", "archived": "Archived" },
+    "tabs": {
+      "active": "Active",
+      "archived": "Archived"
+    },
     "status": {
       "overdue": "Overdue",
       "upcoming": "Upcoming",
