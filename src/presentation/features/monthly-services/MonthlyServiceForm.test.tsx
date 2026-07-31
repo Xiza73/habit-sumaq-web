@@ -5,6 +5,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { type Category } from '@/core/domain/entities/category';
 import { type MonthlyService } from '@/core/domain/entities/monthly-service';
 
+import { ApiError } from '@/infrastructure/api/api-error';
+
 import { TestProviders } from '@/test/utils';
 
 import { MonthlyServiceForm } from './MonthlyServiceForm';
@@ -40,6 +42,14 @@ vi.mock('@/core/application/hooks/use-monthly-service-participants', () => ({
 
 vi.mock('@/core/application/hooks/use-debts-loans', () => ({
   useDebtsLoansSummary: () => ({ data: [] }),
+}));
+
+// sonner renders toasts into a portal that isn't mounted in tests — stub it
+// so `toast.error(...)` calls don't throw and can be asserted on. `vi.hoisted`
+// is required because `vi.mock` is hoisted above module-level declarations.
+const { mockToastError } = vi.hoisted(() => ({ mockToastError: vi.fn() }));
+vi.mock('sonner', () => ({
+  toast: { success: vi.fn(), error: mockToastError },
 }));
 
 const categoryServicios: Category = {
@@ -87,8 +97,9 @@ function renderForm(overrides: Partial<Parameters<typeof MonthlyServiceForm>[0]>
 
 describe('MonthlyServiceForm', () => {
   beforeEach(() => {
-    mockCreateMutate.mockClear();
-    mockUpdateMutate.mockClear();
+    mockCreateMutate.mockReset();
+    mockUpdateMutate.mockReset();
+    mockToastError.mockClear();
     mockCategories = [categoryServicios];
   });
 
@@ -196,6 +207,58 @@ describe('MonthlyServiceForm', () => {
       expect(mockCreateMutate).toHaveBeenCalledOnce();
       const payload = mockCreateMutate.mock.calls[0][0] as Record<string, unknown>;
       expect(payload.participants).toBeUndefined();
+    });
+
+    it('blocks Crear when a participant row has an empty reference', async () => {
+      const user = userEvent.setup();
+      renderForm();
+
+      await user.type(screen.getByLabelText(/^nombre$/i), 'Netflix');
+      await user.selectOptions(screen.getByLabelText(/categor/i), categoryServicios.id);
+      // Add a row and give it an amount but leave the reference empty.
+      await user.click(screen.getByRole('button', { name: /agregar fila/i }));
+      await user.type(screen.getByLabelText(/monto por defecto/i), '20');
+      await user.click(screen.getByRole('button', { name: /^crear$/i }));
+
+      expect(mockCreateMutate).not.toHaveBeenCalled();
+      expect(screen.getByText(/la referencia es obligatoria/i)).toBeInTheDocument();
+    });
+
+    it('blocks Crear when a participant row has a non-positive amount', async () => {
+      const user = userEvent.setup();
+      renderForm();
+
+      await user.type(screen.getByLabelText(/^nombre$/i), 'Netflix');
+      await user.selectOptions(screen.getByLabelText(/categor/i), categoryServicios.id);
+      // Add a row with a reference but no amount (defaults to 0 → invalid).
+      await user.click(screen.getByRole('button', { name: /agregar fila/i }));
+      await user.type(screen.getByRole('combobox', { name: /^referencia$/i }), 'Ana');
+      await user.click(screen.getByRole('button', { name: /^crear$/i }));
+
+      expect(mockCreateMutate).not.toHaveBeenCalled();
+      expect(screen.getByText(/el monto debe ser mayor a 0/i)).toBeInTheDocument();
+    });
+
+    it('surfaces a localized participant error from the backend on create', async () => {
+      mockCreateMutate.mockImplementation(
+        (_payload, { onError }: { onError: (e: Error) => void }) => {
+          onError(new ApiError('Duplicate', 'MSP_PARTICIPANT_DUPLICATE_REFERENCE'));
+        },
+      );
+      const user = userEvent.setup();
+      renderForm();
+
+      await user.type(screen.getByLabelText(/^nombre$/i), 'Netflix');
+      await user.selectOptions(screen.getByLabelText(/categor/i), categoryServicios.id);
+      await user.click(screen.getByRole('button', { name: /agregar fila/i }));
+      await user.type(screen.getByRole('combobox', { name: /^referencia$/i }), 'Ana');
+      await user.type(screen.getByLabelText(/monto por defecto/i), '20');
+      await user.click(screen.getByRole('button', { name: /^crear$/i }));
+
+      expect(mockCreateMutate).toHaveBeenCalledOnce();
+      expect(
+        await screen.findByText(/ya existe un participante con esa referencia/i),
+      ).toBeInTheDocument();
     });
   });
 

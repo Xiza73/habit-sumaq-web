@@ -24,7 +24,10 @@ import {
   createMonthlyServiceSchema,
   type UpdateMonthlyServiceInput,
 } from '@/core/domain/schemas/monthly-service.schema';
-import { type MonthlyServiceParticipantRowInput } from '@/core/domain/schemas/monthly-service-participant.schema';
+import {
+  type MonthlyServiceParticipantRowInput,
+  replaceMonthlyServiceParticipantsSchema,
+} from '@/core/domain/schemas/monthly-service-participant.schema';
 
 import { ApiError } from '@/infrastructure/api/api-error';
 
@@ -57,6 +60,7 @@ export function MonthlyServiceForm({ open, service, onClose }: MonthlyServiceFor
   const t = useTranslations('monthlyServices');
   const tCommon = useTranslations('common');
   const tErrors = useTranslations('errors');
+  const tParticipants = useTranslations('monthlyServices.participants');
   const isEditing = !!service;
 
   const createMutation = useCreateMonthlyService();
@@ -76,6 +80,12 @@ export function MonthlyServiceForm({ open, service, onClose }: MonthlyServiceFor
   // instead. Edit-mode's `ParticipantEditor` is self-managed and ignores
   // this state entirely.
   const [createRows, setCreateRows] = useState<MonthlyServiceParticipantRowInput[]>([]);
+  // Inline error shown under the participants section for create-mode
+  // rejections that aren't tied to a single form field — client-side
+  // participant validation failures (blocked before submit) and server-side
+  // `MSP_PARTICIPANT_*` errors alike. The `ParticipantEditor` also renders
+  // per-row inline errors; this is the section-level summary + hint.
+  const [participantsError, setParticipantsError] = useState<string | null>(null);
   // Reset `createRows` the first render the modal is open for a NEW
   // service (not editing). Derived synchronously during render — like
   // `ParticipantEditor`'s own row-seeding — instead of inside the
@@ -152,6 +162,21 @@ export function MonthlyServiceForm({ open, service, onClose }: MonthlyServiceFor
         },
       );
     } else {
+      setParticipantsError(null);
+      // Gate the participant rows through the same schema as the batch-
+      // replace endpoint BEFORE the create write, so a blank reference or a
+      // non-positive amount is caught client-side with an inline error
+      // instead of a round-trip. The editor already renders per-row errors;
+      // this block is the submit-time backstop.
+      if (createRows.length > 0) {
+        const parsed = replaceMonthlyServiceParticipantsSchema.safeParse({
+          participants: createRows,
+        });
+        if (!parsed.success) {
+          setParticipantsError(tParticipants('serverErrorHint'));
+          return;
+        }
+      }
       const cleaned: CreateMonthlyServiceInput = {
         ...values,
         estimatedAmount: emptyToUndefined(values.estimatedAmount) ?? null,
@@ -174,6 +199,19 @@ export function MonthlyServiceForm({ open, service, onClose }: MonthlyServiceFor
   function handleError(error: Error) {
     if (error instanceof ApiError && error.code === 'MSVC_003') {
       form.setError('name', { message: tErrors('MSVC_003') });
+      return;
+    }
+    // Server-side participant validation (`MSP_PARTICIPANT_*`) — surface the
+    // localized message inline under the participants section with a hint
+    // pointing there, rather than only a generic toast. Per-row attribution
+    // isn't attempted; the message + section hint is enough for the user to
+    // find and fix the offending row.
+    if (
+      error instanceof ApiError &&
+      error.code?.startsWith('MSP_PARTICIPANT_') &&
+      tErrors.has(error.code)
+    ) {
+      setParticipantsError(tErrors(error.code as 'MSP_PARTICIPANT_DUPLICATE_REFERENCE'));
       return;
     }
     toast.error(
@@ -321,8 +359,14 @@ export function MonthlyServiceForm({ open, service, onClose }: MonthlyServiceFor
               currency={watchedCurrency as Currency}
               knownReferences={knownReferences}
               rows={createRows}
-              onRowsChange={setCreateRows}
+              onRowsChange={(rows) => {
+                setParticipantsError(null);
+                setCreateRows(rows);
+              }}
             />
+          )}
+          {participantsError && (
+            <p className="mt-2 text-xs text-destructive">{participantsError}</p>
           )}
         </div>
 
