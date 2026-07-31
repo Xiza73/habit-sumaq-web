@@ -288,7 +288,10 @@
     "editService": "Editar serviço",
     "empty": "Você ainda não adicionou nenhum serviço",
     "emptyArchived": "Você não tem serviços arquivados",
-    "tabs": { "active": "Ativos", "archived": "Arquivados" },
+    "tabs": {
+      "active": "Ativos",
+      "archived": "Arquivados"
+    },
     "status": {
       "paid": "Em dia",
       "pending": "Pendente",
@@ -387,7 +390,34 @@
       "date": "Data",
       "details": "Detalhes",
       "detailsPlaceholder": "Notas adicionais (opcional)",
-      "confirm": "Confirmar pagamento"
+      "confirm": "Confirmar pagamento",
+      "participants": {
+        "title": "Participantes",
+        "hint": "O valor de cada participante é descontado como um empréstimo pendente. Sua parte é o restante do valor total.",
+        "amount": "Valor",
+        "alreadyPaid": "Já me pagou"
+      }
+    },
+    "participants": {
+      "title": "Participantes",
+      "hint": "Divida este serviço entre várias pessoas. Adicione linhas, ajuste os valores e salve: a lista enviada substitui totalmente a anterior.",
+      "loading": "Carregando participantes…",
+      "empty": "Nenhum participante configurado.",
+      "reference": "Referência",
+      "referencePlaceholder": "Nome ou referência (ex. Ana)",
+      "defaultAmount": "Valor padrão",
+      "addRow": "Adicionar linha",
+      "removeRow": "Remover linha de {reference}",
+      "save": "Salvar participantes",
+      "createHint": "Os participantes são salvos junto com o serviço ao pressionar \"Criar\".",
+      "referenceRequired": "A referência é obrigatória.",
+      "amountInvalid": "O valor deve ser maior que 0.",
+      "serverErrorHint": "Verifique os valores e referências dos participantes."
+    },
+    "linkedDebts": {
+      "badge": "{count, plural, one {# empréstimo pendente} other {# empréstimos pendentes}} · {amount}",
+      "settle": "Liquidar",
+      "settleTrigger": "Liquidar {reference}"
     }
   },
   "navigation": {
@@ -502,7 +532,10 @@
     "editChore": "Editar tarefa",
     "empty": "Você ainda não adicionou nenhuma tarefa",
     "emptyArchived": "Nenhuma tarefa arquivada",
-    "tabs": { "active": "Ativas", "archived": "Arquivadas" },
+    "tabs": {
+      "active": "Ativas",
+      "archived": "Arquivadas"
+    },
     "status": {
       "overdue": "Atrasada",
       "upcoming": "Próxima",

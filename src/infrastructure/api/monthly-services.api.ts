@@ -4,10 +4,7 @@ import {
   type CreateMonthlyServiceInput,
   type UpdateMonthlyServiceInput,
 } from '@/core/domain/schemas/monthly-service.schema';
-import {
-  type AddMonthlyServiceParticipantInput,
-  type UpdateMonthlyServiceParticipantInput,
-} from '@/core/domain/schemas/monthly-service-participant.schema';
+import { type MonthlyServiceParticipantRowInput } from '@/core/domain/schemas/monthly-service-participant.schema';
 
 import { httpClient } from './http-client';
 
@@ -51,37 +48,22 @@ export const monthlyServicesApi = {
   },
 
   /**
-   * Adds a participant to the service's config.
+   * Replaces the WHOLE active participant list for a service in one shot
+   * (batch model — no incremental add/update/remove endpoints). The array
+   * sent IS the resulting active set: existing rows matched by normalized
+   * reference are updated, rows missing from the array are soft-deleted,
+   * new references are inserted. `[]` clears all configured participants.
    * `409 MSP_PARTICIPANT_DUPLICATE_REFERENCE` / `422
    * MSP_PARTICIPANT_SUM_EXCEEDS_ESTIMATED` / `422
    * MSP_PARTICIPANT_AMOUNT_NOT_POSITIVE`.
    */
-  addParticipant(
+  replaceParticipants(
     monthlyServiceId: string,
-    data: AddMonthlyServiceParticipantInput,
-  ): Promise<MonthlyServiceParticipant> {
-    return httpClient.post<MonthlyServiceParticipant>(
+    participants: MonthlyServiceParticipantRowInput[],
+  ): Promise<MonthlyServiceParticipant[]> {
+    return httpClient.put<MonthlyServiceParticipant[]>(
       `/monthly-services/${monthlyServiceId}/participants`,
-      data,
-    );
-  },
-
-  /** Edits a participant's `defaultAmount`. Same error codes as `addParticipant`. */
-  updateParticipant(
-    monthlyServiceId: string,
-    participantId: string,
-    data: UpdateMonthlyServiceParticipantInput,
-  ): Promise<MonthlyServiceParticipant> {
-    return httpClient.patch<MonthlyServiceParticipant>(
-      `/monthly-services/${monthlyServiceId}/participants/${participantId}`,
-      data,
-    );
-  },
-
-  /** Soft-deletes a participant. `404 MSP_PARTICIPANT_NOT_FOUND`. */
-  removeParticipant(monthlyServiceId: string, participantId: string): Promise<void> {
-    return httpClient.delete<void>(
-      `/monthly-services/${monthlyServiceId}/participants/${participantId}`,
+      { participants },
     );
   },
 };

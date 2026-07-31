@@ -1,13 +1,14 @@
 'use client';
 
-import { useEffect } from 'react';
-import { useForm } from 'react-hook-form';
+import { useEffect, useState } from 'react';
+import { useForm, useWatch } from 'react-hook-form';
 import { useTranslations } from 'next-intl';
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
+import { useDebtsLoansSummary } from '@/core/application/hooks/use-debts-loans';
 import {
   useCreateMonthlyService,
   useUpdateMonthlyService,
@@ -17,11 +18,16 @@ import {
   MONTHLY_SERVICE_FREQUENCY_LABEL_KEYS,
   type MonthlyService,
 } from '@/core/domain/entities/monthly-service';
+import { type Currency } from '@/core/domain/enums/currency.enum';
 import {
   type CreateMonthlyServiceInput,
   createMonthlyServiceSchema,
   type UpdateMonthlyServiceInput,
 } from '@/core/domain/schemas/monthly-service.schema';
+import {
+  type MonthlyServiceParticipantRowInput,
+  replaceMonthlyServiceParticipantsSchema,
+} from '@/core/domain/schemas/monthly-service-participant.schema';
 
 import { ApiError } from '@/infrastructure/api/api-error';
 
@@ -29,6 +35,8 @@ import { Input } from '@/presentation/components/ui/Input';
 import { Modal } from '@/presentation/components/ui/Modal';
 import { Select } from '@/presentation/components/ui/Select';
 import { CategorySelectField } from '@/presentation/features/categories/CategorySelectField';
+
+import { ParticipantEditor } from './ParticipantEditor';
 
 interface MonthlyServiceFormProps {
   open: boolean;
@@ -52,11 +60,45 @@ export function MonthlyServiceForm({ open, service, onClose }: MonthlyServiceFor
   const t = useTranslations('monthlyServices');
   const tCommon = useTranslations('common');
   const tErrors = useTranslations('errors');
+  const tParticipants = useTranslations('monthlyServices.participants');
   const isEditing = !!service;
 
   const createMutation = useCreateMonthlyService();
   const updateMutation = useUpdateMonthlyService();
   const isPending = createMutation.isPending || updateMutation.isPending;
+
+  // Feed the participant reference field's soft autocomplete with prior
+  // debts/loans references — same UX as `DebtLoanForm.knownReferences`.
+  const { data: allDebtRows = [] } = useDebtsLoansSummary('all');
+  const knownReferences = Array.from(
+    new Set(allDebtRows.map((r) => r.displayName).filter(Boolean)),
+  ).sort((a, b) => a.localeCompare(b));
+
+  // Create-mode participant rows are lifted here (controlled) — there's no
+  // serviceId yet, so `ParticipantEditor` can't self-manage via
+  // `useReplaceParticipants`. These ride the create-service payload
+  // instead. Edit-mode's `ParticipantEditor` is self-managed and ignores
+  // this state entirely.
+  const [createRows, setCreateRows] = useState<MonthlyServiceParticipantRowInput[]>([]);
+  // Inline error shown under the participants section for create-mode
+  // rejections that aren't tied to a single form field — client-side
+  // participant validation failures (blocked before submit) and server-side
+  // `MSP_PARTICIPANT_*` errors alike. The `ParticipantEditor` also renders
+  // per-row inline errors; this is the section-level summary + hint.
+  const [participantsError, setParticipantsError] = useState<string | null>(null);
+  // Reset `createRows` the first render the modal is open for a NEW
+  // service (not editing). Derived synchronously during render — like
+  // `ParticipantEditor`'s own row-seeding — instead of inside the
+  // `useEffect` below, so the reset lands in the same commit as
+  // `form.reset()` without triggering a `setState`-in-effect cascade.
+  // `rowsResetForOpen` tracks whether THIS open session already reset.
+  const [rowsResetForOpen, setRowsResetForOpen] = useState(false);
+  if (open && !service && !rowsResetForOpen) {
+    setCreateRows([]);
+    setRowsResetForOpen(true);
+  } else if ((!open || service) && rowsResetForOpen) {
+    setRowsResetForOpen(false);
+  }
 
   const form = useForm<CreateMonthlyServiceInput>({
     resolver: zodResolver(createMonthlyServiceSchema),
@@ -70,6 +112,10 @@ export function MonthlyServiceForm({ open, service, onClose }: MonthlyServiceFor
       startPeriod: getCurrentPeriod(),
     },
   });
+  // `useWatch` (not `form.watch()`) so the React Compiler can memoize this
+  // subscription safely — feeds the create-mode ParticipantEditor's
+  // currency-formatted amount display as the user picks a currency.
+  const watchedCurrency = useWatch({ control: form.control, name: 'currency' });
 
   useEffect(() => {
     if (!open) return;
@@ -116,10 +162,29 @@ export function MonthlyServiceForm({ open, service, onClose }: MonthlyServiceFor
         },
       );
     } else {
+      setParticipantsError(null);
+      // Gate the participant rows through the same schema as the batch-
+      // replace endpoint BEFORE the create write, so a blank reference or a
+      // non-positive amount is caught client-side with an inline error
+      // instead of a round-trip. The editor already renders per-row errors;
+      // this block is the submit-time backstop.
+      if (createRows.length > 0) {
+        const parsed = replaceMonthlyServiceParticipantsSchema.safeParse({
+          participants: createRows,
+        });
+        if (!parsed.success) {
+          setParticipantsError(tParticipants('serverErrorHint'));
+          return;
+        }
+      }
       const cleaned: CreateMonthlyServiceInput = {
         ...values,
         estimatedAmount: emptyToUndefined(values.estimatedAmount) ?? null,
         dueDay: emptyToUndefined(values.dueDay) ?? null,
+        // Omit entirely (not `[]`) when no rows were added — keeps the
+        // create payload byte-identical to pre-participants behavior for a
+        // non-shared service, mirroring the schema's `.optional()`.
+        ...(createRows.length > 0 ? { participants: createRows } : {}),
       };
       createMutation.mutate(cleaned, {
         onSuccess: () => {
@@ -134,6 +199,19 @@ export function MonthlyServiceForm({ open, service, onClose }: MonthlyServiceFor
   function handleError(error: Error) {
     if (error instanceof ApiError && error.code === 'MSVC_003') {
       form.setError('name', { message: tErrors('MSVC_003') });
+      return;
+    }
+    // Server-side participant validation (`MSP_PARTICIPANT_*`) — surface the
+    // localized message inline under the participants section with a hint
+    // pointing there, rather than only a generic toast. Per-row attribution
+    // isn't attempted; the message + section hint is enough for the user to
+    // find and fix the offending row.
+    if (
+      error instanceof ApiError &&
+      error.code?.startsWith('MSP_PARTICIPANT_') &&
+      tErrors.has(error.code)
+    ) {
+      setParticipantsError(tErrors(error.code as 'MSP_PARTICIPANT_DUPLICATE_REFERENCE'));
       return;
     }
     toast.error(
@@ -265,6 +343,31 @@ export function MonthlyServiceForm({ open, service, onClose }: MonthlyServiceFor
             )}
             <p className="text-[11px] text-muted-foreground">{t('fields.dueDayHint')}</p>
           </div>
+        </div>
+
+        <div className="border-t border-border pt-4">
+          {isEditing && service ? (
+            <ParticipantEditor
+              mode="edit"
+              monthlyServiceId={service.id}
+              currency={service.currency}
+              knownReferences={knownReferences}
+            />
+          ) : (
+            <ParticipantEditor
+              mode="create"
+              currency={watchedCurrency as Currency}
+              knownReferences={knownReferences}
+              rows={createRows}
+              onRowsChange={(rows) => {
+                setParticipantsError(null);
+                setCreateRows(rows);
+              }}
+            />
+          )}
+          {participantsError && (
+            <p className="mt-2 text-xs text-destructive">{participantsError}</p>
+          )}
         </div>
 
         <div className="flex justify-end gap-3 pt-2">
