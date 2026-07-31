@@ -59,6 +59,7 @@ const baseService: MonthlyService = {
   isOverdue: false,
   isPaidForCurrentMonth: false,
   paidAmountForCurrentMonth: 0,
+  linkedDebts: [],
 };
 
 function renderForm(overrides: Partial<Parameters<typeof MonthlyServiceForm>[0]> = {}): {
