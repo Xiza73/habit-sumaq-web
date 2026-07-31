@@ -31,6 +31,7 @@ import {
 
 import { ApiError } from '@/infrastructure/api/api-error';
 
+import { FieldGrid } from '@/presentation/components/ui/FieldGrid';
 import { Input } from '@/presentation/components/ui/Input';
 import { Modal } from '@/presentation/components/ui/Modal';
 import { Select } from '@/presentation/components/ui/Select';
@@ -250,11 +251,8 @@ export function MonthlyServiceForm({ open, service, onClose }: MonthlyServiceFor
         />
 
         {!isEditing && (
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <label htmlFor="msvc-currency" className="text-sm font-medium">
-                {t('fields.currency')}
-              </label>
+          <FieldGrid columns={2}>
+            <FieldGrid.Field label={t('fields.currency')} htmlFor="msvc-currency">
               {/* v1.0.0 (A6-W.4): currency es ahora user-pickable.
                   Antes se derivaba automáticamente de la cuenta seleccionada
                   (que ya no existe). Inmutable post-creación — backend la
@@ -264,24 +262,20 @@ export function MonthlyServiceForm({ open, service, onClose }: MonthlyServiceFor
                 <option value="USD">USD</option>
                 <option value="EUR">EUR</option>
               </Select>
-            </div>
-            <div className="space-y-2">
-              <label htmlFor="msvc-start" className="text-sm font-medium">
-                {t('fields.startPeriod')}
-              </label>
+            </FieldGrid.Field>
+            <FieldGrid.Field
+              label={t('fields.startPeriod')}
+              htmlFor="msvc-start"
+              error={form.formState.errors.startPeriod?.message}
+            >
               <Input
                 id="msvc-start"
                 type="month"
                 {...form.register('startPeriod')}
                 placeholder="2026-01"
               />
-              {form.formState.errors.startPeriod && (
-                <p className="text-xs text-destructive">
-                  {form.formState.errors.startPeriod.message}
-                </p>
-              )}
-            </div>
-          </div>
+            </FieldGrid.Field>
+          </FieldGrid>
         )}
 
         <div className="space-y-2">
@@ -307,11 +301,12 @@ export function MonthlyServiceForm({ open, service, onClose }: MonthlyServiceFor
           </p>
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <label htmlFor="msvc-amount" className="text-sm font-medium">
-              {t('fields.estimatedAmount')}
-            </label>
+        <FieldGrid columns={2}>
+          <FieldGrid.Field
+            label={t('fields.estimatedAmount')}
+            htmlFor="msvc-amount"
+            hint={t('fields.estimatedAmountHint')}
+          >
             <Input
               id="msvc-amount"
               type="number"
@@ -321,13 +316,14 @@ export function MonthlyServiceForm({ open, service, onClose }: MonthlyServiceFor
                 setValueAs: (v) => (v === '' || v == null ? null : Number(v)),
               })}
             />
-            <p className="text-[11px] text-muted-foreground">{t('fields.estimatedAmountHint')}</p>
-          </div>
+          </FieldGrid.Field>
 
-          <div className="space-y-2">
-            <label htmlFor="msvc-dueDay" className="text-sm font-medium">
-              {t('fields.dueDay')}
-            </label>
+          <FieldGrid.Field
+            label={t('fields.dueDay')}
+            htmlFor="msvc-dueDay"
+            error={form.formState.errors.dueDay ? t('fields.dueDayOutOfRange') : undefined}
+            hint={t('fields.dueDayHint')}
+          >
             <Input
               id="msvc-dueDay"
               type="number"
@@ -338,12 +334,8 @@ export function MonthlyServiceForm({ open, service, onClose }: MonthlyServiceFor
                 setValueAs: (v) => (v === '' || v == null ? null : Number(v)),
               })}
             />
-            {form.formState.errors.dueDay && (
-              <p className="text-xs text-destructive">{t('fields.dueDayOutOfRange')}</p>
-            )}
-            <p className="text-[11px] text-muted-foreground">{t('fields.dueDayHint')}</p>
-          </div>
-        </div>
+          </FieldGrid.Field>
+        </FieldGrid>
 
         <div className="border-t border-border pt-4">
           {isEditing && service ? (
