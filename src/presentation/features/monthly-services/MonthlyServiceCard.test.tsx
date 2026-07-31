@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { type Category } from '@/core/domain/entities/category';
 import { type MonthlyService } from '@/core/domain/entities/monthly-service';
@@ -8,6 +8,11 @@ import { type MonthlyService } from '@/core/domain/entities/monthly-service';
 import { TestProviders } from '@/test/utils';
 
 import { MonthlyServiceCard } from './MonthlyServiceCard';
+
+const mockSettleMutate = vi.fn();
+vi.mock('@/core/application/hooks/use-debts-loans', () => ({
+  useSettleDebtLoan: () => ({ mutate: mockSettleMutate, isPending: false }),
+}));
 
 const mockCategory: Category = {
   id: 'cat-1',
@@ -57,6 +62,10 @@ function renderCard(service: MonthlyService = baseService) {
 }
 
 describe('MonthlyServiceCard', () => {
+  beforeEach(() => {
+    mockSettleMutate.mockClear();
+  });
+
   it('renders service name and currency badge', () => {
     renderCard();
     expect(screen.getByText('Luz')).toBeInTheDocument();
@@ -137,5 +146,52 @@ describe('MonthlyServiceCard', () => {
   it('renders the annual cadence too', () => {
     renderCard({ ...baseService, frequencyMonths: 12 });
     expect(screen.getByText(/anual/i)).toBeInTheDocument();
+  });
+
+  describe('linked debts', () => {
+    const withLinkedDebts: MonthlyService = {
+      ...baseService,
+      linkedDebts: [
+        { id: 'debt-ana', reference: 'Ana', remainingAmount: 40, status: 'PENDING' },
+        { id: 'debt-luis', reference: 'Luis', remainingAmount: 60, status: 'PENDING' },
+      ],
+    };
+
+    it('does NOT render a linked-debt badge when the service has none', () => {
+      renderCard(baseService);
+      expect(screen.queryByText(/pr[eé]stamo/i)).not.toBeInTheDocument();
+    });
+
+    it('shows a badge summarizing pending linked debts (count + total pending amount)', () => {
+      renderCard(withLinkedDebts);
+      // 2 pending loans, total 100 (40 + 60), PEN.
+      expect(screen.getByText(/2 pr[eé]stamos pendientes/i)).toBeInTheDocument();
+      expect(screen.getByText(/100/)).toBeInTheDocument();
+    });
+
+    it('opens a settle modal for a linked debt from the card', async () => {
+      const user = userEvent.setup();
+      renderCard(withLinkedDebts);
+
+      await user.click(screen.getByRole('button', { name: /ana/i }));
+      expect(screen.getByRole('dialog')).toBeInTheDocument();
+      expect(screen.getByText(/liquidar ana/i)).toBeInTheDocument();
+    });
+
+    it('settling a linked debt goes through the shared useSettleDebtLoan mutation', async () => {
+      const user = userEvent.setup();
+      renderCard(withLinkedDebts);
+
+      await user.click(screen.getByRole('button', { name: /ana/i }));
+      await user.click(screen.getByRole('button', { name: /confirmar/i }));
+
+      expect(mockSettleMutate).toHaveBeenCalledOnce();
+      const callArg = mockSettleMutate.mock.calls[0][0] as {
+        id: string;
+        data: { settledAmount: number; currency?: string };
+      };
+      expect(callArg.id).toBe('debt-ana');
+      expect(callArg.data.settledAmount).toBe(40);
+    });
   });
 });
