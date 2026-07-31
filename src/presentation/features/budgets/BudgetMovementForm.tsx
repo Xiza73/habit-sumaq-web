@@ -22,6 +22,7 @@ import {
 import { ApiError } from '@/infrastructure/api/api-error';
 
 import { DatePicker } from '@/presentation/components/ui/DatePicker';
+import { FieldGrid } from '@/presentation/components/ui/FieldGrid';
 import { Input } from '@/presentation/components/ui/Input';
 import { Modal } from '@/presentation/components/ui/Modal';
 import { CategorySelectField } from '@/presentation/features/categories/CategorySelectField';
@@ -204,11 +205,12 @@ export function BudgetMovementForm({ open, budget, movement, onClose }: BudgetMo
           {t('movements.currencyHint', { currency: budget.currency })}
         </p>
 
-        <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <label htmlFor="mv-amount" className="text-sm font-medium">
-              {t('movements.amount')}
-            </label>
+        <FieldGrid columns={2}>
+          <FieldGrid.Field
+            label={t('movements.amount')}
+            htmlFor="mv-amount"
+            error={form.formState.errors.amount?.message}
+          >
             <Input
               id="mv-amount"
               type="number"
@@ -216,15 +218,13 @@ export function BudgetMovementForm({ open, budget, movement, onClose }: BudgetMo
               min="0.01"
               {...form.register('amount', { valueAsNumber: true })}
             />
-            {form.formState.errors.amount && (
-              <p className="text-xs text-destructive">{form.formState.errors.amount.message}</p>
-            )}
-          </div>
+          </FieldGrid.Field>
 
-          <div className="space-y-2">
-            <label htmlFor="mv-date" className="text-sm font-medium">
-              {t('movements.date')}
-            </label>
+          <FieldGrid.Field
+            label={t('movements.date')}
+            htmlFor="mv-date"
+            error={form.formState.errors.date?.message}
+          >
             <Controller
               control={form.control}
               name="date"
@@ -238,11 +238,8 @@ export function BudgetMovementForm({ open, budget, movement, onClose }: BudgetMo
                 />
               )}
             />
-            {form.formState.errors.date && (
-              <p className="text-xs text-destructive">{form.formState.errors.date.message}</p>
-            )}
-          </div>
-        </div>
+          </FieldGrid.Field>
+        </FieldGrid>
 
         <CategorySelectField
           control={form.control}

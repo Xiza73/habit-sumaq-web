@@ -19,6 +19,7 @@ import {
 import { ApiError } from '@/infrastructure/api/api-error';
 
 import { DatePicker } from '@/presentation/components/ui/DatePicker';
+import { FieldGrid } from '@/presentation/components/ui/FieldGrid';
 import { Input } from '@/presentation/components/ui/Input';
 import { Modal } from '@/presentation/components/ui/Modal';
 
@@ -175,11 +176,12 @@ export function PayMonthlyServiceForm({ open, service, onClose }: PayMonthlyServ
           {t('payForm.period', { period: formatPeriodLabel(service.nextDuePeriod, locale) })}
         </p>
 
-        <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <label htmlFor="pay-amount" className="text-sm font-medium">
-              {t('payForm.amount')}
-            </label>
+        <FieldGrid columns={2}>
+          <FieldGrid.Field
+            label={t('payForm.amount')}
+            htmlFor="pay-amount"
+            error={form.formState.errors.amount?.message}
+          >
             <Input
               id="pay-amount"
               type="number"
@@ -187,15 +189,9 @@ export function PayMonthlyServiceForm({ open, service, onClose }: PayMonthlyServ
               min="0.01"
               {...form.register('amount', { valueAsNumber: true })}
             />
-            {form.formState.errors.amount && (
-              <p className="text-xs text-destructive">{form.formState.errors.amount.message}</p>
-            )}
-          </div>
+          </FieldGrid.Field>
 
-          <div className="space-y-2">
-            <label htmlFor="pay-date" className="text-sm font-medium">
-              {t('payForm.date')}
-            </label>
+          <FieldGrid.Field label={t('payForm.date')} htmlFor="pay-date">
             <Controller
               control={form.control}
               name="date"
@@ -209,8 +205,8 @@ export function PayMonthlyServiceForm({ open, service, onClose }: PayMonthlyServ
                 />
               )}
             />
-          </div>
-        </div>
+          </FieldGrid.Field>
+        </FieldGrid>
 
         {participantsLoading ? (
           // Hold the split section until the participants query resolves.

@@ -18,6 +18,7 @@ import {
 
 import { ApiError } from '@/infrastructure/api/api-error';
 
+import { FieldGrid } from '@/presentation/components/ui/FieldGrid';
 import { Input } from '@/presentation/components/ui/Input';
 
 import { formatCurrency } from '@/lib/format';
@@ -470,58 +471,62 @@ function ParticipantRowItem({
   const amountInputId = `participant-amount-${row.key}`;
 
   return (
-    <li className="flex flex-wrap items-end gap-2 rounded-md border border-border px-3 py-2">
-      <div className="min-w-0 flex-1 space-y-1">
-        <label htmlFor={referenceInputId} className="text-xs font-medium">
-          {t('reference')}
-        </label>
-        <Input
-          id={referenceInputId}
-          type="text"
-          list={referenceListId}
-          compact
-          placeholder={t('referencePlaceholder')}
-          value={row.reference}
-          aria-invalid={error?.reference ? true : undefined}
-          onChange={(e) => onChange({ reference: e.target.value })}
-        />
-        {error?.reference && <p className="text-[11px] text-destructive">{error.reference}</p>}
-      </div>
-      <div className="w-28 space-y-1">
-        <label htmlFor={amountInputId} className="text-xs font-medium">
-          {t('defaultAmount')}
-        </label>
-        <Input
-          id={amountInputId}
-          type="number"
-          step="0.01"
-          min="0.01"
-          compact
-          value={Number.isFinite(row.defaultAmount) ? row.defaultAmount : ''}
-          aria-invalid={error?.defaultAmount ? true : undefined}
-          // An empty input yields `''` → `Number('')` is `0`; a non-numeric
-          // value yields `NaN`. Map the empty case to `NaN` (not the silent
-          // `0`) so `validateRows` flags it as "amount required" instead of
-          // treating a blank field as a valid-looking zero.
-          onChange={(e) =>
-            onChange({ defaultAmount: e.target.value === '' ? NaN : Number(e.target.value) })
-          }
-        />
-        {error?.defaultAmount && (
-          <p className="text-[11px] text-destructive">{error.defaultAmount}</p>
-        )}
-      </div>
-      <span className="pb-2 text-[11px] text-muted-foreground">
-        {formatCurrency(Number.isFinite(row.defaultAmount) ? row.defaultAmount : 0, currency)}
-      </span>
-      <button
-        type="button"
-        onClick={onRemove}
-        className="rounded-md p-1.5 text-destructive hover:bg-muted"
-        aria-label={t('removeRow', { reference: row.reference || t('reference') })}
-      >
-        <Trash2 className="size-4" />
-      </button>
+    // FieldGrid (columns=2) keeps the Reference and Amount fields in shared
+    // label/control/error bands, so a validation error under one column no
+    // longer grows that column and pushes its sibling out of alignment. The
+    // amount input, its currency-formatted preview and the remove button share
+    // the control band (the preview + trash sit inline beside the input).
+    <li className="rounded-md border border-border px-3 py-2">
+      <FieldGrid columns={2}>
+        <FieldGrid.Field label={t('reference')} htmlFor={referenceInputId} error={error?.reference}>
+          <Input
+            id={referenceInputId}
+            type="text"
+            list={referenceListId}
+            compact
+            placeholder={t('referencePlaceholder')}
+            value={row.reference}
+            aria-invalid={error?.reference ? true : undefined}
+            onChange={(e) => onChange({ reference: e.target.value })}
+          />
+        </FieldGrid.Field>
+        <FieldGrid.Field
+          label={t('defaultAmount')}
+          htmlFor={amountInputId}
+          error={error?.defaultAmount}
+        >
+          <div className="flex items-center gap-2">
+            <Input
+              id={amountInputId}
+              type="number"
+              step="0.01"
+              min="0.01"
+              compact
+              className="w-24"
+              value={Number.isFinite(row.defaultAmount) ? row.defaultAmount : ''}
+              aria-invalid={error?.defaultAmount ? true : undefined}
+              // An empty input yields `''` → `Number('')` is `0`; a non-numeric
+              // value yields `NaN`. Map the empty case to `NaN` (not the silent
+              // `0`) so `validateRows` flags it as "amount required" instead of
+              // treating a blank field as a valid-looking zero.
+              onChange={(e) =>
+                onChange({ defaultAmount: e.target.value === '' ? NaN : Number(e.target.value) })
+              }
+            />
+            <span className="text-[11px] text-muted-foreground">
+              {formatCurrency(Number.isFinite(row.defaultAmount) ? row.defaultAmount : 0, currency)}
+            </span>
+            <button
+              type="button"
+              onClick={onRemove}
+              className="ml-auto rounded-md p-1.5 text-destructive hover:bg-muted"
+              aria-label={t('removeRow', { reference: row.reference || t('reference') })}
+            >
+              <Trash2 className="size-4" />
+            </button>
+          </div>
+        </FieldGrid.Field>
+      </FieldGrid>
     </li>
   );
 }

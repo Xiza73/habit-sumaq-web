@@ -19,6 +19,7 @@ import {
 
 import { ApiError } from '@/infrastructure/api/api-error';
 
+import { FieldGrid } from '@/presentation/components/ui/FieldGrid';
 import { Input } from '@/presentation/components/ui/Input';
 import { Modal } from '@/presentation/components/ui/Modal';
 import { Select } from '@/presentation/components/ui/Select';
@@ -135,11 +136,8 @@ export function BudgetForm({
       title={isEditing ? t('form.editTitle') : t('form.createTitle')}
     >
       <form onSubmit={(e) => void form.handleSubmit(handleSubmit)(e)} className="space-y-4">
-        <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <label htmlFor="budget-year" className="text-sm font-medium">
-              {t('form.year')}
-            </label>
+        <FieldGrid columns={2}>
+          <FieldGrid.Field label={t('form.year')} htmlFor="budget-year">
             <Input
               id="budget-year"
               type="number"
@@ -151,11 +149,8 @@ export function BudgetForm({
                 setValueAs: (v) => (v === '' || v == null ? undefined : Number(v)),
               })}
             />
-          </div>
-          <div className="space-y-2">
-            <label htmlFor="budget-month" className="text-sm font-medium">
-              {t('form.month')}
-            </label>
+          </FieldGrid.Field>
+          <FieldGrid.Field label={t('form.month')} htmlFor="budget-month">
             <Input
               id="budget-month"
               type="number"
@@ -167,8 +162,8 @@ export function BudgetForm({
                 setValueAs: (v) => (v === '' || v == null ? undefined : Number(v)),
               })}
             />
-          </div>
-        </div>
+          </FieldGrid.Field>
+        </FieldGrid>
 
         <div className="space-y-2">
           <label htmlFor="budget-currency" className="text-sm font-medium">

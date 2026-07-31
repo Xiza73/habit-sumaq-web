@@ -16,6 +16,7 @@ import { type CreateChoreInput, type UpdateChoreInput } from '@/core/domain/sche
 import { ApiError } from '@/infrastructure/api/api-error';
 
 import { DatePicker } from '@/presentation/components/ui/DatePicker';
+import { FieldGrid } from '@/presentation/components/ui/FieldGrid';
 import { Input } from '@/presentation/components/ui/Input';
 import { Modal } from '@/presentation/components/ui/Modal';
 import { Select } from '@/presentation/components/ui/Select';
@@ -179,11 +180,12 @@ export function ChoreForm({ open, chore, knownCategories, onClose }: ChoreFormPr
         </div>
 
         {!isEditing && (
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <label htmlFor="chore-interval-value" className="text-sm font-medium">
-                {t('fields.intervalValue')}
-              </label>
+          <FieldGrid columns={2}>
+            <FieldGrid.Field
+              label={t('fields.intervalValue')}
+              htmlFor="chore-interval-value"
+              error={form.formState.errors.intervalValue?.message}
+            >
               <Input
                 id="chore-interval-value"
                 type="number"
@@ -191,17 +193,9 @@ export function ChoreForm({ open, chore, knownCategories, onClose }: ChoreFormPr
                 step="1"
                 {...form.register('intervalValue', { valueAsNumber: true })}
               />
-              {form.formState.errors.intervalValue && (
-                <p className="text-xs text-destructive">
-                  {form.formState.errors.intervalValue.message}
-                </p>
-              )}
-            </div>
+            </FieldGrid.Field>
 
-            <div className="space-y-2">
-              <label htmlFor="chore-interval-unit" className="text-sm font-medium">
-                {t('fields.intervalUnit')}
-              </label>
+            <FieldGrid.Field label={t('fields.intervalUnit')} htmlFor="chore-interval-unit">
               <Select id="chore-interval-unit" {...form.register('intervalUnit')}>
                 {CHORE_INTERVAL_UNITS.map((unit) => (
                   <option key={unit} value={unit}>
@@ -211,8 +205,8 @@ export function ChoreForm({ open, chore, knownCategories, onClose }: ChoreFormPr
                   </option>
                 ))}
               </Select>
-            </div>
-          </div>
+            </FieldGrid.Field>
+          </FieldGrid>
         )}
 
         {!isEditing && (
