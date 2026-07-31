@@ -8,6 +8,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
+import { useDebtsLoansSummary } from '@/core/application/hooks/use-debts-loans';
 import {
   useCreateMonthlyService,
   useUpdateMonthlyService,
@@ -29,6 +30,8 @@ import { Input } from '@/presentation/components/ui/Input';
 import { Modal } from '@/presentation/components/ui/Modal';
 import { Select } from '@/presentation/components/ui/Select';
 import { CategorySelectField } from '@/presentation/features/categories/CategorySelectField';
+
+import { ParticipantEditor } from './ParticipantEditor';
 
 interface MonthlyServiceFormProps {
   open: boolean;
@@ -57,6 +60,14 @@ export function MonthlyServiceForm({ open, service, onClose }: MonthlyServiceFor
   const createMutation = useCreateMonthlyService();
   const updateMutation = useUpdateMonthlyService();
   const isPending = createMutation.isPending || updateMutation.isPending;
+
+  // Feed the participant reference field's soft autocomplete with prior
+  // debts/loans references — same UX as `DebtLoanForm.knownReferences`.
+  // Participant config only applies in edit mode (needs a real service id).
+  const { data: allDebtRows = [] } = useDebtsLoansSummary('all');
+  const knownReferences = Array.from(
+    new Set(allDebtRows.map((r) => r.displayName).filter(Boolean)),
+  ).sort((a, b) => a.localeCompare(b));
 
   const form = useForm<CreateMonthlyServiceInput>({
     resolver: zodResolver(createMonthlyServiceSchema),
@@ -266,6 +277,12 @@ export function MonthlyServiceForm({ open, service, onClose }: MonthlyServiceFor
             <p className="text-[11px] text-muted-foreground">{t('fields.dueDayHint')}</p>
           </div>
         </div>
+
+        {isEditing && service && (
+          <div className="border-t border-border pt-4">
+            <ParticipantEditor monthlyServiceId={service.id} knownReferences={knownReferences} />
+          </div>
+        )}
 
         <div className="flex justify-end gap-3 pt-2">
           <button

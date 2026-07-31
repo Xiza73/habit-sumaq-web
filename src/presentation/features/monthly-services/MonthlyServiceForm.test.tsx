@@ -29,6 +29,20 @@ vi.mock('@/core/application/hooks/use-monthly-services', () => ({
   useUpdateMonthlyService: () => ({ mutate: mockUpdateMutate, isPending: false }),
 }));
 
+// Participant config CRUD — only relevant in edit mode. Kept EMPTY by
+// default so create-mode / most edit-mode tests aren't affected by the
+// participants section's own network calls.
+vi.mock('@/core/application/hooks/use-monthly-service-participants', () => ({
+  useServiceParticipants: () => ({ data: [], isLoading: false }),
+  useAddParticipant: () => ({ mutate: vi.fn(), isPending: false }),
+  useUpdateParticipant: () => ({ mutate: vi.fn(), isPending: false }),
+  useRemoveParticipant: () => ({ mutate: vi.fn(), isPending: false }),
+}));
+
+vi.mock('@/core/application/hooks/use-debts-loans', () => ({
+  useDebtsLoansSummary: () => ({ data: [] }),
+}));
+
 const categoryServicios: Category = {
   id: '44444444-4444-4444-a444-444444444444',
   userId: 'user-1',
@@ -179,6 +193,16 @@ describe('MonthlyServiceForm', () => {
     it('preserves the service name as the initial value of the name field', () => {
       renderForm({ service: baseService });
       expect(screen.getByLabelText(/^nombre$/i)).toHaveValue(baseService.name);
+    });
+
+    it('renders the participant config section (shared services are configured here)', () => {
+      renderForm({ service: baseService });
+      expect(screen.getByRole('heading', { name: /participantes/i })).toBeInTheDocument();
+    });
+
+    it('does NOT render the participant config section in create mode', () => {
+      renderForm();
+      expect(screen.queryByRole('heading', { name: /participantes/i })).not.toBeInTheDocument();
     });
   });
 });
