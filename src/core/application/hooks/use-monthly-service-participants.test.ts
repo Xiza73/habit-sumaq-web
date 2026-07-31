@@ -5,17 +5,14 @@ import { renderHook, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { type MonthlyServiceParticipant } from '@/core/domain/entities/monthly-service-participant';
-import {
-  addMonthlyServiceParticipantSchema,
-  updateMonthlyServiceParticipantSchema,
-} from '@/core/domain/schemas/monthly-service-participant.schema';
+import { monthlyServiceParticipantRowSchema } from '@/core/domain/schemas/monthly-service-participant.schema';
 
 import { monthlyServicesApi } from '@/infrastructure/api/monthly-services.api';
 
 import {
   monthlyServiceParticipantKeys,
-  useAddParticipant,
-  useRemoveParticipant,
+  useReplaceParticipants,
+  useServiceParticipants,
 } from './use-monthly-service-participants';
 import { monthlyServiceKeys } from './use-monthly-services';
 
@@ -39,29 +36,21 @@ describe('monthlyServiceParticipantKeys', () => {
   });
 });
 
-// Re-exercise the schemas through the hook module's re-export surface so
-// this file also covers the input types the mutations accept — mirrors
-// `use-monthly-service-payments.test.ts`'s pattern of colocating schema
-// coverage next to the hooks that consume it.
-describe('participant schemas used by the hooks', () => {
-  it('accepts a valid add-participant payload', () => {
+// Re-exercise the row schema through the hook module's re-export surface so
+// this file also covers the input type the mutation accepts.
+describe('participant row schema used by the hooks', () => {
+  it('accepts a valid row payload', () => {
     expect(
-      addMonthlyServiceParticipantSchema.safeParse({ reference: 'Ana', defaultAmount: 100 })
+      monthlyServiceParticipantRowSchema.safeParse({ reference: 'Ana', defaultAmount: 100 })
         .success,
     ).toBe(true);
-  });
-
-  it('accepts a valid update-participant payload', () => {
-    expect(updateMonthlyServiceParticipantSchema.safeParse({ defaultAmount: 120 }).success).toBe(
-      true,
-    );
   });
 });
 
 vi.mock('@/infrastructure/api/monthly-services.api', () => ({
   monthlyServicesApi: {
-    addParticipant: vi.fn(),
-    removeParticipant: vi.fn(),
+    getParticipants: vi.fn(),
+    replaceParticipants: vi.fn(),
   },
 }));
 
@@ -95,22 +84,42 @@ function makeWrapper() {
 
 /**
  * The service detail view renders the participant list alongside the
- * service, so participant CRUD must invalidate BOTH the participant list
- * key AND the `['monthly-services']` list/detail caches — otherwise a
+ * service, so the replace mutation must invalidate BOTH the participant
+ * list key AND the `['monthly-services']` list/detail caches — otherwise a
  * config edit shows inconsistently until the next unrelated refetch.
  */
-describe('participant mutations invalidate participant + monthly-service caches', () => {
+describe('useReplaceParticipants invalidates participant + monthly-service caches', () => {
   beforeEach(() => {
-    vi.mocked(monthlyServicesApi.addParticipant).mockReset();
-    vi.mocked(monthlyServicesApi.removeParticipant).mockReset();
+    vi.mocked(monthlyServicesApi.replaceParticipants).mockReset();
   });
 
-  it('useAddParticipant invalidates the participant list AND monthly-service list/detail', async () => {
-    vi.mocked(monthlyServicesApi.addParticipant).mockResolvedValueOnce(makeParticipant());
+  it('calls the batch PUT with the full submitted list', async () => {
+    vi.mocked(monthlyServicesApi.replaceParticipants).mockResolvedValueOnce([
+      makeParticipant(),
+      makeParticipant({ id: 'p-2', reference: 'Luis', defaultAmount: 50 }),
+    ]);
+    const { Wrapper } = makeWrapper();
+
+    const { result } = renderHook(() => useReplaceParticipants(SERVICE_ID), { wrapper: Wrapper });
+    result.current.mutate([
+      { reference: 'Ana', defaultAmount: 100 },
+      { reference: 'Luis', defaultAmount: 50 },
+    ]);
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+    expect(monthlyServicesApi.replaceParticipants).toHaveBeenCalledWith(SERVICE_ID, [
+      { reference: 'Ana', defaultAmount: 100 },
+      { reference: 'Luis', defaultAmount: 50 },
+    ]);
+  });
+
+  it('invalidates the participant list AND monthly-service list/detail on success', async () => {
+    vi.mocked(monthlyServicesApi.replaceParticipants).mockResolvedValueOnce([makeParticipant()]);
     const { Wrapper, invalidateSpy } = makeWrapper();
 
-    const { result } = renderHook(() => useAddParticipant(SERVICE_ID), { wrapper: Wrapper });
-    result.current.mutate({ reference: 'Ana', defaultAmount: 100 });
+    const { result } = renderHook(() => useReplaceParticipants(SERVICE_ID), { wrapper: Wrapper });
+    result.current.mutate([{ reference: 'Ana', defaultAmount: 100 }]);
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
@@ -123,21 +132,43 @@ describe('participant mutations invalidate participant + monthly-service caches'
     });
   });
 
-  it('useRemoveParticipant invalidates the participant list AND monthly-service list/detail', async () => {
-    vi.mocked(monthlyServicesApi.removeParticipant).mockResolvedValueOnce(undefined);
+  it('propagates a server error (e.g. duplicate reference) without invalidating', async () => {
+    const error = Object.assign(new Error('Duplicate'), {
+      code: 'MSP_PARTICIPANT_DUPLICATE_REFERENCE',
+    });
+    vi.mocked(monthlyServicesApi.replaceParticipants).mockRejectedValueOnce(error);
     const { Wrapper, invalidateSpy } = makeWrapper();
 
-    const { result } = renderHook(() => useRemoveParticipant(SERVICE_ID), { wrapper: Wrapper });
-    result.current.mutate('p-1');
+    const { result } = renderHook(() => useReplaceParticipants(SERVICE_ID), { wrapper: Wrapper });
+    result.current.mutate([{ reference: 'Ana', defaultAmount: 100 }]);
+
+    await waitFor(() => expect(result.current.isError).toBe(true));
+
+    expect(invalidateSpy).not.toHaveBeenCalled();
+  });
+});
+
+describe('useServiceParticipants', () => {
+  beforeEach(() => {
+    vi.mocked(monthlyServicesApi.getParticipants).mockReset();
+  });
+
+  it('fetches the participant list for the given service id', async () => {
+    vi.mocked(monthlyServicesApi.getParticipants).mockResolvedValueOnce([makeParticipant()]);
+    const { Wrapper } = makeWrapper();
+
+    const { result } = renderHook(() => useServiceParticipants(SERVICE_ID), { wrapper: Wrapper });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(monthlyServicesApi.getParticipants).toHaveBeenCalledWith(SERVICE_ID);
+    expect(result.current.data).toEqual([makeParticipant()]);
+  });
 
-    expect(invalidateSpy).toHaveBeenCalledWith({
-      queryKey: monthlyServiceParticipantKeys.list(SERVICE_ID),
-    });
-    expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: monthlyServiceKeys.lists() });
-    expect(invalidateSpy).toHaveBeenCalledWith({
-      queryKey: monthlyServiceKeys.detail(SERVICE_ID),
-    });
+  it('stays disabled when no service id is given', () => {
+    const { Wrapper } = makeWrapper();
+    const { result } = renderHook(() => useServiceParticipants(undefined), { wrapper: Wrapper });
+
+    expect(result.current.fetchStatus).toBe('idle');
+    expect(monthlyServicesApi.getParticipants).not.toHaveBeenCalled();
   });
 });

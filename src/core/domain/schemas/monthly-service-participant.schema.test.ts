@@ -1,23 +1,23 @@
 import { describe, expect, it } from 'vitest';
 
 import {
-  addMonthlyServiceParticipantSchema,
-  updateMonthlyServiceParticipantSchema,
+  monthlyServiceParticipantRowSchema,
+  replaceMonthlyServiceParticipantsSchema,
 } from './monthly-service-participant.schema';
 
-describe('addMonthlyServiceParticipantSchema', () => {
+describe('monthlyServiceParticipantRowSchema', () => {
   const validInput = {
     reference: 'Ana',
     defaultAmount: 100,
   };
 
   it('accepts a valid payload', () => {
-    const result = addMonthlyServiceParticipantSchema.safeParse(validInput);
+    const result = monthlyServiceParticipantRowSchema.safeParse(validInput);
     expect(result.success).toBe(true);
   });
 
   it('rejects empty reference', () => {
-    const result = addMonthlyServiceParticipantSchema.safeParse({
+    const result = monthlyServiceParticipantRowSchema.safeParse({
       ...validInput,
       reference: '',
     });
@@ -25,7 +25,7 @@ describe('addMonthlyServiceParticipantSchema', () => {
   });
 
   it('rejects reference exceeding 255 characters', () => {
-    const result = addMonthlyServiceParticipantSchema.safeParse({
+    const result = monthlyServiceParticipantRowSchema.safeParse({
       ...validInput,
       reference: 'a'.repeat(256),
     });
@@ -33,7 +33,7 @@ describe('addMonthlyServiceParticipantSchema', () => {
   });
 
   it('rejects zero defaultAmount (MSP_PARTICIPANT_AMOUNT_NOT_POSITIVE)', () => {
-    const result = addMonthlyServiceParticipantSchema.safeParse({
+    const result = monthlyServiceParticipantRowSchema.safeParse({
       ...validInput,
       defaultAmount: 0,
     });
@@ -41,7 +41,7 @@ describe('addMonthlyServiceParticipantSchema', () => {
   });
 
   it('rejects negative defaultAmount', () => {
-    const result = addMonthlyServiceParticipantSchema.safeParse({
+    const result = monthlyServiceParticipantRowSchema.safeParse({
       ...validInput,
       defaultAmount: -10,
     });
@@ -49,19 +49,34 @@ describe('addMonthlyServiceParticipantSchema', () => {
   });
 });
 
-describe('updateMonthlyServiceParticipantSchema', () => {
-  it('accepts a valid defaultAmount update', () => {
-    const result = updateMonthlyServiceParticipantSchema.safeParse({ defaultAmount: 120 });
+describe('replaceMonthlyServiceParticipantsSchema', () => {
+  it('accepts an empty array (clears all configured participants)', () => {
+    const result = replaceMonthlyServiceParticipantsSchema.safeParse({ participants: [] });
     expect(result.success).toBe(true);
   });
 
-  it('rejects zero defaultAmount', () => {
-    const result = updateMonthlyServiceParticipantSchema.safeParse({ defaultAmount: 0 });
+  it('accepts multiple valid rows', () => {
+    const result = replaceMonthlyServiceParticipantsSchema.safeParse({
+      participants: [
+        { reference: 'Ana', defaultAmount: 100 },
+        { reference: 'Luis', defaultAmount: 50 },
+      ],
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it('rejects when any row is invalid', () => {
+    const result = replaceMonthlyServiceParticipantsSchema.safeParse({
+      participants: [
+        { reference: 'Ana', defaultAmount: 100 },
+        { reference: '', defaultAmount: 50 },
+      ],
+    });
     expect(result.success).toBe(false);
   });
 
-  it('rejects missing defaultAmount', () => {
-    const result = updateMonthlyServiceParticipantSchema.safeParse({});
+  it('rejects a missing participants field', () => {
+    const result = replaceMonthlyServiceParticipantsSchema.safeParse({});
     expect(result.success).toBe(false);
   });
 });
