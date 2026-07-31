@@ -413,7 +413,8 @@
     },
     "linkedDebts": {
       "badge": "{count, plural, one {# empréstimo pendente} other {# empréstimos pendentes}} · {amount}",
-      "settle": "Liquidar"
+      "settle": "Liquidar",
+      "settleTrigger": "Liquidar {reference}"
     }
   },
   "navigation": {

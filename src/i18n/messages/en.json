@@ -413,7 +413,8 @@
     },
     "linkedDebts": {
       "badge": "{count, plural, one {# pending loan} other {# pending loans}} · {amount}",
-      "settle": "Settle"
+      "settle": "Settle",
+      "settleTrigger": "Settle {reference}"
     }
   },
   "navigation": {

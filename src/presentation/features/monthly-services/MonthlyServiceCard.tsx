@@ -289,6 +289,7 @@ export function MonthlyServiceCard({
                 key={debt.id}
                 type="button"
                 onClick={() => setSettlingDebt(debt)}
+                aria-label={t('linkedDebts.settleTrigger', { reference: debt.reference })}
                 className="rounded-md border border-border bg-card px-2 py-1 text-[11px] font-medium hover:bg-muted"
               >
                 {debt.reference} · {formatCurrency(debt.remainingAmount, service.currency)}

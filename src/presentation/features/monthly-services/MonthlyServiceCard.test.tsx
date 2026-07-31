@@ -169,11 +169,29 @@ describe('MonthlyServiceCard', () => {
       expect(screen.getByText(/100/)).toBeInTheDocument();
     });
 
+    it('uses the singular badge copy (ICU `one` branch) with exactly one linked debt', () => {
+      renderCard({
+        ...baseService,
+        linkedDebts: [{ id: 'debt-ana', reference: 'Ana', remainingAmount: 40, status: 'PENDING' }],
+      });
+      // Exactly ONE pending loan — singular, not "1 préstamos".
+      expect(screen.getByText(/1 pr[eé]stamo pendiente/i)).toBeInTheDocument();
+      expect(screen.queryByText(/pr[eé]stamos pendientes/i)).not.toBeInTheDocument();
+    });
+
+    it('exposes a stable aria-label per settle-trigger button (references the debt)', () => {
+      renderCard(withLinkedDebts);
+      // Query by the explicit aria-label instead of the concatenated
+      // "reference · amount" display text, which is brittle.
+      expect(screen.getByRole('button', { name: /liquidar ana/i })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /liquidar luis/i })).toBeInTheDocument();
+    });
+
     it('opens a settle modal for a linked debt from the card', async () => {
       const user = userEvent.setup();
       renderCard(withLinkedDebts);
 
-      await user.click(screen.getByRole('button', { name: /ana/i }));
+      await user.click(screen.getByRole('button', { name: /liquidar ana/i }));
       expect(screen.getByRole('dialog')).toBeInTheDocument();
       expect(screen.getByText(/liquidar ana/i)).toBeInTheDocument();
     });
@@ -182,7 +200,7 @@ describe('MonthlyServiceCard', () => {
       const user = userEvent.setup();
       renderCard(withLinkedDebts);
 
-      await user.click(screen.getByRole('button', { name: /ana/i }));
+      await user.click(screen.getByRole('button', { name: /liquidar ana/i }));
       await user.click(screen.getByRole('button', { name: /confirmar/i }));
 
       expect(mockSettleMutate).toHaveBeenCalledOnce();
