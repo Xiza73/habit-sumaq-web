@@ -6,6 +6,8 @@ import { type MonthlyServiceParticipant } from '@/core/domain/entities/monthly-s
 
 import { ApiError } from '@/infrastructure/api/api-error';
 
+import { formatCurrency } from '@/lib/format';
+
 import { TestProviders } from '@/test/utils';
 
 import { ParticipantEditor } from './ParticipantEditor';
@@ -36,10 +38,13 @@ const ana: MonthlyServiceParticipant = {
   updatedAt: '2026-01-01T00:00:00.000Z',
 };
 
-function renderEditor(props: { knownReferences?: string[] } = {}) {
+function renderEditor(
+  props: { knownReferences?: string[]; currency?: 'PEN' | 'USD' | 'EUR' } = {},
+) {
   return render(
     <ParticipantEditor
       monthlyServiceId={SERVICE_ID}
+      currency={props.currency ?? 'PEN'}
       knownReferences={props.knownReferences ?? []}
     />,
     { wrapper: TestProviders },
@@ -55,12 +60,36 @@ describe('ParticipantEditor', () => {
     mockIsLoading = false;
   });
 
-  it('renders existing participants with their reference and default amount', () => {
+  it('renders existing participants with their reference and formatted default amount', () => {
     mockParticipants = [ana];
-    renderEditor();
+    renderEditor({ currency: 'PEN' });
 
     expect(screen.getByText('Ana')).toBeInTheDocument();
-    expect(screen.getByText(/100/)).toBeInTheDocument();
+    // Amount is formatted as currency (with symbol + decimals), not a raw
+    // number. `Intl` emits a non-breaking space (U+00A0) between the symbol
+    // and digits; normalize it to a plain space so the assertion is
+    // whitespace-agnostic.
+    const formatted = formatCurrency(ana.defaultAmount, 'PEN').replace(/\u00A0/g, ' ');
+    expect(
+      screen.getByText((_content, el) => el?.textContent?.replace(/\u00A0/g, ' ') === formatted),
+    ).toBeInTheDocument();
+  });
+
+  it('shows a loading state (not the empty state) while participants are loading', () => {
+    mockIsLoading = true;
+    renderEditor();
+
+    expect(screen.getByText(/cargando/i)).toBeInTheDocument();
+    expect(screen.queryByText(/sin participantes configurados/i)).not.toBeInTheDocument();
+  });
+
+  it('shows the empty state only when loaded with zero participants', () => {
+    mockIsLoading = false;
+    mockParticipants = [];
+    renderEditor();
+
+    expect(screen.getByText(/sin participantes configurados/i)).toBeInTheDocument();
+    expect(screen.queryByText(/cargando/i)).not.toBeInTheDocument();
   });
 
   it('adds a new participant via the form', async () => {
@@ -113,14 +142,50 @@ describe('ParticipantEditor', () => {
     expect(callArg.data.defaultAmount).toBe(120);
   });
 
-  it('removes a participant', async () => {
+  it('requires a confirmation step before removing a participant', async () => {
     mockParticipants = [ana];
     const user = userEvent.setup();
     renderEditor();
 
-    await user.click(screen.getByRole('button', { name: /eliminar/i }));
+    // Clicking the trash icon must NOT remove immediately — it opens a
+    // confirmation dialog first.
+    await user.click(screen.getByRole('button', { name: /eliminar a ana/i }));
+    expect(mockRemoveMutate).not.toHaveBeenCalled();
 
+    // The confirm dialog references the participant.
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
+    expect(screen.getByText(/eliminar a ana de los participantes/i)).toBeInTheDocument();
+
+    // Confirming fires the mutation.
+    await user.click(screen.getByRole('button', { name: /^eliminar$/i }));
     expect(mockRemoveMutate).toHaveBeenCalledWith(ana.id, expect.anything());
+  });
+
+  it('does not remove when the confirmation is cancelled', async () => {
+    mockParticipants = [ana];
+    const user = userEvent.setup();
+    renderEditor();
+
+    await user.click(screen.getByRole('button', { name: /eliminar a ana/i }));
+    await user.click(screen.getByRole('button', { name: /cancelar/i }));
+
+    expect(mockRemoveMutate).not.toHaveBeenCalled();
+  });
+
+  it('surfaces a backend error when removing a participant fails', async () => {
+    mockParticipants = [ana];
+    mockRemoveMutate.mockImplementation((_id, { onError }: { onError: (e: Error) => void }) => {
+      onError(new ApiError('Boom', 'MSP_PARTICIPANT_NOT_FOUND'));
+    });
+    const user = userEvent.setup();
+    renderEditor();
+
+    await user.click(screen.getByRole('button', { name: /eliminar a ana/i }));
+    await user.click(screen.getByRole('button', { name: /^eliminar$/i }));
+
+    // The mapped error is surfaced, not silently swallowed.
+    expect(await screen.findByText(/participante no encontrado/i)).toBeInTheDocument();
+    expect(mockRemoveMutate).toHaveBeenCalledOnce();
   });
 
   it('surfaces a duplicate-reference error from the backend on add', async () => {

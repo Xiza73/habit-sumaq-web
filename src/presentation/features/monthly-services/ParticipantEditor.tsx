@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useId, useState } from 'react';
 import { useTranslations } from 'next-intl';
 
 import { Loader2, Pencil, Plus, Trash2 } from 'lucide-react';
@@ -12,13 +12,22 @@ import {
   useUpdateParticipant,
 } from '@/core/application/hooks/use-monthly-service-participants';
 import { type MonthlyServiceParticipant } from '@/core/domain/entities/monthly-service-participant';
+import { type Currency } from '@/core/domain/enums/currency.enum';
 
 import { ApiError } from '@/infrastructure/api/api-error';
 
+import { ConfirmDialog } from '@/presentation/components/feedback/ConfirmDialog';
 import { Input } from '@/presentation/components/ui/Input';
+
+import { formatCurrency } from '@/lib/format';
 
 interface ParticipantEditorProps {
   monthlyServiceId: string;
+  /**
+   * The owning service's currency — used to render each participant's
+   * `defaultAmount` as formatted currency instead of a raw number.
+   */
+  currency: Currency;
   /**
    * Prior `reference` values across the user's debts/loans, offered as
    * autocomplete suggestions (soft — the field stays free-text). Same
@@ -35,6 +44,7 @@ interface ParticipantEditorProps {
  */
 export function ParticipantEditor({
   monthlyServiceId,
+  currency,
   knownReferences = [],
 }: ParticipantEditorProps) {
   const t = useTranslations('monthlyServices.participants');
@@ -60,7 +70,10 @@ export function ParticipantEditor({
       </div>
 
       {isLoading ? (
-        <p className="text-xs text-muted-foreground">{t('empty')}</p>
+        <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
+          <Loader2 className="size-3.5 animate-spin" />
+          {t('loading')}
+        </p>
       ) : participants.length === 0 ? (
         <p className="text-xs text-muted-foreground">{t('empty')}</p>
       ) : (
@@ -82,7 +95,9 @@ export function ParticipantEditor({
               >
                 <div className="min-w-0">
                   <p className="truncate text-sm font-medium">{participant.reference}</p>
-                  <p className="text-xs text-muted-foreground">{participant.defaultAmount}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {formatCurrency(participant.defaultAmount, currency)}
+                  </p>
                 </div>
                 <div className="flex shrink-0 items-center gap-1">
                   <button
@@ -93,7 +108,11 @@ export function ParticipantEditor({
                   >
                     <Pencil className="size-4" />
                   </button>
-                  <RemoveButton monthlyServiceId={monthlyServiceId} participant={participant} />
+                  <RemoveButton
+                    monthlyServiceId={monthlyServiceId}
+                    participant={participant}
+                    onError={handleError}
+                  />
                 </div>
               </li>
             ),
@@ -115,27 +134,52 @@ export function ParticipantEditor({
 function RemoveButton({
   monthlyServiceId,
   participant,
+  onError,
 }: {
   monthlyServiceId: string;
   participant: MonthlyServiceParticipant;
+  onError: (error: Error) => void;
 }) {
   const t = useTranslations('monthlyServices.participants');
   const removeMutation = useRemoveParticipant(monthlyServiceId);
+  const [confirming, setConfirming] = useState(false);
+
+  function handleConfirm() {
+    removeMutation.mutate(participant.id, {
+      onSuccess: () => setConfirming(false),
+      onError: (error) => {
+        setConfirming(false);
+        onError(error);
+      },
+    });
+  }
 
   return (
-    <button
-      type="button"
-      onClick={() => removeMutation.mutate(participant.id, {})}
-      disabled={removeMutation.isPending}
-      className="rounded-md p-1.5 text-destructive hover:bg-muted disabled:opacity-50"
-      aria-label={t('delete')}
-    >
-      {removeMutation.isPending ? (
-        <Loader2 className="size-4 animate-spin" />
-      ) : (
-        <Trash2 className="size-4" />
-      )}
-    </button>
+    <>
+      <button
+        type="button"
+        onClick={() => setConfirming(true)}
+        disabled={removeMutation.isPending}
+        className="rounded-md p-1.5 text-destructive hover:bg-muted disabled:opacity-50"
+        aria-label={t('deleteParticipant', { reference: participant.reference })}
+      >
+        {removeMutation.isPending ? (
+          <Loader2 className="size-4 animate-spin" />
+        ) : (
+          <Trash2 className="size-4" />
+        )}
+      </button>
+      <ConfirmDialog
+        open={confirming}
+        title={t('delete')}
+        description={t('deleteConfirm', { reference: participant.reference })}
+        variant="destructive"
+        confirmLabel={t('delete')}
+        loading={removeMutation.isPending}
+        onConfirm={handleConfirm}
+        onCancel={() => setConfirming(false)}
+      />
+    </>
   );
 }
 
@@ -213,6 +257,10 @@ function AddRow({
   const addMutation = useAddParticipant(monthlyServiceId);
   const [reference, setReference] = useState('');
   const [amount, setAmount] = useState<number | ''>('');
+  // `useId()` keeps the datalist id unique even if this editor is rendered
+  // more than once on a page — a hardcoded id would collide. Same pattern
+  // as `ChoreForm`.
+  const referenceListId = useId();
 
   function handleAdd() {
     if (!reference.trim() || !amount || amount <= 0) return;
@@ -237,13 +285,13 @@ function AddRow({
         <Input
           id="participant-reference"
           type="text"
-          list="participant-reference-list"
+          list={referenceListId}
           compact
           placeholder={t('referencePlaceholder')}
           value={reference}
           onChange={(e) => setReference(e.target.value)}
         />
-        <datalist id="participant-reference-list">
+        <datalist id={referenceListId}>
           {knownReferences.map((ref) => (
             <option key={ref} value={ref} />
           ))}

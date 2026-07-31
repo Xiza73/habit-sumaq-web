@@ -398,6 +398,7 @@
     "participants": {
       "title": "Participants",
       "hint": "Split this service among several people. Each participant generates a pending loan when you pay.",
+      "loading": "Loading participants…",
       "empty": "No participants configured.",
       "reference": "Reference",
       "referencePlaceholder": "Name or reference (e.g. Ana)",
@@ -407,6 +408,7 @@
       "save": "Save",
       "cancel": "Cancel",
       "delete": "Delete",
+      "deleteParticipant": "Remove {reference}",
       "deleteConfirm": "Remove {reference} from the participants?"
     },
     "linkedDebts": {

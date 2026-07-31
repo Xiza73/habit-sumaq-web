@@ -280,7 +280,11 @@ export function MonthlyServiceForm({ open, service, onClose }: MonthlyServiceFor
 
         {isEditing && service && (
           <div className="border-t border-border pt-4">
-            <ParticipantEditor monthlyServiceId={service.id} knownReferences={knownReferences} />
+            <ParticipantEditor
+              monthlyServiceId={service.id}
+              currency={service.currency}
+              knownReferences={knownReferences}
+            />
           </div>
         )}
 

@@ -398,6 +398,7 @@
     "participants": {
       "title": "Participantes",
       "hint": "Divide este servicio entre varias personas. Cada participante genera un préstamo pendiente al pagar.",
+      "loading": "Cargando participantes…",
       "empty": "Sin participantes configurados.",
       "reference": "Referencia",
       "referencePlaceholder": "Nombre o referencia (ej. Ana)",
@@ -407,6 +408,7 @@
       "save": "Guardar",
       "cancel": "Cancelar",
       "delete": "Eliminar",
+      "deleteParticipant": "Eliminar a {reference}",
       "deleteConfirm": "¿Eliminar a {reference} de los participantes?"
     },
     "linkedDebts": {
