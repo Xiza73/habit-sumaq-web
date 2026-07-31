@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { type MonthlyService } from '@/core/domain/entities/monthly-service';
+import { type MonthlyServiceParticipant } from '@/core/domain/entities/monthly-service-participant';
 
 import { TestProviders } from '@/test/utils';
 
@@ -16,6 +17,11 @@ const mockCreateMutate = vi.fn();
 // is dead — this form must NOT touch it.
 vi.mock('@/core/application/hooks/use-monthly-service-payments', () => ({
   useCreateMonthlyServicePayment: () => ({ mutate: mockCreateMutate, isPending: false }),
+}));
+
+let mockParticipants: MonthlyServiceParticipant[] = [];
+vi.mock('@/core/application/hooks/use-monthly-service-participants', () => ({
+  useServiceParticipants: () => ({ data: mockParticipants, isLoading: false }),
 }));
 
 // Replace the DatePicker with a thin text input so the form can be filled
@@ -85,6 +91,7 @@ function renderForm(overrides: { service?: MonthlyService | null; open?: boolean
 describe('PayMonthlyServiceForm', () => {
   beforeEach(() => {
     mockCreateMutate.mockClear();
+    mockParticipants = [];
   });
 
   it('returns null when no service is provided', () => {
@@ -156,5 +163,92 @@ describe('PayMonthlyServiceForm', () => {
     expect(callArg.description).toBeNull();
     // dateInputToBackendIso pins the picker value to noon UTC.
     expect(callArg.date).toMatch(/^\d{4}-\d{2}-\d{2}T12:00:00\.000Z$/);
+  });
+});
+
+const ana: MonthlyServiceParticipant = {
+  id: 'p-ana',
+  monthlyServiceId: baseService.id,
+  userId: 'user-1',
+  reference: 'Ana',
+  defaultAmount: 10,
+  createdAt: '2026-01-01T00:00:00.000Z',
+  updatedAt: '2026-01-01T00:00:00.000Z',
+};
+
+const luis: MonthlyServiceParticipant = {
+  id: 'p-luis',
+  monthlyServiceId: baseService.id,
+  userId: 'user-1',
+  reference: 'Luis',
+  defaultAmount: 8,
+  createdAt: '2026-01-01T00:00:00.000Z',
+  updatedAt: '2026-01-01T00:00:00.000Z',
+};
+
+describe('PayMonthlyServiceForm — shared service with participants', () => {
+  beforeEach(() => {
+    mockCreateMutate.mockClear();
+    mockParticipants = [ana, luis];
+  });
+
+  it('renders one row per configured participant with the amount prefilled from defaultAmount', () => {
+    renderForm();
+    const anaAmountInput = screen.getByLabelText(/ana/i);
+    const luisAmountInput = screen.getByLabelText(/luis/i);
+    expect(anaAmountInput).toHaveValue(10);
+    expect(luisAmountInput).toHaveValue(8);
+  });
+
+  it('lets the user edit a participant amount for this payment only', async () => {
+    const user = userEvent.setup();
+    renderForm();
+
+    const anaAmountInput = screen.getByLabelText(/ana/i);
+    await user.clear(anaAmountInput);
+    await user.type(anaAmountInput, '15');
+    expect(anaAmountInput).toHaveValue(15);
+  });
+
+  it('renders an "already paid" checkbox per participant, unchecked by default', () => {
+    renderForm();
+    const checkboxes = screen.getAllByRole('checkbox');
+    expect(checkboxes).toHaveLength(2);
+    checkboxes.forEach((checkbox) => expect(checkbox).not.toBeChecked());
+  });
+
+  it('submits participants[] with edited amounts and alreadyPaid flags', async () => {
+    const user = userEvent.setup();
+    renderForm();
+
+    const anaAmountInput = screen.getByLabelText(/ana/i);
+    await user.clear(anaAmountInput);
+    await user.type(anaAmountInput, '15');
+
+    const anaCheckbox = screen.getAllByRole('checkbox')[0];
+    await user.click(anaCheckbox);
+
+    await user.click(screen.getByRole('button', { name: /confirmar pago/i }));
+
+    expect(mockCreateMutate).toHaveBeenCalledOnce();
+    const callArg = mockCreateMutate.mock.calls[0][0] as {
+      participants: { reference: string; amount: number; alreadyPaid?: boolean }[];
+    };
+    expect(callArg.participants).toEqual([
+      { reference: 'Ana', amount: 15, alreadyPaid: true },
+      { reference: 'Luis', amount: 8, alreadyPaid: false },
+    ]);
+  });
+
+  it('does NOT include participants in the payload when the service has none configured (no regression)', async () => {
+    mockParticipants = [];
+    const user = userEvent.setup();
+    renderForm();
+
+    await user.click(screen.getByRole('button', { name: /confirmar pago/i }));
+
+    expect(mockCreateMutate).toHaveBeenCalledOnce();
+    const callArg = mockCreateMutate.mock.calls[0][0] as Record<string, unknown>;
+    expect(callArg.participants).toBeUndefined();
   });
 });
