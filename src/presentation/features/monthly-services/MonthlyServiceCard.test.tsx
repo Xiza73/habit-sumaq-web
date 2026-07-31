@@ -118,6 +118,31 @@ describe('MonthlyServiceCard', () => {
     expect(screen.getAllByRole('button', { name: /desarchivar/i }).length).toBeGreaterThan(0);
   });
 
+  it('is a full-height flex column so cards stretch to equal height in a grid row', () => {
+    // Layout guard: without `h-full` + `flex-col` the card cannot fill the
+    // stretched grid cell, and the action row cannot be pushed to the bottom.
+    renderCard();
+    const root = screen.getByText('Luz').closest('div.rounded-xl');
+    expect(root).not.toBeNull();
+    expect(root).toHaveClass('flex', 'flex-col', 'h-full');
+  });
+
+  it('pushes the pending action row to the bottom with mt-auto (bottom-aligns siblings)', () => {
+    // A card with less content (no linked-debt badge) must keep its
+    // Pagar/Saltear buttons bottom-aligned with a taller sibling's buttons.
+    renderCard();
+    const actionRow = screen.getByRole('button', { name: /^pagar$/i }).parentElement;
+    expect(actionRow).toHaveClass('mt-auto');
+  });
+
+  it('bottom-aligns the unarchive action row with mt-auto when archived', () => {
+    renderCard({ ...baseService, isActive: false });
+    const unarchiveButtons = screen.getAllByRole('button', { name: /desarchivar/i });
+    // The full-width action button (not the menu item) carries the layout class.
+    const actionButton = unarchiveButtons.find((b) => b.className.includes('w-full'));
+    expect(actionButton).toHaveClass('mt-auto');
+  });
+
   it('fires onPay when the pay button is clicked', async () => {
     const handlers = renderCard();
     const user = userEvent.setup();
