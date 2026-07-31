@@ -387,7 +387,31 @@
       "date": "Data",
       "details": "Detalhes",
       "detailsPlaceholder": "Notas adicionais (opcional)",
-      "confirm": "Confirmar pagamento"
+      "confirm": "Confirmar pagamento",
+      "participants": {
+        "title": "Participantes",
+        "hint": "O valor de cada participante é descontado como um empréstimo pendente. Sua parte é o restante do valor total.",
+        "amount": "Valor",
+        "alreadyPaid": "Já me pagou"
+      }
+    },
+    "participants": {
+      "title": "Participantes",
+      "hint": "Divida este serviço entre várias pessoas. Cada participante gera um empréstimo pendente ao pagar.",
+      "empty": "Nenhum participante configurado.",
+      "reference": "Referência",
+      "referencePlaceholder": "Nome ou referência (ex. Ana)",
+      "defaultAmount": "Valor padrão",
+      "add": "Adicionar participante",
+      "edit": "Editar",
+      "save": "Salvar",
+      "cancel": "Cancelar",
+      "delete": "Excluir",
+      "deleteConfirm": "Remover {reference} dos participantes?"
+    },
+    "linkedDebts": {
+      "badge": "{count, plural, one {# empréstimo pendente} other {# empréstimos pendentes}} · {amount}",
+      "settle": "Liquidar"
     }
   },
   "navigation": {

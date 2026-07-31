@@ -387,7 +387,31 @@
       "date": "Date",
       "details": "Details",
       "detailsPlaceholder": "Additional notes (optional)",
-      "confirm": "Confirm payment"
+      "confirm": "Confirm payment",
+      "participants": {
+        "title": "Participants",
+        "hint": "Each participant's amount is deducted as a pending loan. Your share is the rest of the total amount.",
+        "amount": "Amount",
+        "alreadyPaid": "Already paid me"
+      }
+    },
+    "participants": {
+      "title": "Participants",
+      "hint": "Split this service among several people. Each participant generates a pending loan when you pay.",
+      "empty": "No participants configured.",
+      "reference": "Reference",
+      "referencePlaceholder": "Name or reference (e.g. Ana)",
+      "defaultAmount": "Default amount",
+      "add": "Add participant",
+      "edit": "Edit",
+      "save": "Save",
+      "cancel": "Cancel",
+      "delete": "Delete",
+      "deleteConfirm": "Remove {reference} from the participants?"
+    },
+    "linkedDebts": {
+      "badge": "{count, plural, one {# pending loan} other {# pending loans}} · {amount}",
+      "settle": "Settle"
     }
   },
   "navigation": {

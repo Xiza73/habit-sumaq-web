@@ -387,7 +387,31 @@
       "date": "Fecha",
       "details": "Detalles",
       "detailsPlaceholder": "Notas adicionales (opcional)",
-      "confirm": "Confirmar pago"
+      "confirm": "Confirmar pago",
+      "participants": {
+        "title": "Participantes",
+        "hint": "El monto de cada participante se descuenta como un préstamo pendiente. Tu parte es el resto del monto total.",
+        "amount": "Monto",
+        "alreadyPaid": "Ya me pagó"
+      }
+    },
+    "participants": {
+      "title": "Participantes",
+      "hint": "Divide este servicio entre varias personas. Cada participante genera un préstamo pendiente al pagar.",
+      "empty": "Sin participantes configurados.",
+      "reference": "Referencia",
+      "referencePlaceholder": "Nombre o referencia (ej. Ana)",
+      "defaultAmount": "Monto por defecto",
+      "add": "Agregar participante",
+      "edit": "Editar",
+      "save": "Guardar",
+      "cancel": "Cancelar",
+      "delete": "Eliminar",
+      "deleteConfirm": "¿Eliminar a {reference} de los participantes?"
+    },
+    "linkedDebts": {
+      "badge": "{count, plural, one {# préstamo pendiente} other {# préstamos pendientes}} · {amount}",
+      "settle": "Liquidar"
     }
   },
   "navigation": {
