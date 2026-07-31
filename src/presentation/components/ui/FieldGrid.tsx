@@ -44,7 +44,11 @@ export function FieldGrid({ columns, className, children }: FieldGridProps) {
   return (
     <div
       className={cn(
-        'grid grid-cols-1 gap-x-4 gap-y-2 [grid-template-rows:auto_auto_auto_auto]',
+        // No row gap: the label→control gap comes from the label's `mb`, and
+        // the error/hint gaps come from THEIR own `mt` — so empty error/hint
+        // rows contribute zero height instead of a stray gap band (which
+        // otherwise added dead space below fields with no error and no hint).
+        'grid grid-cols-1 gap-x-4 [grid-template-rows:auto_auto_auto_auto]',
         COLUMNS_CLASS[columns],
         className,
       )}
@@ -95,13 +99,19 @@ function Field({
   className,
 }: FieldGridFieldProps) {
   return (
-    <div className={cn('grid row-span-4 grid-rows-subgrid gap-2', className)}>
-      <label htmlFor={htmlFor} className="text-sm font-medium">
+    <div className={cn('grid row-span-4 grid-rows-subgrid', className)}>
+      {/* `mb-2` (8px) matches the non-FieldGrid `space-y-2` field sections so a
+          converted field looks identical to a plain one. */}
+      <label htmlFor={htmlFor} className="mb-2 text-sm font-medium">
         {label}
       </label>
       {children}
-      <div>{errorNode ?? (error ? <p className="text-xs text-destructive">{error}</p> : null)}</div>
-      <div>{hint ? <p className="text-[11px] text-muted-foreground">{hint}</p> : null}</div>
+      {/* The error/hint spacing lives on the `<p>` (`mt-1`), not on the wrapper
+          `<div>` — so an empty row (no `<p>`) has zero height and adds no gap. */}
+      <div>
+        {errorNode ?? (error ? <p className="mt-1 text-xs text-destructive">{error}</p> : null)}
+      </div>
+      <div>{hint ? <p className="mt-1 text-[11px] text-muted-foreground">{hint}</p> : null}</div>
     </div>
   );
 }

@@ -46,6 +46,22 @@ describe('FieldGrid', () => {
     expect(document.querySelector('.text-destructive')).toBeNull();
   });
 
+  it('renders no error/hint paragraph when both are absent (no stray spacing element)', () => {
+    const { container } = render(
+      <FieldGrid columns={2}>
+        <FieldGrid.Field label="Amount" htmlFor="amount">
+          <input id="amount" />
+        </FieldGrid.Field>
+      </FieldGrid>,
+    );
+
+    // The error and hint wrapper `<div>`s are present (they anchor the shared
+    // subgrid row tracks so a sibling column WITH an error still aligns), but
+    // they must hold no `<p>` — an empty `<p>` would carry `mt-*` and add
+    // dead trailing space below the field.
+    expect(container.querySelectorAll('p')).toHaveLength(0);
+  });
+
   it('renders a hint when provided', () => {
     render(
       <FieldGrid columns={2}>
