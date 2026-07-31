@@ -1,13 +1,20 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { toast } from 'sonner';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { type MonthlyService } from '@/core/domain/entities/monthly-service';
 import { type MonthlyServiceParticipant } from '@/core/domain/entities/monthly-service-participant';
 
+import { ApiError } from '@/infrastructure/api/api-error';
+
 import { TestProviders } from '@/test/utils';
 
 import { PayMonthlyServiceForm } from './PayMonthlyServiceForm';
+
+vi.mock('sonner', () => ({
+  toast: { success: vi.fn(), error: vi.fn() },
+}));
 
 const mockCreateMutate = vi.fn();
 
@@ -20,8 +27,12 @@ vi.mock('@/core/application/hooks/use-monthly-service-payments', () => ({
 }));
 
 let mockParticipants: MonthlyServiceParticipant[] = [];
+let mockParticipantsLoading = false;
 vi.mock('@/core/application/hooks/use-monthly-service-participants', () => ({
-  useServiceParticipants: () => ({ data: mockParticipants, isLoading: false }),
+  useServiceParticipants: () => ({
+    data: mockParticipants,
+    isLoading: mockParticipantsLoading,
+  }),
 }));
 
 // Replace the DatePicker with a thin text input so the form can be filled
@@ -91,7 +102,10 @@ function renderForm(overrides: { service?: MonthlyService | null; open?: boolean
 describe('PayMonthlyServiceForm', () => {
   beforeEach(() => {
     mockCreateMutate.mockClear();
+    vi.mocked(toast.error).mockClear();
+    vi.mocked(toast.success).mockClear();
     mockParticipants = [];
+    mockParticipantsLoading = false;
   });
 
   it('returns null when no service is provided', () => {
@@ -163,6 +177,34 @@ describe('PayMonthlyServiceForm', () => {
     expect(callArg.description).toBeNull();
     // dateInputToBackendIso pins the picker value to noon UTC.
     expect(callArg.date).toMatch(/^\d{4}-\d{2}-\d{2}T12:00:00\.000Z$/);
+  });
+
+  it('surfaces a mapped error toast when the create mutation rejects (MSP_010 split exceeds total)', async () => {
+    mockCreateMutate.mockImplementation((_data, { onError }: { onError: (e: Error) => void }) => {
+      onError(new ApiError('Split exceeds total', 'MSP_010'));
+    });
+    const user = userEvent.setup();
+    renderForm();
+
+    await user.click(screen.getByRole('button', { name: /confirmar pago/i }));
+
+    expect(toast.error).toHaveBeenCalledWith(
+      expect.stringMatching(
+        /la suma de los montos de los participantes supera el monto total del pago/i,
+      ),
+    );
+  });
+
+  it('falls back to the generic error toast for an unmapped error code', async () => {
+    mockCreateMutate.mockImplementation((_data, { onError }: { onError: (e: Error) => void }) => {
+      onError(new ApiError('Boom', 'SOME_UNKNOWN_CODE'));
+    });
+    const user = userEvent.setup();
+    renderForm();
+
+    await user.click(screen.getByRole('button', { name: /confirmar pago/i }));
+
+    expect(toast.error).toHaveBeenCalledOnce();
   });
 });
 
@@ -238,6 +280,15 @@ describe('PayMonthlyServiceForm — shared service with participants', () => {
       { reference: 'Ana', amount: 15, alreadyPaid: true },
       { reference: 'Luis', amount: 8, alreadyPaid: false },
     ]);
+  });
+
+  it('holds the split section in a loading state until participants resolve (no early regular-payment assumption)', () => {
+    mockParticipantsLoading = true;
+    renderForm();
+    // While loading we must NOT render the participant amount inputs (which
+    // would imply "not shared"). A loading placeholder stands in instead.
+    expect(screen.queryByLabelText(/ana/i)).not.toBeInTheDocument();
+    expect(screen.getByText(/cargando/i)).toBeInTheDocument();
   });
 
   it('does NOT include participants in the payload when the service has none configured (no regression)', async () => {
