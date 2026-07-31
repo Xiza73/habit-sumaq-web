@@ -3,27 +3,23 @@ import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { type MonthlyServiceParticipant } from '@/core/domain/entities/monthly-service-participant';
+import { type MonthlyServiceParticipantRowInput } from '@/core/domain/schemas/monthly-service-participant.schema';
 
 import { ApiError } from '@/infrastructure/api/api-error';
-
-import { formatCurrency } from '@/lib/format';
 
 import { TestProviders } from '@/test/utils';
 
 import { ParticipantEditor } from './ParticipantEditor';
 
-const mockAddMutate = vi.fn();
-const mockUpdateMutate = vi.fn();
-const mockRemoveMutate = vi.fn();
+const mockReplaceMutate = vi.fn();
+let mockIsPending = false;
 
 let mockParticipants: MonthlyServiceParticipant[] = [];
 let mockIsLoading = false;
 
 vi.mock('@/core/application/hooks/use-monthly-service-participants', () => ({
   useServiceParticipants: () => ({ data: mockParticipants, isLoading: mockIsLoading }),
-  useAddParticipant: () => ({ mutate: mockAddMutate, isPending: false }),
-  useUpdateParticipant: () => ({ mutate: mockUpdateMutate, isPending: false }),
-  useRemoveParticipant: () => ({ mutate: mockRemoveMutate, isPending: false }),
+  useReplaceParticipants: () => ({ mutate: mockReplaceMutate, isPending: mockIsPending }),
 }));
 
 const SERVICE_ID = '11111111-1111-4111-a111-111111111111';
@@ -38,11 +34,22 @@ const ana: MonthlyServiceParticipant = {
   updatedAt: '2026-01-01T00:00:00.000Z',
 };
 
-function renderEditor(
+const luis: MonthlyServiceParticipant = {
+  id: 'p-2',
+  monthlyServiceId: SERVICE_ID,
+  userId: 'user-1',
+  reference: 'Luis',
+  defaultAmount: 50,
+  createdAt: '2026-01-01T00:00:00.000Z',
+  updatedAt: '2026-01-01T00:00:00.000Z',
+};
+
+function renderEditModeEditor(
   props: { knownReferences?: string[]; currency?: 'PEN' | 'USD' | 'EUR' } = {},
 ) {
   return render(
     <ParticipantEditor
+      mode="edit"
       monthlyServiceId={SERVICE_ID}
       currency={props.currency ?? 'PEN'}
       knownReferences={props.knownReferences ?? []}
@@ -51,63 +58,91 @@ function renderEditor(
   );
 }
 
-describe('ParticipantEditor', () => {
+function renderCreateModeEditor(
+  props: {
+    knownReferences?: string[];
+    currency?: 'PEN' | 'USD' | 'EUR';
+    rows?: MonthlyServiceParticipantRowInput[];
+    onRowsChange?: (rows: MonthlyServiceParticipantRowInput[]) => void;
+  } = {},
+) {
+  const onRowsChange = props.onRowsChange ?? vi.fn();
+  const utils = render(
+    <ParticipantEditor
+      mode="create"
+      currency={props.currency ?? 'PEN'}
+      knownReferences={props.knownReferences ?? []}
+      rows={props.rows ?? []}
+      onRowsChange={onRowsChange}
+    />,
+    { wrapper: TestProviders },
+  );
+  return { ...utils, onRowsChange };
+}
+
+describe('ParticipantEditor — edit mode', () => {
   beforeEach(() => {
-    mockAddMutate.mockClear();
-    mockUpdateMutate.mockClear();
-    mockRemoveMutate.mockClear();
+    mockReplaceMutate.mockClear();
+    mockIsPending = false;
     mockParticipants = [];
     mockIsLoading = false;
   });
 
-  it('renders existing participants with their reference and formatted default amount', () => {
-    mockParticipants = [ana];
-    renderEditor({ currency: 'PEN' });
-
-    expect(screen.getByText('Ana')).toBeInTheDocument();
-    // Amount is formatted as currency (with symbol + decimals), not a raw
-    // number. `Intl` emits a non-breaking space (U+00A0) between the symbol
-    // and digits; normalize it to a plain space so the assertion is
-    // whitespace-agnostic.
-    const formatted = formatCurrency(ana.defaultAmount, 'PEN').replace(/\u00A0/g, ' ');
-    expect(
-      screen.getByText((_content, el) => el?.textContent?.replace(/\u00A0/g, ' ') === formatted),
-    ).toBeInTheDocument();
-  });
-
-  it('shows a loading state (not the empty state) while participants are loading', () => {
+  it('shows a loading state while participants are loading', () => {
     mockIsLoading = true;
-    renderEditor();
+    renderEditModeEditor();
 
     expect(screen.getByText(/cargando/i)).toBeInTheDocument();
-    expect(screen.queryByText(/sin participantes configurados/i)).not.toBeInTheDocument();
   });
 
-  it('shows the empty state only when loaded with zero participants', () => {
-    mockIsLoading = false;
+  it('seeds rows from the existing configured participants', () => {
+    mockParticipants = [ana, luis];
+    renderEditModeEditor();
+
+    // Scoped to the combobox role (the reference input has a `list` attr,
+    // which promotes its implicit ARIA role to combobox) — plain
+    // `getAllByLabelText(/referencia/i)` would also match each row's
+    // "Quitar fila de {reference}" remove button, since RTL's label
+    // matching includes `aria-label`.
+    expect(screen.getAllByRole('combobox', { name: /^referencia$/i })).toHaveLength(2);
+    expect(screen.getByDisplayValue('Ana')).toBeInTheDocument();
+    expect(screen.getByDisplayValue('Luis')).toBeInTheDocument();
+    expect(screen.getByDisplayValue('100')).toBeInTheDocument();
+    expect(screen.getByDisplayValue('50')).toBeInTheDocument();
+  });
+
+  it('shows the empty state (zero rows) when there are no configured participants', () => {
     mockParticipants = [];
-    renderEditor();
+    renderEditModeEditor();
 
     expect(screen.getByText(/sin participantes configurados/i)).toBeInTheDocument();
-    expect(screen.queryByText(/cargando/i)).not.toBeInTheDocument();
   });
 
-  it('adds a new participant via the form', async () => {
+  it('adds a new empty row locally without calling the API', async () => {
     const user = userEvent.setup();
-    renderEditor({ knownReferences: ['Luis'] });
+    renderEditModeEditor();
 
-    await user.type(screen.getByLabelText(/referencia/i), 'Luis');
-    await user.type(screen.getByLabelText(/monto por defecto/i), '80');
-    await user.click(screen.getByRole('button', { name: /agregar participante/i }));
+    await user.click(screen.getByRole('button', { name: /agregar fila/i }));
 
-    expect(mockAddMutate).toHaveBeenCalledOnce();
-    const payload = mockAddMutate.mock.calls[0][0] as { reference: string; defaultAmount: number };
-    expect(payload.reference).toBe('Luis');
-    expect(payload.defaultAmount).toBe(80);
+    expect(screen.getAllByRole('combobox', { name: /^referencia$/i })).toHaveLength(1);
+    expect(mockReplaceMutate).not.toHaveBeenCalled();
   });
 
-  it('feeds known references into the reference datalist (soft autocomplete)', () => {
-    renderEditor({ knownReferences: ['Ana', 'Luis'] });
+  it('removes a row locally without calling the API', async () => {
+    mockParticipants = [ana, luis];
+    const user = userEvent.setup();
+    renderEditModeEditor();
+
+    await user.click(screen.getByRole('button', { name: /quitar fila de ana/i }));
+
+    expect(screen.getAllByRole('combobox', { name: /^referencia$/i })).toHaveLength(1);
+    expect(screen.queryByDisplayValue('Ana')).not.toBeInTheDocument();
+    expect(mockReplaceMutate).not.toHaveBeenCalled();
+  });
+
+  it('feeds known references into each row reference datalist', () => {
+    mockParticipants = [ana];
+    renderEditModeEditor({ knownReferences: ['Ana', 'Luis'] });
 
     const input = screen.getByLabelText(/referencia/i);
     expect(input).toHaveAttribute('list');
@@ -118,107 +153,154 @@ describe('ParticipantEditor', () => {
     expect(options.map((o) => o.getAttribute('value'))).toEqual(['Ana', 'Luis']);
   });
 
-  it('edits an existing participant default amount', async () => {
-    mockParticipants = [ana];
+  it('has its own Save button that submits all current rows via the batch replace mutation', async () => {
+    mockParticipants = [ana, luis];
     const user = userEvent.setup();
-    renderEditor();
+    renderEditModeEditor();
 
-    await user.click(screen.getByRole('button', { name: /editar/i }));
-    // Two "Monto por defecto" fields exist while editing (the edit row +
-    // the always-visible add-row) — the edit row's input carries a
-    // participant-scoped id.
-    const amountInput = document.getElementById(`participant-amount-${ana.id}`) as HTMLInputElement;
-    expect(amountInput).not.toBeNull();
-    await user.clear(amountInput);
-    await user.type(amountInput, '120');
-    await user.click(screen.getByRole('button', { name: /guardar/i }));
+    await user.click(screen.getByRole('button', { name: /guardar participantes/i }));
 
-    expect(mockUpdateMutate).toHaveBeenCalledOnce();
-    const callArg = mockUpdateMutate.mock.calls[0][0] as {
-      participantId: string;
-      data: { defaultAmount: number };
-    };
-    expect(callArg.participantId).toBe(ana.id);
-    expect(callArg.data.defaultAmount).toBe(120);
+    expect(mockReplaceMutate).toHaveBeenCalledOnce();
+    const payload = mockReplaceMutate.mock.calls[0][0] as MonthlyServiceParticipantRowInput[];
+    expect(payload).toEqual([
+      { reference: 'Ana', defaultAmount: 100 },
+      { reference: 'Luis', defaultAmount: 50 },
+    ]);
   });
 
-  it('requires a confirmation step before removing a participant', async () => {
+  it('submits an empty list when all rows were removed (clears configured participants)', async () => {
     mockParticipants = [ana];
     const user = userEvent.setup();
-    renderEditor();
+    renderEditModeEditor();
 
-    // Clicking the trash icon must NOT remove immediately — it opens a
-    // confirmation dialog first.
-    await user.click(screen.getByRole('button', { name: /eliminar a ana/i }));
-    expect(mockRemoveMutate).not.toHaveBeenCalled();
+    await user.click(screen.getByRole('button', { name: /quitar fila de ana/i }));
+    await user.click(screen.getByRole('button', { name: /guardar participantes/i }));
 
-    // The confirm dialog references the participant.
-    expect(screen.getByRole('dialog')).toBeInTheDocument();
-    expect(screen.getByText(/eliminar a ana de los participantes/i)).toBeInTheDocument();
-
-    // Confirming fires the mutation.
-    await user.click(screen.getByRole('button', { name: /^eliminar$/i }));
-    expect(mockRemoveMutate).toHaveBeenCalledWith(ana.id, expect.anything());
+    expect(mockReplaceMutate).toHaveBeenCalledOnce();
+    const payload = mockReplaceMutate.mock.calls[0][0] as MonthlyServiceParticipantRowInput[];
+    expect(payload).toEqual([]);
   });
 
-  it('does not remove when the confirmation is cancelled', async () => {
+  it('excludes a newly-added row from the payload when it is removed before saving', async () => {
     mockParticipants = [ana];
     const user = userEvent.setup();
-    renderEditor();
+    renderEditModeEditor();
 
-    await user.click(screen.getByRole('button', { name: /eliminar a ana/i }));
-    await user.click(screen.getByRole('button', { name: /cancelar/i }));
+    await user.click(screen.getByRole('button', { name: /agregar fila/i }));
+    // Two rows now: Ana (seeded) + the new empty row.
+    const removeButtons = screen.getAllByRole('button', { name: /quitar fila/i });
+    await user.click(removeButtons[removeButtons.length - 1]);
+    await user.click(screen.getByRole('button', { name: /guardar participantes/i }));
 
-    expect(mockRemoveMutate).not.toHaveBeenCalled();
+    const payload = mockReplaceMutate.mock.calls[0][0] as MonthlyServiceParticipantRowInput[];
+    expect(payload).toEqual([{ reference: 'Ana', defaultAmount: 100 }]);
   });
 
-  it('surfaces a backend error when removing a participant fails', async () => {
+  it('surfaces a duplicate-reference error from the backend on save', async () => {
     mockParticipants = [ana];
-    mockRemoveMutate.mockImplementation((_id, { onError }: { onError: (e: Error) => void }) => {
-      onError(new ApiError('Boom', 'MSP_PARTICIPANT_NOT_FOUND'));
-    });
-    const user = userEvent.setup();
-    renderEditor();
-
-    await user.click(screen.getByRole('button', { name: /eliminar a ana/i }));
-    await user.click(screen.getByRole('button', { name: /^eliminar$/i }));
-
-    // The mapped error is surfaced, not silently swallowed.
-    expect(await screen.findByText(/participante no encontrado/i)).toBeInTheDocument();
-    expect(mockRemoveMutate).toHaveBeenCalledOnce();
-  });
-
-  it('surfaces a duplicate-reference error from the backend on add', async () => {
-    mockAddMutate.mockImplementation((_data, { onError }: { onError: (e: Error) => void }) => {
+    mockReplaceMutate.mockImplementation((_rows, { onError }: { onError: (e: Error) => void }) => {
       onError(new ApiError('Duplicate', 'MSP_PARTICIPANT_DUPLICATE_REFERENCE'));
     });
     const user = userEvent.setup();
-    renderEditor();
+    renderEditModeEditor();
 
-    await user.type(screen.getByLabelText(/referencia/i), 'Ana');
-    await user.type(screen.getByLabelText(/monto por defecto/i), '50');
-    await user.click(screen.getByRole('button', { name: /agregar participante/i }));
+    await user.click(screen.getByRole('button', { name: /guardar participantes/i }));
 
     expect(
       await screen.findByText(/ya existe un participante con esa referencia/i),
     ).toBeInTheDocument();
   });
 
-  it('surfaces a sum-exceeds-estimated error from the backend on add', async () => {
-    mockAddMutate.mockImplementation((_data, { onError }: { onError: (e: Error) => void }) => {
+  it('surfaces a sum-exceeds-estimated error from the backend on save', async () => {
+    mockParticipants = [ana];
+    mockReplaceMutate.mockImplementation((_rows, { onError }: { onError: (e: Error) => void }) => {
       onError(new ApiError('Sum exceeds', 'MSP_PARTICIPANT_SUM_EXCEEDS_ESTIMATED'));
     });
     const user = userEvent.setup();
-    renderEditor();
+    renderEditModeEditor();
 
-    await user.type(screen.getByLabelText(/referencia/i), 'Luis');
-    await user.type(screen.getByLabelText(/monto por defecto/i), '500');
-    await user.click(screen.getByRole('button', { name: /agregar participante/i }));
+    await user.click(screen.getByRole('button', { name: /guardar participantes/i }));
 
     expect(
       await screen.findByText(
         /la suma de los montos de los participantes supera el monto estimado/i,
       ),
     ).toBeInTheDocument();
+  });
+
+  it('renders existing amounts formatted as currency (display-only) before editing', () => {
+    mockParticipants = [ana];
+    renderEditModeEditor({ currency: 'PEN' });
+
+    // The row's amount input carries the raw editable number...
+    expect(screen.getByDisplayValue('100')).toBeInTheDocument();
+    // ...while the currency-formatted rendering appears as read-only display text.
+    expect(screen.getByText(/S\/\s*100/)).toBeInTheDocument();
+  });
+});
+
+describe('ParticipantEditor — create mode', () => {
+  beforeEach(() => {
+    mockReplaceMutate.mockClear();
+  });
+
+  it('does not render its own Save button (the parent form persists atomically)', () => {
+    renderCreateModeEditor();
+
+    expect(
+      screen.queryByRole('button', { name: /guardar participantes/i }),
+    ).not.toBeInTheDocument();
+    expect(screen.getByText(/se guardan junto con el servicio/i)).toBeInTheDocument();
+  });
+
+  it('starts empty when no rows are provided', () => {
+    renderCreateModeEditor();
+    expect(screen.queryByLabelText(/referencia/i)).not.toBeInTheDocument();
+  });
+
+  it('adds a row locally and reports it to the parent via onRowsChange', async () => {
+    const user = userEvent.setup();
+    const { onRowsChange } = renderCreateModeEditor();
+
+    await user.click(screen.getByRole('button', { name: /agregar fila/i }));
+
+    expect(onRowsChange).toHaveBeenLastCalledWith([{ reference: '', defaultAmount: 0 }]);
+  });
+
+  it('is controlled: renders whatever rows the parent passes in', () => {
+    renderCreateModeEditor({
+      rows: [
+        { reference: 'Ana', defaultAmount: 20 },
+        { reference: 'Luis', defaultAmount: 15 },
+      ],
+    });
+
+    expect(screen.getByDisplayValue('Ana')).toBeInTheDocument();
+    expect(screen.getByDisplayValue('Luis')).toBeInTheDocument();
+  });
+
+  it('reports edits to an existing row via onRowsChange', async () => {
+    const user = userEvent.setup();
+    const { onRowsChange } = renderCreateModeEditor({
+      rows: [{ reference: 'Ana', defaultAmount: 20 }],
+    });
+
+    await user.type(screen.getByLabelText(/referencia/i), 'x');
+
+    expect(onRowsChange).toHaveBeenLastCalledWith([{ reference: 'Anax', defaultAmount: 20 }]);
+  });
+
+  it('reports row removal via onRowsChange', async () => {
+    const user = userEvent.setup();
+    const { onRowsChange } = renderCreateModeEditor({
+      rows: [
+        { reference: 'Ana', defaultAmount: 20 },
+        { reference: 'Luis', defaultAmount: 15 },
+      ],
+    });
+
+    await user.click(screen.getByRole('button', { name: /quitar fila de ana/i }));
+
+    expect(onRowsChange).toHaveBeenLastCalledWith([{ reference: 'Luis', defaultAmount: 15 }]);
   });
 });

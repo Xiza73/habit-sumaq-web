@@ -397,19 +397,16 @@
     },
     "participants": {
       "title": "Participantes",
-      "hint": "Divida este serviço entre várias pessoas. Cada participante gera um empréstimo pendente ao pagar.",
+      "hint": "Divida este serviço entre várias pessoas. Adicione linhas, ajuste os valores e salve: a lista enviada substitui totalmente a anterior.",
       "loading": "Carregando participantes…",
       "empty": "Nenhum participante configurado.",
       "reference": "Referência",
       "referencePlaceholder": "Nome ou referência (ex. Ana)",
       "defaultAmount": "Valor padrão",
-      "add": "Adicionar participante",
-      "edit": "Editar",
-      "save": "Salvar",
-      "cancel": "Cancelar",
-      "delete": "Excluir",
-      "deleteParticipant": "Remover {reference}",
-      "deleteConfirm": "Remover {reference} dos participantes?"
+      "addRow": "Adicionar linha",
+      "removeRow": "Remover linha de {reference}",
+      "save": "Salvar participantes",
+      "createHint": "Os participantes são salvos junto com o serviço ao pressionar \"Criar\"."
     },
     "linkedDebts": {
       "badge": "{count, plural, one {# empréstimo pendente} other {# empréstimos pendentes}} · {amount}",

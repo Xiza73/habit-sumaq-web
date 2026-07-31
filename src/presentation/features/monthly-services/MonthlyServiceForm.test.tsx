@@ -29,14 +29,13 @@ vi.mock('@/core/application/hooks/use-monthly-services', () => ({
   useUpdateMonthlyService: () => ({ mutate: mockUpdateMutate, isPending: false }),
 }));
 
-// Participant config CRUD — only relevant in edit mode. Kept EMPTY by
-// default so create-mode / most edit-mode tests aren't affected by the
-// participants section's own network calls.
+// Participant config (batch replace) — relevant in edit mode via
+// ParticipantEditor's own hooks. Kept EMPTY by default so create-mode /
+// most edit-mode tests aren't affected by the participants section's own
+// network calls.
 vi.mock('@/core/application/hooks/use-monthly-service-participants', () => ({
   useServiceParticipants: () => ({ data: [], isLoading: false }),
-  useAddParticipant: () => ({ mutate: vi.fn(), isPending: false }),
-  useUpdateParticipant: () => ({ mutate: vi.fn(), isPending: false }),
-  useRemoveParticipant: () => ({ mutate: vi.fn(), isPending: false }),
+  useReplaceParticipants: () => ({ mutate: vi.fn(), isPending: false }),
 }));
 
 vi.mock('@/core/application/hooks/use-debts-loans', () => ({
@@ -152,6 +151,52 @@ describe('MonthlyServiceForm', () => {
       await user.click(screen.getByRole('button', { name: /^crear$/i }));
       expect(mockCreateMutate).not.toHaveBeenCalled();
     });
+
+    it('renders the participant editor in create mode too (no serviceId yet, controlled by the parent)', () => {
+      renderForm();
+      expect(screen.getByRole('heading', { name: /participantes/i })).toBeInTheDocument();
+    });
+
+    it('does NOT render a Save-participants button in create mode (the main Crear button persists everything atomically)', () => {
+      renderForm();
+      expect(
+        screen.queryByRole('button', { name: /guardar participantes/i }),
+      ).not.toBeInTheDocument();
+    });
+
+    it('includes participant rows added via the editor in the create payload', async () => {
+      const user = userEvent.setup();
+      renderForm();
+
+      await user.type(screen.getByLabelText(/^nombre$/i), 'Netflix');
+      await user.selectOptions(screen.getByLabelText(/categor/i), categoryServicios.id);
+      await user.click(screen.getByRole('button', { name: /agregar fila/i }));
+      // `getByLabelText(/referencia/i)` also matches the row's "Quitar
+      // fila..." remove button (aria-label) — scope to the combobox role
+      // (the reference input's `list` attribute promotes it from textbox).
+      await user.type(screen.getByRole('combobox', { name: /^referencia$/i }), 'Ana');
+      await user.type(screen.getByLabelText(/monto por defecto/i), '20');
+      await user.click(screen.getByRole('button', { name: /^crear$/i }));
+
+      expect(mockCreateMutate).toHaveBeenCalledOnce();
+      const payload = mockCreateMutate.mock.calls[0][0] as {
+        participants?: { reference: string; defaultAmount: number }[];
+      };
+      expect(payload.participants).toEqual([{ reference: 'Ana', defaultAmount: 20 }]);
+    });
+
+    it('omits participants from the create payload when no rows were added (no regression)', async () => {
+      const user = userEvent.setup();
+      renderForm();
+
+      await user.type(screen.getByLabelText(/^nombre$/i), 'Netflix');
+      await user.selectOptions(screen.getByLabelText(/categor/i), categoryServicios.id);
+      await user.click(screen.getByRole('button', { name: /^crear$/i }));
+
+      expect(mockCreateMutate).toHaveBeenCalledOnce();
+      const payload = mockCreateMutate.mock.calls[0][0] as Record<string, unknown>;
+      expect(payload.participants).toBeUndefined();
+    });
   });
 
   describe('edit mode', () => {
@@ -200,9 +245,9 @@ describe('MonthlyServiceForm', () => {
       expect(screen.getByRole('heading', { name: /participantes/i })).toBeInTheDocument();
     });
 
-    it('does NOT render the participant config section in create mode', () => {
-      renderForm();
-      expect(screen.queryByRole('heading', { name: /participantes/i })).not.toBeInTheDocument();
+    it('renders the participant editor with its own Save button (self-managed via useReplaceParticipants)', () => {
+      renderForm({ service: baseService });
+      expect(screen.getByRole('button', { name: /guardar participantes/i })).toBeInTheDocument();
     });
   });
 });

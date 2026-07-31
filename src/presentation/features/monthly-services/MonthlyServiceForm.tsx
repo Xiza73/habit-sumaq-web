@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect } from 'react';
-import { useForm } from 'react-hook-form';
+import { useEffect, useState } from 'react';
+import { useForm, useWatch } from 'react-hook-form';
 import { useTranslations } from 'next-intl';
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -18,11 +18,13 @@ import {
   MONTHLY_SERVICE_FREQUENCY_LABEL_KEYS,
   type MonthlyService,
 } from '@/core/domain/entities/monthly-service';
+import { type Currency } from '@/core/domain/enums/currency.enum';
 import {
   type CreateMonthlyServiceInput,
   createMonthlyServiceSchema,
   type UpdateMonthlyServiceInput,
 } from '@/core/domain/schemas/monthly-service.schema';
+import { type MonthlyServiceParticipantRowInput } from '@/core/domain/schemas/monthly-service-participant.schema';
 
 import { ApiError } from '@/infrastructure/api/api-error';
 
@@ -63,11 +65,30 @@ export function MonthlyServiceForm({ open, service, onClose }: MonthlyServiceFor
 
   // Feed the participant reference field's soft autocomplete with prior
   // debts/loans references — same UX as `DebtLoanForm.knownReferences`.
-  // Participant config only applies in edit mode (needs a real service id).
   const { data: allDebtRows = [] } = useDebtsLoansSummary('all');
   const knownReferences = Array.from(
     new Set(allDebtRows.map((r) => r.displayName).filter(Boolean)),
   ).sort((a, b) => a.localeCompare(b));
+
+  // Create-mode participant rows are lifted here (controlled) — there's no
+  // serviceId yet, so `ParticipantEditor` can't self-manage via
+  // `useReplaceParticipants`. These ride the create-service payload
+  // instead. Edit-mode's `ParticipantEditor` is self-managed and ignores
+  // this state entirely.
+  const [createRows, setCreateRows] = useState<MonthlyServiceParticipantRowInput[]>([]);
+  // Reset `createRows` the first render the modal is open for a NEW
+  // service (not editing). Derived synchronously during render — like
+  // `ParticipantEditor`'s own row-seeding — instead of inside the
+  // `useEffect` below, so the reset lands in the same commit as
+  // `form.reset()` without triggering a `setState`-in-effect cascade.
+  // `rowsResetForOpen` tracks whether THIS open session already reset.
+  const [rowsResetForOpen, setRowsResetForOpen] = useState(false);
+  if (open && !service && !rowsResetForOpen) {
+    setCreateRows([]);
+    setRowsResetForOpen(true);
+  } else if ((!open || service) && rowsResetForOpen) {
+    setRowsResetForOpen(false);
+  }
 
   const form = useForm<CreateMonthlyServiceInput>({
     resolver: zodResolver(createMonthlyServiceSchema),
@@ -81,6 +102,10 @@ export function MonthlyServiceForm({ open, service, onClose }: MonthlyServiceFor
       startPeriod: getCurrentPeriod(),
     },
   });
+  // `useWatch` (not `form.watch()`) so the React Compiler can memoize this
+  // subscription safely — feeds the create-mode ParticipantEditor's
+  // currency-formatted amount display as the user picks a currency.
+  const watchedCurrency = useWatch({ control: form.control, name: 'currency' });
 
   useEffect(() => {
     if (!open) return;
@@ -131,6 +156,10 @@ export function MonthlyServiceForm({ open, service, onClose }: MonthlyServiceFor
         ...values,
         estimatedAmount: emptyToUndefined(values.estimatedAmount) ?? null,
         dueDay: emptyToUndefined(values.dueDay) ?? null,
+        // Omit entirely (not `[]`) when no rows were added — keeps the
+        // create payload byte-identical to pre-participants behavior for a
+        // non-shared service, mirroring the schema's `.optional()`.
+        ...(createRows.length > 0 ? { participants: createRows } : {}),
       };
       createMutation.mutate(cleaned, {
         onSuccess: () => {
@@ -278,15 +307,24 @@ export function MonthlyServiceForm({ open, service, onClose }: MonthlyServiceFor
           </div>
         </div>
 
-        {isEditing && service && (
-          <div className="border-t border-border pt-4">
+        <div className="border-t border-border pt-4">
+          {isEditing && service ? (
             <ParticipantEditor
+              mode="edit"
               monthlyServiceId={service.id}
               currency={service.currency}
               knownReferences={knownReferences}
             />
-          </div>
-        )}
+          ) : (
+            <ParticipantEditor
+              mode="create"
+              currency={watchedCurrency as Currency}
+              knownReferences={knownReferences}
+              rows={createRows}
+              onRowsChange={setCreateRows}
+            />
+          )}
+        </div>
 
         <div className="flex justify-end gap-3 pt-2">
           <button
