@@ -8,6 +8,8 @@ import {
 
 import { monthlyServicePaymentsApi } from '@/infrastructure/api/monthly-service-payments.api';
 
+import { debtLoanKeys } from './use-debts-loans';
+
 /**
  * Query keys for the v1.0.0 `monthly_service_payments` module. Kept
  * in their own namespace (`['monthly-service-payments']`) so they
@@ -52,6 +54,12 @@ export function useMonthlyServicePayment(id: string) {
  * rewires that read path to derive from `monthly_service_payments`
  * directly, a mutation here must refresh both caches.
  *
+ * ALSO invalidates `['debts-loans']` because paying a SHARED service
+ * creates one LOAN per co-payer participant and deleting that payment
+ * soft-deletes them — so the Debts/Loans list + summary would otherwise
+ * go stale until an unrelated refetch. (Creating/editing a service or its
+ * participants does NOT create debts, so those hooks intentionally skip it.)
+ *
  * Same dual-invalidation pattern as `use-budget-movements`.
  */
 function useInvalidateAll() {
@@ -59,6 +67,7 @@ function useInvalidateAll() {
   return () => {
     void qc.invalidateQueries({ queryKey: monthlyServicePaymentKeys.all });
     void qc.invalidateQueries({ queryKey: ['monthly-services'] });
+    void qc.invalidateQueries({ queryKey: debtLoanKeys.all });
   };
 }
 

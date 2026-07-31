@@ -137,7 +137,10 @@ export function MonthlyServiceCard({
   return (
     <div
       className={cn(
-        'group relative flex flex-col gap-4 rounded-xl border border-border bg-card p-5 transition-shadow hover:shadow-md',
+        // `h-full` fills the grid cell (grid items stretch by default) and
+        // `flex-col` lets the action row use `mt-auto` to bottom-align across
+        // sibling cards of differing content height.
+        'group relative flex h-full flex-col gap-4 rounded-xl border border-border bg-card p-5 transition-shadow hover:shadow-md',
         isArchived && 'opacity-60',
       )}
     >
@@ -303,12 +306,12 @@ export function MonthlyServiceCard({
         <button
           type="button"
           onClick={() => onArchive(service)}
-          className="w-full rounded-lg border border-border px-3 py-2 text-sm font-medium transition-colors hover:bg-muted"
+          className="mt-auto w-full rounded-lg border border-border px-3 py-2 text-sm font-medium transition-colors hover:bg-muted"
         >
           {t('actions.unarchive')}
         </button>
       ) : canPay ? (
-        <div className="flex items-center gap-2">
+        <div className="mt-auto flex items-center gap-2">
           <button
             type="button"
             onClick={() => onPay(service)}
