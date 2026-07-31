@@ -16,9 +16,16 @@ let mockIsPending = false;
 
 let mockParticipants: MonthlyServiceParticipant[] = [];
 let mockIsLoading = false;
+// `dataUpdatedAt` drives the edit-mode reseed: the editor re-seeds its local
+// rows whenever this value changes (initial load + every post-save refetch).
+let mockDataUpdatedAt = 1;
 
 vi.mock('@/core/application/hooks/use-monthly-service-participants', () => ({
-  useServiceParticipants: () => ({ data: mockParticipants, isLoading: mockIsLoading }),
+  useServiceParticipants: () => ({
+    data: mockParticipants,
+    isLoading: mockIsLoading,
+    dataUpdatedAt: mockDataUpdatedAt,
+  }),
   useReplaceParticipants: () => ({ mutate: mockReplaceMutate, isPending: mockIsPending }),
 }));
 
@@ -83,9 +90,11 @@ function renderCreateModeEditor(
 describe('ParticipantEditor — edit mode', () => {
   beforeEach(() => {
     mockReplaceMutate.mockClear();
+    mockReplaceMutate.mockReset();
     mockIsPending = false;
     mockParticipants = [];
     mockIsLoading = false;
+    mockDataUpdatedAt = 1;
   });
 
   it('shows a loading state while participants are loading', () => {
@@ -237,6 +246,83 @@ describe('ParticipantEditor — edit mode', () => {
     // ...while the currency-formatted rendering appears as read-only display text.
     expect(screen.getByText(/S\/\s*100/)).toBeInTheDocument();
   });
+
+  it('blocks Save and shows an inline error when a row has an empty reference', async () => {
+    mockParticipants = [ana];
+    const user = userEvent.setup();
+    renderEditModeEditor();
+
+    const references = screen.getAllByRole('combobox', { name: /^referencia$/i });
+    await user.clear(references[0]);
+
+    const saveButton = screen.getByRole('button', { name: /guardar participantes/i });
+    expect(saveButton).toBeDisabled();
+    expect(screen.getByText(/la referencia es obligatoria/i)).toBeInTheDocument();
+    expect(mockReplaceMutate).not.toHaveBeenCalled();
+  });
+
+  it('blocks Save and shows an inline error when a row amount is zero / empty', async () => {
+    mockParticipants = [ana];
+    const user = userEvent.setup();
+    renderEditModeEditor();
+
+    const amount = screen.getByDisplayValue('100');
+    await user.clear(amount);
+
+    const saveButton = screen.getByRole('button', { name: /guardar participantes/i });
+    expect(saveButton).toBeDisabled();
+    expect(screen.getByText(/el monto debe ser mayor a 0/i)).toBeInTheDocument();
+    expect(mockReplaceMutate).not.toHaveBeenCalled();
+  });
+
+  it('still saves a valid list (no inline errors) via the batch replace mutation', async () => {
+    mockParticipants = [ana, luis];
+    const user = userEvent.setup();
+    renderEditModeEditor();
+
+    await user.click(screen.getByRole('button', { name: /guardar participantes/i }));
+
+    expect(mockReplaceMutate).toHaveBeenCalledOnce();
+    expect(screen.queryByText(/la referencia es obligatoria/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/el monto debe ser mayor a 0/i)).not.toBeInTheDocument();
+  });
+
+  it('surfaces an amount-not-positive error from the backend on save', async () => {
+    mockParticipants = [ana];
+    mockReplaceMutate.mockImplementation((_rows, { onError }: { onError: (e: Error) => void }) => {
+      onError(new ApiError('Not positive', 'MSP_PARTICIPANT_AMOUNT_NOT_POSITIVE'));
+    });
+    const user = userEvent.setup();
+    renderEditModeEditor();
+
+    await user.click(screen.getByRole('button', { name: /guardar participantes/i }));
+
+    expect(await screen.findByText(/el monto por defecto debe ser mayor a 0/i)).toBeInTheDocument();
+  });
+
+  it('re-seeds rows from fresh server data after a save refetch (dataUpdatedAt changes)', () => {
+    mockParticipants = [ana];
+    const { rerender } = renderEditModeEditor();
+
+    expect(screen.getByDisplayValue('Ana')).toBeInTheDocument();
+    expect(screen.queryByDisplayValue('Luis')).not.toBeInTheDocument();
+
+    // Simulate a post-save refetch: the query returns a new list AND a new
+    // `dataUpdatedAt`, which must trigger a re-seed of the local rows.
+    mockParticipants = [ana, luis];
+    mockDataUpdatedAt = 2;
+    rerender(
+      <ParticipantEditor
+        mode="edit"
+        monthlyServiceId={SERVICE_ID}
+        currency="PEN"
+        knownReferences={[]}
+      />,
+    );
+
+    expect(screen.getByDisplayValue('Ana')).toBeInTheDocument();
+    expect(screen.getByDisplayValue('Luis')).toBeInTheDocument();
+  });
 });
 
 describe('ParticipantEditor — create mode', () => {
@@ -302,5 +388,21 @@ describe('ParticipantEditor — create mode', () => {
     await user.click(screen.getByRole('button', { name: /quitar fila de ana/i }));
 
     expect(onRowsChange).toHaveBeenLastCalledWith([{ reference: 'Luis', defaultAmount: 15 }]);
+  });
+
+  it('shows an inline error for a row with an empty reference', () => {
+    renderCreateModeEditor({ rows: [{ reference: '', defaultAmount: 20 }] });
+    expect(screen.getByText(/la referencia es obligatoria/i)).toBeInTheDocument();
+  });
+
+  it('shows an inline error for a row with a non-positive amount', () => {
+    renderCreateModeEditor({ rows: [{ reference: 'Ana', defaultAmount: 0 }] });
+    expect(screen.getByText(/el monto debe ser mayor a 0/i)).toBeInTheDocument();
+  });
+
+  it('shows no inline errors for a valid row', () => {
+    renderCreateModeEditor({ rows: [{ reference: 'Ana', defaultAmount: 20 }] });
+    expect(screen.queryByText(/la referencia es obligatoria/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/el monto debe ser mayor a 0/i)).not.toBeInTheDocument();
   });
 });

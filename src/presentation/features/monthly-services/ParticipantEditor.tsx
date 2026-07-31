@@ -11,7 +11,10 @@ import {
 } from '@/core/application/hooks/use-monthly-service-participants';
 import { type MonthlyServiceParticipant } from '@/core/domain/entities/monthly-service-participant';
 import { type Currency } from '@/core/domain/enums/currency.enum';
-import { type MonthlyServiceParticipantRowInput } from '@/core/domain/schemas/monthly-service-participant.schema';
+import {
+  type MonthlyServiceParticipantRowInput,
+  replaceMonthlyServiceParticipantsSchema,
+} from '@/core/domain/schemas/monthly-service-participant.schema';
 
 import { ApiError } from '@/infrastructure/api/api-error';
 
@@ -26,22 +29,110 @@ interface EditableRow {
   defaultAmount: number;
 }
 
-let rowKeySeq = 0;
-function nextRowKey(): string {
-  rowKeySeq += 1;
-  return `row-${rowKeySeq}`;
-}
+/** Per-row validation problems, keyed by the row `key`. */
+type RowErrors = Record<string, { reference?: string; defaultAmount?: string }>;
 
-function toRows(participants: MonthlyServiceParticipant[]): EditableRow[] {
-  return participants.map((p) => ({
-    key: p.id,
-    reference: p.reference,
-    defaultAmount: p.defaultAmount,
-  }));
+function toRowSeeds(participants: MonthlyServiceParticipant[]): RowSeed[] {
+  return participants.map((p) => ({ reference: p.reference, defaultAmount: p.defaultAmount }));
 }
 
 function toRowInputs(rows: EditableRow[]): MonthlyServiceParticipantRowInput[] {
   return rows.map((r) => ({ reference: r.reference, defaultAmount: r.defaultAmount }));
+}
+
+/**
+ * Validate the current rows against the batch-replace schema. Returns the
+ * per-row error map (empty when the whole list is valid). `reference` is
+ * flagged when blank; `defaultAmount` when it is not a finite number > 0
+ * (an empty amount input coerces to `NaN`, a zero to `0` — both invalid).
+ */
+function validateRows(
+  rows: EditableRow[],
+  messages: { referenceRequired: string; amountInvalid: string },
+): RowErrors {
+  const errors: RowErrors = {};
+  for (const row of rows) {
+    const rowError: { reference?: string; defaultAmount?: string } = {};
+    if (row.reference.trim().length === 0) {
+      rowError.reference = messages.referenceRequired;
+    }
+    if (!Number.isFinite(row.defaultAmount) || row.defaultAmount <= 0) {
+      rowError.defaultAmount = messages.amountInvalid;
+    }
+    if (rowError.reference || rowError.defaultAmount) {
+      errors[row.key] = rowError;
+    }
+  }
+  return errors;
+}
+
+/** A row shape without its client key — the input to `seed`. */
+type RowSeed = Pick<EditableRow, 'reference' | 'defaultAmount'>;
+
+/**
+ * Owns the mutable list of editable rows plus the CRUD handlers shared by
+ * both modes. Row identity is a monotonic, instance-scoped counter kept in
+ * React state — never module-global, and never a ref read during render — so
+ * keys are deterministic per mount and never leak across editor instances.
+ * Rows are keyed by identity, never by array index, so removing a middle row
+ * can't reshuffle the survivors.
+ *
+ * Every handler returns the resulting keyed list so a controlled caller
+ * (create mode) can forward it to its parent in the same tick without waiting
+ * for the state commit.
+ */
+function useEditableRows(initialSeed: RowSeed[]) {
+  // `keySeq` is React state so advancing it is a normal render-safe state
+  // update. The initializer seeds the counter and the rows together so their
+  // keys never collide with keys minted later. A local `seq` accumulator lets
+  // one handler mint several keys before a single `setKeySeq` commit.
+  const [initial] = useState(() => seedWithKeys(initialSeed, 0));
+  const [keySeq, setKeySeq] = useState(initial.seq);
+  const [rows, setRows] = useState<EditableRow[]>(initial.rows);
+
+  function commit(built: { rows: EditableRow[]; seq: number }): EditableRow[] {
+    setKeySeq(built.seq);
+    setRows(built.rows);
+    return built.rows;
+  }
+
+  /** Replace the whole list from a keyless seed, minting fresh keys. */
+  function seed(seeds: RowSeed[]): EditableRow[] {
+    return commit(seedWithKeys(seeds, keySeq));
+  }
+
+  function addRow(): EditableRow[] {
+    const seq = keySeq + 1;
+    const next = [...rows, { key: `row-${seq}`, reference: '', defaultAmount: 0 }];
+    return commit({ rows: next, seq });
+  }
+
+  function removeRow(key: string): EditableRow[] {
+    // Keep the survivors' existing keys — only the removed row drops out.
+    return commit({ rows: rows.filter((row) => row.key !== key), seq: keySeq });
+  }
+
+  function changeRow(
+    key: string,
+    patch: Partial<Pick<EditableRow, 'reference' | 'defaultAmount'>>,
+  ): EditableRow[] {
+    return commit({
+      rows: rows.map((row) => (row.key === key ? { ...row, ...patch } : row)),
+      seq: keySeq,
+    });
+  }
+
+  return { rows, seed, addRow, removeRow, changeRow };
+}
+
+/** Build keyed rows from keyless seeds, advancing a counter for each. */
+function seedWithKeys(seeds: RowSeed[], startSeq: number): { rows: EditableRow[]; seq: number } {
+  let seq = startSeq;
+  const rows = seeds.map((s) => {
+    seq += 1;
+    return { key: `row-${seq}`, reference: s.reference, defaultAmount: s.defaultAmount };
+  });
+  return { rows, seq };
 }
 
 interface BaseProps {
@@ -104,6 +195,10 @@ function EditModeEditor({ monthlyServiceId, currency, knownReferences = [] }: Ed
   } = useServiceParticipants(monthlyServiceId);
   const replaceMutation = useReplaceParticipants(monthlyServiceId);
 
+  const { rows, seed, addRow, removeRow, changeRow } = useEditableRows([]);
+  const [seededAt, setSeededAt] = useState(0);
+  const [formError, setFormError] = useState<string | null>(null);
+
   // Re-seed local rows every time FRESH server data lands — the initial
   // load AND every successful refetch after `useReplaceParticipants`
   // invalidates the list (e.g. so server-side reference normalization is
@@ -112,16 +207,17 @@ function EditModeEditor({ monthlyServiceId, currency, knownReferences = [] }: Ed
   // when to reset local edits. This intentionally discards any in-flight
   // unsaved edits on refetch — acceptable because the only refetch trigger
   // here is this editor's own successful save.
-  const [rows, setRows] = useState<EditableRow[]>([]);
-  const [seededAt, setSeededAt] = useState(0);
-  const [formError, setFormError] = useState<string | null>(null);
-
   let effectiveRows = rows;
   if (!isLoading && dataUpdatedAt !== seededAt) {
-    effectiveRows = toRows(participants);
-    setRows(effectiveRows);
+    effectiveRows = seed(toRowSeeds(participants));
     setSeededAt(dataUpdatedAt);
   }
+
+  const rowErrors = validateRows(effectiveRows, {
+    referenceRequired: t('referenceRequired'),
+    amountInvalid: t('amountInvalid'),
+  });
+  const hasRowErrors = Object.keys(rowErrors).length > 0;
 
   function handleError(error: Error) {
     setFormError(
@@ -131,24 +227,19 @@ function EditModeEditor({ monthlyServiceId, currency, knownReferences = [] }: Ed
     );
   }
 
-  function handleAddRow() {
-    setRows([...effectiveRows, { key: nextRowKey(), reference: '', defaultAmount: 0 }]);
-  }
-
-  function handleRemoveRow(key: string) {
-    setRows(effectiveRows.filter((row) => row.key !== key));
-  }
-
-  function handleRowChange(
-    key: string,
-    patch: Partial<Pick<EditableRow, 'reference' | 'defaultAmount'>>,
-  ) {
-    setRows(effectiveRows.map((row) => (row.key === key ? { ...row, ...patch } : row)));
-  }
-
   function handleSave() {
     setFormError(null);
-    replaceMutation.mutate(toRowInputs(effectiveRows), {
+    // Client-side gate before the batch write — the rows are validated
+    // against the same schema shape as `replaceMonthlyServiceParticipantsSchema`
+    // (see `validateRows`), so an obviously-invalid payload never reaches the
+    // network. The Save button is also disabled while `hasRowErrors`, making
+    // this a defensive backstop.
+    if (hasRowErrors) return;
+    const parsed = replaceMonthlyServiceParticipantsSchema.safeParse({
+      participants: toRowInputs(effectiveRows),
+    });
+    if (!parsed.success) return;
+    replaceMutation.mutate(parsed.data.participants, {
       onError: handleError,
     });
   }
@@ -168,10 +259,11 @@ function EditModeEditor({ monthlyServiceId, currency, knownReferences = [] }: Ed
       ) : (
         <ParticipantRows
           rows={effectiveRows}
+          errors={rowErrors}
           currency={currency}
           knownReferences={knownReferences}
-          onRowChange={handleRowChange}
-          onRemoveRow={handleRemoveRow}
+          onRowChange={changeRow}
+          onRemoveRow={removeRow}
           emptyLabel={t('empty')}
         />
       )}
@@ -179,7 +271,7 @@ function EditModeEditor({ monthlyServiceId, currency, knownReferences = [] }: Ed
       <div className="flex items-center justify-between gap-2 border-t border-border pt-3">
         <button
           type="button"
-          onClick={handleAddRow}
+          onClick={addRow}
           className="inline-flex items-center gap-1.5 rounded-md border border-border px-3 py-2 text-xs font-medium hover:bg-muted"
         >
           <Plus className="size-3.5" />
@@ -188,7 +280,7 @@ function EditModeEditor({ monthlyServiceId, currency, knownReferences = [] }: Ed
         <button
           type="button"
           onClick={handleSave}
-          disabled={replaceMutation.isPending}
+          disabled={replaceMutation.isPending || hasRowErrors}
           className="inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-2 text-xs font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
         >
           {replaceMutation.isPending && <Loader2 className="size-3.5 animate-spin" />}
@@ -201,34 +293,65 @@ function EditModeEditor({ monthlyServiceId, currency, knownReferences = [] }: Ed
   );
 }
 
+/**
+ * A "signature" of an external row list — used to detect when the parent
+ * resets/replaces `rows` (e.g. cleared on modal open) versus when the change
+ * originated from this editor's own handlers. Row order + content is enough;
+ * we never need to diff individual fields.
+ */
+function rowsSignature(rows: MonthlyServiceParticipantRowInput[]): string {
+  return rows.map((r) => `${r.reference}::${r.defaultAmount}`).join('|');
+}
+
 function CreateModeEditor({ currency, knownReferences = [], rows, onRowsChange }: CreateModeProps) {
   const t = useTranslations('monthlyServices.participants');
 
-  // Create mode has no server-assigned ids yet — key rows by their index-
-  // stable position instead. Rows are provided by the parent and only ever
-  // mutated through onRowsChange, so index identity is stable across
-  // re-renders here.
-  const editableRows: EditableRow[] = rows.map((row, index) => ({
-    key: `create-row-${index}`,
-    reference: row.reference,
-    defaultAmount: row.defaultAmount,
-  }));
+  // Create mode is controlled by the parent (`rows` rides the create-service
+  // payload), but identity lives HERE: `useEditableRows` owns keyed rows so
+  // React list identity and per-row error placement stay stable across edits.
+  // Every mutation updates local state AND is pushed up via `onRowsChange`.
+  // Keys come from the hook's instance-scoped counter — never the array index
+  // — so removing a middle row can't reshuffle the survivors' identities.
+  const { rows: editableRows, seed, addRow, removeRow, changeRow } = useEditableRows(rows);
+
+  // Re-seed from the parent only when it replaced the list out-of-band (modal
+  // open reset, editing a different service). Comparing signatures keeps the
+  // echo of our own `onRowsChange` from clobbering local identity/edits. Same
+  // sanctioned "adjust state during render on prop change" pattern as
+  // `EditModeEditor`'s `dataUpdatedAt` reseed.
+  const [seededSignature, setSeededSignature] = useState(() => rowsSignature(rows));
+  const incomingSignature = rowsSignature(rows);
+  const localSignature = rowsSignature(toRowInputs(editableRows));
+  let effectiveRows = editableRows;
+  if (incomingSignature !== seededSignature && incomingSignature !== localSignature) {
+    effectiveRows = seed(rows);
+    setSeededSignature(incomingSignature);
+  }
+
+  const rowErrors = validateRows(effectiveRows, {
+    referenceRequired: t('referenceRequired'),
+    amountInvalid: t('amountInvalid'),
+  });
 
   function handleAddRow() {
-    onRowsChange([...rows, { reference: '', defaultAmount: 0 }]);
+    const next = addRow();
+    setSeededSignature(rowsSignature(toRowInputs(next)));
+    onRowsChange(toRowInputs(next));
   }
 
   function handleRemoveRow(key: string) {
-    const index = Number(key.replace('create-row-', ''));
-    onRowsChange(rows.filter((_, i) => i !== index));
+    const next = removeRow(key);
+    setSeededSignature(rowsSignature(toRowInputs(next)));
+    onRowsChange(toRowInputs(next));
   }
 
   function handleRowChange(
     key: string,
     patch: Partial<Pick<EditableRow, 'reference' | 'defaultAmount'>>,
   ) {
-    const index = Number(key.replace('create-row-', ''));
-    onRowsChange(rows.map((row, i) => (i === index ? { ...row, ...patch } : row)));
+    const next = changeRow(key, patch);
+    setSeededSignature(rowsSignature(toRowInputs(next)));
+    onRowsChange(toRowInputs(next));
   }
 
   return (
@@ -239,7 +362,8 @@ function CreateModeEditor({ currency, knownReferences = [], rows, onRowsChange }
       </div>
 
       <ParticipantRows
-        rows={editableRows}
+        rows={effectiveRows}
+        errors={rowErrors}
         currency={currency}
         knownReferences={knownReferences}
         onRowChange={handleRowChange}
@@ -265,6 +389,7 @@ function CreateModeEditor({ currency, knownReferences = [], rows, onRowsChange }
 
 function ParticipantRows({
   rows,
+  errors,
   currency,
   knownReferences,
   onRowChange,
@@ -272,6 +397,7 @@ function ParticipantRows({
   emptyLabel,
 }: {
   rows: EditableRow[];
+  errors: RowErrors;
   currency: Currency;
   knownReferences: string[];
   onRowChange: (
@@ -311,6 +437,7 @@ function ParticipantRows({
           <ParticipantRowItem
             key={row.key}
             row={row}
+            error={errors[row.key]}
             currency={currency}
             referenceListId={referenceListId}
             onChange={(patch) => onRowChange(row.key, patch)}
@@ -325,12 +452,14 @@ function ParticipantRows({
 
 function ParticipantRowItem({
   row,
+  error,
   currency,
   referenceListId,
   onChange,
   onRemove,
 }: {
   row: EditableRow;
+  error?: { reference?: string; defaultAmount?: string };
   currency: Currency;
   referenceListId: string;
   onChange: (patch: Partial<Pick<EditableRow, 'reference' | 'defaultAmount'>>) => void;
@@ -353,8 +482,10 @@ function ParticipantRowItem({
           compact
           placeholder={t('referencePlaceholder')}
           value={row.reference}
+          aria-invalid={error?.reference ? true : undefined}
           onChange={(e) => onChange({ reference: e.target.value })}
         />
+        {error?.reference && <p className="text-[11px] text-destructive">{error.reference}</p>}
       </div>
       <div className="w-28 space-y-1">
         <label htmlFor={amountInputId} className="text-xs font-medium">
@@ -367,11 +498,21 @@ function ParticipantRowItem({
           min="0.01"
           compact
           value={Number.isFinite(row.defaultAmount) ? row.defaultAmount : ''}
-          onChange={(e) => onChange({ defaultAmount: Number(e.target.value) })}
+          aria-invalid={error?.defaultAmount ? true : undefined}
+          // An empty input yields `''` → `Number('')` is `0`; a non-numeric
+          // value yields `NaN`. Map the empty case to `NaN` (not the silent
+          // `0`) so `validateRows` flags it as "amount required" instead of
+          // treating a blank field as a valid-looking zero.
+          onChange={(e) =>
+            onChange({ defaultAmount: e.target.value === '' ? NaN : Number(e.target.value) })
+          }
         />
+        {error?.defaultAmount && (
+          <p className="text-[11px] text-destructive">{error.defaultAmount}</p>
+        )}
       </div>
       <span className="pb-2 text-[11px] text-muted-foreground">
-        {formatCurrency(row.defaultAmount, currency)}
+        {formatCurrency(Number.isFinite(row.defaultAmount) ? row.defaultAmount : 0, currency)}
       </span>
       <button
         type="button"
