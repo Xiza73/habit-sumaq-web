@@ -87,6 +87,18 @@ describe('httpClient', () => {
 
       expect(fetchMock.mock.calls[0][1]?.body).toBeUndefined();
     });
+
+    it('serializes the request body as JSON for PUT (batch replace endpoints)', async () => {
+      fetchMock.mockResolvedValueOnce(
+        mockResponse(200, { success: true, data: [{ id: 'row-1' }], message: 'ok', error: null }),
+      );
+
+      await httpClient.put('/things/abc/rows', { rows: [{ name: 'row' }] });
+
+      const call = fetchMock.mock.calls[0];
+      expect(call[1]?.method).toBe('PUT');
+      expect(call[1]?.body).toBe(JSON.stringify({ rows: [{ name: 'row' }] }));
+    });
   });
 
   describe('headers', () => {

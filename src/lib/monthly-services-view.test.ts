@@ -24,6 +24,7 @@ function makeService(overrides: Partial<MonthlyService> = {}): MonthlyService {
     isOverdue: false,
     isPaidForCurrentMonth: false,
     paidAmountForCurrentMonth: 0,
+    linkedDebts: [],
     ...overrides,
   };
 }

@@ -19,6 +19,7 @@ import {
 import { ApiError } from '@/infrastructure/api/api-error';
 
 import { DatePicker } from '@/presentation/components/ui/DatePicker';
+import { FieldGrid } from '@/presentation/components/ui/FieldGrid';
 import { Input } from '@/presentation/components/ui/Input';
 import { Modal } from '@/presentation/components/ui/Modal';
 import { Select } from '@/presentation/components/ui/Select';
@@ -184,11 +185,12 @@ export function DebtLoanForm({
           </div>
         )}
 
-        <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <label htmlFor="dl-amount" className="text-sm font-medium">
-              {t('amount')}
-            </label>
+        <FieldGrid columns={2}>
+          <FieldGrid.Field
+            label={t('amount')}
+            htmlFor="dl-amount"
+            error={form.formState.errors.amount?.message}
+          >
             <Input
               id="dl-amount"
               type="number"
@@ -196,15 +198,9 @@ export function DebtLoanForm({
               min="0.01"
               {...form.register('amount', { valueAsNumber: true })}
             />
-            {form.formState.errors.amount && (
-              <p className="text-xs text-destructive">{form.formState.errors.amount.message}</p>
-            )}
-          </div>
+          </FieldGrid.Field>
 
-          <div className="space-y-2">
-            <label htmlFor="dl-currency" className="text-sm font-medium">
-              {t('currency')}
-            </label>
+          <FieldGrid.Field label={t('currency')} htmlFor="dl-currency">
             {isEditing ? (
               <Input id="dl-currency" type="text" value={form.getValues('currency')} disabled />
             ) : (
@@ -226,8 +222,8 @@ export function DebtLoanForm({
                 )}
               />
             )}
-          </div>
-        </div>
+          </FieldGrid.Field>
+        </FieldGrid>
 
         <div className="space-y-2">
           <label htmlFor="dl-reference" className="text-sm font-medium">

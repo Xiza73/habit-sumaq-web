@@ -154,6 +154,11 @@
     "MSP_003": "Ya registraste un pago para ese período.",
     "MSP_004": "La moneda del pago no coincide con la del servicio.",
     "MSP_005": "El período debe tener formato YYYY-MM.",
+    "MSP_010": "La suma de los montos de los participantes supera el monto total del pago.",
+    "MSP_PARTICIPANT_NOT_FOUND": "Participante no encontrado.",
+    "MSP_PARTICIPANT_DUPLICATE_REFERENCE": "Ya existe un participante con esa referencia.",
+    "MSP_PARTICIPANT_SUM_EXCEEDS_ESTIMATED": "La suma de los montos de los participantes supera el monto estimado del servicio.",
+    "MSP_PARTICIPANT_AMOUNT_NOT_POSITIVE": "El monto por defecto debe ser mayor a 0.",
     "VAL_002": "La moneda de la cuenta no coincide con la del presupuesto.",
     "TSK_001": "Sección no encontrada.",
     "TSK_002": "El nombre de la sección es obligatorio.",
@@ -283,7 +288,10 @@
     "editService": "Editar servicio",
     "empty": "Todavía no agregaste ningún servicio",
     "emptyArchived": "No tienes servicios archivados",
-    "tabs": { "active": "Activos", "archived": "Archivados" },
+    "tabs": {
+      "active": "Activos",
+      "archived": "Archivados"
+    },
     "status": {
       "paid": "Al día",
       "pending": "Pendiente",
@@ -382,7 +390,34 @@
       "date": "Fecha",
       "details": "Detalles",
       "detailsPlaceholder": "Notas adicionales (opcional)",
-      "confirm": "Confirmar pago"
+      "confirm": "Confirmar pago",
+      "participants": {
+        "title": "Participantes",
+        "hint": "El monto de cada participante se descuenta como un préstamo pendiente. Tu parte es el resto del monto total.",
+        "amount": "Monto",
+        "alreadyPaid": "Ya me pagó"
+      }
+    },
+    "participants": {
+      "title": "Participantes",
+      "hint": "Divide este servicio entre varias personas. Agrega filas, ajusta los montos y guarda: la lista enviada reemplaza a la anterior por completo.",
+      "loading": "Cargando participantes…",
+      "empty": "Sin participantes configurados.",
+      "reference": "Referencia",
+      "referencePlaceholder": "Nombre o referencia (ej. Ana)",
+      "defaultAmount": "Monto por defecto",
+      "addRow": "Agregar fila",
+      "removeRow": "Quitar fila de {reference}",
+      "save": "Guardar participantes",
+      "createHint": "Los participantes se guardan junto con el servicio al presionar \"Crear\".",
+      "referenceRequired": "La referencia es obligatoria.",
+      "amountInvalid": "El monto debe ser mayor a 0.",
+      "serverErrorHint": "Revisá los montos y referencias de los participantes."
+    },
+    "linkedDebts": {
+      "badge": "{count, plural, one {# préstamo pendiente} other {# préstamos pendientes}} · {amount}",
+      "settle": "Liquidar",
+      "settleTrigger": "Liquidar {reference}"
     }
   },
   "navigation": {
@@ -497,7 +532,10 @@
     "editChore": "Editar tarea",
     "empty": "Todavía no agregaste ninguna tarea",
     "emptyArchived": "No hay tareas archivadas",
-    "tabs": { "active": "Activas", "archived": "Archivadas" },
+    "tabs": {
+      "active": "Activas",
+      "archived": "Archivadas"
+    },
     "status": {
       "overdue": "Atrasada",
       "upcoming": "Próxima",

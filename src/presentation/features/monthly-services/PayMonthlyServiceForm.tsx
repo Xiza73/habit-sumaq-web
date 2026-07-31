@@ -1,13 +1,14 @@
 'use client';
 
 import { useEffect } from 'react';
-import { Controller, useForm } from 'react-hook-form';
+import { Controller, useFieldArray, useForm } from 'react-hook-form';
 import { useLocale, useTranslations } from 'next-intl';
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
+import { useServiceParticipants } from '@/core/application/hooks/use-monthly-service-participants';
 import { useCreateMonthlyServicePayment } from '@/core/application/hooks/use-monthly-service-payments';
 import { type MonthlyService } from '@/core/domain/entities/monthly-service';
 import {
@@ -18,6 +19,7 @@ import {
 import { ApiError } from '@/infrastructure/api/api-error';
 
 import { DatePicker } from '@/presentation/components/ui/DatePicker';
+import { FieldGrid } from '@/presentation/components/ui/FieldGrid';
 import { Input } from '@/presentation/components/ui/Input';
 import { Modal } from '@/presentation/components/ui/Modal';
 
@@ -60,6 +62,11 @@ export function PayMonthlyServiceForm({ open, service, onClose }: PayMonthlyServ
   const locale = useLocale();
 
   const createMutation = useCreateMonthlyServicePayment();
+  // Only fetch config when the modal is actually open for a real service —
+  // avoids a stray request while `service` is null between opens.
+  const { data: configuredParticipants = [], isLoading: participantsLoading } =
+    useServiceParticipants(open ? service?.id : undefined);
+  const isShared = configuredParticipants.length > 0;
 
   const form = useForm<CreateMonthlyServicePaymentInput>({
     resolver: zodResolver(createMonthlyServicePaymentSchema),
@@ -69,7 +76,13 @@ export function PayMonthlyServiceForm({ open, service, onClose }: PayMonthlyServ
       amount: 0,
       date: getTodayLocaleDate(),
       description: null,
+      participants: [],
     },
+  });
+
+  const { fields: participantFields } = useFieldArray({
+    control: form.control,
+    name: 'participants',
   });
 
   useEffect(() => {
@@ -90,8 +103,16 @@ export function PayMonthlyServiceForm({ open, service, onClose }: PayMonthlyServ
       // is optional; users add real value only when there's something to
       // say (e.g. "incluye recargo" or "pago en efectivo").
       description: null,
+      // Splits default from config (`defaultAmount`), editable per payment.
+      // `[]` when the service has no participants — pays exactly like a
+      // normal (non-shared) payment, no regression.
+      participants: configuredParticipants.map((p) => ({
+        reference: p.reference,
+        amount: p.defaultAmount,
+        alreadyPaid: false,
+      })),
     });
-  }, [open, service, form]);
+  }, [open, service, configuredParticipants, form]);
 
   if (!service) return null;
 
@@ -118,6 +139,12 @@ export function PayMonthlyServiceForm({ open, service, onClose }: PayMonthlyServ
       // the 2nd, breaking the dueDay recompute).
       date: dateInputToBackendIso(values.date ?? '') ?? values.date,
       description: values.description === '' ? null : (values.description ?? null),
+      // Omit entirely (not `[]`) when the service isn't shared — mirrors
+      // the schema's `.optional()` and keeps a non-shared payment's
+      // payload byte-identical to pre-slice-4 behavior.
+      ...(values.participants && values.participants.length > 0
+        ? { participants: values.participants }
+        : {}),
     };
 
     createMutation.mutate(cleaned, {
@@ -149,11 +176,12 @@ export function PayMonthlyServiceForm({ open, service, onClose }: PayMonthlyServ
           {t('payForm.period', { period: formatPeriodLabel(service.nextDuePeriod, locale) })}
         </p>
 
-        <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <label htmlFor="pay-amount" className="text-sm font-medium">
-              {t('payForm.amount')}
-            </label>
+        <FieldGrid columns={2}>
+          <FieldGrid.Field
+            label={t('payForm.amount')}
+            htmlFor="pay-amount"
+            error={form.formState.errors.amount?.message}
+          >
             <Input
               id="pay-amount"
               type="number"
@@ -161,15 +189,9 @@ export function PayMonthlyServiceForm({ open, service, onClose }: PayMonthlyServ
               min="0.01"
               {...form.register('amount', { valueAsNumber: true })}
             />
-            {form.formState.errors.amount && (
-              <p className="text-xs text-destructive">{form.formState.errors.amount.message}</p>
-            )}
-          </div>
+          </FieldGrid.Field>
 
-          <div className="space-y-2">
-            <label htmlFor="pay-date" className="text-sm font-medium">
-              {t('payForm.date')}
-            </label>
+          <FieldGrid.Field label={t('payForm.date')} htmlFor="pay-date">
             <Controller
               control={form.control}
               name="date"
@@ -183,8 +205,56 @@ export function PayMonthlyServiceForm({ open, service, onClose }: PayMonthlyServ
                 />
               )}
             />
+          </FieldGrid.Field>
+        </FieldGrid>
+
+        {participantsLoading ? (
+          // Hold the split section until the participants query resolves.
+          // Rendering the "regular payment" assumption early would hide the
+          // split UI for a genuinely-shared service during the brief load.
+          <div className="flex items-center gap-2 rounded-lg border border-border p-3 text-sm text-muted-foreground">
+            <Loader2 className="size-4 animate-spin" />
+            {tCommon('loading')}
           </div>
-        </div>
+        ) : (
+          isShared && (
+            <div className="space-y-2 rounded-lg border border-border p-3">
+              <div>
+                <h3 className="text-sm font-medium">{t('payForm.participants.title')}</h3>
+                <p className="text-[11px] text-muted-foreground">
+                  {t('payForm.participants.hint')}
+                </p>
+              </div>
+              <ul className="space-y-2">
+                {participantFields.map((field, index) => (
+                  <li key={field.id} className="flex items-center gap-2">
+                    <span className="min-w-0 flex-1 truncate text-sm">{field.reference}</span>
+                    <div className="w-24">
+                      <label htmlFor={`participant-payment-amount-${index}`} className="sr-only">
+                        {field.reference}
+                      </label>
+                      <Input
+                        id={`participant-payment-amount-${index}`}
+                        type="number"
+                        step="0.01"
+                        min="0.01"
+                        compact
+                        {...form.register(`participants.${index}.amount`, { valueAsNumber: true })}
+                      />
+                    </div>
+                    <label className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                      <input
+                        type="checkbox"
+                        {...form.register(`participants.${index}.alreadyPaid`)}
+                      />
+                      {t('payForm.participants.alreadyPaid')}
+                    </label>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )
+        )}
 
         <div className="space-y-2">
           <label htmlFor="pay-details" className="text-sm font-medium">

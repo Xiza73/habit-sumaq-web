@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { type Category } from '@/core/domain/entities/category';
 import { type MonthlyService } from '@/core/domain/entities/monthly-service';
@@ -8,6 +8,11 @@ import { type MonthlyService } from '@/core/domain/entities/monthly-service';
 import { TestProviders } from '@/test/utils';
 
 import { MonthlyServiceCard } from './MonthlyServiceCard';
+
+const mockSettleMutate = vi.fn();
+vi.mock('@/core/application/hooks/use-debts-loans', () => ({
+  useSettleDebtLoan: () => ({ mutate: mockSettleMutate, isPending: false }),
+}));
 
 const mockCategory: Category = {
   id: 'cat-1',
@@ -39,6 +44,7 @@ const baseService: MonthlyService = {
   isOverdue: false,
   isPaidForCurrentMonth: false,
   paidAmountForCurrentMonth: 0,
+  linkedDebts: [],
 };
 
 function renderCard(service: MonthlyService = baseService) {
@@ -56,6 +62,10 @@ function renderCard(service: MonthlyService = baseService) {
 }
 
 describe('MonthlyServiceCard', () => {
+  beforeEach(() => {
+    mockSettleMutate.mockClear();
+  });
+
   it('renders service name and currency badge', () => {
     renderCard();
     expect(screen.getByText('Luz')).toBeInTheDocument();
@@ -108,6 +118,31 @@ describe('MonthlyServiceCard', () => {
     expect(screen.getAllByRole('button', { name: /desarchivar/i }).length).toBeGreaterThan(0);
   });
 
+  it('is a full-height flex column so cards stretch to equal height in a grid row', () => {
+    // Layout guard: without `h-full` + `flex-col` the card cannot fill the
+    // stretched grid cell, and the action row cannot be pushed to the bottom.
+    renderCard();
+    const root = screen.getByText('Luz').closest('div.rounded-xl');
+    expect(root).not.toBeNull();
+    expect(root).toHaveClass('flex', 'flex-col', 'h-full');
+  });
+
+  it('pushes the pending action row to the bottom with mt-auto (bottom-aligns siblings)', () => {
+    // A card with less content (no linked-debt badge) must keep its
+    // Pagar/Saltear buttons bottom-aligned with a taller sibling's buttons.
+    renderCard();
+    const actionRow = screen.getByRole('button', { name: /^pagar$/i }).parentElement;
+    expect(actionRow).toHaveClass('mt-auto');
+  });
+
+  it('bottom-aligns the unarchive action row with mt-auto when archived', () => {
+    renderCard({ ...baseService, isActive: false });
+    const unarchiveButtons = screen.getAllByRole('button', { name: /desarchivar/i });
+    // The full-width action button (not the menu item) carries the layout class.
+    const actionButton = unarchiveButtons.find((b) => b.className.includes('w-full'));
+    expect(actionButton).toHaveClass('mt-auto');
+  });
+
   it('fires onPay when the pay button is clicked', async () => {
     const handlers = renderCard();
     const user = userEvent.setup();
@@ -136,5 +171,70 @@ describe('MonthlyServiceCard', () => {
   it('renders the annual cadence too', () => {
     renderCard({ ...baseService, frequencyMonths: 12 });
     expect(screen.getByText(/anual/i)).toBeInTheDocument();
+  });
+
+  describe('linked debts', () => {
+    const withLinkedDebts: MonthlyService = {
+      ...baseService,
+      linkedDebts: [
+        { id: 'debt-ana', reference: 'Ana', remainingAmount: 40, status: 'PENDING' },
+        { id: 'debt-luis', reference: 'Luis', remainingAmount: 60, status: 'PENDING' },
+      ],
+    };
+
+    it('does NOT render a linked-debt badge when the service has none', () => {
+      renderCard(baseService);
+      expect(screen.queryByText(/pr[eé]stamo/i)).not.toBeInTheDocument();
+    });
+
+    it('shows a badge summarizing pending linked debts (count + total pending amount)', () => {
+      renderCard(withLinkedDebts);
+      // 2 pending loans, total 100 (40 + 60), PEN.
+      expect(screen.getByText(/2 pr[eé]stamos pendientes/i)).toBeInTheDocument();
+      expect(screen.getByText(/100/)).toBeInTheDocument();
+    });
+
+    it('uses the singular badge copy (ICU `one` branch) with exactly one linked debt', () => {
+      renderCard({
+        ...baseService,
+        linkedDebts: [{ id: 'debt-ana', reference: 'Ana', remainingAmount: 40, status: 'PENDING' }],
+      });
+      // Exactly ONE pending loan — singular, not "1 préstamos".
+      expect(screen.getByText(/1 pr[eé]stamo pendiente/i)).toBeInTheDocument();
+      expect(screen.queryByText(/pr[eé]stamos pendientes/i)).not.toBeInTheDocument();
+    });
+
+    it('exposes a stable aria-label per settle-trigger button (references the debt)', () => {
+      renderCard(withLinkedDebts);
+      // Query by the explicit aria-label instead of the concatenated
+      // "reference · amount" display text, which is brittle.
+      expect(screen.getByRole('button', { name: /liquidar ana/i })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /liquidar luis/i })).toBeInTheDocument();
+    });
+
+    it('opens a settle modal for a linked debt from the card', async () => {
+      const user = userEvent.setup();
+      renderCard(withLinkedDebts);
+
+      await user.click(screen.getByRole('button', { name: /liquidar ana/i }));
+      expect(screen.getByRole('dialog')).toBeInTheDocument();
+      expect(screen.getByText(/liquidar ana/i)).toBeInTheDocument();
+    });
+
+    it('settling a linked debt goes through the shared useSettleDebtLoan mutation', async () => {
+      const user = userEvent.setup();
+      renderCard(withLinkedDebts);
+
+      await user.click(screen.getByRole('button', { name: /liquidar ana/i }));
+      await user.click(screen.getByRole('button', { name: /confirmar/i }));
+
+      expect(mockSettleMutate).toHaveBeenCalledOnce();
+      const callArg = mockSettleMutate.mock.calls[0][0] as {
+        id: string;
+        data: { settledAmount: number; currency?: string };
+      };
+      expect(callArg.id).toBe('debt-ana');
+      expect(callArg.data.settledAmount).toBe(40);
+    });
   });
 });

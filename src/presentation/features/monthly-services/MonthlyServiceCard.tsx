@@ -8,6 +8,7 @@ import {
   ArchiveRestore,
   CalendarDays,
   FolderTree,
+  HandCoins,
   MoreVertical,
   Pencil,
   Receipt,
@@ -15,15 +16,50 @@ import {
   Trash2,
   Wallet,
 } from 'lucide-react';
+import { toast } from 'sonner';
 
+import { useSettleDebtLoan } from '@/core/application/hooks/use-debts-loans';
 import { type Category } from '@/core/domain/entities/category';
+import { type DebtLoan } from '@/core/domain/entities/debt-loan';
 import {
+  type LinkedDebt,
   MONTHLY_SERVICE_FREQUENCY_LABEL_KEYS,
   type MonthlyService,
 } from '@/core/domain/entities/monthly-service';
 
+import { ApiError } from '@/infrastructure/api/api-error';
+
+import { DebtLoanRowSettleModal } from '@/presentation/features/debts-loans/DebtLoanRowSettleModal';
+
 import { formatCurrency, formatPeriodLabel } from '@/lib/format';
 import { cn } from '@/lib/utils';
+
+/**
+ * `DebtLoanRowSettleModal` (and `useSettleDebtLoan`) expect a full
+ * `DebtLoan`. A `LinkedDebt` only carries the fields the monthly-services
+ * response exposes (`id`, `reference`, `remainingAmount`, `status`) — this
+ * adapts one into a `DebtLoan`-shaped object so the settle flow can be
+ * reused unchanged. Only `id`, `reference`, `remainingAmount`, `currency`,
+ * and `status` are actually read by the modal/mutation; the rest are
+ * placeholders that satisfy the type but are never rendered or sent.
+ */
+function toSettleableDebtLoan(linkedDebt: LinkedDebt, service: MonthlyService): DebtLoan {
+  return {
+    id: linkedDebt.id,
+    userId: service.userId,
+    type: 'LOAN',
+    currency: service.currency,
+    amount: linkedDebt.remainingAmount,
+    remainingAmount: linkedDebt.remainingAmount,
+    status: linkedDebt.status,
+    reference: linkedDebt.reference,
+    description: null,
+    categoryId: null,
+    date: service.updatedAt,
+    createdAt: service.updatedAt,
+    updatedAt: service.updatedAt,
+  };
+}
 
 interface MonthlyServiceCardProps {
   service: MonthlyService;
@@ -59,8 +95,11 @@ export function MonthlyServiceCard({
   onDelete,
 }: MonthlyServiceCardProps) {
   const t = useTranslations('monthlyServices');
+  const tErrors = useTranslations('errors');
   const locale = useLocale();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [settlingDebt, setSettlingDebt] = useState<LinkedDebt | null>(null);
+  const settleMutation = useSettleDebtLoan();
 
   const status = resolveStatus(service);
   const isArchived = !service.isActive;
@@ -70,11 +109,38 @@ export function MonthlyServiceCard({
   const canPay = !isArchived && status !== 'paid';
   const canSkip = canPay;
   const periodLabel = formatPeriodLabel(service.nextDuePeriod, locale);
+  const totalLinkedPending = service.linkedDebts.reduce((sum, d) => sum + d.remainingAmount, 0);
+
+  function handleSettleConfirm(mode: 'real' | 'informal', amount: number) {
+    if (!settlingDebt) return;
+    settleMutation.mutate(
+      {
+        id: settlingDebt.id,
+        data: {
+          settledAmount: amount,
+          currency: mode === 'real' ? service.currency : undefined,
+        },
+      },
+      {
+        onSuccess: () => setSettlingDebt(null),
+        onError: (error) => {
+          toast.error(
+            error instanceof ApiError && error.code && tErrors.has(error.code)
+              ? tErrors(error.code as 'DBT_001')
+              : tErrors('generic'),
+          );
+        },
+      },
+    );
+  }
 
   return (
     <div
       className={cn(
-        'group relative flex flex-col gap-4 rounded-xl border border-border bg-card p-5 transition-shadow hover:shadow-md',
+        // `h-full` fills the grid cell (grid items stretch by default) and
+        // `flex-col` lets the action row use `mt-auto` to bottom-align across
+        // sibling cards of differing content height.
+        'group relative flex h-full flex-col gap-4 rounded-xl border border-border bg-card p-5 transition-shadow hover:shadow-md',
         isArchived && 'opacity-60',
       )}
     >
@@ -211,16 +277,41 @@ export function MonthlyServiceCard({
         )}
       </dl>
 
+      {service.linkedDebts.length > 0 && (
+        <div className="space-y-1.5 rounded-lg bg-muted/50 p-2.5">
+          <p className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+            <HandCoins className="size-3.5" />
+            {t('linkedDebts.badge', {
+              count: service.linkedDebts.length,
+              amount: formatCurrency(totalLinkedPending, service.currency),
+            })}
+          </p>
+          <div className="flex flex-wrap gap-1.5">
+            {service.linkedDebts.map((debt) => (
+              <button
+                key={debt.id}
+                type="button"
+                onClick={() => setSettlingDebt(debt)}
+                aria-label={t('linkedDebts.settleTrigger', { reference: debt.reference })}
+                className="rounded-md border border-border bg-card px-2 py-1 text-[11px] font-medium hover:bg-muted"
+              >
+                {debt.reference} · {formatCurrency(debt.remainingAmount, service.currency)}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
       {isArchived ? (
         <button
           type="button"
           onClick={() => onArchive(service)}
-          className="w-full rounded-lg border border-border px-3 py-2 text-sm font-medium transition-colors hover:bg-muted"
+          className="mt-auto w-full rounded-lg border border-border px-3 py-2 text-sm font-medium transition-colors hover:bg-muted"
         >
           {t('actions.unarchive')}
         </button>
       ) : canPay ? (
-        <div className="flex items-center gap-2">
+        <div className="mt-auto flex items-center gap-2">
           <button
             type="button"
             onClick={() => onPay(service)}
@@ -241,6 +332,13 @@ export function MonthlyServiceCard({
           )}
         </div>
       ) : null}
+
+      <DebtLoanRowSettleModal
+        row={settlingDebt ? toSettleableDebtLoan(settlingDebt, service) : null}
+        loading={settleMutation.isPending}
+        onConfirm={handleSettleConfirm}
+        onCancel={() => setSettlingDebt(null)}
+      />
     </div>
   );
 }

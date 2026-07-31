@@ -2,6 +2,8 @@ import { z } from 'zod/v4';
 
 import { MONTHLY_SERVICE_FREQUENCIES } from '@/core/domain/entities/monthly-service';
 
+import { monthlyServiceParticipantRowSchema } from './monthly-service-participant.schema';
+
 const PERIOD_REGEX = /^\d{4}-(0[1-9]|1[0-2])$/;
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -25,6 +27,14 @@ export const createMonthlyServiceSchema = z.object({
   estimatedAmount: z.number().positive('min_amount').nullable().optional(),
   dueDay: z.number().int().min(1).max(31).nullable().optional(),
   startPeriod: z.string().regex(PERIOD_REGEX, 'invalid_period').optional(),
+  /**
+   * Optional shared-service participant config, created atomically with
+   * the service (`POST /monthly-services`). Same shape/validation as `PUT
+   * /monthly-services/:id/participants` — see
+   * `monthly-service-participant.schema.ts`. Omitted or `[]` creates the
+   * service exactly like before this field existed.
+   */
+  participants: z.array(monthlyServiceParticipantRowSchema).optional(),
 });
 
 export type CreateMonthlyServiceInput = z.infer<typeof createMonthlyServiceSchema>;

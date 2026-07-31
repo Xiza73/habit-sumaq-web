@@ -119,6 +119,43 @@ describe('createMonthlyServiceSchema', () => {
     const result = createMonthlyServiceSchema.safeParse(validInput);
     expect(result.success).toBe(true);
   });
+
+  it('accepts an omitted participants array (no shared-service config)', () => {
+    const result = createMonthlyServiceSchema.safeParse(validInput);
+    expect(result.success).toBe(true);
+  });
+
+  it('accepts an empty participants array', () => {
+    const result = createMonthlyServiceSchema.safeParse({ ...validInput, participants: [] });
+    expect(result.success).toBe(true);
+  });
+
+  it('accepts a valid participants array', () => {
+    const result = createMonthlyServiceSchema.safeParse({
+      ...validInput,
+      participants: [
+        { reference: 'Ana', defaultAmount: 20 },
+        { reference: 'Luis', defaultAmount: 15 },
+      ],
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it('rejects a participants row with a non-positive defaultAmount', () => {
+    const result = createMonthlyServiceSchema.safeParse({
+      ...validInput,
+      participants: [{ reference: 'Ana', defaultAmount: 0 }],
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it('rejects a participants row with an empty reference', () => {
+    const result = createMonthlyServiceSchema.safeParse({
+      ...validInput,
+      participants: [{ reference: '', defaultAmount: 20 }],
+    });
+    expect(result.success).toBe(false);
+  });
 });
 
 describe('updateMonthlyServiceSchema', () => {

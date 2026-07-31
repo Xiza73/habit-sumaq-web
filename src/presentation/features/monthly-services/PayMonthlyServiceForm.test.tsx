@@ -1,12 +1,20 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { toast } from 'sonner';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { type MonthlyService } from '@/core/domain/entities/monthly-service';
+import { type MonthlyServiceParticipant } from '@/core/domain/entities/monthly-service-participant';
+
+import { ApiError } from '@/infrastructure/api/api-error';
 
 import { TestProviders } from '@/test/utils';
 
 import { PayMonthlyServiceForm } from './PayMonthlyServiceForm';
+
+vi.mock('sonner', () => ({
+  toast: { success: vi.fn(), error: vi.fn() },
+}));
 
 const mockCreateMutate = vi.fn();
 
@@ -16,6 +24,15 @@ const mockCreateMutate = vi.fn();
 // is dead — this form must NOT touch it.
 vi.mock('@/core/application/hooks/use-monthly-service-payments', () => ({
   useCreateMonthlyServicePayment: () => ({ mutate: mockCreateMutate, isPending: false }),
+}));
+
+let mockParticipants: MonthlyServiceParticipant[] = [];
+let mockParticipantsLoading = false;
+vi.mock('@/core/application/hooks/use-monthly-service-participants', () => ({
+  useServiceParticipants: () => ({
+    data: mockParticipants,
+    isLoading: mockParticipantsLoading,
+  }),
 }));
 
 // Replace the DatePicker with a thin text input so the form can be filled
@@ -66,6 +83,7 @@ const baseService: MonthlyService = {
   isOverdue: false,
   isPaidForCurrentMonth: false,
   paidAmountForCurrentMonth: 0,
+  linkedDebts: [],
 };
 
 function renderForm(overrides: { service?: MonthlyService | null; open?: boolean } = {}) {
@@ -84,6 +102,10 @@ function renderForm(overrides: { service?: MonthlyService | null; open?: boolean
 describe('PayMonthlyServiceForm', () => {
   beforeEach(() => {
     mockCreateMutate.mockClear();
+    vi.mocked(toast.error).mockClear();
+    vi.mocked(toast.success).mockClear();
+    mockParticipants = [];
+    mockParticipantsLoading = false;
   });
 
   it('returns null when no service is provided', () => {
@@ -155,5 +177,129 @@ describe('PayMonthlyServiceForm', () => {
     expect(callArg.description).toBeNull();
     // dateInputToBackendIso pins the picker value to noon UTC.
     expect(callArg.date).toMatch(/^\d{4}-\d{2}-\d{2}T12:00:00\.000Z$/);
+  });
+
+  it('surfaces a mapped error toast when the create mutation rejects (MSP_010 split exceeds total)', async () => {
+    mockCreateMutate.mockImplementation((_data, { onError }: { onError: (e: Error) => void }) => {
+      onError(new ApiError('Split exceeds total', 'MSP_010'));
+    });
+    const user = userEvent.setup();
+    renderForm();
+
+    await user.click(screen.getByRole('button', { name: /confirmar pago/i }));
+
+    expect(toast.error).toHaveBeenCalledWith(
+      expect.stringMatching(
+        /la suma de los montos de los participantes supera el monto total del pago/i,
+      ),
+    );
+  });
+
+  it('falls back to the generic error toast for an unmapped error code', async () => {
+    mockCreateMutate.mockImplementation((_data, { onError }: { onError: (e: Error) => void }) => {
+      onError(new ApiError('Boom', 'SOME_UNKNOWN_CODE'));
+    });
+    const user = userEvent.setup();
+    renderForm();
+
+    await user.click(screen.getByRole('button', { name: /confirmar pago/i }));
+
+    expect(toast.error).toHaveBeenCalledOnce();
+  });
+});
+
+const ana: MonthlyServiceParticipant = {
+  id: 'p-ana',
+  monthlyServiceId: baseService.id,
+  userId: 'user-1',
+  reference: 'Ana',
+  defaultAmount: 10,
+  createdAt: '2026-01-01T00:00:00.000Z',
+  updatedAt: '2026-01-01T00:00:00.000Z',
+};
+
+const luis: MonthlyServiceParticipant = {
+  id: 'p-luis',
+  monthlyServiceId: baseService.id,
+  userId: 'user-1',
+  reference: 'Luis',
+  defaultAmount: 8,
+  createdAt: '2026-01-01T00:00:00.000Z',
+  updatedAt: '2026-01-01T00:00:00.000Z',
+};
+
+describe('PayMonthlyServiceForm — shared service with participants', () => {
+  beforeEach(() => {
+    mockCreateMutate.mockClear();
+    mockParticipants = [ana, luis];
+  });
+
+  it('renders one row per configured participant with the amount prefilled from defaultAmount', () => {
+    renderForm();
+    const anaAmountInput = screen.getByLabelText(/ana/i);
+    const luisAmountInput = screen.getByLabelText(/luis/i);
+    expect(anaAmountInput).toHaveValue(10);
+    expect(luisAmountInput).toHaveValue(8);
+  });
+
+  it('lets the user edit a participant amount for this payment only', async () => {
+    const user = userEvent.setup();
+    renderForm();
+
+    const anaAmountInput = screen.getByLabelText(/ana/i);
+    await user.clear(anaAmountInput);
+    await user.type(anaAmountInput, '15');
+    expect(anaAmountInput).toHaveValue(15);
+  });
+
+  it('renders an "already paid" checkbox per participant, unchecked by default', () => {
+    renderForm();
+    const checkboxes = screen.getAllByRole('checkbox');
+    expect(checkboxes).toHaveLength(2);
+    checkboxes.forEach((checkbox) => expect(checkbox).not.toBeChecked());
+  });
+
+  it('submits participants[] with edited amounts and alreadyPaid flags', async () => {
+    const user = userEvent.setup();
+    renderForm();
+
+    const anaAmountInput = screen.getByLabelText(/ana/i);
+    await user.clear(anaAmountInput);
+    await user.type(anaAmountInput, '15');
+
+    const anaCheckbox = screen.getAllByRole('checkbox')[0];
+    await user.click(anaCheckbox);
+
+    await user.click(screen.getByRole('button', { name: /confirmar pago/i }));
+
+    expect(mockCreateMutate).toHaveBeenCalledOnce();
+    const callArg = mockCreateMutate.mock.calls[0][0] as {
+      participants: { reference: string; amount: number; alreadyPaid?: boolean }[];
+    };
+    expect(callArg.participants).toEqual([
+      { reference: 'Ana', amount: 15, alreadyPaid: true },
+      { reference: 'Luis', amount: 8, alreadyPaid: false },
+    ]);
+  });
+
+  it('holds the split section in a loading state until participants resolve (no early regular-payment assumption)', () => {
+    mockParticipantsLoading = true;
+    renderForm();
+    // While loading we must NOT render the participant amount inputs (which
+    // would imply "not shared"). A loading placeholder stands in instead.
+    expect(screen.queryByLabelText(/ana/i)).not.toBeInTheDocument();
+    expect(screen.getByText(/cargando/i)).toBeInTheDocument();
+  });
+
+  it('does NOT include participants in the payload when the service has none configured (no regression)', async () => {
+    mockParticipants = [];
+    const user = userEvent.setup();
+    renderForm();
+
+    await user.click(screen.getByRole('button', { name: /confirmar pago/i }));
+
+    expect(mockCreateMutate).toHaveBeenCalledOnce();
+    const callArg = mockCreateMutate.mock.calls[0][0] as Record<string, unknown>;
+    expect(callArg.participants).toBeUndefined();
   });
 });
