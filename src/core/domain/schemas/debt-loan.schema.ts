@@ -44,6 +44,22 @@ export const bulkSettleByReferenceSchema = z.object({
 export type BulkSettleByReferenceInput = z.infer<typeof bulkSettleByReferenceSchema>;
 
 /**
+ * POST /debts/settle-amount-by-reference — distributes `amount` FIFO
+ * (oldest-first) across the person's PENDING debts of ONE direction
+ * (`type`). The backend caps at the total pending for that
+ * (reference, currency, type). `realPayment: true` moves the currency
+ * pool; omitted/false is an informal close.
+ */
+export const settleAmountByReferenceSchema = z.object({
+  reference: z.string().min(1, 'required').max(255),
+  currency: currencySchema,
+  type: z.enum(['DEBT', 'LOAN']),
+  amount: z.number().min(0.01, 'min_amount'),
+  realPayment: z.boolean().optional(),
+});
+export type SettleAmountByReferenceInput = z.infer<typeof settleAmountByReferenceSchema>;
+
+/**
  * PATCH /debts/payments/:paymentId — edit amount and/or note of a
  * payment in the history. The backend enforces "at least one field"
  * (DBT_009); we mirror it via `.refine` so the form rejects empty

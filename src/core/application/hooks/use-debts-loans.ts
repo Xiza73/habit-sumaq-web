@@ -5,10 +5,12 @@ import {
   type DebtLoanPayment,
   type DebtLoanStatusFilter,
   type DebtLoanSummaryRow,
+  type SettleAmountResult,
 } from '@/core/domain/entities/debt-loan';
 import {
   type BulkSettleByReferenceInput,
   type CreateDebtLoanInput,
+  type SettleAmountByReferenceInput,
   type SettleDebtLoanInput,
   type UpdateDebtLoanInput,
   type UpdateDebtLoanPaymentInput,
@@ -133,6 +135,22 @@ export function useBulkSettleByReference() {
   const invalidate = useInvalidateAllAndMonthlyServices();
   return useMutation({
     mutationFn: (data: BulkSettleByReferenceInput) => debtsLoansApi.bulkSettleByReference(data),
+    onSuccess: () => {
+      invalidate();
+    },
+  });
+}
+
+/**
+ * Settle a chosen `amount` FIFO across a person's PENDING debts of ONE
+ * direction (`type`). Like the other settle/delete mutations it invalidates
+ * `['monthly-services']` too, since a MonthlyService's `linkedDebts[]` only
+ * lists PENDING loans — closing one here must flip it out of that array.
+ */
+export function useSettleAmountByReference() {
+  const invalidate = useInvalidateAllAndMonthlyServices();
+  return useMutation<SettleAmountResult, Error, SettleAmountByReferenceInput>({
+    mutationFn: (data) => debtsLoansApi.settleAmountByReference(data),
     onSuccess: () => {
       invalidate();
     },

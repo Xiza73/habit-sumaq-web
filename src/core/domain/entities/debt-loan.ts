@@ -72,6 +72,22 @@ export interface BulkSettleResult {
 }
 
 /**
+ * Result of POST /debts/settle-amount-by-reference. The backend distributes
+ * the requested `amount` FIFO across the person's PENDING rows of ONE
+ * `type`, so the response reports how many rows were fully vs partially
+ * settled. `partiallySettledId` is the single row that absorbed the
+ * leftover (or `null` when the amount closed rows exactly).
+ */
+export interface SettleAmountResult {
+  settledCount: number;
+  totalSettledAmount: number;
+  fullySettledCount: number;
+  partiallySettledId: string | null;
+  currency: Currency;
+  type: DebtLoanType;
+}
+
+/**
  * Row shape from `GET /debts/:id/payments`. One per settle event applied
  * to a debt/loan, ordered by `createdAt` DESC by the backend. `currency`
  * is `null` for informal-close settles (the settle didn't touch the pool).

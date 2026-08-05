@@ -4,10 +4,12 @@ import {
   type DebtLoanPayment,
   type DebtLoanStatusFilter,
   type DebtLoanSummaryRow,
+  type SettleAmountResult,
 } from '@/core/domain/entities/debt-loan';
 import {
   type BulkSettleByReferenceInput,
   type CreateDebtLoanInput,
+  type SettleAmountByReferenceInput,
   type SettleDebtLoanInput,
   type UpdateDebtLoanInput,
   type UpdateDebtLoanPaymentInput,
@@ -61,6 +63,10 @@ export const debtsLoansApi = {
 
   bulkSettleByReference(data: BulkSettleByReferenceInput): Promise<BulkSettleResult> {
     return httpClient.post<BulkSettleResult>('/debts/settle-by-reference', data);
+  },
+
+  settleAmountByReference(data: SettleAmountByReferenceInput): Promise<SettleAmountResult> {
+    return httpClient.post<SettleAmountResult>('/debts/settle-amount-by-reference', data);
   },
 
   /**
