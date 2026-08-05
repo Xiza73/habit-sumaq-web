@@ -39,7 +39,13 @@
     "emptyStateFiltered": "No categories of this type.",
     "deleteConfirm": "Are you sure you want to delete this category?",
     "cannotDeleteDefault": "Default categories cannot be deleted.",
-    "default": "Default"
+    "default": "Default",
+    "table": {
+      "name": "Name",
+      "type": "Type",
+      "color": "Color",
+      "actions": "Actions"
+    }
   },
   "settings": {
     "autostart": {
@@ -142,6 +148,7 @@
     "MSVC_004": "This service is already paid for the current month.",
     "CHRE_001": "Cannot delete a chore with logged events. Archive it instead.",
     "CHRE_002": "Chore not found.",
+    "CHRE_003": "There are no events to revert.",
     "BDGT_001": "Budget not found.",
     "BDGT_002": "You already have a budget for that month and currency.",
     "BDGT_003": "The movement date must fall within the budget's month.",
@@ -174,6 +181,7 @@
     "DBT_008": "This payment has already been deleted.",
     "DBT_009": "You must modify at least one field.",
     "DBT_010": "Amount exceeds the debt balance.",
+    "DBT_011": "No pending items of that kind with this person.",
     "generic": "An unexpected error occurred. Please try again."
   },
   "habits": {
@@ -216,6 +224,7 @@
     "notCompleted": "Not completed",
     "checkIn": "Check in",
     "undoCheckIn": "Undo check in",
+    "viewDetail": "View habit",
     "frequencies": {
       "DAILY": "Daily",
       "WEEKLY": "Weekly"
@@ -279,6 +288,13 @@
         "year2": "365 days. You're a different person.",
         "year3": "You've earned respect. And day 366."
       }
+    },
+    "table": {
+      "name": "Name",
+      "frequency": "Frequency",
+      "target": "Target",
+      "todayProgress": "Today progress",
+      "actions": "Actions"
     }
   },
   "monthlyServices": {
@@ -418,6 +434,17 @@
       "badge": "{count, plural, one {# pending loan} other {# pending loans}} · {amount}",
       "settle": "Settle",
       "settleTrigger": "Settle {reference}"
+    },
+    "table": {
+      "name": "Name",
+      "category": "Category",
+      "currency": "Currency",
+      "estimatedAmount": "Estimated amount",
+      "dueDay": "Due day",
+      "nextPeriod": "Next period",
+      "linkedDebts": "Linked debts",
+      "status": "Status",
+      "actions": "Actions"
     }
   },
   "navigation": {
@@ -596,10 +623,21 @@
     "logs": {
       "title": "History of \"{name}\"",
       "empty": "No events yet",
-      "loadMore": "Load more"
+      "loadMore": "Load more",
+      "revertLast": "Revert last",
+      "revertSuccess": "Last completion reverted"
     },
     "archived": "Archived",
-    "unarchived": "Unarchived"
+    "unarchived": "Unarchived",
+    "table": {
+      "name": "Name",
+      "category": "Category",
+      "cadence": "Cadence",
+      "nextDue": "Next date",
+      "lastDone": "Last done",
+      "status": "Status",
+      "actions": "Actions"
+    }
   },
   "reports": {
     "loadError": "Could not load the report. Please try again.",
@@ -850,7 +888,33 @@
       "net": "Net",
       "pendingCount": "{count, plural, one {# pending} other {# pending}}",
       "settledCount": "{count, plural, one {# settled} other {# settled}}",
-      "settleAll": "Settle all"
+      "settle": "Settle",
+      "total": "Total",
+      "andMore": "and {count} more",
+      "quickAdd": {
+        "newDebt": "New debt with {name}",
+        "newLoan": "New loan with {name}"
+      }
+    },
+    "settle": {
+      "title": "Settle with {name}",
+      "direction": "What do you want to settle?",
+      "directionDebt": "Pay what I owe",
+      "directionLoan": "Collect what I'm owed",
+      "pendingTotal": "Pending: {amount}",
+      "amount": "Amount",
+      "all": "All",
+      "fifoNote": "Applied oldest-first.",
+      "nothingToSettle": "Nothing pending to settle with this person.",
+      "invalidAmount": "Amount must be greater than 0 and no larger than the pending total.",
+      "mode": "How do you close it?",
+      "real": "Real payment",
+      "realHint": "Moves your internal {currency} balance.",
+      "informal": "Informal close",
+      "informalHint": "Just marks it settled, without moving the balance.",
+      "cancel": "Cancel",
+      "confirm": "Confirm",
+      "success": "Settled {amount} with {name} ({count, plural, one {# operation} other {# operations}})."
     },
     "newDebt": "New debt",
     "newLoan": "New loan",
@@ -908,6 +972,14 @@
       "deleteConfirm": "Delete this record?",
       "deleteSuccess": "Deleted",
       "empty": "No records.",
+      "shareImage": {
+        "copy": "Copy image",
+        "download": "Download",
+        "copySuccess": "Image copied",
+        "downloadSuccess": "Image downloaded",
+        "copyFallback": "Couldn't copy; the image was downloaded instead.",
+        "error": "Couldn't generate the image."
+      },
       "payments": {
         "show": "Show payments",
         "hide": "Hide payments",
@@ -926,26 +998,19 @@
         "deleteSuccess": "Payment deleted"
       }
     },
-    "bulkSettle": {
-      "title": "Settle everything with this person",
-      "totalPending": "Total pending: {amount} across {count, plural, one {# entry} other {# entries}}.",
-      "netSummary": {
-        "theyOweYou": "Net in your favor: {amount}.",
-        "youOwe": "Net you owe: {amount}."
-      },
-      "mode": "How are you closing this?",
-      "real": {
-        "title": "Real payment",
-        "description": "Money actually changed hands. Updates your internal {currency} balance."
-      },
-      "informal": {
-        "title": "Informal close",
-        "description": "Just mark as settled. Internal balance is not touched."
-      },
-      "cancel": "Cancel",
-      "confirm": "Confirm",
-      "successReal": "Settled debts with {name} ({currency}).",
-      "successInformal": "Marked debts with {name} ({currency}) as settled."
+    "table": {
+      "person": "Person",
+      "currency": "Currency",
+      "pendingDebt": "Pending debt",
+      "pendingLoan": "Pending loan",
+      "net": "Net",
+      "actions": "Actions",
+      "openDetail": "Open detail for {name}"
     }
+  },
+  "viewMode": {
+    "label": "View",
+    "cards": "Cards",
+    "table": "Table"
   }
 }

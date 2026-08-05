@@ -35,6 +35,13 @@ interface DebtLoanFormProps {
    */
   debtLoan: DebtLoan | null;
   initialType?: DebtLoanType;
+  /**
+   * CREATE-mode prefills (ignored in edit mode). Used by the summary-card
+   * quick-add buttons to seed the person and currency for the group. The
+   * currency stays editable in the form.
+   */
+  initialReference?: string;
+  initialCurrency?: Currency;
   onClose: () => void;
   /**
    * Prior `reference` values across the user's debts/loans, offered as
@@ -48,6 +55,8 @@ export function DebtLoanForm({
   open,
   debtLoan,
   initialType = 'DEBT',
+  initialReference,
+  initialCurrency,
   onClose,
   knownReferences = [],
 }: DebtLoanFormProps) {
@@ -64,9 +73,9 @@ export function DebtLoanForm({
     resolver: zodResolver(createDebtLoanSchema),
     defaultValues: {
       type: initialType,
-      currency: 'PEN',
+      currency: initialCurrency ?? 'PEN',
       amount: 0,
-      reference: '',
+      reference: initialReference ?? '',
       description: null,
       date: getTodayLocaleDate(),
     },
@@ -89,13 +98,19 @@ export function DebtLoanForm({
 
     form.reset({
       type: initialType,
-      currency: 'PEN',
+      currency: initialCurrency ?? 'PEN',
       amount: 0,
-      reference: '',
+      reference: initialReference ?? '',
       description: null,
       date: getTodayLocaleDate(),
     });
-  }, [open, debtLoan, initialType, form]);
+
+    // When the person is prefilled (quick-add), the only thing left to fill is
+    // the amount — focus it so the user can type right away.
+    if (initialReference) {
+      form.setFocus('amount');
+    }
+  }, [open, debtLoan, initialType, initialReference, initialCurrency, form]);
 
   function handleSubmit(values: CreateDebtLoanInput) {
     const cleanedDescription =

@@ -1,13 +1,13 @@
 import {
-  type BulkSettleResult,
   type DebtLoan,
   type DebtLoanPayment,
   type DebtLoanStatusFilter,
   type DebtLoanSummaryRow,
+  type SettleAmountResult,
 } from '@/core/domain/entities/debt-loan';
 import {
-  type BulkSettleByReferenceInput,
   type CreateDebtLoanInput,
+  type SettleAmountByReferenceInput,
   type SettleDebtLoanInput,
   type UpdateDebtLoanInput,
   type UpdateDebtLoanPaymentInput,
@@ -21,9 +21,12 @@ function buildStatusQuery(status?: DebtLoanStatusFilter): string {
 }
 
 /**
- * API client for the v1.0.0 `debts_loans` backend module. Mirrors the 8
+ * API client for the v1.0.0 `debts_loans` backend module. Mirrors the
  * endpoints from
  * `habit-sumaq-backend/docs/frontend/api-reference.md#debts-and-loans`.
+ * The legacy all-or-nothing `/debts/settle-by-reference` endpoint still
+ * exists on the backend but is no longer called by the web (replaced by
+ * `settleAmountByReference`).
  *
  * During the parallel-run window (Phases A3–A6), this client coexists
  * with the legacy `transactionsApi` DEBT/LOAN endpoints. The web is
@@ -59,8 +62,8 @@ export const debtsLoansApi = {
     return httpClient.post<DebtLoan>(`/debts/${id}/settle`, data);
   },
 
-  bulkSettleByReference(data: BulkSettleByReferenceInput): Promise<BulkSettleResult> {
-    return httpClient.post<BulkSettleResult>('/debts/settle-by-reference', data);
+  settleAmountByReference(data: SettleAmountByReferenceInput): Promise<SettleAmountResult> {
+    return httpClient.post<SettleAmountResult>('/debts/settle-amount-by-reference', data);
   },
 
   /**

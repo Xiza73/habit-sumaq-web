@@ -19,6 +19,7 @@ import {
 
 import { type HabitWithStats } from '@/core/domain/entities/habit';
 
+import { getHabitProgress } from '@/lib/habit-progress';
 import { getStreakStyle } from '@/lib/streak-styles';
 import { cn } from '@/lib/utils';
 
@@ -43,10 +44,7 @@ export function HabitCard({
   const tCommon = useTranslations('common');
   const [menuOpen, setMenuOpen] = useState(false);
 
-  const todayCount = habit.todayLog?.count ?? 0;
-  const periodCount = habit.periodCount ?? todayCount;
-  const isCompleted = habit.periodCompleted ?? periodCount >= habit.targetCount;
-  const progress = Math.min(periodCount / habit.targetCount, 1);
+  const { todayCount, periodCount, isCompleted, progress } = getHabitProgress(habit);
   const streakStyle = getStreakStyle(habit.currentStreak);
 
   return (

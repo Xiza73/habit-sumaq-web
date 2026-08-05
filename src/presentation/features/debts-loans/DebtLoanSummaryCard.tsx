@@ -4,15 +4,21 @@ import { useTranslations } from 'next-intl';
 
 import { ArrowDownLeft, ArrowUpRight, User } from 'lucide-react';
 
-import { type DebtLoanSummaryRow } from '@/core/domain/entities/debt-loan';
+import { type DebtLoanSummaryRow, type DebtLoanType } from '@/core/domain/entities/debt-loan';
 
 import { formatCurrency } from '@/lib/format';
 import { cn } from '@/lib/utils';
 
 interface DebtLoanSummaryCardProps {
   row: DebtLoanSummaryRow;
-  onSettleAll?: (row: DebtLoanSummaryRow) => void;
+  onSettle?: (row: DebtLoanSummaryRow) => void;
   onClick?: (row: DebtLoanSummaryRow) => void;
+  /**
+   * Quick-create a debt/loan prefilled for this person. Renders the two
+   * top-right corner buttons (↗ red = DEBT you owe, ↙ green = LOAN they owe
+   * you) when provided.
+   */
+  onQuickAdd?: (row: DebtLoanSummaryRow, type: DebtLoanType) => void;
 }
 
 /**
@@ -21,7 +27,12 @@ interface DebtLoanSummaryCardProps {
  * design) but typed against the new domain entity and pulling i18n from
  * the `debts` namespace.
  */
-export function DebtLoanSummaryCard({ row, onSettleAll, onClick }: DebtLoanSummaryCardProps) {
+export function DebtLoanSummaryCard({
+  row,
+  onSettle,
+  onClick,
+  onQuickAdd,
+}: DebtLoanSummaryCardProps) {
   const t = useTranslations('debts.summary');
   const hasDebt = row.pendingDebt > 0;
   const hasLoan = row.pendingLoan > 0;
@@ -59,6 +70,35 @@ export function DebtLoanSummaryCard({ row, onSettleAll, onClick }: DebtLoanSumma
           <span className="truncate text-sm font-semibold">{row.displayName}</span>
           <span className="text-xs text-muted-foreground">{row.currency}</span>
         </div>
+
+        {onQuickAdd && (
+          <div className="flex shrink-0 items-center gap-1">
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                onQuickAdd(row, 'DEBT');
+              }}
+              title={t('quickAdd.newDebt', { name: row.displayName })}
+              aria-label={t('quickAdd.newDebt', { name: row.displayName })}
+              className="inline-flex size-7 items-center justify-center rounded-md text-destructive transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            >
+              <ArrowUpRight className="size-3.5" aria-hidden />
+            </button>
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                onQuickAdd(row, 'LOAN');
+              }}
+              title={t('quickAdd.newLoan', { name: row.displayName })}
+              aria-label={t('quickAdd.newLoan', { name: row.displayName })}
+              className="inline-flex size-7 items-center justify-center rounded-md text-green-700 transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary dark:text-green-400"
+            >
+              <ArrowDownLeft className="size-3.5" aria-hidden />
+            </button>
+          </div>
+        )}
       </div>
 
       <div className="mt-4 space-y-2 text-sm">
@@ -108,16 +148,16 @@ export function DebtLoanSummaryCard({ row, onSettleAll, onClick }: DebtLoanSumma
           {row.pendingCount > 0 && row.settledCount > 0 && ' · '}
           {row.settledCount > 0 && t('settledCount', { count: row.settledCount })}
         </span>
-        {onSettleAll && hasAny && (
+        {onSettle && hasAny && (
           <button
             type="button"
             onClick={(e) => {
               e.stopPropagation();
-              onSettleAll(row);
+              onSettle(row);
             }}
             className="font-medium text-primary hover:underline"
           >
-            {t('settleAll')}
+            {t('settle')}
           </button>
         )}
       </div>

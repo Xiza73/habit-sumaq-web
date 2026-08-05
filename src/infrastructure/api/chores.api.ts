@@ -58,6 +58,15 @@ export const choresApi = {
     return httpClient.post<Chore>(`/chores/${id}/skip`);
   },
 
+  /**
+   * Reverts the most recent completion: soft-deletes the latest `ChoreLog` and
+   * recomputes `lastDoneDate` / `nextDueDate`. Fails with `CHRE_003` when the
+   * chore has no logs to revert.
+   */
+  revertLastDone(id: string): Promise<Chore> {
+    return httpClient.post<Chore>(`/chores/${id}/revert-last-done`);
+  },
+
   toggleArchive(id: string): Promise<Chore> {
     return httpClient.patch<Chore>(`/chores/${id}/archive`);
   },

@@ -13,11 +13,13 @@ import {
   useSkipChoreCycle,
 } from '@/core/application/hooks/use-chores';
 import { useDateFormat } from '@/core/application/hooks/use-user-settings';
+import { useViewMode } from '@/core/application/hooks/use-view-mode';
 import { type Chore } from '@/core/domain/entities/chore';
 
 import { ApiError } from '@/infrastructure/api/api-error';
 
 import { ConfirmDialog } from '@/presentation/components/feedback/ConfirmDialog';
+import { ViewModeToggle } from '@/presentation/components/ui/ViewModeToggle';
 
 import { formatDate } from '@/lib/format';
 import { cn } from '@/lib/utils';
@@ -25,6 +27,7 @@ import { cn } from '@/lib/utils';
 import { ChoreCard } from './ChoreCard';
 import { ChoreForm } from './ChoreForm';
 import { ChoreLogsHistoryDialog } from './ChoreLogsHistoryDialog';
+import { ChoresTable } from './ChoresTable';
 import { MarkChoreDoneForm } from './MarkChoreDoneForm';
 
 function CardSkeleton() {
@@ -72,6 +75,7 @@ export function ChoresList() {
   const archiveMutation = useArchiveChore();
   const skipMutation = useSkipChoreCycle();
   const deleteMutation = useDeleteChore();
+  const [viewMode, setViewMode] = useViewMode('chores');
 
   // Categories already used by the user — feeds the form's `<datalist>`.
   // We pull from the "all" cache so categories used on archived chores still
@@ -178,22 +182,30 @@ export function ChoresList() {
         </button>
       </div>
 
-      <div className="flex items-center gap-2">
-        {(['active', 'archived'] as const).map((value) => (
-          <button
-            key={value}
-            type="button"
-            onClick={() => setTab(value)}
-            className={cn(
-              'rounded-lg border px-3 py-1.5 text-sm font-medium transition-colors',
-              tab === value
-                ? 'border-primary bg-primary/10 text-primary'
-                : 'border-border text-muted-foreground hover:bg-muted',
-            )}
-          >
-            {t(`tabs.${value}`)}
-          </button>
-        ))}
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2">
+          {(['active', 'archived'] as const).map((value) => (
+            <button
+              key={value}
+              type="button"
+              onClick={() => setTab(value)}
+              className={cn(
+                'rounded-lg border px-3 py-1.5 text-sm font-medium transition-colors',
+                tab === value
+                  ? 'border-primary bg-primary/10 text-primary'
+                  : 'border-border text-muted-foreground hover:bg-muted',
+              )}
+            >
+              {t(`tabs.${value}`)}
+            </button>
+          ))}
+        </div>
+
+        {/* Canonical placement: right-most item of the primary controls row,
+            inside a `flex items-center gap-2` cluster (see ViewModeToggle). */}
+        <div className="flex items-center gap-2">
+          <ViewModeToggle mode={viewMode} onChange={setViewMode} />
+        </div>
       </div>
 
       {isLoading ? (
@@ -218,6 +230,16 @@ export function ChoresList() {
             </button>
           )}
         </div>
+      ) : viewMode === 'table' ? (
+        <ChoresTable
+          chores={visibleChores}
+          onMarkDone={setDoneTarget}
+          onSkip={setSkipTarget}
+          onViewHistory={setHistoryTarget}
+          onEdit={handleEdit}
+          onArchive={handleArchive}
+          onDelete={setDeleteTarget}
+        />
       ) : (
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
           {visibleChores.map((chore) => (

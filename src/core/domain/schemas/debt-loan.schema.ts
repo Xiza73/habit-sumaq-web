@@ -10,6 +10,13 @@ import { z } from 'zod/v4';
 
 const currencySchema = z.enum(['PEN', 'USD', 'EUR']);
 
+/**
+ * Minimum settle/amount value shared by the schemas and the client-side
+ * form validation, so the modal and the wire contract can't drift (a
+ * sub-cent amount must be rejected in both places).
+ */
+export const MIN_SETTLE_AMOUNT = 0.01;
+
 export const createDebtLoanSchema = z.object({
   type: z.enum(['DEBT', 'LOAN']),
   currency: currencySchema,
@@ -37,11 +44,21 @@ export const settleDebtLoanSchema = z.object({
 });
 export type SettleDebtLoanInput = z.infer<typeof settleDebtLoanSchema>;
 
-export const bulkSettleByReferenceSchema = z.object({
+/**
+ * POST /debts/settle-amount-by-reference — distributes `amount` FIFO
+ * (oldest-first) across the person's PENDING debts of ONE direction
+ * (`type`). The backend caps at the total pending for that
+ * (reference, currency, type). `realPayment: true` moves the currency
+ * pool; omitted/false is an informal close.
+ */
+export const settleAmountByReferenceSchema = z.object({
   reference: z.string().min(1, 'required').max(255),
-  currency: currencySchema.optional(),
+  currency: currencySchema,
+  type: z.enum(['DEBT', 'LOAN']),
+  amount: z.number().min(MIN_SETTLE_AMOUNT, 'min_amount'),
+  realPayment: z.boolean().optional(),
 });
-export type BulkSettleByReferenceInput = z.infer<typeof bulkSettleByReferenceSchema>;
+export type SettleAmountByReferenceInput = z.infer<typeof settleAmountByReferenceSchema>;
 
 /**
  * PATCH /debts/payments/:paymentId — edit amount and/or note of a

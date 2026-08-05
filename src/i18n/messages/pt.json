@@ -39,7 +39,13 @@
     "emptyStateFiltered": "Nenhuma categoria deste tipo.",
     "deleteConfirm": "Tem certeza de que deseja excluir esta categoria?",
     "cannotDeleteDefault": "Categorias padrão não podem ser excluídas.",
-    "default": "Padrão"
+    "default": "Padrão",
+    "table": {
+      "name": "Nome",
+      "type": "Tipo",
+      "color": "Cor",
+      "actions": "Ações"
+    }
   },
   "settings": {
     "autostart": {
@@ -142,6 +148,7 @@
     "MSVC_004": "Este serviço já está pago para o mês atual.",
     "CHRE_001": "Não é possível excluir uma tarefa com histórico. Arquive-a no lugar.",
     "CHRE_002": "Tarefa não encontrada.",
+    "CHRE_003": "Não há eventos para reverter.",
     "BDGT_001": "Orçamento não encontrado.",
     "BDGT_002": "Você já tem um orçamento para esse mês e moeda.",
     "BDGT_003": "A data do movimento deve estar dentro do mês do orçamento.",
@@ -174,6 +181,7 @@
     "DBT_008": "Este pagamento já foi excluído.",
     "DBT_009": "Você precisa modificar ao menos um campo.",
     "DBT_010": "O valor excede o saldo da dívida.",
+    "DBT_011": "Não há operações pendentes desse tipo com esta pessoa.",
     "generic": "Ocorreu um erro inesperado. Tente novamente."
   },
   "habits": {
@@ -216,6 +224,7 @@
     "notCompleted": "Não concluído",
     "checkIn": "Registrar",
     "undoCheckIn": "Desfazer registro",
+    "viewDetail": "Ver hábito",
     "frequencies": {
       "DAILY": "Diário",
       "WEEKLY": "Semanal"
@@ -279,6 +288,13 @@
         "year2": "365 dias. Você é outra pessoa.",
         "year3": "Você ganhou o respeito. E o dia 366."
       }
+    },
+    "table": {
+      "name": "Nome",
+      "frequency": "Frequência",
+      "target": "Meta",
+      "todayProgress": "Progresso de hoje",
+      "actions": "Ações"
     }
   },
   "monthlyServices": {
@@ -418,6 +434,17 @@
       "badge": "{count, plural, one {# empréstimo pendente} other {# empréstimos pendentes}} · {amount}",
       "settle": "Liquidar",
       "settleTrigger": "Liquidar {reference}"
+    },
+    "table": {
+      "name": "Nome",
+      "category": "Categoria",
+      "currency": "Moeda",
+      "estimatedAmount": "Valor estimado",
+      "dueDay": "Dia venc.",
+      "nextPeriod": "Próx. período",
+      "linkedDebts": "Dívidas vinculadas",
+      "status": "Status",
+      "actions": "Ações"
     }
   },
   "navigation": {
@@ -596,10 +623,21 @@
     "logs": {
       "title": "Histórico de \"{name}\"",
       "empty": "Sem eventos ainda",
-      "loadMore": "Carregar mais"
+      "loadMore": "Carregar mais",
+      "revertLast": "Reverter último",
+      "revertSuccess": "Último evento revertido"
     },
     "archived": "Arquivada",
-    "unarchived": "Desarquivada"
+    "unarchived": "Desarquivada",
+    "table": {
+      "name": "Nome",
+      "category": "Categoria",
+      "cadence": "Cadência",
+      "nextDue": "Próx. data",
+      "lastDone": "Última vez",
+      "status": "Status",
+      "actions": "Ações"
+    }
   },
   "reports": {
     "loadError": "Não foi possível carregar o relatório. Tente novamente.",
@@ -850,7 +888,33 @@
       "net": "Líquido",
       "pendingCount": "{count, plural, one {# pendente} other {# pendentes}}",
       "settledCount": "{count, plural, one {# liquidado} other {# liquidados}}",
-      "settleAll": "Liquidar tudo"
+      "settle": "Liquidar",
+      "total": "Total",
+      "andMore": "e mais {count}",
+      "quickAdd": {
+        "newDebt": "Nova dívida com {name}",
+        "newLoan": "Novo empréstimo com {name}"
+      }
+    },
+    "settle": {
+      "title": "Liquidar com {name}",
+      "direction": "O que você quer liquidar?",
+      "directionDebt": "Pagar o que eu devo",
+      "directionLoan": "Cobrar o que me devem",
+      "pendingTotal": "Pendente: {amount}",
+      "amount": "Valor",
+      "all": "Tudo",
+      "fifoNote": "Aplicado primeiro às operações mais antigas.",
+      "nothingToSettle": "Não há nada pendente para liquidar com esta pessoa.",
+      "invalidAmount": "O valor deve ser maior que 0 e não pode exceder o pendente.",
+      "mode": "Como você fecha?",
+      "real": "Pagamento real",
+      "realHint": "Move o saldo interno de {currency}.",
+      "informal": "Fechamento informal",
+      "informalHint": "Apenas marca como quitado, sem mover o saldo.",
+      "cancel": "Cancelar",
+      "confirm": "Confirmar",
+      "success": "Liquidei {amount} com {name} ({count, plural, one {# operação} other {# operações}})."
     },
     "newDebt": "Nova dívida",
     "newLoan": "Novo empréstimo",
@@ -908,6 +972,14 @@
       "deleteConfirm": "Excluir este registro?",
       "deleteSuccess": "Excluído",
       "empty": "Sem registros.",
+      "shareImage": {
+        "copy": "Copiar imagem",
+        "download": "Baixar",
+        "copySuccess": "Imagem copiada",
+        "downloadSuccess": "Imagem baixada",
+        "copyFallback": "Não foi possível copiar; a imagem foi baixada.",
+        "error": "Não foi possível gerar a imagem."
+      },
       "payments": {
         "show": "Ver pagamentos",
         "hide": "Ocultar pagamentos",
@@ -926,26 +998,19 @@
         "deleteSuccess": "Pagamento excluído"
       }
     },
-    "bulkSettle": {
-      "title": "Liquidar tudo com esta pessoa",
-      "totalPending": "Pendente total: {amount} em {count, plural, one {# operação} other {# operações}}.",
-      "netSummary": {
-        "theyOweYou": "A seu favor: {amount}.",
-        "youOwe": "Contra você: {amount}."
-      },
-      "mode": "Como você está fechando?",
-      "real": {
-        "title": "Pagamento real",
-        "description": "Dinheiro realmente mudou de mãos. Atualiza seu saldo interno em {currency}."
-      },
-      "informal": {
-        "title": "Fechamento informal",
-        "description": "Só marca como liquidado, sem mexer no saldo interno."
-      },
-      "cancel": "Cancelar",
-      "confirm": "Confirmar",
-      "successReal": "Dívidas com {name} ({currency}) liquidadas.",
-      "successInformal": "Dívidas com {name} ({currency}) marcadas como liquidadas."
+    "table": {
+      "person": "Pessoa",
+      "currency": "Moeda",
+      "pendingDebt": "Dívida pendente",
+      "pendingLoan": "Empréstimo pendente",
+      "net": "Líquido",
+      "actions": "Ações",
+      "openDetail": "Ver detalhes de {name}"
     }
+  },
+  "viewMode": {
+    "label": "Visualização",
+    "cards": "Cartões",
+    "table": "Tabela"
   }
 }
