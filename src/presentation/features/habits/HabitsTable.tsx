@@ -1,34 +1,56 @@
 'use client';
 
+import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 
-import { Check, Pencil, Plus } from 'lucide-react';
+import { Archive, ArchiveRestore, Check, Eye, Minus, Pencil, Plus, Trash2 } from 'lucide-react';
 
 import { type HabitWithStats } from '@/core/domain/entities/habit';
 
 import { DataTable, type DataTableColumn } from '@/presentation/components/ui/DataTable';
 
+import { getHabitProgress } from '@/lib/habit-progress';
 import { cn } from '@/lib/utils';
 
 interface HabitsTableProps {
   habits: HabitWithStats[];
   /** Log one check-in for the habit (same handler the cards use). */
   onCheckIn: (habit: HabitWithStats) => void;
+  /** Remove one check-in for the habit (same handler the cards use). */
+  onUndo: (habit: HabitWithStats) => void;
   /** Open the edit form for the habit (same handler the cards use). */
   onEdit: (habit: HabitWithStats) => void;
+  /** Archive / unarchive the habit (same handler the cards use). */
+  onArchive: (habit: HabitWithStats) => void;
+  /** Delete the habit (same handler the cards use). */
+  onDelete: (habit: HabitWithStats) => void;
 }
+
+const ICON_BUTTON_CLASS =
+  'inline-flex size-7 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary';
 
 /**
  * Table view of the habits list. Built on the shared `DataTable` primitive and
- * wired to the EXACT handlers the cards use (`onCheckIn`, `onEdit`), so
- * behavior is identical between the cards and the table.
+ * wired to the EXACT handlers the cards use (`onCheckIn`, `onUndo`, `onEdit`,
+ * `onArchive`, `onDelete`), so the table exposes the SAME per-habit actions the
+ * card does — including opening the habit detail (the whole card is a link) via
+ * an explicit "view" action, and the conditional undo (shown only when today's
+ * count > 0, matching the card's minus button).
  *
  * The focus-timer is intentionally left out of the table: it is a list-level
  * action (a single header button in `HabitList`, not a per-habit control), so
  * it stays in the header regardless of the active view mode.
  */
-export function HabitsTable({ habits, onCheckIn, onEdit }: HabitsTableProps) {
+export function HabitsTable({
+  habits,
+  onCheckIn,
+  onUndo,
+  onEdit,
+  onArchive,
+  onDelete,
+}: HabitsTableProps) {
   const t = useTranslations('habits');
+  const tCommon = useTranslations('common');
 
   const columns: DataTableColumn<HabitWithStats>[] = [
     {
@@ -53,9 +75,7 @@ export function HabitsTable({ habits, onCheckIn, onEdit }: HabitsTableProps) {
       key: 'todayProgress',
       header: t('table.todayProgress'),
       render: (habit) => {
-        const periodCount = habit.periodCount ?? habit.todayLog?.count ?? 0;
-        const isCompleted = habit.periodCompleted ?? periodCount >= habit.targetCount;
-        const progress = Math.min(periodCount / habit.targetCount, 1);
+        const { periodCount, isCompleted, progress } = getHabitProgress(habit);
         return (
           <div className="flex items-center gap-2">
             <span className="w-10 shrink-0 tabular-nums text-muted-foreground">
@@ -79,10 +99,28 @@ export function HabitsTable({ habits, onCheckIn, onEdit }: HabitsTableProps) {
       header: t('table.actions'),
       align: 'right',
       render: (habit) => {
-        const periodCount = habit.periodCount ?? habit.todayLog?.count ?? 0;
-        const isCompleted = habit.periodCompleted ?? periodCount >= habit.targetCount;
+        const { todayCount, isCompleted } = getHabitProgress(habit);
         return (
           <div className="flex items-center justify-end gap-1">
+            <Link
+              href={`/habits/${habit.id}`}
+              aria-label={t('viewDetail')}
+              title={t('viewDetail')}
+              className={ICON_BUTTON_CLASS}
+            >
+              <Eye className="size-3.5" aria-hidden />
+            </Link>
+            {!habit.isArchived && todayCount > 0 && (
+              <button
+                type="button"
+                onClick={() => onUndo(habit)}
+                aria-label={t('undoCheckIn')}
+                title={t('undoCheckIn')}
+                className={ICON_BUTTON_CLASS}
+              >
+                <Minus className="size-3.5" aria-hidden />
+              </button>
+            )}
             {!habit.isArchived && (
               <button
                 type="button"
@@ -91,7 +129,7 @@ export function HabitsTable({ habits, onCheckIn, onEdit }: HabitsTableProps) {
                 aria-label={t('checkIn')}
                 title={t('checkIn')}
                 className={cn(
-                  'inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary',
+                  'inline-flex size-7 items-center justify-center rounded-md transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary',
                   isCompleted ? 'cursor-not-allowed text-income' : 'text-primary hover:bg-muted',
                 )}
               >
@@ -100,7 +138,6 @@ export function HabitsTable({ habits, onCheckIn, onEdit }: HabitsTableProps) {
                 ) : (
                   <Plus className="size-3.5" aria-hidden />
                 )}
-                {t('checkIn')}
               </button>
             )}
             <button
@@ -108,10 +145,31 @@ export function HabitsTable({ habits, onCheckIn, onEdit }: HabitsTableProps) {
               onClick={() => onEdit(habit)}
               aria-label={t('editHabit')}
               title={t('editHabit')}
-              className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              className={ICON_BUTTON_CLASS}
             >
               <Pencil className="size-3.5" aria-hidden />
-              {t('editHabit')}
+            </button>
+            <button
+              type="button"
+              onClick={() => onArchive(habit)}
+              aria-label={habit.isArchived ? tCommon('unarchive') : tCommon('archive')}
+              title={habit.isArchived ? tCommon('unarchive') : tCommon('archive')}
+              className={ICON_BUTTON_CLASS}
+            >
+              {habit.isArchived ? (
+                <ArchiveRestore className="size-3.5" aria-hidden />
+              ) : (
+                <Archive className="size-3.5" aria-hidden />
+              )}
+            </button>
+            <button
+              type="button"
+              onClick={() => onDelete(habit)}
+              aria-label={t('deleteHabit')}
+              title={t('deleteHabit')}
+              className="inline-flex size-7 items-center justify-center rounded-md text-destructive transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            >
+              <Trash2 className="size-3.5" aria-hidden />
             </button>
           </div>
         );
@@ -119,12 +177,5 @@ export function HabitsTable({ habits, onCheckIn, onEdit }: HabitsTableProps) {
     },
   ];
 
-  return (
-    <DataTable
-      columns={columns}
-      rows={habits}
-      getRowKey={(habit) => habit.id}
-      emptyMessage={t('emptyState')}
-    />
-  );
+  return <DataTable columns={columns} rows={habits} getRowKey={(habit) => habit.id} />;
 }

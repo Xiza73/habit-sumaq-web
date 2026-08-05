@@ -289,7 +289,14 @@ export function HabitList() {
           </button>
         </div>
       ) : viewMode === 'table' ? (
-        <HabitsTable habits={habits} onCheckIn={handleCheckIn} onEdit={handleEdit} />
+        <HabitsTable
+          habits={habits}
+          onCheckIn={handleCheckIn}
+          onUndo={handleUndo}
+          onEdit={handleEdit}
+          onArchive={handleArchive}
+          onDelete={setDeletingHabit}
+        />
       ) : (
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
           {habits.map((habit) => (
