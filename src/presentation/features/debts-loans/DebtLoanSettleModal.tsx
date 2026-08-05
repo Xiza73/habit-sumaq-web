@@ -6,6 +6,7 @@ import { useTranslations } from 'next-intl';
 import { Loader2 } from 'lucide-react';
 
 import { type DebtLoanSummaryRow, type DebtLoanType } from '@/core/domain/entities/debt-loan';
+import { MIN_SETTLE_AMOUNT } from '@/core/domain/schemas/debt-loan.schema';
 
 import { Input } from '@/presentation/components/ui/Input';
 import { Modal } from '@/presentation/components/ui/Modal';
@@ -96,7 +97,30 @@ function Body({
   const [touched, setTouched] = useState(false);
 
   const pending = pendingFor(type);
-  const invalid = !(amount > 0) || amount > pending;
+  // Reuse the schema's `.min(MIN_SETTLE_AMOUNT)` bound so sub-cent amounts are
+  // rejected client-side exactly like the wire contract rejects them.
+  const invalid = !(amount >= MIN_SETTLE_AMOUNT && amount <= pending);
+
+  // Defensive guard: a row with no pending in EITHER direction has nothing to
+  // settle. Without this it would fall through to a LOAN form with a
+  // permanently-disabled Confirm, leaning entirely on the caller's `hasAny`
+  // gate. Render an explicit terminal state instead.
+  if (!hasDebt && !hasLoan) {
+    return (
+      <div className="space-y-4">
+        <p className="text-sm text-muted-foreground">{t('nothingToSettle')}</p>
+        <div className="flex justify-end">
+          <button
+            type="button"
+            onClick={onCancel}
+            className="rounded-md border border-border px-4 py-2 text-sm hover:bg-muted"
+          >
+            {t('cancel')}
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   function selectDirection(next: DebtLoanType) {
     setType(next);

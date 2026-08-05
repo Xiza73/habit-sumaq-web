@@ -117,4 +117,42 @@ describe('DebtLoanSettleModal', () => {
 
     expect(onConfirm).not.toHaveBeenCalled();
   });
+
+  it('blocks confirm for sub-cent amounts below the schema min (0.001)', async () => {
+    const user = userEvent.setup();
+    const { onConfirm } = renderModal(makeRow({ pendingDebt: 500, pendingLoan: 0, netOwed: -500 }));
+
+    const amount = screen.getByLabelText(/^Monto$/i);
+    await user.clear(amount);
+    await user.type(amount, '0.001');
+
+    await user.click(screen.getByRole('button', { name: /^Confirmar$/i }));
+
+    expect(onConfirm).not.toHaveBeenCalled();
+  });
+
+  it('accepts the exact pending total via "Todo" then confirms with amount === pending', async () => {
+    const user = userEvent.setup();
+    const { onConfirm } = renderModal(makeRow({ pendingDebt: 500, pendingLoan: 0, netOwed: -500 }));
+
+    const amount = screen.getByLabelText(/^Monto$/i);
+    await user.clear(amount);
+    await user.type(amount, '10');
+
+    await user.click(screen.getByRole('button', { name: /^Todo$/i }));
+    expect(amount).toHaveValue(500);
+
+    await user.click(screen.getByRole('button', { name: /^Confirmar$/i }));
+
+    expect(onConfirm).toHaveBeenCalledWith({ type: 'DEBT', amount: 500, realPayment: true });
+  });
+
+  it('renders a "nothing to settle" state (no form) when neither side has pending', () => {
+    renderModal(makeRow({ pendingDebt: 0, pendingLoan: 0, netOwed: 0 }));
+
+    expect(screen.getByText(/No hay nada pendiente para liquidar/i)).toBeInTheDocument();
+    // The settle form must NOT render: no amount field and no confirm button.
+    expect(screen.queryByLabelText(/^Monto$/i)).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /^Confirmar$/i })).not.toBeInTheDocument();
+  });
 });

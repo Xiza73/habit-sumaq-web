@@ -862,6 +862,7 @@
       "amount": "Valor",
       "all": "Tudo",
       "fifoNote": "Aplicado primeiro às operações mais antigas.",
+      "nothingToSettle": "Não há nada pendente para liquidar com esta pessoa.",
       "invalidAmount": "O valor deve ser maior que 0 e não pode exceder o pendente.",
       "mode": "Como você fecha?",
       "real": "Pagamento real",
@@ -945,27 +946,6 @@
         "updateSuccess": "Pagamento atualizado",
         "deleteSuccess": "Pagamento excluído"
       }
-    },
-    "bulkSettle": {
-      "title": "Liquidar tudo com esta pessoa",
-      "totalPending": "Pendente total: {amount} em {count, plural, one {# operação} other {# operações}}.",
-      "netSummary": {
-        "theyOweYou": "A seu favor: {amount}.",
-        "youOwe": "Contra você: {amount}."
-      },
-      "mode": "Como você está fechando?",
-      "real": {
-        "title": "Pagamento real",
-        "description": "Dinheiro realmente mudou de mãos. Atualiza seu saldo interno em {currency}."
-      },
-      "informal": {
-        "title": "Fechamento informal",
-        "description": "Só marca como liquidado, sem mexer no saldo interno."
-      },
-      "cancel": "Cancelar",
-      "confirm": "Confirmar",
-      "successReal": "Dívidas com {name} ({currency}) liquidadas.",
-      "successInformal": "Dívidas com {name} ({currency}) marcadas como liquidadas."
     }
   }
 }

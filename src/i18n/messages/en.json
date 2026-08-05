@@ -862,6 +862,7 @@
       "amount": "Amount",
       "all": "All",
       "fifoNote": "Applied oldest-first.",
+      "nothingToSettle": "Nothing pending to settle with this person.",
       "invalidAmount": "Amount must be greater than 0 and no larger than the pending total.",
       "mode": "How do you close it?",
       "real": "Real payment",
@@ -945,27 +946,6 @@
         "updateSuccess": "Payment updated",
         "deleteSuccess": "Payment deleted"
       }
-    },
-    "bulkSettle": {
-      "title": "Settle everything with this person",
-      "totalPending": "Total pending: {amount} across {count, plural, one {# entry} other {# entries}}.",
-      "netSummary": {
-        "theyOweYou": "Net in your favor: {amount}.",
-        "youOwe": "Net you owe: {amount}."
-      },
-      "mode": "How are you closing this?",
-      "real": {
-        "title": "Real payment",
-        "description": "Money actually changed hands. Updates your internal {currency} balance."
-      },
-      "informal": {
-        "title": "Informal close",
-        "description": "Just mark as settled. Internal balance is not touched."
-      },
-      "cancel": "Cancel",
-      "confirm": "Confirm",
-      "successReal": "Settled debts with {name} ({currency}).",
-      "successInformal": "Marked debts with {name} ({currency}) as settled."
     }
   }
 }
