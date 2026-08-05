@@ -223,6 +223,7 @@
     "notCompleted": "Não concluído",
     "checkIn": "Registrar",
     "undoCheckIn": "Desfazer registro",
+    "viewDetail": "Ver hábito",
     "frequencies": {
       "DAILY": "Diário",
       "WEEKLY": "Semanal"
@@ -440,6 +441,7 @@
       "estimatedAmount": "Valor estimado",
       "dueDay": "Dia venc.",
       "nextPeriod": "Próx. período",
+      "linkedDebts": "Dívidas vinculadas",
       "status": "Status",
       "actions": "Ações"
     }

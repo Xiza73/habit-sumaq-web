@@ -223,6 +223,7 @@
     "notCompleted": "Not completed",
     "checkIn": "Check in",
     "undoCheckIn": "Undo check in",
+    "viewDetail": "View habit",
     "frequencies": {
       "DAILY": "Daily",
       "WEEKLY": "Weekly"
@@ -440,6 +441,7 @@
       "estimatedAmount": "Estimated amount",
       "dueDay": "Due day",
       "nextPeriod": "Next period",
+      "linkedDebts": "Linked debts",
       "status": "Status",
       "actions": "Actions"
     }
