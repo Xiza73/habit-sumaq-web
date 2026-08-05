@@ -20,7 +20,6 @@ import { toast } from 'sonner';
 
 import { useSettleDebtLoan } from '@/core/application/hooks/use-debts-loans';
 import { type Category } from '@/core/domain/entities/category';
-import { type DebtLoan } from '@/core/domain/entities/debt-loan';
 import {
   type LinkedDebt,
   MONTHLY_SERVICE_FREQUENCY_LABEL_KEYS,
@@ -32,34 +31,13 @@ import { ApiError } from '@/infrastructure/api/api-error';
 import { DebtLoanRowSettleModal } from '@/presentation/features/debts-loans/DebtLoanRowSettleModal';
 
 import { formatCurrency, formatPeriodLabel } from '@/lib/format';
+import { toSettleableDebtLoan } from '@/lib/monthly-service-linked-debt';
+import {
+  canPayMonthlyService,
+  MONTHLY_SERVICE_STATUS_CLASSES,
+  resolveMonthlyServiceStatus,
+} from '@/lib/monthly-service-status';
 import { cn } from '@/lib/utils';
-
-/**
- * `DebtLoanRowSettleModal` (and `useSettleDebtLoan`) expect a full
- * `DebtLoan`. A `LinkedDebt` only carries the fields the monthly-services
- * response exposes (`id`, `reference`, `remainingAmount`, `status`) — this
- * adapts one into a `DebtLoan`-shaped object so the settle flow can be
- * reused unchanged. Only `id`, `reference`, `remainingAmount`, `currency`,
- * and `status` are actually read by the modal/mutation; the rest are
- * placeholders that satisfy the type but are never rendered or sent.
- */
-function toSettleableDebtLoan(linkedDebt: LinkedDebt, service: MonthlyService): DebtLoan {
-  return {
-    id: linkedDebt.id,
-    userId: service.userId,
-    type: 'LOAN',
-    currency: service.currency,
-    amount: linkedDebt.remainingAmount,
-    remainingAmount: linkedDebt.remainingAmount,
-    status: linkedDebt.status,
-    reference: linkedDebt.reference,
-    description: null,
-    categoryId: null,
-    date: service.updatedAt,
-    createdAt: service.updatedAt,
-    updatedAt: service.updatedAt,
-  };
-}
 
 interface MonthlyServiceCardProps {
   service: MonthlyService;
@@ -70,20 +48,6 @@ interface MonthlyServiceCardProps {
   onArchive: (service: MonthlyService) => void;
   onDelete: (service: MonthlyService) => void;
 }
-
-type StatusTone = 'paid' | 'pending' | 'overdue';
-
-function resolveStatus(service: MonthlyService): StatusTone {
-  if (service.isOverdue) return 'overdue';
-  if (service.isPaidForCurrentMonth) return 'paid';
-  return 'pending';
-}
-
-const STATUS_CLASSES: Record<StatusTone, string> = {
-  paid: 'bg-income/15 text-income',
-  pending: 'bg-amber-500/15 text-amber-700 dark:text-amber-400',
-  overdue: 'bg-destructive/15 text-destructive',
-};
 
 export function MonthlyServiceCard({
   service,
@@ -101,12 +65,9 @@ export function MonthlyServiceCard({
   const [settlingDebt, setSettlingDebt] = useState<LinkedDebt | null>(null);
   const settleMutation = useSettleDebtLoan();
 
-  const status = resolveStatus(service);
+  const status = resolveMonthlyServiceStatus(service);
   const isArchived = !service.isActive;
-  // Hide both actions when the service is already up-to-date for the current
-  // month — allowing "Pagar" here would create a second transaction and skip
-  // a future month silently (bug reported by user).
-  const canPay = !isArchived && status !== 'paid';
+  const canPay = canPayMonthlyService(service);
   const canSkip = canPay;
   const periodLabel = formatPeriodLabel(service.nextDuePeriod, locale);
   const totalLinkedPending = service.linkedDebts.reduce((sum, d) => sum + d.remainingAmount, 0);
@@ -165,7 +126,9 @@ export function MonthlyServiceCard({
           <span
             className={cn(
               'mt-1 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium',
-              isArchived ? 'bg-muted text-muted-foreground' : STATUS_CLASSES[status],
+              isArchived
+                ? 'bg-muted text-muted-foreground'
+                : MONTHLY_SERVICE_STATUS_CLASSES[status],
             )}
           >
             {isArchived
