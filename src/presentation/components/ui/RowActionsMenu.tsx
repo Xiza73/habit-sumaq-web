@@ -18,6 +18,13 @@ export interface RowAction {
   label: string;
   /** Optional icon; shown inline (icon-only) and beside the label in the menu. */
   icon?: LucideIcon;
+  /**
+   * Optional Tailwind color class for the icon only (e.g. `'text-destructive'`
+   * for a debt arrow, `'text-green-700'` for a loan). Preserves the card's
+   * red/green iconography inside the shared table actions. `destructive` still
+   * governs the label/hover color; this only tints the glyph.
+   */
+  iconClassName?: string;
   onClick: () => void;
   disabled?: boolean;
   /** Renders the action in the destructive color (e.g. delete). */
@@ -121,7 +128,9 @@ export function RowActionsMenu({
                     action.destructive && 'text-destructive',
                   )}
                 >
-                  {Icon && <Icon className="size-4 shrink-0" aria-hidden />}
+                  {Icon && (
+                    <Icon className={cn('size-4 shrink-0', action.iconClassName)} aria-hidden />
+                  )}
                   {action.label}
                 </button>
               );

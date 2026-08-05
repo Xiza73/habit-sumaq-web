@@ -53,7 +53,7 @@ export function TableRowActions({ actions, triggerLabel, className }: TableRowAc
               )}
             >
               {Icon ? (
-                <Icon className="size-3.5" aria-hidden />
+                <Icon className={cn('size-3.5', action.iconClassName)} aria-hidden />
               ) : (
                 <span className="px-1 text-xs font-medium">{action.label}</span>
               )}

@@ -122,12 +122,14 @@ export function DebtsLoansTable({ rows, onSettle, onQuickAdd, onRowClick }: Debt
             id: 'quick-debt',
             label: t('summary.quickAdd.newDebt', { name: row.displayName }),
             icon: ArrowUpRight,
+            iconClassName: 'text-destructive',
             onClick: () => onQuickAdd(row, 'DEBT'),
           },
           {
             id: 'quick-loan',
             label: t('summary.quickAdd.newLoan', { name: row.displayName }),
             icon: ArrowDownLeft,
+            iconClassName: 'text-green-700 dark:text-green-400',
             onClick: () => onQuickAdd(row, 'LOAN'),
           },
           {
