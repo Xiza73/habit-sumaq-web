@@ -25,6 +25,14 @@ vi.mock('@/infrastructure/api/debts-loans.api', () => ({
       currency: 'PEN',
       settledIds: ['x'],
     }),
+    settleAmountByReference: vi.fn().mockResolvedValue({
+      settledCount: 1,
+      totalSettledAmount: 300,
+      fullySettledCount: 1,
+      partiallySettledId: null,
+      currency: 'PEN',
+      type: 'DEBT',
+    }),
   },
 }));
 
@@ -116,7 +124,7 @@ describe('DebtsLoansDashboard', () => {
     });
   });
 
-  it('opens the bulk-settle modal when a card requests it, and fires the API on confirm', async () => {
+  it('opens the settle modal when a card requests it, and posts a settle-amount body on confirm', async () => {
     const user = userEvent.setup();
     vi.mocked(debtsLoansApi.summary).mockResolvedValueOnce([
       makeRow({
@@ -133,19 +141,26 @@ describe('DebtsLoansDashboard', () => {
     // Wait until the row has rendered. The "Juan" text comes from the card body.
     await screen.findByText('Juan');
 
-    // Click the "Settle all" button (locale-dependent text).
-    const settleAll = await screen.findByRole('button', {
-      name: /Settle all|Liquidar todo|Liquidar tudo/i,
+    // Click the card's "Settle" button (locale-dependent text).
+    const settle = await screen.findByRole('button', {
+      name: /^Settle$|^Liquidar$/i,
     });
-    await user.click(settleAll);
+    await user.click(settle);
 
-    // Modal opens — find the Confirm button and click it.
+    // Modal opens — the direction is locked to DEBT (only debt is pending) and
+    // the amount defaults to the pending total. Confirm (real mode by default).
     const confirm = await screen.findByRole('button', { name: /^Confirm$|^Confirmar$/i });
     await user.click(confirm);
 
     await waitFor(() => {
-      expect(debtsLoansApi.bulkSettleByReference).toHaveBeenCalledWith(
-        expect.objectContaining({ reference: 'Juan', currency: 'PEN' }),
+      expect(debtsLoansApi.settleAmountByReference).toHaveBeenCalledWith(
+        expect.objectContaining({
+          reference: 'Juan',
+          currency: 'PEN',
+          type: 'DEBT',
+          amount: 300,
+          realPayment: true,
+        }),
       );
     });
   });

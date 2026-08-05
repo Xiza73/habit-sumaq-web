@@ -174,6 +174,7 @@
     "DBT_008": "El pago ya fue borrado.",
     "DBT_009": "Debés modificar al menos un campo.",
     "DBT_010": "El monto excede el saldo de la deuda.",
+    "DBT_011": "No hay operaciones pendientes de ese tipo con esta persona.",
     "generic": "Ocurrió un error inesperado. Intenta de nuevo."
   },
   "habits": {
@@ -850,7 +851,26 @@
       "net": "Neto",
       "pendingCount": "{count, plural, one {# pendiente} other {# pendientes}}",
       "settledCount": "{count, plural, one {# saldado} other {# saldados}}",
-      "settleAll": "Liquidar todo"
+      "settle": "Liquidar"
+    },
+    "settle": {
+      "title": "Liquidar con {name}",
+      "direction": "¿Qué querés liquidar?",
+      "directionDebt": "Pagar lo que debo",
+      "directionLoan": "Cobrar lo que me deben",
+      "pendingTotal": "Pendiente: {amount}",
+      "amount": "Monto",
+      "all": "Todo",
+      "fifoNote": "Se aplica primero a las operaciones más antiguas.",
+      "invalidAmount": "El monto debe ser mayor a 0 y no puede superar el pendiente.",
+      "mode": "¿Cómo lo cerrás?",
+      "real": "Pago real",
+      "realHint": "Mueve el balance interno de {currency}.",
+      "informal": "Cierre informal",
+      "informalHint": "Solo marca como saldado, sin mover el balance.",
+      "cancel": "Cancelar",
+      "confirm": "Confirmar",
+      "success": "Liquidé {amount} con {name} ({count, plural, one {# operación} other {# operaciones}})."
     },
     "newDebt": "Nueva deuda",
     "newLoan": "Nuevo préstamo",

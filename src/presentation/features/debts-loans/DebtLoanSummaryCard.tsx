@@ -11,7 +11,7 @@ import { cn } from '@/lib/utils';
 
 interface DebtLoanSummaryCardProps {
   row: DebtLoanSummaryRow;
-  onSettleAll?: (row: DebtLoanSummaryRow) => void;
+  onSettle?: (row: DebtLoanSummaryRow) => void;
   onClick?: (row: DebtLoanSummaryRow) => void;
 }
 
@@ -21,7 +21,7 @@ interface DebtLoanSummaryCardProps {
  * design) but typed against the new domain entity and pulling i18n from
  * the `debts` namespace.
  */
-export function DebtLoanSummaryCard({ row, onSettleAll, onClick }: DebtLoanSummaryCardProps) {
+export function DebtLoanSummaryCard({ row, onSettle, onClick }: DebtLoanSummaryCardProps) {
   const t = useTranslations('debts.summary');
   const hasDebt = row.pendingDebt > 0;
   const hasLoan = row.pendingLoan > 0;
@@ -108,16 +108,16 @@ export function DebtLoanSummaryCard({ row, onSettleAll, onClick }: DebtLoanSumma
           {row.pendingCount > 0 && row.settledCount > 0 && ' · '}
           {row.settledCount > 0 && t('settledCount', { count: row.settledCount })}
         </span>
-        {onSettleAll && hasAny && (
+        {onSettle && hasAny && (
           <button
             type="button"
             onClick={(e) => {
               e.stopPropagation();
-              onSettleAll(row);
+              onSettle(row);
             }}
             className="font-medium text-primary hover:underline"
           >
-            {t('settleAll')}
+            {t('settle')}
           </button>
         )}
       </div>
