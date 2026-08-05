@@ -936,6 +936,14 @@
       "deleteConfirm": "¿Eliminar este registro?",
       "deleteSuccess": "Eliminado",
       "empty": "Sin registros.",
+      "shareImage": {
+        "copy": "Copiar imagen",
+        "download": "Descargar",
+        "copySuccess": "Imagen copiada",
+        "downloadSuccess": "Imagen descargada",
+        "copyFallback": "No se pudo copiar; se descargó la imagen.",
+        "error": "No se pudo generar la imagen."
+      },
       "payments": {
         "show": "Ver pagos",
         "hide": "Ocultar pagos",
