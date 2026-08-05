@@ -122,4 +122,18 @@ describe('ChoresTable', () => {
     await user.click(screen.getByRole('button', { name: /eliminar permanentemente/i }));
     expect(onDelete).toHaveBeenCalledWith(chore);
   });
+
+  it('collapses the row actions into a dropdown that fires the right handlers', async () => {
+    const user = userEvent.setup();
+    const chore = makeChore();
+    const { onMarkDone, onDelete } = renderTable([chore]);
+
+    await user.click(screen.getByRole('button', { name: 'Acciones' }));
+    await user.click(screen.getByRole('menuitem', { name: /^Hecho$/i }));
+    expect(onMarkDone).toHaveBeenCalledWith(chore);
+
+    await user.click(screen.getByRole('button', { name: 'Acciones' }));
+    await user.click(screen.getByRole('menuitem', { name: /eliminar permanentemente/i }));
+    expect(onDelete).toHaveBeenCalledWith(chore);
+  });
 });

@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 
-import { Trash2 } from 'lucide-react';
+import { Archive, ArchiveRestore, Pencil, Receipt, SkipForward, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { useSettleDebtLoan } from '@/core/application/hooks/use-debts-loans';
@@ -13,6 +13,8 @@ import { type LinkedDebt, type MonthlyService } from '@/core/domain/entities/mon
 import { ApiError } from '@/infrastructure/api/api-error';
 
 import { DataTable, type DataTableColumn } from '@/presentation/components/ui/DataTable';
+import { type RowAction } from '@/presentation/components/ui/RowActionsMenu';
+import { TableRowActions } from '@/presentation/components/ui/TableRowActions';
 import { DebtLoanRowSettleModal } from '@/presentation/features/debts-loans/DebtLoanRowSettleModal';
 
 import { formatCurrency, formatPeriodLabel } from '@/lib/format';
@@ -213,53 +215,42 @@ export function MonthlyServicesTable({
       render: (service) => {
         const isArchived = !service.isActive;
         const canPay = canPayMonthlyService(service);
-        return (
-          <div className="flex items-center justify-end gap-1">
-            {canPay && (
-              <>
-                <button
-                  type="button"
-                  onClick={() => onPay(service)}
-                  className="rounded-md px-2 py-1 text-xs font-medium text-primary transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                >
-                  {t('actions.pay')}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => onSkip(service)}
-                  className="rounded-md px-2 py-1 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                >
-                  {t('actions.skip')}
-                </button>
-              </>
-            )}
-            {!isArchived && (
-              <button
-                type="button"
-                onClick={() => onEdit(service)}
-                className="rounded-md px-2 py-1 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-              >
-                {t('actions.edit')}
-              </button>
-            )}
-            <button
-              type="button"
-              onClick={() => onArchive(service)}
-              className="rounded-md px-2 py-1 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-            >
-              {isArchived ? t('actions.unarchive') : t('actions.archive')}
-            </button>
-            <button
-              type="button"
-              onClick={() => onDelete(service)}
-              aria-label={t('actions.delete')}
-              title={t('actions.delete')}
-              className="inline-flex size-7 items-center justify-center rounded-md text-destructive transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-            >
-              <Trash2 className="size-3.5" aria-hidden />
-            </button>
-          </div>
+        const actions: RowAction[] = [];
+        if (canPay) {
+          actions.push(
+            { id: 'pay', label: t('actions.pay'), icon: Receipt, onClick: () => onPay(service) },
+            {
+              id: 'skip',
+              label: t('actions.skip'),
+              icon: SkipForward,
+              onClick: () => onSkip(service),
+            },
+          );
+        }
+        if (!isArchived) {
+          actions.push({
+            id: 'edit',
+            label: t('actions.edit'),
+            icon: Pencil,
+            onClick: () => onEdit(service),
+          });
+        }
+        actions.push(
+          {
+            id: 'archive',
+            label: isArchived ? t('actions.unarchive') : t('actions.archive'),
+            icon: isArchived ? ArchiveRestore : Archive,
+            onClick: () => onArchive(service),
+          },
+          {
+            id: 'delete',
+            label: t('actions.delete'),
+            icon: Trash2,
+            onClick: () => onDelete(service),
+            destructive: true,
+          },
         );
+        return <TableRowActions actions={actions} triggerLabel={t('table.actions')} />;
       },
     },
   ];

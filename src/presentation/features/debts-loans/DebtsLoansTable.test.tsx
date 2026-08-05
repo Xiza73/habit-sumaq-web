@@ -97,6 +97,26 @@ describe('DebtsLoansTable', () => {
     expect(onRowClick).not.toHaveBeenCalled();
   });
 
+  it('collapses the row actions into a dropdown that fires the right handler', async () => {
+    const user = userEvent.setup();
+    const row = makeRow({ displayName: 'Juan', pendingDebt: 300, netOwed: -300 });
+    const { onSettle, onQuickAdd, onRowClick } = renderTable([row]);
+
+    // Opening the kebab must not bubble to the row-click detail handler.
+    await user.click(screen.getByRole('button', { name: 'Acciones' }));
+    expect(onRowClick).not.toHaveBeenCalled();
+
+    // The full action set is available as menu items.
+    await user.click(screen.getByRole('menuitem', { name: /^Liquidar$/i }));
+    expect(onSettle).toHaveBeenCalledWith(row);
+
+    await user.click(screen.getByRole('button', { name: 'Acciones' }));
+    await user.click(screen.getByRole('menuitem', { name: /nueva deuda con juan/i }));
+    expect(onQuickAdd).toHaveBeenCalledWith(row, 'DEBT');
+
+    expect(onRowClick).not.toHaveBeenCalled();
+  });
+
   it('opens the detail when the row is clicked', async () => {
     const user = userEvent.setup();
     const row = makeRow({ displayName: 'Juan' });

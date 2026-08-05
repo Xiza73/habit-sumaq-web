@@ -1,13 +1,15 @@
 'use client';
 
-import { type MouseEvent, type ReactNode } from 'react';
+import { type ReactNode } from 'react';
 import { useTranslations } from 'next-intl';
 
-import { ArrowDownLeft, ArrowUpRight, ChevronRight } from 'lucide-react';
+import { ArrowDownLeft, ArrowUpRight, ChevronRight, HandCoins } from 'lucide-react';
 
 import { type DebtLoanSummaryRow, type DebtLoanType } from '@/core/domain/entities/debt-loan';
 
 import { DataTable, type DataTableColumn } from '@/presentation/components/ui/DataTable';
+import { type RowAction } from '@/presentation/components/ui/RowActionsMenu';
+import { TableRowActions } from '@/presentation/components/ui/TableRowActions';
 
 import { formatCurrency } from '@/lib/format';
 import { cn } from '@/lib/utils';
@@ -39,14 +41,6 @@ function rowKey(row: DebtLoanSummaryRow): string {
  */
 export function DebtsLoansTable({ rows, onSettle, onQuickAdd, onRowClick }: DebtsLoansTableProps) {
   const t = useTranslations('debts');
-
-  // Actions must not trigger the row-click detail handler.
-  function stop(handler: () => void) {
-    return (e: MouseEvent) => {
-      e.stopPropagation();
-      handler();
-    };
-  }
 
   function renderNet(row: DebtLoanSummaryRow): ReactNode {
     const amount = Math.abs(row.netOwed);
@@ -114,46 +108,36 @@ export function DebtsLoansTable({ rows, onSettle, onQuickAdd, onRowClick }: Debt
       align: 'right',
       render: (row) => {
         const hasAny = row.pendingDebt > 0 || row.pendingLoan > 0;
-        return (
-          <div className="flex items-center justify-end gap-1">
-            {hasAny && (
-              <button
-                type="button"
-                onClick={stop(() => onSettle(row))}
-                className="rounded-md px-2 py-1 text-xs font-medium text-primary transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-              >
-                {t('summary.settle')}
-              </button>
-            )}
-            <button
-              type="button"
-              onClick={stop(() => onQuickAdd(row, 'DEBT'))}
-              title={t('summary.quickAdd.newDebt', { name: row.displayName })}
-              aria-label={t('summary.quickAdd.newDebt', { name: row.displayName })}
-              className="inline-flex size-7 items-center justify-center rounded-md text-destructive transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-            >
-              <ArrowUpRight className="size-3.5" aria-hidden />
-            </button>
-            <button
-              type="button"
-              onClick={stop(() => onQuickAdd(row, 'LOAN'))}
-              title={t('summary.quickAdd.newLoan', { name: row.displayName })}
-              aria-label={t('summary.quickAdd.newLoan', { name: row.displayName })}
-              className="inline-flex size-7 items-center justify-center rounded-md text-green-700 transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary dark:text-green-400"
-            >
-              <ArrowDownLeft className="size-3.5" aria-hidden />
-            </button>
-            <button
-              type="button"
-              onClick={stop(() => onRowClick(row))}
-              title={t('table.openDetail', { name: row.displayName })}
-              aria-label={t('table.openDetail', { name: row.displayName })}
-              className="inline-flex size-7 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-            >
-              <ChevronRight className="size-4" aria-hidden />
-            </button>
-          </div>
+        const actions: RowAction[] = [];
+        if (hasAny) {
+          actions.push({
+            id: 'settle',
+            label: t('summary.settle'),
+            icon: HandCoins,
+            onClick: () => onSettle(row),
+          });
+        }
+        actions.push(
+          {
+            id: 'quick-debt',
+            label: t('summary.quickAdd.newDebt', { name: row.displayName }),
+            icon: ArrowUpRight,
+            onClick: () => onQuickAdd(row, 'DEBT'),
+          },
+          {
+            id: 'quick-loan',
+            label: t('summary.quickAdd.newLoan', { name: row.displayName }),
+            icon: ArrowDownLeft,
+            onClick: () => onQuickAdd(row, 'LOAN'),
+          },
+          {
+            id: 'detail',
+            label: t('table.openDetail', { name: row.displayName }),
+            icon: ChevronRight,
+            onClick: () => onRowClick(row),
+          },
         );
+        return <TableRowActions actions={actions} triggerLabel={t('table.actions')} />;
       },
     },
   ];

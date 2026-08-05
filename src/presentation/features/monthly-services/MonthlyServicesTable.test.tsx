@@ -154,6 +154,20 @@ describe('MonthlyServicesTable', () => {
     expect(onDelete).toHaveBeenCalledWith(service);
   });
 
+  it('collapses the row actions into a dropdown that fires the right handlers', async () => {
+    const user = userEvent.setup();
+    const service = makeService({ name: 'Netflix' });
+    const { onPay, onDelete } = renderTable([service]);
+
+    await user.click(screen.getByRole('button', { name: 'Acciones' }));
+    await user.click(screen.getByRole('menuitem', { name: /^Pagar$/i }));
+    expect(onPay).toHaveBeenCalledWith(service);
+
+    await user.click(screen.getByRole('button', { name: 'Acciones' }));
+    await user.click(screen.getByRole('menuitem', { name: /eliminar permanentemente/i }));
+    expect(onDelete).toHaveBeenCalledWith(service);
+  });
+
   describe('linked debts', () => {
     const withLinkedDebts = makeService({
       name: 'Luz',
