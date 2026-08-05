@@ -11,7 +11,7 @@ import { cn } from '@/lib/utils';
 
 interface DebtLoanSummaryCardProps {
   row: DebtLoanSummaryRow;
-  onSettleAll?: (row: DebtLoanSummaryRow) => void;
+  onSettle?: (row: DebtLoanSummaryRow) => void;
   onClick?: (row: DebtLoanSummaryRow) => void;
   /**
    * Quick-create a debt/loan prefilled for this person. Renders the two
@@ -29,7 +29,7 @@ interface DebtLoanSummaryCardProps {
  */
 export function DebtLoanSummaryCard({
   row,
-  onSettleAll,
+  onSettle,
   onClick,
   onQuickAdd,
 }: DebtLoanSummaryCardProps) {
@@ -148,16 +148,16 @@ export function DebtLoanSummaryCard({
           {row.pendingCount > 0 && row.settledCount > 0 && ' · '}
           {row.settledCount > 0 && t('settledCount', { count: row.settledCount })}
         </span>
-        {onSettleAll && hasAny && (
+        {onSettle && hasAny && (
           <button
             type="button"
             onClick={(e) => {
               e.stopPropagation();
-              onSettleAll(row);
+              onSettle(row);
             }}
             className="font-medium text-primary hover:underline"
           >
-            {t('settleAll')}
+            {t('settle')}
           </button>
         )}
       </div>

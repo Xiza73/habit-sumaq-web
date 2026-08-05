@@ -5,10 +5,11 @@ import {
   type DebtLoanPayment,
   type DebtLoanStatusFilter,
   type DebtLoanSummaryRow,
+  type SettleAmountResult,
 } from '@/core/domain/entities/debt-loan';
 import {
-  type BulkSettleByReferenceInput,
   type CreateDebtLoanInput,
+  type SettleAmountByReferenceInput,
   type SettleDebtLoanInput,
   type UpdateDebtLoanInput,
   type UpdateDebtLoanPaymentInput,
@@ -78,8 +79,8 @@ function useInvalidateAll() {
  * or deleting a linked loan from THIS (debts) side flips it out of that
  * array — the service card/detail would otherwise keep showing a stale
  * "still pending" linked debt until an unrelated refetch. Used by the
- * settle/delete/bulk-settle mutations so "settle from either side stays in
- * sync". Mirrors the dual-invalidation in `use-monthly-service-payments`.
+ * settle/delete mutations so "settle from either side stays in sync".
+ * Mirrors the dual-invalidation in `use-monthly-service-payments`.
  */
 function useInvalidateAllAndMonthlyServices() {
   const qc = useQueryClient();
@@ -129,10 +130,16 @@ export function useSettleDebtLoan() {
   });
 }
 
-export function useBulkSettleByReference() {
+/**
+ * Settle a chosen `amount` FIFO across a person's PENDING debts of ONE
+ * direction (`type`). Like the other settle/delete mutations it invalidates
+ * `['monthly-services']` too, since a MonthlyService's `linkedDebts[]` only
+ * lists PENDING loans — closing one here must flip it out of that array.
+ */
+export function useSettleAmountByReference() {
   const invalidate = useInvalidateAllAndMonthlyServices();
-  return useMutation({
-    mutationFn: (data: BulkSettleByReferenceInput) => debtsLoansApi.bulkSettleByReference(data),
+  return useMutation<SettleAmountResult, Error, SettleAmountByReferenceInput>({
+    mutationFn: (data) => debtsLoansApi.settleAmountByReference(data),
     onSuccess: () => {
       invalidate();
     },

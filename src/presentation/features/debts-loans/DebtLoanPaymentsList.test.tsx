@@ -19,7 +19,6 @@ vi.mock('@/infrastructure/api/debts-loans.api', () => ({
     update: vi.fn(),
     delete: vi.fn(),
     settle: vi.fn(),
-    bulkSettleByReference: vi.fn(),
     listPayments: vi.fn(),
     updatePayment: vi.fn(),
     deletePayment: vi.fn().mockResolvedValue(undefined),

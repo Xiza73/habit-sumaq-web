@@ -61,14 +61,19 @@ export interface DebtLoanSummaryRow {
 }
 
 /**
- * Result of POST /debts/settle-by-reference. `currency` is `null` only
- * when the bulk was informal-close across multiple currencies.
+ * Result of POST /debts/settle-amount-by-reference. The backend distributes
+ * the requested `amount` FIFO across the person's PENDING rows of ONE
+ * `type`, so the response reports how many rows were fully vs partially
+ * settled. `partiallySettledId` is the single row that absorbed the
+ * leftover (or `null` when the amount closed rows exactly).
  */
-export interface BulkSettleResult {
+export interface SettleAmountResult {
   settledCount: number;
   totalSettledAmount: number;
-  currency: Currency | null;
-  settledIds: string[];
+  fullySettledCount: number;
+  partiallySettledId: string | null;
+  currency: Currency;
+  type: DebtLoanType;
 }
 
 /**

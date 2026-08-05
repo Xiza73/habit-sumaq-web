@@ -174,6 +174,7 @@
     "DBT_008": "Este pagamento já foi excluído.",
     "DBT_009": "Você precisa modificar ao menos um campo.",
     "DBT_010": "O valor excede o saldo da dívida.",
+    "DBT_011": "Não há operações pendentes desse tipo com esta pessoa.",
     "generic": "Ocorreu um erro inesperado. Tente novamente."
   },
   "habits": {
@@ -850,11 +851,31 @@
       "net": "Líquido",
       "pendingCount": "{count, plural, one {# pendente} other {# pendentes}}",
       "settledCount": "{count, plural, one {# liquidado} other {# liquidados}}",
-      "settleAll": "Liquidar tudo",
+      "settle": "Liquidar",
       "quickAdd": {
         "newDebt": "Nova dívida com {name}",
         "newLoan": "Novo empréstimo com {name}"
       }
+    },
+    "settle": {
+      "title": "Liquidar com {name}",
+      "direction": "O que você quer liquidar?",
+      "directionDebt": "Pagar o que eu devo",
+      "directionLoan": "Cobrar o que me devem",
+      "pendingTotal": "Pendente: {amount}",
+      "amount": "Valor",
+      "all": "Tudo",
+      "fifoNote": "Aplicado primeiro às operações mais antigas.",
+      "nothingToSettle": "Não há nada pendente para liquidar com esta pessoa.",
+      "invalidAmount": "O valor deve ser maior que 0 e não pode exceder o pendente.",
+      "mode": "Como você fecha?",
+      "real": "Pagamento real",
+      "realHint": "Move o saldo interno de {currency}.",
+      "informal": "Fechamento informal",
+      "informalHint": "Apenas marca como quitado, sem mover o saldo.",
+      "cancel": "Cancelar",
+      "confirm": "Confirmar",
+      "success": "Liquidei {amount} com {name} ({count, plural, one {# operação} other {# operações}})."
     },
     "newDebt": "Nova dívida",
     "newLoan": "Novo empréstimo",
@@ -929,27 +950,6 @@
         "updateSuccess": "Pagamento atualizado",
         "deleteSuccess": "Pagamento excluído"
       }
-    },
-    "bulkSettle": {
-      "title": "Liquidar tudo com esta pessoa",
-      "totalPending": "Pendente total: {amount} em {count, plural, one {# operação} other {# operações}}.",
-      "netSummary": {
-        "theyOweYou": "A seu favor: {amount}.",
-        "youOwe": "Contra você: {amount}."
-      },
-      "mode": "Como você está fechando?",
-      "real": {
-        "title": "Pagamento real",
-        "description": "Dinheiro realmente mudou de mãos. Atualiza seu saldo interno em {currency}."
-      },
-      "informal": {
-        "title": "Fechamento informal",
-        "description": "Só marca como liquidado, sem mexer no saldo interno."
-      },
-      "cancel": "Cancelar",
-      "confirm": "Confirmar",
-      "successReal": "Dívidas com {name} ({currency}) liquidadas.",
-      "successInformal": "Dívidas com {name} ({currency}) marcadas como liquidadas."
     }
   }
 }

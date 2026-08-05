@@ -174,6 +174,7 @@
     "DBT_008": "This payment has already been deleted.",
     "DBT_009": "You must modify at least one field.",
     "DBT_010": "Amount exceeds the debt balance.",
+    "DBT_011": "No pending items of that kind with this person.",
     "generic": "An unexpected error occurred. Please try again."
   },
   "habits": {
@@ -850,11 +851,31 @@
       "net": "Net",
       "pendingCount": "{count, plural, one {# pending} other {# pending}}",
       "settledCount": "{count, plural, one {# settled} other {# settled}}",
-      "settleAll": "Settle all",
+      "settle": "Settle",
       "quickAdd": {
         "newDebt": "New debt with {name}",
         "newLoan": "New loan with {name}"
       }
+    },
+    "settle": {
+      "title": "Settle with {name}",
+      "direction": "What do you want to settle?",
+      "directionDebt": "Pay what I owe",
+      "directionLoan": "Collect what I'm owed",
+      "pendingTotal": "Pending: {amount}",
+      "amount": "Amount",
+      "all": "All",
+      "fifoNote": "Applied oldest-first.",
+      "nothingToSettle": "Nothing pending to settle with this person.",
+      "invalidAmount": "Amount must be greater than 0 and no larger than the pending total.",
+      "mode": "How do you close it?",
+      "real": "Real payment",
+      "realHint": "Moves your internal {currency} balance.",
+      "informal": "Informal close",
+      "informalHint": "Just marks it settled, without moving the balance.",
+      "cancel": "Cancel",
+      "confirm": "Confirm",
+      "success": "Settled {amount} with {name} ({count, plural, one {# operation} other {# operations}})."
     },
     "newDebt": "New debt",
     "newLoan": "New loan",
@@ -929,27 +950,6 @@
         "updateSuccess": "Payment updated",
         "deleteSuccess": "Payment deleted"
       }
-    },
-    "bulkSettle": {
-      "title": "Settle everything with this person",
-      "totalPending": "Total pending: {amount} across {count, plural, one {# entry} other {# entries}}.",
-      "netSummary": {
-        "theyOweYou": "Net in your favor: {amount}.",
-        "youOwe": "Net you owe: {amount}."
-      },
-      "mode": "How are you closing this?",
-      "real": {
-        "title": "Real payment",
-        "description": "Money actually changed hands. Updates your internal {currency} balance."
-      },
-      "informal": {
-        "title": "Informal close",
-        "description": "Just mark as settled. Internal balance is not touched."
-      },
-      "cancel": "Cancel",
-      "confirm": "Confirm",
-      "successReal": "Settled debts with {name} ({currency}).",
-      "successInformal": "Marked debts with {name} ({currency}) as settled."
     }
   }
 }

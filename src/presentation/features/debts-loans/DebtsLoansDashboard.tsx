@@ -7,8 +7,8 @@ import { Plus } from 'lucide-react';
 import { toast } from 'sonner';
 
 import {
-  useBulkSettleByReference,
   useDebtsLoansSummary,
+  useSettleAmountByReference,
 } from '@/core/application/hooks/use-debts-loans';
 import {
   type DebtLoan,
@@ -18,11 +18,14 @@ import {
 } from '@/core/domain/entities/debt-loan';
 import { type Currency } from '@/core/domain/enums/currency.enum';
 
+import { ApiError } from '@/infrastructure/api/api-error';
+
+import { formatCurrency } from '@/lib/format';
 import { cn } from '@/lib/utils';
 
-import { DebtLoanBulkSettleModal } from './DebtLoanBulkSettleModal';
 import { DebtLoanDetailModal } from './DebtLoanDetailModal';
 import { DebtLoanForm } from './DebtLoanForm';
+import { type DebtLoanSettleInput, DebtLoanSettleModal } from './DebtLoanSettleModal';
 import { DebtLoanSummaryCard } from './DebtLoanSummaryCard';
 import { type DebtsViewPrefs, DEFAULT_DEBTS_VIEW_PREFS, sortDebtRows } from './debts-sort';
 import { DebtsViewControls } from './DebtsViewControls';
@@ -34,9 +37,9 @@ const STATUS_OPTIONS: DebtLoanStatusFilter[] = ['pending', 'all', 'settled'];
  *
  *  - Summary cards grouped by `(reference, currency)` via GET /debts/summary.
  *  - Status filter (pending / all / settled).
- *  - Bulk-settle via POST /debts/settle-by-reference (dual-mode UX:
- *    real-payment vs informal-close — no account picker, the currency
- *    pool is internal).
+ *  - Settle via POST /debts/settle-amount-by-reference (pick a direction +
+ *    amount, distributed FIFO; dual-mode UX: real-payment vs informal-close —
+ *    no account picker, the currency pool is internal).
  *  - **Create / edit** via `DebtLoanForm` — added in the post-A6 UI gap fix
  *    after `/transactions` (which used to host the create flow) was dropped.
  *  - **Detail view** via `DebtLoanDetailModal` — opens when a summary card is
@@ -61,7 +64,7 @@ export function DebtsLoansDashboard() {
   // autocomplete, so past persons stay suggestible even when the current
   // filter hides them.
   const { data: allRows = [] } = useDebtsLoansSummary('all');
-  const settleMutation = useBulkSettleByReference();
+  const settleMutation = useSettleAmountByReference();
 
   const sortedRows = useMemo(() => sortDebtRows(rows, viewPrefs), [rows, viewPrefs]);
 
@@ -104,25 +107,34 @@ export function DebtsLoansDashboard() {
     setEditingDebtLoan(null);
   }
 
-  function handleSettleConfirm(mode: 'real' | 'informal') {
+  function handleSettleConfirm({ type, amount, realPayment }: DebtLoanSettleInput) {
     if (!settlingRow) return;
+    const name = settlingRow.displayName;
     settleMutation.mutate(
       {
         reference: settlingRow.displayName,
-        currency: mode === 'real' ? settlingRow.currency : undefined,
+        currency: settlingRow.currency,
+        type,
+        amount,
+        realPayment,
       },
       {
-        onSuccess: () => {
+        onSuccess: (result) => {
           toast.success(
-            t(mode === 'real' ? 'bulkSettle.successReal' : 'bulkSettle.successInformal', {
-              name: settlingRow.displayName,
-              currency: settlingRow.currency,
+            t('settle.success', {
+              name,
+              amount: formatCurrency(result.totalSettledAmount, result.currency),
+              count: result.settledCount,
             }),
           );
           setSettlingRow(null);
         },
-        onError: () => {
-          toast.error(tErrors('generic'));
+        onError: (err) => {
+          toast.error(
+            err instanceof ApiError && err.code && tErrors.has(err.code)
+              ? tErrors(err.code as 'DBT_011')
+              : tErrors('generic'),
+          );
         },
       },
     );
@@ -194,7 +206,7 @@ export function DebtsLoansDashboard() {
             <DebtLoanSummaryCard
               key={`${row.reference}-${row.currency}`}
               row={row}
-              onSettleAll={setSettlingRow}
+              onSettle={setSettlingRow}
               onClick={setDetailRow}
               onQuickAdd={handleQuickAdd}
             />
@@ -202,7 +214,7 @@ export function DebtsLoansDashboard() {
         </div>
       )}
 
-      <DebtLoanBulkSettleModal
+      <DebtLoanSettleModal
         row={settlingRow}
         loading={settleMutation.isPending}
         onConfirm={handleSettleConfirm}

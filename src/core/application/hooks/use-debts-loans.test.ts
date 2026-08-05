@@ -11,8 +11,8 @@ import { debtsLoansApi } from '@/infrastructure/api/debts-loans.api';
 import {
   computeOverview,
   debtLoanKeys,
-  useBulkSettleByReference,
   useDeleteDebtLoan,
+  useSettleAmountByReference,
   useSettleDebtLoan,
 } from './use-debts-loans';
 import { monthlyServiceKeys } from './use-monthly-services';
@@ -98,7 +98,7 @@ vi.mock('@/infrastructure/api/debts-loans.api', () => ({
   debtsLoansApi: {
     settle: vi.fn(),
     delete: vi.fn(),
-    bulkSettleByReference: vi.fn(),
+    settleAmountByReference: vi.fn(),
   },
 }));
 
@@ -142,7 +142,7 @@ describe('debts-loans mutations invalidate BOTH debts-loans and monthly-services
   beforeEach(() => {
     vi.mocked(debtsLoansApi.settle).mockReset();
     vi.mocked(debtsLoansApi.delete).mockReset();
-    vi.mocked(debtsLoansApi.bulkSettleByReference).mockReset();
+    vi.mocked(debtsLoansApi.settleAmountByReference).mockReset();
   });
 
   it('useSettleDebtLoan invalidates debts-loans AND monthly-services on success', async () => {
@@ -171,17 +171,19 @@ describe('debts-loans mutations invalidate BOTH debts-loans and monthly-services
     expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: monthlyServiceKeys.all });
   });
 
-  it('useBulkSettleByReference invalidates debts-loans AND monthly-services on success', async () => {
-    vi.mocked(debtsLoansApi.bulkSettleByReference).mockResolvedValueOnce({
+  it('useSettleAmountByReference invalidates debts-loans AND monthly-services on success', async () => {
+    vi.mocked(debtsLoansApi.settleAmountByReference).mockResolvedValueOnce({
       settledCount: 2,
-      totalSettledAmount: 200,
+      totalSettledAmount: 150,
+      fullySettledCount: 1,
+      partiallySettledId: 'd-2',
       currency: 'PEN',
-      settledIds: ['d-1', 'd-2'],
+      type: 'DEBT',
     });
     const { Wrapper, invalidateSpy } = makeWrapper();
 
-    const { result } = renderHook(() => useBulkSettleByReference(), { wrapper: Wrapper });
-    result.current.mutate({ reference: 'juan', currency: 'PEN' });
+    const { result } = renderHook(() => useSettleAmountByReference(), { wrapper: Wrapper });
+    result.current.mutate({ reference: 'Juan', currency: 'PEN', type: 'DEBT', amount: 150 });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
