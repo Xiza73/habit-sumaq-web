@@ -850,7 +850,11 @@
       "net": "Neto",
       "pendingCount": "{count, plural, one {# pendiente} other {# pendientes}}",
       "settledCount": "{count, plural, one {# saldado} other {# saldados}}",
-      "settleAll": "Liquidar todo"
+      "settleAll": "Liquidar todo",
+      "quickAdd": {
+        "newDebt": "Nueva deuda con {name}",
+        "newLoan": "Nuevo préstamo con {name}"
+      }
     },
     "newDebt": "Nueva deuda",
     "newLoan": "Nuevo préstamo",
