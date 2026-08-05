@@ -39,7 +39,13 @@
     "emptyStateFiltered": "No categories of this type.",
     "deleteConfirm": "Are you sure you want to delete this category?",
     "cannotDeleteDefault": "Default categories cannot be deleted.",
-    "default": "Default"
+    "default": "Default",
+    "table": {
+      "name": "Name",
+      "type": "Type",
+      "color": "Color",
+      "actions": "Actions"
+    }
   },
   "settings": {
     "autostart": {
@@ -218,6 +224,7 @@
     "notCompleted": "Not completed",
     "checkIn": "Check in",
     "undoCheckIn": "Undo check in",
+    "viewDetail": "View habit",
     "frequencies": {
       "DAILY": "Daily",
       "WEEKLY": "Weekly"
@@ -281,6 +288,13 @@
         "year2": "365 days. You're a different person.",
         "year3": "You've earned respect. And day 366."
       }
+    },
+    "table": {
+      "name": "Name",
+      "frequency": "Frequency",
+      "target": "Target",
+      "todayProgress": "Today progress",
+      "actions": "Actions"
     }
   },
   "monthlyServices": {
@@ -420,6 +434,17 @@
       "badge": "{count, plural, one {# pending loan} other {# pending loans}} · {amount}",
       "settle": "Settle",
       "settleTrigger": "Settle {reference}"
+    },
+    "table": {
+      "name": "Name",
+      "category": "Category",
+      "currency": "Currency",
+      "estimatedAmount": "Estimated amount",
+      "dueDay": "Due day",
+      "nextPeriod": "Next period",
+      "linkedDebts": "Linked debts",
+      "status": "Status",
+      "actions": "Actions"
     }
   },
   "navigation": {
@@ -603,7 +628,16 @@
       "revertSuccess": "Last completion reverted"
     },
     "archived": "Archived",
-    "unarchived": "Unarchived"
+    "unarchived": "Unarchived",
+    "table": {
+      "name": "Name",
+      "category": "Category",
+      "cadence": "Cadence",
+      "nextDue": "Next date",
+      "lastDone": "Last done",
+      "status": "Status",
+      "actions": "Actions"
+    }
   },
   "reports": {
     "loadError": "Could not load the report. Please try again.",
@@ -961,6 +995,20 @@
         "updateSuccess": "Payment updated",
         "deleteSuccess": "Payment deleted"
       }
+    },
+    "table": {
+      "person": "Person",
+      "currency": "Currency",
+      "pendingDebt": "Pending debt",
+      "pendingLoan": "Pending loan",
+      "net": "Net",
+      "actions": "Actions",
+      "openDetail": "Open detail for {name}"
     }
+  },
+  "viewMode": {
+    "label": "View",
+    "cards": "Cards",
+    "table": "Table"
   }
 }

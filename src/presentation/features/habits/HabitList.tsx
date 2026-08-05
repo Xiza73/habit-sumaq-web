@@ -14,11 +14,13 @@ import {
   useLogHabit,
 } from '@/core/application/hooks/use-habits';
 import { useDateFormat } from '@/core/application/hooks/use-user-settings';
+import { useViewMode } from '@/core/application/hooks/use-view-mode';
 import { type HabitWithStats } from '@/core/domain/entities/habit';
 
 import { ApiError } from '@/infrastructure/api/api-error';
 
 import { ConfirmDialog } from '@/presentation/components/feedback/ConfirmDialog';
+import { ViewModeToggle } from '@/presentation/components/ui/ViewModeToggle';
 
 import { formatDate, getTodayLocaleDate } from '@/lib/format';
 import { cn } from '@/lib/utils';
@@ -26,6 +28,7 @@ import { cn } from '@/lib/utils';
 import { HabitCard } from './HabitCard';
 import { HabitCardSkeleton } from './HabitCardSkeleton';
 import { HabitForm } from './HabitForm';
+import { HabitsTable } from './HabitsTable';
 import { HabitTimerModal } from './HabitTimerModal';
 
 function LiveClock() {
@@ -68,6 +71,7 @@ export function HabitList() {
   const [deletingHabit, setDeletingHabit] = useState<HabitWithStats | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const [selectedDate, setSelectedDate] = useState(getTodayLocaleDate);
+  const [viewMode, setViewMode] = useViewMode('habits');
 
   const today = getTodayLocaleDate();
   const isToday = selectedDate === today;
@@ -187,6 +191,7 @@ export function HabitList() {
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">{t('title')}</h1>
         <div className="flex items-center gap-2">
+          <ViewModeToggle mode={viewMode} onChange={setViewMode} />
           <button
             type="button"
             onClick={() => setShowArchived(!showArchived)}
@@ -283,6 +288,15 @@ export function HabitList() {
             {t('createHabit')}
           </button>
         </div>
+      ) : viewMode === 'table' ? (
+        <HabitsTable
+          habits={habits}
+          onCheckIn={handleCheckIn}
+          onUndo={handleUndo}
+          onEdit={handleEdit}
+          onArchive={handleArchive}
+          onDelete={setDeletingHabit}
+        />
       ) : (
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
           {habits.map((habit) => (

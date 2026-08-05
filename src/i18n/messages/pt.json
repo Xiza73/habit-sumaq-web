@@ -39,7 +39,13 @@
     "emptyStateFiltered": "Nenhuma categoria deste tipo.",
     "deleteConfirm": "Tem certeza de que deseja excluir esta categoria?",
     "cannotDeleteDefault": "Categorias padrão não podem ser excluídas.",
-    "default": "Padrão"
+    "default": "Padrão",
+    "table": {
+      "name": "Nome",
+      "type": "Tipo",
+      "color": "Cor",
+      "actions": "Ações"
+    }
   },
   "settings": {
     "autostart": {
@@ -218,6 +224,7 @@
     "notCompleted": "Não concluído",
     "checkIn": "Registrar",
     "undoCheckIn": "Desfazer registro",
+    "viewDetail": "Ver hábito",
     "frequencies": {
       "DAILY": "Diário",
       "WEEKLY": "Semanal"
@@ -281,6 +288,13 @@
         "year2": "365 dias. Você é outra pessoa.",
         "year3": "Você ganhou o respeito. E o dia 366."
       }
+    },
+    "table": {
+      "name": "Nome",
+      "frequency": "Frequência",
+      "target": "Meta",
+      "todayProgress": "Progresso de hoje",
+      "actions": "Ações"
     }
   },
   "monthlyServices": {
@@ -420,6 +434,17 @@
       "badge": "{count, plural, one {# empréstimo pendente} other {# empréstimos pendentes}} · {amount}",
       "settle": "Liquidar",
       "settleTrigger": "Liquidar {reference}"
+    },
+    "table": {
+      "name": "Nome",
+      "category": "Categoria",
+      "currency": "Moeda",
+      "estimatedAmount": "Valor estimado",
+      "dueDay": "Dia venc.",
+      "nextPeriod": "Próx. período",
+      "linkedDebts": "Dívidas vinculadas",
+      "status": "Status",
+      "actions": "Ações"
     }
   },
   "navigation": {
@@ -603,7 +628,16 @@
       "revertSuccess": "Último evento revertido"
     },
     "archived": "Arquivada",
-    "unarchived": "Desarquivada"
+    "unarchived": "Desarquivada",
+    "table": {
+      "name": "Nome",
+      "category": "Categoria",
+      "cadence": "Cadência",
+      "nextDue": "Próx. data",
+      "lastDone": "Última vez",
+      "status": "Status",
+      "actions": "Ações"
+    }
   },
   "reports": {
     "loadError": "Não foi possível carregar o relatório. Tente novamente.",
@@ -961,6 +995,20 @@
         "updateSuccess": "Pagamento atualizado",
         "deleteSuccess": "Pagamento excluído"
       }
+    },
+    "table": {
+      "person": "Pessoa",
+      "currency": "Moeda",
+      "pendingDebt": "Dívida pendente",
+      "pendingLoan": "Empréstimo pendente",
+      "net": "Líquido",
+      "actions": "Ações",
+      "openDetail": "Ver detalhes de {name}"
     }
+  },
+  "viewMode": {
+    "label": "Visualização",
+    "cards": "Cartões",
+    "table": "Tabela"
   }
 }

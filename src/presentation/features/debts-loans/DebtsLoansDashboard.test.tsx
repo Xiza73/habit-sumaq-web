@@ -61,6 +61,9 @@ function renderDashboard() {
 describe('DebtsLoansDashboard', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    // The view-mode toggle persists to localStorage; clear it so every test
+    // starts from the default 'cards' view.
+    window.localStorage.clear();
   });
 
   it('renders the empty state when the summary returns no rows', async () => {
@@ -369,5 +372,102 @@ describe('DebtsLoansDashboard', () => {
     await user.click(allButton);
 
     await waitFor(() => expect(debtsLoansApi.summary).toHaveBeenCalledWith('all'));
+  });
+
+  it('renders cards by default and switches to the table view when toggled', async () => {
+    const user = userEvent.setup();
+    vi.mocked(debtsLoansApi.summary).mockResolvedValue([
+      makeRow({ displayName: 'Juan', currency: 'PEN' }),
+    ]);
+
+    renderDashboard();
+
+    await screen.findByText('Juan');
+    // Default view = cards, so there is no table yet.
+    expect(screen.queryByRole('table')).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: /tabla/i }));
+
+    // Table view now renders, with the localized headers.
+    expect(await screen.findByRole('table')).toBeInTheDocument();
+    expect(screen.getByRole('columnheader', { name: 'Persona' })).toBeInTheDocument();
+  });
+
+  it('table settle action opens the same settle modal and posts the settle body', async () => {
+    const user = userEvent.setup();
+    vi.mocked(debtsLoansApi.summary).mockResolvedValue([
+      makeRow({
+        displayName: 'Juan',
+        currency: 'PEN',
+        pendingDebt: 300,
+        pendingLoan: 0,
+        netOwed: -300,
+      }),
+    ]);
+
+    renderDashboard();
+
+    await screen.findByText('Juan');
+    await user.click(screen.getByRole('button', { name: /tabla/i }));
+    await screen.findByRole('table');
+
+    await user.click(screen.getByRole('button', { name: /^Liquidar$/i }));
+    const confirm = await screen.findByRole('button', { name: /^Confirmar$/i });
+    await user.click(confirm);
+
+    await waitFor(() => {
+      expect(debtsLoansApi.settleAmountByReference).toHaveBeenCalledWith(
+        expect.objectContaining({
+          reference: 'Juan',
+          currency: 'PEN',
+          type: 'DEBT',
+          amount: 300,
+          realPayment: true,
+        }),
+      );
+    });
+  });
+
+  it('table quick-add action prefills the create form, same as the cards', async () => {
+    const user = userEvent.setup();
+    vi.mocked(debtsLoansApi.summary).mockResolvedValue([
+      makeRow({
+        reference: 'juan',
+        displayName: 'Juan',
+        currency: 'USD',
+        pendingDebt: 100,
+        pendingLoan: 200,
+        netOwed: 100,
+      }),
+    ]);
+
+    renderDashboard();
+
+    await screen.findByText('Juan');
+    await user.click(screen.getByRole('button', { name: /tabla/i }));
+    await screen.findByRole('table');
+
+    await user.click(screen.getByRole('button', { name: /nueva deuda con juan/i }));
+
+    expect(await screen.findByLabelText(/^Tipo$/i)).toHaveValue('DEBT');
+    expect(screen.getByLabelText(/^Persona$/i)).toHaveValue('Juan');
+    expect(screen.getByLabelText(/^Moneda$/i)).toHaveValue('USD');
+  });
+
+  it('table row click opens the detail modal, same as clicking a card', async () => {
+    const user = userEvent.setup();
+    vi.mocked(debtsLoansApi.summary).mockResolvedValue([
+      makeRow({ displayName: 'Juan', currency: 'USD' }),
+    ]);
+
+    renderDashboard();
+
+    await screen.findByText('Juan');
+    await user.click(screen.getByRole('button', { name: /tabla/i }));
+    await screen.findByRole('table');
+
+    await user.click(screen.getByText('Juan'));
+
+    expect(await screen.findByRole('dialog', { name: /juan \(usd\)/i })).toBeInTheDocument();
   });
 });

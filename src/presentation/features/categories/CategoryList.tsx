@@ -7,15 +7,18 @@ import { Plus } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { useCategories, useDeleteCategory } from '@/core/application/hooks/use-categories';
+import { useViewMode } from '@/core/application/hooks/use-view-mode';
 import { type Category } from '@/core/domain/entities/category';
 import { type CategoryType } from '@/core/domain/enums/category.enums';
 
 import { ApiError } from '@/infrastructure/api/api-error';
 
 import { ConfirmDialog } from '@/presentation/components/feedback/ConfirmDialog';
+import { ViewModeToggle } from '@/presentation/components/ui/ViewModeToggle';
 
 import { cn } from '@/lib/utils';
 
+import { CategoriesTable } from './CategoriesTable';
 import { CategoryCard } from './CategoryCard';
 import { CategoryCardSkeleton } from './CategoryCardSkeleton';
 import { CategoryForm } from './CategoryForm';
@@ -32,6 +35,7 @@ export function CategoryList() {
 
   const { data: categories, isLoading } = useCategories(activeTab);
   const deleteMutation = useDeleteCategory();
+  const [viewMode, setViewMode] = useViewMode('categories');
 
   function handleEdit(category: Category) {
     setEditingCategory(category);
@@ -86,17 +90,20 @@ export function CategoryList() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">{t('title')}</h1>
-        <button
-          type="button"
-          onClick={() => {
-            setEditingCategory(null);
-            setFormOpen(true);
-          }}
-          className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-        >
-          <Plus className="size-4" />
-          {t('createCategory')}
-        </button>
+        <div className="flex items-center gap-2">
+          <ViewModeToggle mode={viewMode} onChange={setViewMode} />
+          <button
+            type="button"
+            onClick={() => {
+              setEditingCategory(null);
+              setFormOpen(true);
+            }}
+            className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+          >
+            <Plus className="size-4" />
+            {t('createCategory')}
+          </button>
+        </div>
       </div>
 
       <div className="flex gap-1 rounded-lg border border-border p-1">
@@ -141,6 +148,12 @@ export function CategoryList() {
             {t('createCategory')}
           </button>
         </div>
+      ) : viewMode === 'table' ? (
+        <CategoriesTable
+          categories={categories}
+          onEdit={handleEdit}
+          onDelete={setDeletingCategory}
+        />
       ) : (
         <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
           {categories.map((category) => (

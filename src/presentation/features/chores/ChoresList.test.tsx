@@ -98,6 +98,8 @@ function renderList() {
 describe('ChoresList', () => {
   beforeEach(() => {
     mockUseChores.mockReset();
+    // The view-mode toggle persists per-device; reset so each test starts on cards.
+    window.localStorage.clear();
   });
 
   it('renders loading skeletons when loading', () => {
@@ -177,5 +179,23 @@ describe('ChoresList', () => {
     await user.click(screen.getByRole('button', { name: /archivadas/i }));
 
     expect(screen.getByText(/no hay tareas archivadas/i)).toBeInTheDocument();
+  });
+
+  it('renders cards by default and switches to the table view when toggled', async () => {
+    mockUseChores.mockReturnValue({
+      data: mockChores.filter((c) => c.isActive),
+      isLoading: false,
+    });
+    renderList();
+
+    // Default view = cards, so there is no table yet.
+    expect(screen.queryByRole('table')).not.toBeInTheDocument();
+
+    const user = userEvent.setup();
+    await user.click(screen.getByRole('button', { name: /tabla/i }));
+
+    expect(await screen.findByRole('table')).toBeInTheDocument();
+    expect(screen.getByRole('columnheader', { name: 'Nombre' })).toBeInTheDocument();
+    expect(screen.getByText('Cortar el pelo')).toBeInTheDocument();
   });
 });
