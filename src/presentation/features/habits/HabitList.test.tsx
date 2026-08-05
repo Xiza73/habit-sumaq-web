@@ -81,6 +81,8 @@ describe('HabitList', () => {
     mockLogMutate.mockClear();
     mockArchiveMutate.mockClear();
     mockDeleteMutate.mockClear();
+    // The view-mode toggle persists per-device; reset so each test starts on cards.
+    window.localStorage.clear();
   });
 
   it('renders page title', () => {
@@ -119,5 +121,33 @@ describe('HabitList', () => {
     const links = screen.getAllByRole('link');
     expect(links[0]).toHaveAttribute('href', '/habits/1');
     expect(links[1]).toHaveAttribute('href', '/habits/2');
+  });
+
+  it('renders cards by default and switches to the table view when toggled', async () => {
+    const user = userEvent.setup();
+    renderList();
+
+    // Default view = cards, so there is no table yet.
+    expect(screen.queryByRole('table')).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: /tabla/i }));
+
+    expect(await screen.findByRole('table')).toBeInTheDocument();
+    expect(screen.getByRole('columnheader', { name: 'Nombre' })).toBeInTheDocument();
+    expect(screen.getByText('Tomar agua')).toBeInTheDocument();
+    expect(screen.getByText('Meditar')).toBeInTheDocument();
+  });
+
+  it('table check-in fires the same log handler as the card', async () => {
+    const user = userEvent.setup();
+    renderList();
+
+    await user.click(screen.getByRole('button', { name: /tabla/i }));
+    await screen.findByRole('table');
+
+    const checkInButtons = screen.getAllByRole('button', { name: /registrar/i });
+    await user.click(checkInButtons[0]);
+
+    expect(mockLogMutate).toHaveBeenCalled();
   });
 });

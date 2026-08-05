@@ -280,6 +280,13 @@
         "year2": "365 días. Eres otra persona.",
         "year3": "Te ganaste el respeto. Y el día 366."
       }
+    },
+    "table": {
+      "name": "Nombre",
+      "frequency": "Frecuencia",
+      "target": "Objetivo",
+      "todayProgress": "Progreso de hoy",
+      "actions": "Acciones"
     }
   },
   "monthlyServices": {
