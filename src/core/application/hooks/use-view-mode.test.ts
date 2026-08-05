@@ -4,7 +4,11 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { useViewMode, VIEW_MODE_STORAGE_PREFIX } from './use-view-mode';
+import {
+  __resetViewModeStoreForTests,
+  useViewMode,
+  VIEW_MODE_STORAGE_PREFIX,
+} from './use-view-mode';
 
 function storageKey(moduleKey: string): string {
   return `${VIEW_MODE_STORAGE_PREFIX}${moduleKey}`;
@@ -13,6 +17,9 @@ function storageKey(moduleKey: string): string {
 describe('useViewMode', () => {
   beforeEach(() => {
     window.localStorage.clear();
+    // The module-scoped in-memory fallback is not tied to localStorage — reset
+    // it too so a write from a previous test cannot leak into this one.
+    __resetViewModeStoreForTests();
   });
 
   afterEach(() => {
@@ -49,6 +56,17 @@ describe('useViewMode', () => {
     expect(debts.result.current[0]).toBe('table');
     expect(chores.result.current[0]).toBe('cards');
     expect(window.localStorage.getItem(storageKey('chores'))).toBeNull();
+  });
+
+  it("starts a fresh module key at 'cards' even after another module wrote via setMode", () => {
+    // Guard against the module-scoped memoryStore leaking across keys: writing
+    // one module's mode must not bleed into an untouched module.
+    const written = renderHook(() => useViewMode('module-a'));
+    act(() => written.result.current[1]('table'));
+    expect(written.result.current[0]).toBe('table');
+
+    const fresh = renderHook(() => useViewMode('module-b'));
+    expect(fresh.result.current[0]).toBe('cards');
   });
 
   it('survives a remount (a fresh hook instance reads the stored value)', () => {

@@ -42,6 +42,16 @@ const VIEW_MODE_EVENT = 'habit-sumaq:view-mode-change';
  */
 const memoryStore = new Map<string, ViewMode>();
 
+/**
+ * Test-only: clear the module-scoped in-memory fallback so state written by one
+ * test (via `setMode` when localStorage is unavailable, or the private-mode
+ * path) cannot leak into the next. Call it alongside `localStorage.clear()` in
+ * a `beforeEach`. No-op semantics in production (never called there).
+ */
+export function __resetViewModeStoreForTests(): void {
+  memoryStore.clear();
+}
+
 function storageKey(moduleKey: string): string {
   return `${VIEW_MODE_STORAGE_PREFIX}${moduleKey}`;
 }
