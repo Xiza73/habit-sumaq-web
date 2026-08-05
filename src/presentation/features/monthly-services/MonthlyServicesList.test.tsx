@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -79,6 +79,18 @@ vi.mock('@/core/application/hooks/use-categories', () => ({
   useCategories: () => ({ data: [], isLoading: false }),
 }));
 
+// Controllable view prefs so a test can drive a non-default sort order and
+// assert the table's row order follows it (regression: the table used to
+// receive the RAW unsorted list, so toggling reshuffled the rows).
+const { mockPrefsRef } = vi.hoisted(() => ({
+  // Plain object literal: the property types widen to `string`, so a later
+  // test can reassign `orderBy: 'dueDay'` etc. without a cast.
+  mockPrefsRef: { current: { groupBy: 'none', orderBy: 'name', orderDir: 'asc' } },
+}));
+vi.mock('@/core/application/hooks/use-monthly-services-view-prefs', () => ({
+  useMonthlyServicesViewPrefs: () => ({ prefs: mockPrefsRef.current, setPrefs: vi.fn() }),
+}));
+
 function renderList() {
   return render(<MonthlyServicesList />, { wrapper: TestProviders });
 }
@@ -88,6 +100,8 @@ describe('MonthlyServicesList', () => {
     mockUseMonthlyServices.mockReset();
     // The view-mode toggle persists per-device; reset so each test starts on cards.
     window.localStorage.clear();
+    // Reset view prefs to the default (name, ascending) between tests.
+    mockPrefsRef.current = { groupBy: 'none', orderBy: 'name', orderDir: 'asc' };
   });
 
   it('renders loading skeletons when loading', () => {
@@ -131,5 +145,27 @@ describe('MonthlyServicesList', () => {
     expect(screen.getByRole('columnheader', { name: 'Nombre' })).toBeInTheDocument();
     expect(screen.getByText('Luz')).toBeInTheDocument();
     expect(screen.getByText('Internet')).toBeInTheDocument();
+  });
+
+  it('renders the table rows in the active sort order, not the raw data order', async () => {
+    const user = userEvent.setup();
+    // Raw data order is [Luz (dueDay 15), Internet (dueDay 5)]. A non-default
+    // sort of dueDay ascending must reorder the TABLE to [Internet, Luz] —
+    // proving the table receives the sorted list, not the raw one.
+    mockPrefsRef.current = { groupBy: 'none', orderBy: 'dueDay', orderDir: 'asc' };
+    mockUseMonthlyServices.mockReturnValue({ data: mockServices, isLoading: false });
+    renderList();
+
+    await user.click(screen.getByRole('button', { name: /tabla/i }));
+    const table = await screen.findByRole('table');
+
+    const dataRows = within(table)
+      .getAllByRole('row')
+      // Drop the header row (it has columnheaders, not cells).
+      .filter((row) => within(row).queryAllByRole('cell').length > 0);
+    const orderedNames = dataRows.map((row) => within(row).getAllByRole('cell')[0].textContent);
+
+    // dueDay ascending → Internet (5) before Luz (15), reversing the raw order.
+    expect(orderedNames).toEqual(['Internet', 'Luz']);
   });
 });

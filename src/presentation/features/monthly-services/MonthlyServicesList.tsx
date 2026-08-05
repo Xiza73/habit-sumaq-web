@@ -128,6 +128,12 @@ export function MonthlyServicesList() {
     [visibleServices, prefs, categoriesById],
   );
 
+  // Flatten the sorted/grouped list back into a single array for the table
+  // view. Sourcing from `groups` (instead of the raw `visibleServices`) keeps
+  // the table's row order in lock-step with the cards' order, so toggling the
+  // view mode never reshuffles the rows.
+  const tableRows = useMemo(() => groups.flatMap((group) => group.services), [groups]);
+
   function handleOpenCreate() {
     setEditingService(null);
     setFormOpen(true);
@@ -282,12 +288,13 @@ export function MonthlyServicesList() {
         </div>
       ) : viewMode === 'table' ? (
         <MonthlyServicesTable
-          services={visibleServices}
+          services={tableRows}
           categoriesById={categoriesById}
           onPay={setPayingService}
           onSkip={setSkippingService}
           onEdit={handleEdit}
           onArchive={handleArchive}
+          onDelete={setDeletingService}
         />
       ) : (
         <div className="space-y-6">
