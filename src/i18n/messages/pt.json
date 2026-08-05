@@ -889,6 +889,8 @@
       "pendingCount": "{count, plural, one {# pendente} other {# pendentes}}",
       "settledCount": "{count, plural, one {# liquidado} other {# liquidados}}",
       "settle": "Liquidar",
+      "total": "Total",
+      "andMore": "e mais {count}",
       "quickAdd": {
         "newDebt": "Nova dívida com {name}",
         "newLoan": "Novo empréstimo com {name}"

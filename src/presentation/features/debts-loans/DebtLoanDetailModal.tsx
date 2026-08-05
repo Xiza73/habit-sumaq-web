@@ -265,7 +265,7 @@ export function DebtLoanDetailModal({ row, onClose, onEdit }: DebtLoanDetailModa
           share card, rasterized to PNG by the copy/download actions. */}
       {row && (
         <div aria-hidden="true" className="pointer-events-none fixed left-[-9999px] top-0">
-          <DebtCardShareImage ref={shareRef} row={row} />
+          <DebtCardShareImage ref={shareRef} row={row} rows={pending} />
         </div>
       )}
 

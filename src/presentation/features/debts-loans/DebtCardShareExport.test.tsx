@@ -4,7 +4,7 @@ import * as htmlToImage from 'html-to-image';
 import { toast } from 'sonner';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { type DebtLoanSummaryRow } from '@/core/domain/entities/debt-loan';
+import { type DebtLoan, type DebtLoanSummaryRow } from '@/core/domain/entities/debt-loan';
 
 import { debtsLoansApi } from '@/infrastructure/api/debts-loans.api';
 
@@ -46,6 +46,25 @@ function makeRow(overrides: Partial<DebtLoanSummaryRow> = {}): DebtLoanSummaryRo
     netOwed: -300,
     pendingCount: 2,
     settledCount: 0,
+    ...overrides,
+  };
+}
+
+function makeDebt(overrides: Partial<DebtLoan> = {}): DebtLoan {
+  return {
+    id: 'dl-1',
+    userId: 'user-1',
+    type: 'DEBT',
+    currency: 'PEN',
+    amount: 500,
+    remainingAmount: 500,
+    status: 'PENDING',
+    reference: 'juan',
+    description: null,
+    categoryId: null,
+    date: '2026-04-10T12:00:00.000Z',
+    createdAt: '2026-04-10T12:00:00.000Z',
+    updatedAt: '2026-04-10T12:00:00.000Z',
     ...overrides,
   };
 }
@@ -171,6 +190,33 @@ describe('DebtLoanDetailModal — share image export', () => {
 
     clickSpy.mockRestore();
     createElementSpy.mockRestore();
+  });
+
+  it('renders the individual pending rows and the group total into the exported node', async () => {
+    const user = userEvent.setup();
+    installClipboard();
+    vi.mocked(debtsLoansApi.list).mockResolvedValue([
+      makeDebt({ id: 'd1', type: 'DEBT', description: 'Almuerzo', remainingAmount: 500 }),
+      makeDebt({ id: 'd2', type: 'LOAN', description: 'Libro prestado', remainingAmount: 200 }),
+    ]);
+
+    // netOwed -300 → the user owes Juan (youOwe copy).
+    renderModal(makeRow({ pendingDebt: 500, pendingLoan: 200, netOwed: -300, pendingCount: 2 }));
+
+    // Wait for the pending rows to load into the modal before exporting.
+    await screen.findByText('Almuerzo');
+
+    await user.click(screen.getByRole('button', { name: /Copiar imagen/i }));
+
+    await waitFor(() => expect(htmlToImage.toPng).toHaveBeenCalledTimes(1));
+
+    const [node] = vi.mocked(htmlToImage.toPng).mock.calls[0];
+    // Individual pending rows (the detail) are in the exported node…
+    expect(node.textContent).toContain('Almuerzo');
+    expect(node.textContent).toContain('Libro prestado');
+    // …followed by a labeled Total reflecting the group's net (you owe Juan).
+    expect(node.textContent).toContain('Total');
+    expect(node.textContent).toContain('Debés');
   });
 
   it('shows an error toast when the image cannot be generated', async () => {
