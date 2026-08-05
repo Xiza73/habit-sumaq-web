@@ -111,12 +111,5 @@ export function CategoriesTable({ categories, onEdit, onDelete }: CategoriesTabl
     },
   ];
 
-  return (
-    <DataTable
-      columns={columns}
-      rows={categories}
-      getRowKey={(category) => category.id}
-      emptyMessage={t('emptyStateFiltered')}
-    />
-  );
+  return <DataTable columns={columns} rows={categories} getRowKey={(category) => category.id} />;
 }
