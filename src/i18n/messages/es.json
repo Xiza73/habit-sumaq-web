@@ -142,6 +142,7 @@
     "MSVC_004": "Este servicio ya está pagado para el mes actual.",
     "CHRE_001": "No se puede eliminar una tarea con historial. Archívala en su lugar.",
     "CHRE_002": "Tarea no encontrada.",
+    "CHRE_003": "No hay eventos para revertir.",
     "BDGT_001": "Presupuesto no encontrado.",
     "BDGT_002": "Ya tienes un presupuesto para ese mes y moneda.",
     "BDGT_003": "La fecha del movimiento debe estar dentro del mes del presupuesto.",
@@ -597,7 +598,9 @@
     "logs": {
       "title": "Historial de \"{name}\"",
       "empty": "Sin eventos todavía",
-      "loadMore": "Cargar más"
+      "loadMore": "Cargar más",
+      "revertLast": "Revertir último",
+      "revertSuccess": "Último evento revertido"
     },
     "archived": "Archivada",
     "unarchived": "Desarchivada"

@@ -142,6 +142,7 @@
     "MSVC_004": "This service is already paid for the current month.",
     "CHRE_001": "Cannot delete a chore with logged events. Archive it instead.",
     "CHRE_002": "Chore not found.",
+    "CHRE_003": "There are no events to revert.",
     "BDGT_001": "Budget not found.",
     "BDGT_002": "You already have a budget for that month and currency.",
     "BDGT_003": "The movement date must fall within the budget's month.",
@@ -597,7 +598,9 @@
     "logs": {
       "title": "History of \"{name}\"",
       "empty": "No events yet",
-      "loadMore": "Load more"
+      "loadMore": "Load more",
+      "revertLast": "Revert last",
+      "revertSuccess": "Last completion reverted"
     },
     "archived": "Archived",
     "unarchived": "Unarchived"
