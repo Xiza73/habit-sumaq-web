@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
 
 import {
@@ -9,6 +9,8 @@ import {
   CheckCircle2,
   ChevronDown,
   ChevronRight,
+  Copy,
+  Download,
   Loader2,
   Pencil,
   Trash2,
@@ -26,12 +28,29 @@ import { type DebtLoan, type DebtLoanSummaryRow } from '@/core/domain/entities/d
 import { ApiError } from '@/infrastructure/api/api-error';
 
 import { Modal } from '@/presentation/components/ui/Modal';
+import { useExportNodeImage } from '@/presentation/hooks/use-export-node-image';
 
 import { formatCurrency, formatDate } from '@/lib/format';
 import { cn } from '@/lib/utils';
 
+import { DebtCardShareImage, SHARE_IMAGE_BACKGROUND } from './DebtCardShareImage';
 import { DebtLoanPaymentsList } from './DebtLoanPaymentsList';
 import { DebtLoanRowSettleModal } from './DebtLoanRowSettleModal';
+
+/**
+ * Builds a filesystem-safe `{person}-{currency}.png` name. Diacritics are
+ * stripped and runs of unsafe characters collapse to a single dash so
+ * "María José" / USD becomes "Maria-Jose-USD.png".
+ */
+function buildShareImageFilename(displayName: string, currency: string): string {
+  const slug = displayName
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .trim()
+    .replace(/[^a-zA-Z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+  return `${slug || 'debt'}-${currency}.png`;
+}
 
 /**
  * Matches the backend's `LOWER(unaccent(reference))` grouping key. The
@@ -80,6 +99,35 @@ export function DebtLoanDetailModal({ row, onClose, onEdit }: DebtLoanDetailModa
   const { data: allRows = [], isLoading } = useDebtsLoans(showSettled ? 'all' : 'pending');
   const deleteMutation = useDeleteDebtLoan();
   const settleMutation = useSettleDebtLoan();
+
+  // Off-screen share card rasterized to PNG for copy/download.
+  const shareRef = useRef<HTMLDivElement>(null);
+  const { copyImage, downloadImage } = useExportNodeImage({
+    backgroundColor: SHARE_IMAGE_BACKGROUND,
+  });
+
+  async function handleCopyImage() {
+    const node = shareRef.current;
+    if (!node || !row) return;
+    try {
+      const result = await copyImage(node, buildShareImageFilename(row.displayName, row.currency));
+      if (result === 'copied') toast.success(t('shareImage.copySuccess'));
+      else toast.info(t('shareImage.copyFallback'));
+    } catch {
+      toast.error(t('shareImage.error'));
+    }
+  }
+
+  async function handleDownloadImage() {
+    const node = shareRef.current;
+    if (!node || !row) return;
+    try {
+      await downloadImage(node, buildShareImageFilename(row.displayName, row.currency));
+      toast.success(t('shareImage.downloadSuccess'));
+    } catch {
+      toast.error(t('shareImage.error'));
+    }
+  }
 
   const filtered = useMemo(() => {
     if (!row) return [];
@@ -190,7 +238,36 @@ export function DebtLoanDetailModal({ row, onClose, onEdit }: DebtLoanDetailModa
             )}
           </div>
         )}
+
+        {row && (
+          <div className="mt-4 flex justify-end gap-2 border-t border-border pt-4">
+            <button
+              type="button"
+              onClick={() => void handleCopyImage()}
+              className="inline-flex items-center gap-2 rounded-md border border-border px-3 py-2 text-sm hover:bg-muted"
+            >
+              <Copy className="size-4" aria-hidden />
+              {t('shareImage.copy')}
+            </button>
+            <button
+              type="button"
+              onClick={() => void handleDownloadImage()}
+              className="inline-flex items-center gap-2 rounded-md border border-border px-3 py-2 text-sm hover:bg-muted"
+            >
+              <Download className="size-4" aria-hidden />
+              {t('shareImage.download')}
+            </button>
+          </div>
+        )}
       </Modal>
+
+      {/* Off-screen (not display:none — html-to-image needs a laid-out node)
+          share card, rasterized to PNG by the copy/download actions. */}
+      {row && (
+        <div aria-hidden="true" className="pointer-events-none fixed left-[-9999px] top-0">
+          <DebtCardShareImage ref={shareRef} row={row} />
+        </div>
+      )}
 
       <DebtLoanRowSettleModal
         row={settlingRow}

@@ -933,6 +933,14 @@
       "deleteConfirm": "Delete this record?",
       "deleteSuccess": "Deleted",
       "empty": "No records.",
+      "shareImage": {
+        "copy": "Copy image",
+        "download": "Download",
+        "copySuccess": "Image copied",
+        "downloadSuccess": "Image downloaded",
+        "copyFallback": "Couldn't copy; the image was downloaded instead.",
+        "error": "Couldn't generate the image."
+      },
       "payments": {
         "show": "Show payments",
         "hide": "Hide payments",
