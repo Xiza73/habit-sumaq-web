@@ -39,7 +39,13 @@
     "emptyStateFiltered": "Nenhuma categoria deste tipo.",
     "deleteConfirm": "Tem certeza de que deseja excluir esta categoria?",
     "cannotDeleteDefault": "Categorias padrão não podem ser excluídas.",
-    "default": "Padrão"
+    "default": "Padrão",
+    "table": {
+      "name": "Nome",
+      "type": "Tipo",
+      "color": "Cor",
+      "actions": "Ações"
+    }
   },
   "settings": {
     "autostart": {

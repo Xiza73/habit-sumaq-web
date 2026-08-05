@@ -39,7 +39,13 @@
     "emptyStateFiltered": "No hay categorías de este tipo.",
     "deleteConfirm": "¿Estás seguro de que quieres eliminar esta categoría?",
     "cannotDeleteDefault": "Las categorías por defecto no se pueden eliminar.",
-    "default": "Por defecto"
+    "default": "Por defecto",
+    "table": {
+      "name": "Nombre",
+      "type": "Tipo",
+      "color": "Color",
+      "actions": "Acciones"
+    }
   },
   "settings": {
     "autostart": {
