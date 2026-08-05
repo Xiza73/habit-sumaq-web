@@ -50,6 +50,7 @@ function renderTable(chores: Chore[], handlers: Partial<Parameters<typeof Chores
   const onViewHistory = vi.fn();
   const onEdit = vi.fn();
   const onArchive = vi.fn();
+  const onDelete = vi.fn();
   render(
     <NextIntlClientProvider locale="es" messages={messages}>
       <ChoresTable
@@ -59,11 +60,12 @@ function renderTable(chores: Chore[], handlers: Partial<Parameters<typeof Chores
         onViewHistory={onViewHistory}
         onEdit={onEdit}
         onArchive={onArchive}
+        onDelete={onDelete}
         {...handlers}
       />
     </NextIntlClientProvider>,
   );
-  return { onMarkDone, onSkip, onViewHistory, onEdit, onArchive };
+  return { onMarkDone, onSkip, onViewHistory, onEdit, onArchive, onDelete };
 }
 
 describe('ChoresTable', () => {
@@ -110,5 +112,14 @@ describe('ChoresTable', () => {
 
     await user.click(screen.getByRole('button', { name: /^Archivar$/i }));
     expect(onArchive).toHaveBeenCalledWith(chore);
+  });
+
+  it('fires onDelete with the chore from the row delete action', async () => {
+    const user = userEvent.setup();
+    const chore = makeChore();
+    const { onDelete } = renderTable([chore]);
+
+    await user.click(screen.getByRole('button', { name: /eliminar permanentemente/i }));
+    expect(onDelete).toHaveBeenCalledWith(chore);
   });
 });

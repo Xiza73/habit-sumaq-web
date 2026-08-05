@@ -201,7 +201,11 @@ export function ChoresList() {
           ))}
         </div>
 
-        <ViewModeToggle mode={viewMode} onChange={setViewMode} />
+        {/* Canonical placement: right-most item of the primary controls row,
+            inside a `flex items-center gap-2` cluster (see ViewModeToggle). */}
+        <div className="flex items-center gap-2">
+          <ViewModeToggle mode={viewMode} onChange={setViewMode} />
+        </div>
       </div>
 
       {isLoading ? (
@@ -234,6 +238,7 @@ export function ChoresList() {
           onViewHistory={setHistoryTarget}
           onEdit={handleEdit}
           onArchive={handleArchive}
+          onDelete={setDeleteTarget}
         />
       ) : (
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">

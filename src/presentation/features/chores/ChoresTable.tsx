@@ -2,6 +2,8 @@
 
 import { useTranslations } from 'next-intl';
 
+import { Trash2 } from 'lucide-react';
+
 import { useDateFormat } from '@/core/application/hooks/use-user-settings';
 import { type Chore } from '@/core/domain/entities/chore';
 
@@ -23,6 +25,8 @@ interface ChoresTableProps {
   onEdit: (chore: Chore) => void;
   /** Archive / unarchive a chore (same handler the cards use). */
   onArchive: (chore: Chore) => void;
+  /** Delete a chore (same handler the cards use). */
+  onDelete: (chore: Chore) => void;
 }
 
 const STATUS_CLASSES: Record<ChoreStatus, string> = {
@@ -34,8 +38,8 @@ const STATUS_CLASSES: Record<ChoreStatus, string> = {
 /**
  * Table view of the chores list. Built on the shared `DataTable` primitive and
  * wired to the EXACT handlers the cards use (`onMarkDone`, `onSkip`,
- * `onViewHistory`, `onEdit`, `onArchive`), so behavior is identical between the
- * cards and the table.
+ * `onViewHistory`, `onEdit`, `onArchive`, `onDelete`), so the table exposes the
+ * SAME per-chore actions the card does.
  */
 export function ChoresTable({
   chores,
@@ -44,6 +48,7 @@ export function ChoresTable({
   onViewHistory,
   onEdit,
   onArchive,
+  onDelete,
 }: ChoresTableProps) {
   const t = useTranslations('chores');
   const dateFormat = useDateFormat();
@@ -160,18 +165,20 @@ export function ChoresTable({
             >
               {isArchived ? t('actions.unarchive') : t('actions.archive')}
             </button>
+            <button
+              type="button"
+              onClick={() => onDelete(chore)}
+              aria-label={t('actions.delete')}
+              title={t('actions.delete')}
+              className="inline-flex size-7 items-center justify-center rounded-md text-destructive transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            >
+              <Trash2 className="size-3.5" aria-hidden />
+            </button>
           </div>
         );
       },
     },
   ];
 
-  return (
-    <DataTable
-      columns={columns}
-      rows={chores}
-      getRowKey={(chore) => chore.id}
-      emptyMessage={t('empty')}
-    />
-  );
+  return <DataTable columns={columns} rows={chores} getRowKey={(chore) => chore.id} />;
 }
