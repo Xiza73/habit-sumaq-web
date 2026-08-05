@@ -419,6 +419,16 @@
       "badge": "{count, plural, one {# pending loan} other {# pending loans}} · {amount}",
       "settle": "Settle",
       "settleTrigger": "Settle {reference}"
+    },
+    "table": {
+      "name": "Name",
+      "category": "Category",
+      "currency": "Currency",
+      "estimatedAmount": "Estimated amount",
+      "dueDay": "Due day",
+      "nextPeriod": "Next period",
+      "status": "Status",
+      "actions": "Actions"
     }
   },
   "navigation": {

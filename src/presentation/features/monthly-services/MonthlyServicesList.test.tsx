@@ -1,4 +1,5 @@
 import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { type MonthlyService } from '@/core/domain/entities/monthly-service';
@@ -85,6 +86,8 @@ function renderList() {
 describe('MonthlyServicesList', () => {
   beforeEach(() => {
     mockUseMonthlyServices.mockReset();
+    // The view-mode toggle persists per-device; reset so each test starts on cards.
+    window.localStorage.clear();
   });
 
   it('renders loading skeletons when loading', () => {
@@ -111,5 +114,22 @@ describe('MonthlyServicesList', () => {
     renderList();
     expect(screen.getByText(/servicios mensuales/i)).toBeInTheDocument();
     expect(screen.getAllByRole('button', { name: /nuevo servicio/i }).length).toBeGreaterThan(0);
+  });
+
+  it('renders cards by default and switches to the table view when toggled', async () => {
+    const user = userEvent.setup();
+    mockUseMonthlyServices.mockReturnValue({ data: mockServices, isLoading: false });
+    renderList();
+
+    // Default view = cards, so there is no table yet.
+    expect(screen.queryByRole('table')).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: /tabla/i }));
+
+    // Table view now renders, with the localized headers and one row per service.
+    expect(await screen.findByRole('table')).toBeInTheDocument();
+    expect(screen.getByRole('columnheader', { name: 'Nombre' })).toBeInTheDocument();
+    expect(screen.getByText('Luz')).toBeInTheDocument();
+    expect(screen.getByText('Internet')).toBeInTheDocument();
   });
 });

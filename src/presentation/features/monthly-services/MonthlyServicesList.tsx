@@ -14,12 +14,14 @@ import {
   useSkipMonthlyServiceMonth,
 } from '@/core/application/hooks/use-monthly-services';
 import { useMonthlyServicesViewPrefs } from '@/core/application/hooks/use-monthly-services-view-prefs';
+import { useViewMode } from '@/core/application/hooks/use-view-mode';
 import { type Category } from '@/core/domain/entities/category';
 import { type MonthlyService } from '@/core/domain/entities/monthly-service';
 
 import { ApiError } from '@/infrastructure/api/api-error';
 
 import { ConfirmDialog } from '@/presentation/components/feedback/ConfirmDialog';
+import { ViewModeToggle } from '@/presentation/components/ui/ViewModeToggle';
 
 import { formatPeriodLabel, getCurrentPeriod } from '@/lib/format';
 import { applyView } from '@/lib/monthly-services-view';
@@ -29,6 +31,7 @@ import { MonthlyServiceCard } from './MonthlyServiceCard';
 import { MonthlyServiceForm } from './MonthlyServiceForm';
 import { MonthlyServicesSpendKpi } from './MonthlyServicesSpendKpi';
 import { MonthlyServicesSummary } from './MonthlyServicesSummary';
+import { MonthlyServicesTable } from './MonthlyServicesTable';
 import { MonthlyServicesViewControls } from './MonthlyServicesViewControls';
 import { PayMonthlyServiceForm } from './PayMonthlyServiceForm';
 
@@ -105,6 +108,7 @@ export function MonthlyServicesList() {
   const deleteMutation = useDeleteMonthlyService();
   const skipMutation = useSkipMonthlyServiceMonth();
   const { prefs, setPrefs } = useMonthlyServicesViewPrefs();
+  const [viewMode, setViewMode] = useViewMode('monthly-services');
 
   const categoriesById = useMemo(() => {
     const map = new Map<string, Category>();
@@ -236,7 +240,10 @@ export function MonthlyServicesList() {
           ))}
         </div>
 
-        <MonthlyServicesViewControls prefs={prefs} onChange={setPrefs} />
+        <div className="flex items-center gap-2">
+          <MonthlyServicesViewControls prefs={prefs} onChange={setPrefs} />
+          <ViewModeToggle mode={viewMode} onChange={setViewMode} />
+        </div>
       </div>
 
       {!showArchived && services && services.length > 0 && (
@@ -273,6 +280,15 @@ export function MonthlyServicesList() {
             </button>
           )}
         </div>
+      ) : viewMode === 'table' ? (
+        <MonthlyServicesTable
+          services={visibleServices}
+          categoriesById={categoriesById}
+          onPay={setPayingService}
+          onSkip={setSkippingService}
+          onEdit={handleEdit}
+          onArchive={handleArchive}
+        />
       ) : (
         <div className="space-y-6">
           {groups.map((group) => (

@@ -419,6 +419,16 @@
       "badge": "{count, plural, one {# préstamo pendiente} other {# préstamos pendientes}} · {amount}",
       "settle": "Liquidar",
       "settleTrigger": "Liquidar {reference}"
+    },
+    "table": {
+      "name": "Nombre",
+      "category": "Categoría",
+      "currency": "Moneda",
+      "estimatedAmount": "Monto estimado",
+      "dueDay": "Día venc.",
+      "nextPeriod": "Próx. período",
+      "status": "Estado",
+      "actions": "Acciones"
     }
   },
   "navigation": {
