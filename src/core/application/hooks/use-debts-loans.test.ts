@@ -11,7 +11,6 @@ import { debtsLoansApi } from '@/infrastructure/api/debts-loans.api';
 import {
   computeOverview,
   debtLoanKeys,
-  useBulkSettleByReference,
   useDeleteDebtLoan,
   useSettleAmountByReference,
   useSettleDebtLoan,
@@ -99,7 +98,6 @@ vi.mock('@/infrastructure/api/debts-loans.api', () => ({
   debtsLoansApi: {
     settle: vi.fn(),
     delete: vi.fn(),
-    bulkSettleByReference: vi.fn(),
     settleAmountByReference: vi.fn(),
   },
 }));
@@ -144,7 +142,6 @@ describe('debts-loans mutations invalidate BOTH debts-loans and monthly-services
   beforeEach(() => {
     vi.mocked(debtsLoansApi.settle).mockReset();
     vi.mocked(debtsLoansApi.delete).mockReset();
-    vi.mocked(debtsLoansApi.bulkSettleByReference).mockReset();
     vi.mocked(debtsLoansApi.settleAmountByReference).mockReset();
   });
 
@@ -167,24 +164,6 @@ describe('debts-loans mutations invalidate BOTH debts-loans and monthly-services
 
     const { result } = renderHook(() => useDeleteDebtLoan(), { wrapper: Wrapper });
     result.current.mutate('d-1');
-
-    await waitFor(() => expect(result.current.isSuccess).toBe(true));
-
-    expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: debtLoanKeys.all });
-    expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: monthlyServiceKeys.all });
-  });
-
-  it('useBulkSettleByReference invalidates debts-loans AND monthly-services on success', async () => {
-    vi.mocked(debtsLoansApi.bulkSettleByReference).mockResolvedValueOnce({
-      settledCount: 2,
-      totalSettledAmount: 200,
-      currency: 'PEN',
-      settledIds: ['d-1', 'd-2'],
-    });
-    const { Wrapper, invalidateSpy } = makeWrapper();
-
-    const { result } = renderHook(() => useBulkSettleByReference(), { wrapper: Wrapper });
-    result.current.mutate({ reference: 'juan', currency: 'PEN' });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
