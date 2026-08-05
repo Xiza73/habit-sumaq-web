@@ -851,7 +851,11 @@
       "net": "Líquido",
       "pendingCount": "{count, plural, one {# pendente} other {# pendentes}}",
       "settledCount": "{count, plural, one {# liquidado} other {# liquidados}}",
-      "settle": "Liquidar"
+      "settle": "Liquidar",
+      "quickAdd": {
+        "newDebt": "Nova dívida com {name}",
+        "newLoan": "Novo empréstimo com {name}"
+      }
     },
     "settle": {
       "title": "Liquidar com {name}",

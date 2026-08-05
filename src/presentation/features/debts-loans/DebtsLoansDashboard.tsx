@@ -16,6 +16,7 @@ import {
   type DebtLoanSummaryRow,
   type DebtLoanType,
 } from '@/core/domain/entities/debt-loan';
+import { type Currency } from '@/core/domain/enums/currency.enum';
 
 import { ApiError } from '@/infrastructure/api/api-error';
 
@@ -53,6 +54,8 @@ export function DebtsLoansDashboard() {
   const [detailRow, setDetailRow] = useState<DebtLoanSummaryRow | null>(null);
   const [formOpen, setFormOpen] = useState(false);
   const [formInitialType, setFormInitialType] = useState<DebtLoanType>('DEBT');
+  const [formInitialReference, setFormInitialReference] = useState<string | undefined>(undefined);
+  const [formInitialCurrency, setFormInitialCurrency] = useState<Currency | undefined>(undefined);
   const [editingDebtLoan, setEditingDebtLoan] = useState<DebtLoan | null>(null);
   const [viewPrefs, setViewPrefs] = useState<DebtsViewPrefs>(DEFAULT_DEBTS_VIEW_PREFS);
 
@@ -80,6 +83,17 @@ export function DebtsLoansDashboard() {
   function openCreate(type: DebtLoanType) {
     setEditingDebtLoan(null);
     setFormInitialType(type);
+    setFormInitialReference(undefined);
+    setFormInitialCurrency(undefined);
+    setFormOpen(true);
+  }
+
+  function handleQuickAdd(row: DebtLoanSummaryRow, type: DebtLoanType) {
+    setEditingDebtLoan(null);
+    setFormInitialType(type);
+    // Original casing shown on the card, not the normalized grouping key.
+    setFormInitialReference(row.displayName);
+    setFormInitialCurrency(row.currency);
     setFormOpen(true);
   }
 
@@ -194,6 +208,7 @@ export function DebtsLoansDashboard() {
               row={row}
               onSettle={setSettlingRow}
               onClick={setDetailRow}
+              onQuickAdd={handleQuickAdd}
             />
           ))}
         </div>
@@ -212,6 +227,8 @@ export function DebtsLoansDashboard() {
         open={formOpen}
         debtLoan={editingDebtLoan}
         initialType={formInitialType}
+        initialReference={formInitialReference}
+        initialCurrency={formInitialCurrency}
         onClose={closeForm}
         knownReferences={knownReferences}
       />

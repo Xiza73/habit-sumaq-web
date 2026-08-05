@@ -851,7 +851,11 @@
       "net": "Net",
       "pendingCount": "{count, plural, one {# pending} other {# pending}}",
       "settledCount": "{count, plural, one {# settled} other {# settled}}",
-      "settle": "Settle"
+      "settle": "Settle",
+      "quickAdd": {
+        "newDebt": "New debt with {name}",
+        "newLoan": "New loan with {name}"
+      }
     },
     "settle": {
       "title": "Settle with {name}",

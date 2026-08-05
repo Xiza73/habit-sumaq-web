@@ -250,6 +250,112 @@ describe('DebtsLoansDashboard', () => {
     expect(toast.success).not.toHaveBeenCalled();
   });
 
+  it('quick-add debt button prefills the create form with DEBT + person + currency', async () => {
+    const user = userEvent.setup();
+    vi.mocked(debtsLoansApi.summary).mockResolvedValue([
+      makeRow({
+        reference: 'juan',
+        displayName: 'Juan',
+        currency: 'USD',
+        pendingDebt: 100,
+        pendingLoan: 200,
+        netOwed: 100,
+      }),
+    ]);
+
+    renderDashboard();
+
+    await screen.findByText('Juan');
+
+    const debtButton = await screen.findByRole('button', { name: /nueva deuda con juan/i });
+    await user.click(debtButton);
+
+    // The create form dialog opens, prefilled from the card.
+    expect(await screen.findByLabelText(/^Tipo$/i)).toHaveValue('DEBT');
+    expect(screen.getByLabelText(/^Persona$/i)).toHaveValue('Juan');
+    expect(screen.getByLabelText(/^Moneda$/i)).toHaveValue('USD');
+  });
+
+  it('quick-add loan button prefills the create form with LOAN + person + currency', async () => {
+    const user = userEvent.setup();
+    vi.mocked(debtsLoansApi.summary).mockResolvedValue([
+      makeRow({
+        reference: 'pedro',
+        displayName: 'Pedro',
+        currency: 'EUR',
+        pendingDebt: 0,
+        pendingLoan: 400,
+        netOwed: 400,
+      }),
+    ]);
+
+    renderDashboard();
+
+    await screen.findByText('Pedro');
+
+    const loanButton = await screen.findByRole('button', { name: /nuevo préstamo con pedro/i });
+    await user.click(loanButton);
+
+    expect(await screen.findByLabelText(/^Tipo$/i)).toHaveValue('LOAN');
+    expect(screen.getByLabelText(/^Persona$/i)).toHaveValue('Pedro');
+    expect(screen.getByLabelText(/^Moneda$/i)).toHaveValue('EUR');
+  });
+
+  it('quick-add submits a create with the prefilled type, displayName and currency', async () => {
+    const user = userEvent.setup();
+    vi.mocked(debtsLoansApi.create).mockResolvedValue({} as never);
+    vi.mocked(debtsLoansApi.summary).mockResolvedValue([
+      makeRow({
+        reference: 'juan',
+        displayName: 'Juan',
+        currency: 'USD',
+        pendingDebt: 100,
+        pendingLoan: 0,
+        netOwed: -100,
+      }),
+    ]);
+
+    renderDashboard();
+
+    await screen.findByText('Juan');
+    await user.click(await screen.findByRole('button', { name: /nueva deuda con juan/i }));
+
+    const amount = await screen.findByLabelText(/^Monto$/i);
+    await user.clear(amount);
+    await user.type(amount, '150');
+
+    await user.click(screen.getByRole('button', { name: /^Crear$/i }));
+
+    await waitFor(() => {
+      expect(debtsLoansApi.create).toHaveBeenCalledWith(
+        expect.objectContaining({ type: 'DEBT', reference: 'Juan', currency: 'USD', amount: 150 }),
+      );
+    });
+  });
+
+  it('quick-add does NOT open the detail modal (stopPropagation)', async () => {
+    const user = userEvent.setup();
+    vi.mocked(debtsLoansApi.summary).mockResolvedValue([
+      makeRow({
+        reference: 'juan',
+        displayName: 'Juan',
+        currency: 'USD',
+        pendingDebt: 100,
+        pendingLoan: 0,
+        netOwed: -100,
+      }),
+    ]);
+
+    renderDashboard();
+
+    await screen.findByText('Juan');
+    await user.click(await screen.findByRole('button', { name: /nueva deuda con juan/i }));
+
+    // The create form opened, but the (reference, currency) detail modal did not.
+    await screen.findByRole('dialog', { name: /nueva deuda/i });
+    expect(screen.queryByRole('dialog', { name: /juan \(usd\)/i })).not.toBeInTheDocument();
+  });
+
   it('switches the status filter from pending to all and re-fetches', async () => {
     const user = userEvent.setup();
     vi.mocked(debtsLoansApi.summary).mockResolvedValue([]);
