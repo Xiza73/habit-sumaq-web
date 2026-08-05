@@ -10,6 +10,7 @@ import {
   useDebtsLoansSummary,
   useSettleAmountByReference,
 } from '@/core/application/hooks/use-debts-loans';
+import { useViewMode } from '@/core/application/hooks/use-view-mode';
 import {
   type DebtLoan,
   type DebtLoanStatusFilter,
@@ -20,6 +21,8 @@ import { type Currency } from '@/core/domain/enums/currency.enum';
 
 import { ApiError } from '@/infrastructure/api/api-error';
 
+import { ViewModeToggle } from '@/presentation/components/ui/ViewModeToggle';
+
 import { formatCurrency } from '@/lib/format';
 import { cn } from '@/lib/utils';
 
@@ -28,6 +31,7 @@ import { DebtLoanForm } from './DebtLoanForm';
 import { type DebtLoanSettleInput, DebtLoanSettleModal } from './DebtLoanSettleModal';
 import { DebtLoanSummaryCard } from './DebtLoanSummaryCard';
 import { type DebtsViewPrefs, DEFAULT_DEBTS_VIEW_PREFS, sortDebtRows } from './debts-sort';
+import { DebtsLoansTable } from './DebtsLoansTable';
 import { DebtsViewControls } from './DebtsViewControls';
 
 const STATUS_OPTIONS: DebtLoanStatusFilter[] = ['pending', 'all', 'settled'];
@@ -58,6 +62,7 @@ export function DebtsLoansDashboard() {
   const [formInitialCurrency, setFormInitialCurrency] = useState<Currency | undefined>(undefined);
   const [editingDebtLoan, setEditingDebtLoan] = useState<DebtLoan | null>(null);
   const [viewPrefs, setViewPrefs] = useState<DebtsViewPrefs>(DEFAULT_DEBTS_VIEW_PREFS);
+  const [viewMode, setViewMode] = useViewMode('debts-loans');
 
   const { data: rows = [], isLoading } = useDebtsLoansSummary(status);
   // Always pull the full set (any status) just to feed the reference
@@ -187,7 +192,10 @@ export function DebtsLoansDashboard() {
           ))}
         </div>
 
-        <DebtsViewControls prefs={viewPrefs} onChange={setViewPrefs} />
+        <div className="flex items-center gap-2">
+          <DebtsViewControls prefs={viewPrefs} onChange={setViewPrefs} />
+          <ViewModeToggle mode={viewMode} onChange={setViewMode} />
+        </div>
       </div>
 
       {isLoading ? (
@@ -200,6 +208,13 @@ export function DebtsLoansDashboard() {
         <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-border py-16 text-center">
           <p className="max-w-sm text-muted-foreground">{emptyMessage}</p>
         </div>
+      ) : viewMode === 'table' ? (
+        <DebtsLoansTable
+          rows={sortedRows}
+          onSettle={setSettlingRow}
+          onQuickAdd={handleQuickAdd}
+          onRowClick={setDetailRow}
+        />
       ) : (
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
           {sortedRows.map((row) => (

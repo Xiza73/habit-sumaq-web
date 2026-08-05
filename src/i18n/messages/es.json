@@ -950,6 +950,15 @@
         "updateSuccess": "Pago actualizado",
         "deleteSuccess": "Pago eliminado"
       }
+    },
+    "table": {
+      "person": "Persona",
+      "currency": "Moneda",
+      "pendingDebt": "Deuda pendiente",
+      "pendingLoan": "Préstamo pendiente",
+      "net": "Neto",
+      "actions": "Acciones",
+      "openDetail": "Ver detalle de {name}"
     }
   },
   "viewMode": {

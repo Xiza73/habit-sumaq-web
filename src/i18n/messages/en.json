@@ -950,6 +950,15 @@
         "updateSuccess": "Payment updated",
         "deleteSuccess": "Payment deleted"
       }
+    },
+    "table": {
+      "person": "Person",
+      "currency": "Currency",
+      "pendingDebt": "Pending debt",
+      "pendingLoan": "Pending loan",
+      "net": "Net",
+      "actions": "Actions",
+      "openDetail": "Open detail for {name}"
     }
   },
   "viewMode": {
