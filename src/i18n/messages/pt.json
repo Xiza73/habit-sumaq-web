@@ -951,5 +951,10 @@
         "deleteSuccess": "Pagamento excluído"
       }
     }
+  },
+  "viewMode": {
+    "label": "Visualização",
+    "cards": "Cartões",
+    "table": "Tabela"
   }
 }

@@ -951,5 +951,10 @@
         "deleteSuccess": "Pago eliminado"
       }
     }
+  },
+  "viewMode": {
+    "label": "Vista",
+    "cards": "Tarjetas",
+    "table": "Tabla"
   }
 }

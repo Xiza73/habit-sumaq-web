@@ -951,5 +951,10 @@
         "deleteSuccess": "Payment deleted"
       }
     }
+  },
+  "viewMode": {
+    "label": "View",
+    "cards": "Cards",
+    "table": "Table"
   }
 }
