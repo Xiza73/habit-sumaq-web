@@ -610,7 +610,16 @@
       "loadMore": "Carregar mais"
     },
     "archived": "Arquivada",
-    "unarchived": "Desarquivada"
+    "unarchived": "Desarquivada",
+    "table": {
+      "name": "Nome",
+      "category": "Categoria",
+      "cadence": "Cadência",
+      "nextDue": "Próx. data",
+      "lastDone": "Última vez",
+      "status": "Status",
+      "actions": "Ações"
+    }
   },
   "reports": {
     "loadError": "Não foi possível carregar o relatório. Tente novamente.",

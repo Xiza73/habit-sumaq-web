@@ -610,7 +610,16 @@
       "loadMore": "Load more"
     },
     "archived": "Archived",
-    "unarchived": "Unarchived"
+    "unarchived": "Unarchived",
+    "table": {
+      "name": "Name",
+      "category": "Category",
+      "cadence": "Cadence",
+      "nextDue": "Next date",
+      "lastDone": "Last done",
+      "status": "Status",
+      "actions": "Actions"
+    }
   },
   "reports": {
     "loadError": "Could not load the report. Please try again.",
