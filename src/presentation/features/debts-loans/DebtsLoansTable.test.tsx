@@ -1,5 +1,6 @@
 import { NextIntlClientProvider } from 'next-intl';
 
+import { TooltipProvider } from '@radix-ui/react-tooltip';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
@@ -33,13 +34,15 @@ function renderTable(
   const onRowClick = vi.fn();
   render(
     <NextIntlClientProvider locale="es" messages={messages}>
-      <DebtsLoansTable
-        rows={rows}
-        onSettle={onSettle}
-        onQuickAdd={onQuickAdd}
-        onRowClick={onRowClick}
-        {...handlers}
-      />
+      <TooltipProvider>
+        <DebtsLoansTable
+          rows={rows}
+          onSettle={onSettle}
+          onQuickAdd={onQuickAdd}
+          onRowClick={onRowClick}
+          {...handlers}
+        />
+      </TooltipProvider>
     </NextIntlClientProvider>,
   );
   return { onSettle, onQuickAdd, onRowClick };

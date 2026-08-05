@@ -1,6 +1,7 @@
 import { type ReactNode } from 'react';
 import { NextIntlClientProvider } from 'next-intl';
 
+import { TooltipProvider } from '@radix-ui/react-tooltip';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 import messages from '@/i18n/messages/es.json';
@@ -20,7 +21,7 @@ export function TestProviders({ children }: { children: ReactNode }) {
   return (
     <QueryClientProvider client={queryClient}>
       <NextIntlClientProvider locale="es" messages={messages}>
-        {children}
+        <TooltipProvider>{children}</TooltipProvider>
       </NextIntlClientProvider>
     </QueryClientProvider>
   );

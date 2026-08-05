@@ -1,5 +1,6 @@
 import { NextIntlClientProvider } from 'next-intl';
 
+import { TooltipProvider } from '@radix-ui/react-tooltip';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -68,16 +69,18 @@ function renderTable(
   const onDelete = vi.fn();
   render(
     <NextIntlClientProvider locale="es" messages={messages}>
-      <MonthlyServicesTable
-        services={services}
-        categoriesById={categoriesById}
-        onPay={onPay}
-        onSkip={onSkip}
-        onEdit={onEdit}
-        onArchive={onArchive}
-        onDelete={onDelete}
-        {...handlers}
-      />
+      <TooltipProvider>
+        <MonthlyServicesTable
+          services={services}
+          categoriesById={categoriesById}
+          onPay={onPay}
+          onSkip={onSkip}
+          onEdit={onEdit}
+          onArchive={onArchive}
+          onDelete={onDelete}
+          {...handlers}
+        />
+      </TooltipProvider>
     </NextIntlClientProvider>,
   );
   return { onPay, onSkip, onEdit, onArchive, onDelete };

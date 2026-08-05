@@ -1,5 +1,6 @@
 'use client';
 
+import { TooltipProvider } from '@radix-ui/react-tooltip';
 import { Toaster } from 'sonner';
 
 import { PostHogProvider } from './PostHogProvider';
@@ -15,7 +16,9 @@ export function Providers({ children }: ProvidersProps) {
     <PostHogProvider>
       <QueryProvider>
         <ThemeProvider>
-          {children}
+          <TooltipProvider delayDuration={300} skipDelayDuration={150}>
+            {children}
+          </TooltipProvider>
           <Toaster
             position="bottom-right"
             toastOptions={{
