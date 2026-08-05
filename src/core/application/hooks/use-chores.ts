@@ -95,6 +95,27 @@ export function useMarkChoreDone() {
   });
 }
 
+/**
+ * Reverts the most recent completion. Mirrors {@link useMarkChoreDone}'s
+ * invalidation set: the list and detail refresh so `nextDueDate` /
+ * `lastDoneDate` roll back, the chore's logs cache refreshes so the reverted
+ * entry disappears from the history modal, and alerts refresh because undoing
+ * a completion can re-open the `chore-overdue` row.
+ */
+export function useRevertLastChoreDone() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: string) => choresApi.revertLastDone(id),
+    onSuccess: (_, id) => {
+      void queryClient.invalidateQueries({ queryKey: choreKeys.lists() });
+      void queryClient.invalidateQueries({ queryKey: choreKeys.detail(id) });
+      void queryClient.invalidateQueries({ queryKey: choreKeys.logs(id) });
+      void queryClient.invalidateQueries({ queryKey: alertKeys.lists() });
+    },
+  });
+}
+
 export function useSkipChoreCycle() {
   const queryClient = useQueryClient();
 
