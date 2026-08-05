@@ -1,5 +1,6 @@
 import { NextIntlClientProvider } from 'next-intl';
 
+import { TooltipProvider } from '@radix-ui/react-tooltip';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -68,16 +69,18 @@ function renderTable(
   const onDelete = vi.fn();
   render(
     <NextIntlClientProvider locale="es" messages={messages}>
-      <MonthlyServicesTable
-        services={services}
-        categoriesById={categoriesById}
-        onPay={onPay}
-        onSkip={onSkip}
-        onEdit={onEdit}
-        onArchive={onArchive}
-        onDelete={onDelete}
-        {...handlers}
-      />
+      <TooltipProvider>
+        <MonthlyServicesTable
+          services={services}
+          categoriesById={categoriesById}
+          onPay={onPay}
+          onSkip={onSkip}
+          onEdit={onEdit}
+          onArchive={onArchive}
+          onDelete={onDelete}
+          {...handlers}
+        />
+      </TooltipProvider>
     </NextIntlClientProvider>,
   );
   return { onPay, onSkip, onEdit, onArchive, onDelete };
@@ -151,6 +154,20 @@ describe('MonthlyServicesTable', () => {
     const { onDelete } = renderTable([service]);
 
     await user.click(screen.getByRole('button', { name: /eliminar permanentemente/i }));
+    expect(onDelete).toHaveBeenCalledWith(service);
+  });
+
+  it('collapses the row actions into a dropdown that fires the right handlers', async () => {
+    const user = userEvent.setup();
+    const service = makeService({ name: 'Netflix' });
+    const { onPay, onDelete } = renderTable([service]);
+
+    await user.click(screen.getByRole('button', { name: 'Acciones' }));
+    await user.click(screen.getByRole('menuitem', { name: /^Pagar$/i }));
+    expect(onPay).toHaveBeenCalledWith(service);
+
+    await user.click(screen.getByRole('button', { name: 'Acciones' }));
+    await user.click(screen.getByRole('menuitem', { name: /eliminar permanentemente/i }));
     expect(onDelete).toHaveBeenCalledWith(service);
   });
 

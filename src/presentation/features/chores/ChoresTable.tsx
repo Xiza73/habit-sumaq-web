@@ -2,12 +2,14 @@
 
 import { useTranslations } from 'next-intl';
 
-import { Trash2 } from 'lucide-react';
+import { Archive, ArchiveRestore, Check, History, Pencil, SkipForward, Trash2 } from 'lucide-react';
 
 import { useDateFormat } from '@/core/application/hooks/use-user-settings';
 import { type Chore } from '@/core/domain/entities/chore';
 
 import { DataTable, type DataTableColumn } from '@/presentation/components/ui/DataTable';
+import { type RowAction } from '@/presentation/components/ui/RowActionsMenu';
+import { TableRowActions } from '@/presentation/components/ui/TableRowActions';
 
 import { type ChoreStatus, getChoreStatus } from '@/lib/chore-status';
 import { formatDate, getTodayLocaleDate } from '@/lib/format';
@@ -122,60 +124,48 @@ export function ChoresTable({
       align: 'right',
       render: (chore) => {
         const isArchived = !chore.isActive;
-        return (
-          <div className="flex items-center justify-end gap-1">
-            {!isArchived && (
-              <>
-                <button
-                  type="button"
-                  onClick={() => onMarkDone(chore)}
-                  className="rounded-md px-2 py-1 text-xs font-medium text-primary transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                >
-                  {t('actions.done')}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => onSkip(chore)}
-                  className="rounded-md px-2 py-1 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                >
-                  {t('actions.skip')}
-                </button>
-              </>
-            )}
-            <button
-              type="button"
-              onClick={() => onViewHistory(chore)}
-              className="rounded-md px-2 py-1 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-            >
-              {t('actions.viewHistory')}
-            </button>
-            {!isArchived && (
-              <button
-                type="button"
-                onClick={() => onEdit(chore)}
-                className="rounded-md px-2 py-1 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-              >
-                {t('actions.edit')}
-              </button>
-            )}
-            <button
-              type="button"
-              onClick={() => onArchive(chore)}
-              className="rounded-md px-2 py-1 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-            >
-              {isArchived ? t('actions.unarchive') : t('actions.archive')}
-            </button>
-            <button
-              type="button"
-              onClick={() => onDelete(chore)}
-              aria-label={t('actions.delete')}
-              title={t('actions.delete')}
-              className="inline-flex size-7 items-center justify-center rounded-md text-destructive transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-            >
-              <Trash2 className="size-3.5" aria-hidden />
-            </button>
-          </div>
+        const actions: RowAction[] = [];
+        if (!isArchived) {
+          actions.push(
+            { id: 'done', label: t('actions.done'), icon: Check, onClick: () => onMarkDone(chore) },
+            {
+              id: 'skip',
+              label: t('actions.skip'),
+              icon: SkipForward,
+              onClick: () => onSkip(chore),
+            },
+          );
+        }
+        actions.push({
+          id: 'history',
+          label: t('actions.viewHistory'),
+          icon: History,
+          onClick: () => onViewHistory(chore),
+        });
+        if (!isArchived) {
+          actions.push({
+            id: 'edit',
+            label: t('actions.edit'),
+            icon: Pencil,
+            onClick: () => onEdit(chore),
+          });
+        }
+        actions.push(
+          {
+            id: 'archive',
+            label: isArchived ? t('actions.unarchive') : t('actions.archive'),
+            icon: isArchived ? ArchiveRestore : Archive,
+            onClick: () => onArchive(chore),
+          },
+          {
+            id: 'delete',
+            label: t('actions.delete'),
+            icon: Trash2,
+            onClick: () => onDelete(chore),
+            destructive: true,
+          },
         );
+        return <TableRowActions actions={actions} triggerLabel={t('table.actions')} />;
       },
     },
   ];

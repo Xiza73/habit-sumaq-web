@@ -1,5 +1,6 @@
 import { NextIntlClientProvider } from 'next-intl';
 
+import { TooltipProvider } from '@radix-ui/react-tooltip';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -53,16 +54,18 @@ function renderTable(chores: Chore[], handlers: Partial<Parameters<typeof Chores
   const onDelete = vi.fn();
   render(
     <NextIntlClientProvider locale="es" messages={messages}>
-      <ChoresTable
-        chores={chores}
-        onMarkDone={onMarkDone}
-        onSkip={onSkip}
-        onViewHistory={onViewHistory}
-        onEdit={onEdit}
-        onArchive={onArchive}
-        onDelete={onDelete}
-        {...handlers}
-      />
+      <TooltipProvider>
+        <ChoresTable
+          chores={chores}
+          onMarkDone={onMarkDone}
+          onSkip={onSkip}
+          onViewHistory={onViewHistory}
+          onEdit={onEdit}
+          onArchive={onArchive}
+          onDelete={onDelete}
+          {...handlers}
+        />
+      </TooltipProvider>
     </NextIntlClientProvider>,
   );
   return { onMarkDone, onSkip, onViewHistory, onEdit, onArchive, onDelete };
@@ -120,6 +123,20 @@ describe('ChoresTable', () => {
     const { onDelete } = renderTable([chore]);
 
     await user.click(screen.getByRole('button', { name: /eliminar permanentemente/i }));
+    expect(onDelete).toHaveBeenCalledWith(chore);
+  });
+
+  it('collapses the row actions into a dropdown that fires the right handlers', async () => {
+    const user = userEvent.setup();
+    const chore = makeChore();
+    const { onMarkDone, onDelete } = renderTable([chore]);
+
+    await user.click(screen.getByRole('button', { name: 'Acciones' }));
+    await user.click(screen.getByRole('menuitem', { name: /^Hecho$/i }));
+    expect(onMarkDone).toHaveBeenCalledWith(chore);
+
+    await user.click(screen.getByRole('button', { name: 'Acciones' }));
+    await user.click(screen.getByRole('menuitem', { name: /eliminar permanentemente/i }));
     expect(onDelete).toHaveBeenCalledWith(chore);
   });
 });

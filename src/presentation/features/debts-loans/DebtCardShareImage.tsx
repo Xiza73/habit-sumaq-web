@@ -6,7 +6,7 @@ import { useTranslations } from 'next-intl';
 import { ArrowDownLeft, ArrowUpRight } from 'lucide-react';
 
 import { useDateFormat } from '@/core/application/hooks/use-user-settings';
-import { type DebtLoanSummaryRow } from '@/core/domain/entities/debt-loan';
+import { type DebtLoan, type DebtLoanSummaryRow } from '@/core/domain/entities/debt-loan';
 
 import { formatCurrency, formatDate, getTodayLocaleDate } from '@/lib/format';
 import { cn } from '@/lib/utils';
@@ -15,30 +15,48 @@ import { cn } from '@/lib/utils';
  * card's own `bg-white` so the download and the on-screen node match. */
 export const SHARE_IMAGE_BACKGROUND = '#ffffff';
 
+/**
+ * Cap on the number of individual pending rows rendered in the exported
+ * image. It's a snapshot, not a ledger — past ~8 lines the image stops
+ * being scannable, so any overflow collapses into a single "y N más" line
+ * and the Total still reflects the whole group (it comes from the summary,
+ * not from summing the visible lines).
+ */
+const MAX_VISIBLE_ROWS = 8;
+
 interface DebtCardShareImageProps {
+  /** Summary row — source of the person name, currency and group total. */
   row: DebtLoanSummaryRow;
+  /** Individual PENDING debt/loan rows for the `(reference, currency)` group. */
+  rows: DebtLoan[];
 }
 
 /**
- * Image-friendly, NON-interactive rendition of a person's debt/loan
- * summary, meant to be rasterized to PNG (copy / download) by
- * `useExportNodeImage`. It mirrors `DebtLoanSummaryCard`'s color
- * conventions — ArrowUpRight red = debt you owe, ArrowDownLeft green =
- * loan they owe you — but uses fixed light-theme colors so the exported
- * image reads the same regardless of the viewer's active theme.
+ * Image-friendly, NON-interactive rendition of a person's PENDING
+ * debts/loans, meant to be rasterized to PNG (copy / download) by
+ * `useExportNodeImage`. Unlike the summary card, it lists the person's
+ * INDIVIDUAL pending rows — one line each (date · description · amount),
+ * colored by type (ArrowUpRight red = a debt you owe, ArrowDownLeft green
+ * = a loan they owe you) — and closes with the group Total (the summary's
+ * `netOwed`, i.e. who ends up owing whom).
  *
- * Rendered off-screen (never `display:none`) so `html-to-image` can lay it
- * out. The wrapper handles the off-screen positioning; this node provides
- * the fixed width, padding and solid background captured in the PNG.
+ * Per-line amounts use `remainingAmount` (the still-open figure), so a
+ * partially-settled row shows what's actually pending rather than its
+ * original amount.
+ *
+ * Uses fixed light-theme colors so the exported image reads the same
+ * regardless of the viewer's active theme. Rendered off-screen (never
+ * `display:none`) so `html-to-image` can lay it out; the wrapper handles
+ * the off-screen positioning while this node provides the fixed width,
+ * padding and solid background captured in the PNG.
  */
 export const DebtCardShareImage = forwardRef<HTMLDivElement, DebtCardShareImageProps>(
-  function DebtCardShareImage({ row }, ref) {
+  function DebtCardShareImage({ row, rows }, ref) {
     const t = useTranslations('debts.summary');
     const dateFormat = useDateFormat();
 
-    const hasDebt = row.pendingDebt > 0;
-    const hasLoan = row.pendingLoan > 0;
-    const hasAny = hasDebt || hasLoan;
+    const visibleRows = rows.slice(0, MAX_VISIBLE_ROWS);
+    const hiddenCount = rows.length - visibleRows.length;
 
     const netInYourFavor = row.netOwed > 0;
     const netAmount = Math.abs(row.netOwed);
@@ -63,43 +81,61 @@ export const DebtCardShareImage = forwardRef<HTMLDivElement, DebtCardShareImageP
           </div>
         </div>
 
-        <div className="space-y-2 text-sm">
-          {hasDebt && (
-            <div className="flex items-center justify-between">
-              <span className="inline-flex items-center gap-1.5 text-zinc-500">
-                <ArrowUpRight className="size-3.5 text-red-600" aria-hidden />
-                {t('youOwe')}
-              </span>
-              <span className="font-medium text-red-600">
-                {formatCurrency(row.pendingDebt, row.currency)}
-              </span>
-            </div>
-          )}
-          {hasLoan && (
-            <div className="flex items-center justify-between">
-              <span className="inline-flex items-center gap-1.5 text-zinc-500">
-                <ArrowDownLeft className="size-3.5 text-green-600" aria-hidden />
-                {t('theyOweYou')}
-              </span>
-              <span className="font-medium text-green-600">
-                {formatCurrency(row.pendingLoan, row.currency)}
-              </span>
-            </div>
-          )}
-          {!hasAny && <p className="text-xs italic text-zinc-400">{t('allSettled')}</p>}
-        </div>
+        {visibleRows.length === 0 ? (
+          <p className="text-xs italic text-zinc-400">{t('allSettled')}</p>
+        ) : (
+          <ul className="space-y-2">
+            {visibleRows.map((item) => {
+              const isDebt = item.type === 'DEBT';
+              return (
+                <li key={item.id} className="flex items-center justify-between gap-3 text-sm">
+                  <span className="flex min-w-0 items-center gap-2">
+                    {isDebt ? (
+                      <ArrowUpRight className="size-3.5 shrink-0 text-red-600" aria-hidden />
+                    ) : (
+                      <ArrowDownLeft className="size-3.5 shrink-0 text-green-600" aria-hidden />
+                    )}
+                    <span className="flex min-w-0 flex-col">
+                      <span className="truncate text-zinc-700">
+                        {item.description || row.displayName}
+                      </span>
+                      <span className="text-xs text-zinc-400">
+                        {formatDate(item.date, dateFormat)}
+                      </span>
+                    </span>
+                  </span>
+                  <span
+                    className={cn(
+                      'shrink-0 font-medium',
+                      isDebt ? 'text-red-600' : 'text-green-600',
+                    )}
+                  >
+                    {formatCurrency(item.remainingAmount, item.currency)}
+                  </span>
+                </li>
+              );
+            })}
+            {hiddenCount > 0 && (
+              <li className="text-xs italic text-zinc-400">
+                {t('andMore', { count: hiddenCount })}
+              </li>
+            )}
+          </ul>
+        )}
 
-        {hasAny && !netIsZero && (
-          <div className="flex items-center justify-between border-t border-zinc-200 pt-3 text-sm">
-            <span className="text-zinc-500">{t('net')}</span>
+        <div className="flex items-center justify-between border-t border-zinc-200 pt-3 text-sm">
+          <span className="font-medium text-zinc-500">{t('total')}</span>
+          {netIsZero ? (
+            <span className="text-zinc-400">{t('allSettled')}</span>
+          ) : (
             <span
               className={cn('font-semibold', netInYourFavor ? 'text-green-600' : 'text-red-600')}
             >
-              {netInYourFavor ? '+' : '-'}
+              {netInYourFavor ? t('theyOweYou') : t('youOwe')}{' '}
               {formatCurrency(netAmount, row.currency)}
             </span>
-          </div>
-        )}
+          )}
+        </div>
 
         <div className="flex items-center justify-between border-t border-zinc-100 pt-3 text-xs text-zinc-400">
           <span className="font-medium text-zinc-500">Habit Sumaq</span>
