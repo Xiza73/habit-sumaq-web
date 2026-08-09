@@ -40,7 +40,11 @@ const baseChore: Chore = {
   intervalUnit: 'weeks',
   startDate: '2026-01-01',
   lastDoneDate: null,
-  nextDueDate: '2026-04-22', // 7 days from FIXED_TODAY → "upcoming"
+  // 6-week cadence → a 6-day upcoming window (42 / 7). 5 days out lands
+  // inside it, which is what most cases here want: an actionable card with
+  // its inline footer showing. 7 days out — the old fixture — is `horizon`
+  // now, and horizon deliberately hides those buttons.
+  nextDueDate: '2026-04-20',
   isActive: true,
   createdAt: '2026-01-01T00:00:00.000Z',
   updatedAt: '2026-01-01T00:00:00.000Z',
@@ -66,9 +70,27 @@ describe('ChoreCard', () => {
     expect(screen.getByText('Cortar el pelo')).toBeInTheDocument();
   });
 
-  it('shows "Próxima" status when nextDueDate is within 7 days', () => {
+  it('shows "Próxima" status inside the cadence-scaled upcoming window', () => {
     renderCard();
     expect(screen.getByText('Próxima')).toBeInTheDocument();
+  });
+
+  it('shows "Hoy" status when the chore is due today', () => {
+    renderCard({ ...baseChore, nextDueDate: '2026-04-15' });
+    expect(screen.getByText('Hoy')).toBeInTheDocument();
+  });
+
+  it('scales the upcoming window to the cadence — weekly is upcoming only the day before', () => {
+    const weekly = { ...baseChore, intervalValue: 1, intervalUnit: 'weeks' as const };
+    // Tomorrow → upcoming.
+    renderCard({ ...weekly, nextDueDate: '2026-04-16' });
+    expect(screen.getByText('Próxima')).toBeInTheDocument();
+  });
+
+  it('puts a weekly chore two days out on the horizon, where it used to read as upcoming', () => {
+    const weekly = { ...baseChore, intervalValue: 1, intervalUnit: 'weeks' as const };
+    renderCard({ ...weekly, nextDueDate: '2026-04-17' });
+    expect(screen.getByText('En el horizonte')).toBeInTheDocument();
   });
 
   it('shows "Atrasada" status when nextDueDate is in the past', () => {
@@ -94,7 +116,7 @@ describe('ChoreCard', () => {
 
   it('renders the next due date', () => {
     renderCard();
-    expect(screen.getByText(/próxima:\s*2026-04-22/i)).toBeInTheDocument();
+    expect(screen.getByText(/próxima:\s*2026-04-20/i)).toBeInTheDocument();
   });
 
   it('renders "Nunca" when lastDoneDate is null', () => {
@@ -110,8 +132,8 @@ describe('ChoreCard', () => {
   it('formats next-due and last-done dates with the user date-format setting', () => {
     dateFormatMock.value = 'DD/MM/YYYY';
     renderCard({ ...baseChore, lastDoneDate: '2026-03-04' });
-    // nextDueDate 2026-04-22 → 22/04/2026, lastDoneDate 2026-03-04 → 04/03/2026
-    expect(screen.getByText(/próxima:\s*22\/04\/2026/i)).toBeInTheDocument();
+    // nextDueDate 2026-04-20 → 20/04/2026, lastDoneDate 2026-03-04 → 04/03/2026
+    expect(screen.getByText(/próxima:\s*20\/04\/2026/i)).toBeInTheDocument();
     expect(screen.getByText(/última vez:\s*04\/03\/2026/i)).toBeInTheDocument();
   });
 

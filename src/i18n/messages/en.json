@@ -565,6 +565,7 @@
     },
     "status": {
       "overdue": "Overdue",
+      "today": "Today",
       "upcoming": "Upcoming",
       "horizon": "On the horizon"
     },
@@ -868,6 +869,10 @@
       "choreOverdue": {
         "title": "Overdue: {name}",
         "subtitle": "Was due on {date}"
+      },
+      "choreDueToday": {
+        "title": "Due today: {name}",
+        "subtitle": "It is scheduled for today"
       }
     }
   },
