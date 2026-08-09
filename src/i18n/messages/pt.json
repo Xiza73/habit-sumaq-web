@@ -565,6 +565,7 @@
     },
     "status": {
       "overdue": "Atrasada",
+      "today": "Hoje",
       "upcoming": "Próxima",
       "horizon": "No horizonte"
     },
@@ -868,6 +869,10 @@
       "choreOverdue": {
         "title": "Atrasada: {name}",
         "subtitle": "Vencia em {date}"
+      },
+      "choreDueToday": {
+        "title": "Toca hoje: {name}",
+        "subtitle": "Está agendada para hoje"
       }
     }
   },
