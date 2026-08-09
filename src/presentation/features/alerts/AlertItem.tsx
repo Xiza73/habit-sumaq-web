@@ -8,6 +8,7 @@ import {
   CalendarClock,
   CheckCircle2,
   Receipt,
+  Repeat2,
   Sparkles,
   Wallet,
   X,
@@ -133,6 +134,9 @@ function AlertIcon({ type }: { type: AlertType }) {
       return <Receipt className="size-5" aria-hidden="true" />;
     case 'chore-overdue':
       return <AlertTriangle className="size-5" aria-hidden="true" />;
+    case 'chore-due-today':
+      // Not the warning triangle: due today is a heads-up, not a miss.
+      return <Repeat2 className="size-5" aria-hidden="true" />;
     default:
       return <CheckCircle2 className="size-5" aria-hidden="true" />;
   }
@@ -158,6 +162,10 @@ function renderTitle(alert: Alert, t: Translator): string {
       return t('budgetUnlogged.title');
     case 'chore-overdue':
       return t('choreOverdue.title', {
+        name: stringOf(alert.payload.choreName) ?? '',
+      });
+    case 'chore-due-today':
+      return t('choreDueToday.title', {
         name: stringOf(alert.payload.choreName) ?? '',
       });
   }
@@ -197,6 +205,10 @@ function renderSubtitle(alert: Alert, t: Translator, dateFormat: DateFormat): st
       const date = stringOf(alert.payload.nextDueDate);
       return t('choreOverdue.subtitle', { date: date ? formatDate(date, dateFormat) : '' });
     }
+    case 'chore-due-today':
+      // No date interpolated — "today" is the whole point, and echoing the
+      // date back would just be the same information twice.
+      return t('choreDueToday.subtitle');
   }
 }
 

@@ -565,6 +565,7 @@
     },
     "status": {
       "overdue": "Atrasada",
+      "today": "Hoy",
       "upcoming": "Próxima",
       "horizon": "En el horizonte"
     },
@@ -868,6 +869,10 @@
       "choreOverdue": {
         "title": "Atrasada: {name}",
         "subtitle": "Vencía el {date}"
+      },
+      "choreDueToday": {
+        "title": "Toca hoy: {name}",
+        "subtitle": "La tenés programada para hoy"
       }
     }
   },

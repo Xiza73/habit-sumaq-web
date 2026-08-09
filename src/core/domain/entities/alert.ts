@@ -16,6 +16,7 @@ export const ALERT_TYPES = [
   'habits-midday',
   'budget-unlogged',
   'chore-overdue',
+  'chore-due-today',
 ] as const;
 export type AlertType = (typeof ALERT_TYPES)[number];
 
@@ -57,6 +58,12 @@ export interface AlertPayloads {
     choreId: string;
     choreName: string;
     nextDueDate: string; // 'YYYY-MM-DD'
+  };
+  /** Same shape as `chore-overdue`; `nextDueDate` is today rather than past. */
+  'chore-due-today': {
+    choreId: string;
+    choreName: string;
+    nextDueDate: string; // 'YYYY-MM-DD', == today in the user TZ
   };
 }
 
@@ -107,6 +114,7 @@ export function getAlertHref(alert: Alert): string | null {
     case 'budget-unlogged':
       return '/budgets';
     case 'chore-overdue':
+    case 'chore-due-today':
       return '/chores';
     default:
       return null;
