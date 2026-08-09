@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useId, useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { useTranslations } from 'next-intl';
 
@@ -15,6 +15,7 @@ import { type CreateChoreInput, type UpdateChoreInput } from '@/core/domain/sche
 
 import { ApiError } from '@/infrastructure/api/api-error';
 
+import { AutocompleteInput } from '@/presentation/components/ui/AutocompleteInput';
 import { DatePicker } from '@/presentation/components/ui/DatePicker';
 import { FieldGrid } from '@/presentation/components/ui/FieldGrid';
 import { Input } from '@/presentation/components/ui/Input';
@@ -69,8 +70,6 @@ export function ChoreForm({ open, chore, knownCategories, onClose }: ChoreFormPr
   const tCommon = useTranslations('common');
   const tErrors = useTranslations('errors');
   const isEditing = !!chore;
-
-  const datalistId = useId();
 
   const createMutation = useCreateChore();
   const updateMutation = useUpdateChore();
@@ -251,18 +250,12 @@ export function ChoreForm({ open, chore, knownCategories, onClose }: ChoreFormPr
           <label htmlFor="chore-category" className="text-sm font-medium">
             {t('fields.category')}
           </label>
-          <Input
+          <AutocompleteInput
             id="chore-category"
-            type="text"
-            list={datalistId}
+            suggestions={knownCategories}
             {...form.register('category')}
             placeholder={t('fields.category')}
           />
-          <datalist id={datalistId}>
-            {knownCategories.map((cat) => (
-              <option key={cat} value={cat} />
-            ))}
-          </datalist>
           <p className="text-[11px] text-muted-foreground">{t('fields.categoryHint')}</p>
         </div>
 

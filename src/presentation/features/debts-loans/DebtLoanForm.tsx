@@ -18,6 +18,7 @@ import {
 
 import { ApiError } from '@/infrastructure/api/api-error';
 
+import { AutocompleteInput } from '@/presentation/components/ui/AutocompleteInput';
 import { DatePicker } from '@/presentation/components/ui/DatePicker';
 import { FieldGrid } from '@/presentation/components/ui/FieldGrid';
 import { Input } from '@/presentation/components/ui/Input';
@@ -244,18 +245,12 @@ export function DebtLoanForm({
           <label htmlFor="dl-reference" className="text-sm font-medium">
             {t('reference')}
           </label>
-          <Input
+          <AutocompleteInput
             id="dl-reference"
-            type="text"
-            list="dl-reference-list"
+            suggestions={knownReferences}
             placeholder={t('referencePlaceholder')}
             {...form.register('reference')}
           />
-          <datalist id="dl-reference-list">
-            {knownReferences.map((ref) => (
-              <option key={ref} value={ref} />
-            ))}
-          </datalist>
           {form.formState.errors.reference && (
             <p className="text-xs text-destructive">{form.formState.errors.reference.message}</p>
           )}

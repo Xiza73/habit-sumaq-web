@@ -114,8 +114,13 @@ describe('DebtsLoansDashboard', () => {
     );
 
     await waitFor(() => {
+      // Resolve the datalist through the input's `list` attribute rather than
+      // a hardcoded id: `AutocompleteInput` mints the id with `useId()` so any
+      // number of them can coexist on a page.
+      const listId = screen.getByLabelText(/persona|person|pessoa/i).getAttribute('list');
+      expect(listId).toBeTruthy();
       const options = Array.from(
-        document.querySelectorAll<HTMLOptionElement>('#dl-reference-list option'),
+        document.querySelectorAll<HTMLOptionElement>(`#${CSS.escape(listId as string)} option`),
       ).map((o) => o.value);
       expect(options).toContain('Juan');
       expect(options).toContain('Pedro');
