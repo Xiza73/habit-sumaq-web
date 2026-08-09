@@ -26,6 +26,7 @@ describe('getAlertHref', () => {
     'habits-midday': '/habits',
     'budget-unlogged': '/budgets',
     'chore-overdue': '/chores',
+    'chore-due-today': '/chores',
   };
 
   it.each(ALERT_TYPES)('maps "%s" to its in-app route', (type) => {

@@ -2,6 +2,7 @@
 
 import { useMemo, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
+import { useTheme } from 'next-themes';
 
 import {
   ArrowDownLeft,
@@ -33,7 +34,7 @@ import { useExportNodeImage } from '@/presentation/hooks/use-export-node-image';
 import { formatCurrency, formatDate } from '@/lib/format';
 import { cn } from '@/lib/utils';
 
-import { DebtCardShareImage, SHARE_IMAGE_BACKGROUND } from './DebtCardShareImage';
+import { DebtCardShareImage, shareImageBackground } from './DebtCardShareImage';
 import { DebtLoanPaymentsList } from './DebtLoanPaymentsList';
 import { DebtLoanRowSettleModal } from './DebtLoanRowSettleModal';
 
@@ -100,10 +101,13 @@ export function DebtLoanDetailModal({ row, onClose, onEdit }: DebtLoanDetailModa
   const deleteMutation = useDeleteDebtLoan();
   const settleMutation = useSettleDebtLoan();
 
-  // Off-screen share card rasterized to PNG for copy/download.
+  // Off-screen share card rasterized to PNG for copy/download. The card's own
+  // colours come from `dark:` variants and need no help; only the solid
+  // backdrop `html-to-image` paints behind the node has to be chosen here.
+  const { resolvedTheme } = useTheme();
   const shareRef = useRef<HTMLDivElement>(null);
   const { copyImage, downloadImage } = useExportNodeImage({
-    backgroundColor: SHARE_IMAGE_BACKGROUND,
+    backgroundColor: shareImageBackground(resolvedTheme),
   });
 
   async function handleCopyImage() {

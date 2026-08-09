@@ -37,6 +37,10 @@ interface ChoreCardProps {
 
 const STATUS_CLASSES: Record<ChoreStatus, string> = {
   overdue: 'bg-destructive/15 text-destructive',
+  // Today is the only actionable state, so it gets the strongest non-alarming
+  // colour — louder than upcoming's amber, but not the red reserved for
+  // "you already missed this".
+  today: 'bg-primary/15 text-primary',
   upcoming: 'bg-amber-500/15 text-amber-700 dark:text-amber-400',
   // Horizon stays very low contrast on purpose — those chores are not "due"
   // any time soon and shouldn't fight for attention with the upcoming ones.
@@ -60,7 +64,7 @@ export function ChoreCard({
   // Always compute the status client-side from `nextDueDate` vs today —
   // the backend `isOverdue` flag covers only the overdue case, but here
   // we need to surface "upcoming" / "horizon" as well.
-  const status = getChoreStatus(chore.nextDueDate, getTodayLocaleDate());
+  const status = getChoreStatus(chore.nextDueDate, getTodayLocaleDate(), chore);
 
   const intervalUnitLabel = t(`intervalUnit.${chore.intervalUnit}`, {
     value: chore.intervalValue,
