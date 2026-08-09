@@ -10,10 +10,21 @@ import { debtsLoansApi } from '@/infrastructure/api/debts-loans.api';
 
 import { TestProviders } from '@/test/utils';
 
+import { SHARE_IMAGE_BACKGROUNDS } from './DebtCardShareImage';
 import { DebtLoanDetailModal } from './DebtLoanDetailModal';
 
 vi.mock('html-to-image', () => ({
   toPng: vi.fn(),
+}));
+
+// next-themes needs a real provider + a matchMedia stub to resolve anything in
+// jsdom; mocking the hook keeps these tests about the export, not the theme
+// machinery. Mutable so each case can pick the theme it is asserting on.
+const themeMock = vi.hoisted<{ resolvedTheme: string | undefined }>(() => ({
+  resolvedTheme: 'light',
+}));
+vi.mock('next-themes', () => ({
+  useTheme: () => ({ resolvedTheme: themeMock.resolvedTheme }),
 }));
 
 vi.mock('@/infrastructure/api/debts-loans.api', () => ({
@@ -230,5 +241,60 @@ describe('DebtLoanDetailModal — share image export', () => {
 
     await waitFor(() => expect(toast.error).toHaveBeenCalled());
     expect(toast.success).not.toHaveBeenCalled();
+  });
+
+  describe('theme awareness', () => {
+    /**
+     * The card's own colours come from Tailwind `dark:` variants, which
+     * resolve on the live node and so survive rasterization. The solid
+     * `backgroundColor` handed to `html-to-image` is the one thing JS has to
+     * pick, because it is painted behind the node rather than read off it —
+     * leave it white and a dark card exports with a white halo around it.
+     */
+    it('paints a light background when the resolved theme is light', async () => {
+      const user = userEvent.setup();
+      installClipboard();
+      themeMock.resolvedTheme = 'light';
+
+      renderModal(makeRow());
+      await user.click(screen.getByRole('button', { name: /Copiar imagen/i }));
+
+      await waitFor(() => expect(htmlToImage.toPng).toHaveBeenCalledTimes(1));
+      const [, options] = vi.mocked(htmlToImage.toPng).mock.calls[0];
+      expect(options).toMatchObject({ backgroundColor: SHARE_IMAGE_BACKGROUNDS.light });
+    });
+
+    it('paints a dark background when the resolved theme is dark', async () => {
+      const user = userEvent.setup();
+      installClipboard();
+      themeMock.resolvedTheme = 'dark';
+
+      renderModal(makeRow());
+      await user.click(screen.getByRole('button', { name: /Copiar imagen/i }));
+
+      await waitFor(() => expect(htmlToImage.toPng).toHaveBeenCalledTimes(1));
+      const [, options] = vi.mocked(htmlToImage.toPng).mock.calls[0];
+      expect(options).toMatchObject({ backgroundColor: SHARE_IMAGE_BACKGROUNDS.dark });
+    });
+
+    it('falls back to light while the theme is still resolving', async () => {
+      // next-themes reports `undefined` on the first render, before it has
+      // read the stored preference. Exporting in that window must not produce
+      // a transparent or black background.
+      const user = userEvent.setup();
+      installClipboard();
+      themeMock.resolvedTheme = undefined;
+
+      renderModal(makeRow());
+      await user.click(screen.getByRole('button', { name: /Copiar imagen/i }));
+
+      await waitFor(() => expect(htmlToImage.toPng).toHaveBeenCalledTimes(1));
+      const [, options] = vi.mocked(htmlToImage.toPng).mock.calls[0];
+      expect(options).toMatchObject({ backgroundColor: SHARE_IMAGE_BACKGROUNDS.light });
+    });
+
+    it('keeps the two backgrounds distinct — otherwise the switch is a no-op', () => {
+      expect(SHARE_IMAGE_BACKGROUNDS.light).not.toBe(SHARE_IMAGE_BACKGROUNDS.dark);
+    });
   });
 });
