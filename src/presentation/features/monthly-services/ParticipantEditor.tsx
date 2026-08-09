@@ -1,6 +1,6 @@
 'use client';
 
-import { useId, useState } from 'react';
+import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 
 import { Loader2, Plus, Trash2 } from 'lucide-react';
@@ -18,6 +18,7 @@ import {
 
 import { ApiError } from '@/infrastructure/api/api-error';
 
+import { AutocompleteInput } from '@/presentation/components/ui/AutocompleteInput';
 import { FieldGrid } from '@/presentation/components/ui/FieldGrid';
 import { Input } from '@/presentation/components/ui/Input';
 
@@ -408,46 +409,28 @@ function ParticipantRows({
   onRemoveRow: (key: string) => void;
   emptyLabel: string;
 }) {
-  // `useId()` keeps the datalist id unique even if this editor is rendered
-  // more than once on a page — a hardcoded id would collide. Same pattern
-  // as `ChoreForm`. Rendered ONCE here (not per-row) — duplicate ids across
-  // rows would be invalid HTML and only the first would ever be picked up
-  // by each row's `list` attribute.
-  const referenceListId = useId();
-  const datalist = (
-    <datalist id={referenceListId}>
-      {knownReferences.map((ref) => (
-        <option key={ref} value={ref} />
-      ))}
-    </datalist>
-  );
-
   if (rows.length === 0) {
-    return (
-      <>
-        <p className="text-xs text-muted-foreground">{emptyLabel}</p>
-        {datalist}
-      </>
-    );
+    return <p className="text-xs text-muted-foreground">{emptyLabel}</p>;
   }
 
+  // Each row's `AutocompleteInput` owns its own `useId()`-generated datalist,
+  // so the suggestion list is duplicated once per row instead of shared. That
+  // is a few dozen hidden <option> nodes in the worst case, and it buys back
+  // the `referenceListId` prop that used to be threaded down to every row.
   return (
-    <>
-      <ul className="space-y-2">
-        {rows.map((row) => (
-          <ParticipantRowItem
-            key={row.key}
-            row={row}
-            error={errors[row.key]}
-            currency={currency}
-            referenceListId={referenceListId}
-            onChange={(patch) => onRowChange(row.key, patch)}
-            onRemove={() => onRemoveRow(row.key)}
-          />
-        ))}
-      </ul>
-      {datalist}
-    </>
+    <ul className="space-y-2">
+      {rows.map((row) => (
+        <ParticipantRowItem
+          key={row.key}
+          row={row}
+          error={errors[row.key]}
+          currency={currency}
+          knownReferences={knownReferences}
+          onChange={(patch) => onRowChange(row.key, patch)}
+          onRemove={() => onRemoveRow(row.key)}
+        />
+      ))}
+    </ul>
   );
 }
 
@@ -455,14 +438,14 @@ function ParticipantRowItem({
   row,
   error,
   currency,
-  referenceListId,
+  knownReferences,
   onChange,
   onRemove,
 }: {
   row: EditableRow;
   error?: { reference?: string; defaultAmount?: string };
   currency: Currency;
-  referenceListId: string;
+  knownReferences: string[];
   onChange: (patch: Partial<Pick<EditableRow, 'reference' | 'defaultAmount'>>) => void;
   onRemove: () => void;
 }) {
@@ -479,10 +462,9 @@ function ParticipantRowItem({
     <li className="rounded-md border border-border px-3 py-2">
       <FieldGrid columns={2}>
         <FieldGrid.Field label={t('reference')} htmlFor={referenceInputId} error={error?.reference}>
-          <Input
+          <AutocompleteInput
             id={referenceInputId}
-            type="text"
-            list={referenceListId}
+            suggestions={knownReferences}
             compact
             placeholder={t('referencePlaceholder')}
             value={row.reference}
