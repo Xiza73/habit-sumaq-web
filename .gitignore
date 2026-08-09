@@ -46,3 +46,10 @@ next-env.d.ts
 /test-results
 /blob-report
 /playwright/.cache
+
+# CodeGraph — a local SQLite index of this codebase, rebuilt per machine.
+/.codegraph
+
+# Claude Code per-developer tool permissions. `.claude/settings.json` is the
+# shared, committed config; `settings.local.json` is machine-local by design.
+.claude/settings.local.json

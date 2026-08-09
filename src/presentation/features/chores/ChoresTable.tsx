@@ -33,6 +33,7 @@ interface ChoresTableProps {
 
 const STATUS_CLASSES: Record<ChoreStatus, string> = {
   overdue: 'bg-destructive/15 text-destructive',
+  today: 'bg-primary/15 text-primary',
   upcoming: 'bg-amber-500/15 text-amber-700 dark:text-amber-400',
   horizon: 'bg-muted text-muted-foreground',
 };
@@ -105,7 +106,7 @@ export function ChoresTable({
       header: t('table.status'),
       render: (chore) => {
         const isArchived = !chore.isActive;
-        const status = getChoreStatus(chore.nextDueDate, today);
+        const status = getChoreStatus(chore.nextDueDate, today, chore);
         return (
           <span
             className={cn(
