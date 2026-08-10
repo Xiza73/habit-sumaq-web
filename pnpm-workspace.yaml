@@ -1,3 +1,18 @@
+# This is a single-package repo, but the file still has to declare `packages`.
+# pnpm 9 treats the mere PRESENCE of pnpm-workspace.yaml as "this is a
+# workspace" and hard-fails the install with:
+#
+#   ERROR  packages field missing or empty
+#
+# pnpm 10+ tolerates the omission. Vercel happens to run a newer pnpm so this
+# repo deployed fine, but the backend's identical file took every Railway
+# deploy of v0.10.0 down — same file, same defect, different builder. Declaring
+# the root as the only package is what it already was.
+packages:
+  - '.'
+
+# Written by `pnpm approve-builds`. pnpm 10+ refuses to install at all when a
+# dependency wants to run a build script that has not been approved here.
 allowBuilds:
   '@parcel/watcher': true
   '@swc/core': true
