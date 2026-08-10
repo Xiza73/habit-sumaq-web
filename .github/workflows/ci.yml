@@ -64,3 +64,31 @@ jobs:
       - name: Unit tests
         if: ${{ !cancelled() }}
         run: node_modules/.bin/vitest run
+
+  deploy-parity:
+    name: Install under the oldest pnpm a builder might use (pnpm 9)
+    runs-on: ubuntu-latest
+
+    # This repo deploys on Vercel, which runs a recent pnpm, so it was never
+    # hit. The backend's identical pnpm-workspace.yaml took down every Railway
+    # deploy of v0.10.0: pnpm 9 rejects the file without a `packages` field,
+    # pnpm 10+ accepts it, and CI only ever ran pnpm 11.
+    #
+    # Pinning the floor here means a build-tooling divergence fails a PR rather
+    # than surfacing on whichever platform happens to lag furthest behind.
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Install Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install
+        run: pnpm install --frozen-lockfile --prefer-offline
