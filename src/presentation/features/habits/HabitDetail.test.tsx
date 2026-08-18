@@ -25,12 +25,14 @@ const mockHabit: HabitWithStats = {
   completionRate: 0.8,
   periodCount: 6,
   periodCompleted: false,
+  periodTarget: 8,
   todayLog: {
     id: 'log-1',
     habitId: '1',
     date: '2026-03-13',
     count: 6,
     completed: false,
+    targetCount: 8,
     note: null,
     createdAt: '2026-03-13T10:00:00.000Z',
     updatedAt: '2026-03-13T10:00:00.000Z',
@@ -44,6 +46,7 @@ const mockLogs = [
     date: '2026-03-13',
     count: 6,
     completed: false,
+    targetCount: 8,
     note: null,
     createdAt: '2026-03-13T10:00:00.000Z',
     updatedAt: '2026-03-13T10:00:00.000Z',
@@ -54,6 +57,7 @@ const mockLogs = [
     date: '2026-03-12',
     count: 8,
     completed: true,
+    targetCount: 8,
     note: 'Buen día',
     createdAt: '2026-03-12T10:00:00.000Z',
     updatedAt: '2026-03-12T10:00:00.000Z',
@@ -107,8 +111,7 @@ describe('HabitDetail', () => {
 
   it('displays today progress', () => {
     renderDetail();
-    const progressElements = screen.getAllByText(/\/8/);
-    expect(progressElements.length).toBeGreaterThan(0);
+    expect(screen.getByTestId('habit-progress')).toHaveTextContent('6/8');
   });
 
   it('displays current streak', () => {

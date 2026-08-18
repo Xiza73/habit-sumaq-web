@@ -12,6 +12,8 @@ import { DataTable, type DataTableColumn } from '@/presentation/components/ui/Da
 import { getHabitProgress } from '@/lib/habit-progress';
 import { cn } from '@/lib/utils';
 
+import { DayTargetStepper } from './DayTargetStepper';
+
 interface HabitsTableProps {
   habits: HabitWithStats[];
   /** Log one check-in for the habit (same handler the cards use). */
@@ -24,6 +26,9 @@ interface HabitsTableProps {
   onArchive: (habit: HabitWithStats) => void;
   /** Delete the habit (same handler the cards use). */
   onDelete: (habit: HabitWithStats) => void;
+  /** Sets the target for the day being shown. See `HabitCard`. */
+  onTargetChange?: (habit: HabitWithStats, targetCount: number) => void;
+  targetPending?: boolean;
 }
 
 const ICON_BUTTON_CLASS =
@@ -48,6 +53,8 @@ export function HabitsTable({
   onEdit,
   onArchive,
   onDelete,
+  onTargetChange,
+  targetPending = false,
 }: HabitsTableProps) {
   const t = useTranslations('habits');
   const tCommon = useTranslations('common');
@@ -78,8 +85,18 @@ export function HabitsTable({
         const { periodCount, isCompleted, progress } = getHabitProgress(habit);
         return (
           <div className="flex items-center gap-2">
-            <span className="w-10 shrink-0 tabular-nums text-muted-foreground">
-              {periodCount}/{habit.targetCount}
+            <span
+              data-testid="habit-progress"
+              className="flex shrink-0 items-center tabular-nums text-muted-foreground"
+            >
+              {periodCount}/
+              <DayTargetStepper
+                value={habit.periodTarget}
+                onChange={(next) => onTargetChange?.(habit, next)}
+                // WEEKLY targets belong to the week, not to a day.
+                editable={!!onTargetChange && !habit.isArchived && habit.frequency === 'DAILY'}
+                pending={targetPending}
+              />
             </span>
             <div className="h-1.5 w-24 overflow-hidden rounded-full bg-muted">
               <div

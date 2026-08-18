@@ -153,8 +153,18 @@ Reglas:
 
 - **Hábitos DAILY:** `periodCount` = count de hoy. Equivale a `todayLog?.count ?? 0`.
 - **Hábitos WEEKLY:** `periodCount` = suma de counts de todos los logs de la semana ISO actual (lunes a domingo). Un hábito semanal puede tener `todayLog` null o con count 0 y aún así `periodCompleted = true` si la cuota semanal ya se cumplió en otros días.
-- **Barra de progreso:** usar `Math.min(periodCount / targetCount, 1)` para el cálculo visual.
-- **Check-in habilitado:** permitir check-in solo si `periodCount < targetCount` (para WEEKLY) o `todayLog.count < targetCount` (para DAILY).
+- **Barra de progreso:** usar `Math.min(periodCount / periodTarget, 1)` para el cálculo visual.
+- **Check-in habilitado:** permitir check-in solo si `periodCount < periodTarget` (para WEEKLY) o `todayLog.count < periodTarget` (para DAILY).
+
+### Objetivo por día (`periodTarget`)
+
+El denominador que se renderiza es **siempre `periodTarget`**, nunca `habit.targetCount`.
+
+- **DAILY:** `periodTarget` es el objetivo del día que se está mirando, no el default del hábito. El backend lo snapshotea en `habit_logs.targetCount` al escribir el log, así que un día terminado conserva su denominador: subir el objetivo del hábito de 3 a 4 no convierte los días ya completos en `3/4`.
+- **WEEKLY:** `periodTarget` es el `targetCount` del hábito — el objetivo pertenece a la semana, no a un día.
+- **Edición:** el denominador es editable inline (stepper) solo para hábitos **DAILY no archivados**. Ajustarlo re-envía el log de ese día con el count actual y el nuevo `targetCount`, por lo que se puede corregir un día pasado sin re-estampar el resto.
+- **Bajar el objetivo trunca el count:** el backend aplica `Math.min(count, targetCount)`. La UI espeja ese cap en el optimistic update.
+- **Heatmap:** cada celda se colorea contra el `targetCount` de su propio log; el prop `fallbackTarget` solo cubre días sin log.
 
 ### Vista diaria (`GET /habits/daily`)
 
