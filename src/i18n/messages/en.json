@@ -854,8 +854,8 @@
         "subtitleWithAmount": "Day {day} · {amount}"
       },
       "serviceOverdue": {
-        "title": "Overdue: {name}",
-        "subtitle": "Pending since {period}"
+        "title": "Due today: {name}",
+        "subtitle": "Overdue since {period}"
       },
       "habitsMidday": {
         "title": "{count, plural, one {# habit still to go} other {# habits still to go}}",
@@ -867,8 +867,8 @@
         "subtitle": "{days} days with no entries in your {currency} budget"
       },
       "choreOverdue": {
-        "title": "Overdue: {name}",
-        "subtitle": "Was due on {date}"
+        "title": "Due today: {name}",
+        "subtitle": "{days, plural, one {# day} other {# days}} overdue"
       },
       "choreDueToday": {
         "title": "Due today: {name}",

@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { type Alert } from '@/core/domain/entities/alert';
 
@@ -47,6 +47,14 @@ function renderItem(alert: Alert, onNavigate?: () => void) {
 describe('AlertItem', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    // Only `Date` is faked, never the timers themselves — userEvent deadlocks
+    // under fully-faked timers unless every step advances them by hand. Same
+    // reasoning as ChoreCard.test.tsx.
+    vi.useFakeTimers({ toFake: ['Date'], now: new Date('2026-05-20T12:00:00') });
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
   });
 
   describe('per-type rendering', () => {
@@ -81,7 +89,6 @@ describe('AlertItem', () => {
           },
         }),
       );
-      expect(screen.getByText(/Atrasado/i)).toBeInTheDocument();
       expect(screen.getByText(/Internet/)).toBeInTheDocument();
       expect(screen.getByText(/2026-04/)).toBeInTheDocument();
     });
@@ -130,7 +137,12 @@ describe('AlertItem', () => {
       expect(screen.getByText(/3 días sin registrar en tu presupuesto PEN/)).toBeInTheDocument();
     });
 
-    it('renders chore-overdue with the due date in the subtitle', () => {
+    it('renders chore-overdue as an action for today, with the delay as context', () => {
+      // An overdue chore is still something to do TODAY. Leading with
+      // "Atrasada" made the whole popover read as a list of failures, and in
+      // practice a chore that is behind never reaches the due-today state at
+      // all — `nextDueDate < today` and `nextDueDate === today` cannot both
+      // hold, so the user only ever saw the past-tense copy.
       renderItem(
         makeAlert({
           id: 'chore-overdue:abc',
@@ -140,8 +152,59 @@ describe('AlertItem', () => {
           payload: { choreId: 'abc', choreName: 'Lavar el auto', nextDueDate: '2026-05-15' },
         }),
       );
+      expect(screen.getByText(/Toca hoy/i)).toBeInTheDocument();
       expect(screen.getByText(/Lavar el auto/)).toBeInTheDocument();
-      expect(screen.getByText(/2026-05-15/)).toBeInTheDocument();
+    });
+
+    it('counts the days a chore has been overdue', () => {
+      vi.setSystemTime(new Date('2026-05-20T12:00:00'));
+      renderItem(
+        makeAlert({
+          id: 'chore-overdue:abc',
+          type: 'chore-overdue',
+          severity: 'warning',
+          isDismissable: false,
+          payload: { choreId: 'abc', choreName: 'Lavar el auto', nextDueDate: '2026-05-15' },
+        }),
+      );
+      expect(screen.getByText(/5 días/)).toBeInTheDocument();
+    });
+
+    it('uses the singular for a chore one day overdue', () => {
+      vi.setSystemTime(new Date('2026-05-16T12:00:00'));
+      renderItem(
+        makeAlert({
+          id: 'chore-overdue:abc',
+          type: 'chore-overdue',
+          severity: 'warning',
+          isDismissable: false,
+          payload: { choreId: 'abc', choreName: 'Lavar el auto', nextDueDate: '2026-05-15' },
+        }),
+      );
+      expect(screen.getByText(/1 día(?!s)/)).toBeInTheDocument();
+    });
+
+    it('renders service-overdue as an action for today too', () => {
+      renderItem(
+        makeAlert({
+          id: 'service-overdue:abc',
+          type: 'service-overdue',
+          severity: 'warning',
+          isDismissable: false,
+          payload: {
+            serviceName: 'Internet',
+            overduePeriod: '2026-04',
+            currency: 'PEN',
+            estimatedAmount: 120,
+          },
+        }),
+      );
+      // Same present-tense framing as chores — the two modules should not
+      // disagree about how a late item is phrased.
+      expect(screen.getByText(/Toca hoy/i)).toBeInTheDocument();
+      expect(screen.getByText(/Internet/)).toBeInTheDocument();
+      // The period still appears, as the context for how late it is.
+      expect(screen.getByText(/2026-04/)).toBeInTheDocument();
     });
   });
 

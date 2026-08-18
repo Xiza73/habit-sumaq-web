@@ -15,17 +15,15 @@ import {
 } from 'lucide-react';
 
 import { useDismissAlert } from '@/core/application/hooks/use-alerts';
-import { useDateFormat } from '@/core/application/hooks/use-user-settings';
 import {
   type Alert,
   type AlertSeverity,
   type AlertType,
   getAlertHref,
 } from '@/core/domain/entities/alert';
-import { type DateFormat } from '@/core/domain/enums/common.enums';
 import { type Currency } from '@/core/domain/enums/currency.enum';
 
-import { formatCurrency, formatDate } from '@/lib/format';
+import { formatCurrency } from '@/lib/format';
 import { cn } from '@/lib/utils';
 
 interface AlertItemProps {
@@ -52,7 +50,6 @@ interface AlertItemProps {
 export function AlertItem({ alert, onNavigate }: AlertItemProps) {
   const t = useTranslations('alerts.items');
   const tCommon = useTranslations('common');
-  const dateFormat = useDateFormat();
   const router = useRouter();
   const dismiss = useDismissAlert();
 
@@ -97,7 +94,7 @@ export function AlertItem({ alert, onNavigate }: AlertItemProps) {
       <div className="min-w-0 flex-1">
         <p className="text-sm font-medium leading-snug text-foreground">{renderTitle(alert, t)}</p>
         <p className="mt-0.5 text-xs leading-snug text-muted-foreground">
-          {renderSubtitle(alert, t, dateFormat)}
+          {renderSubtitle(alert, t)}
         </p>
       </div>
 
@@ -161,6 +158,10 @@ function renderTitle(alert: Alert, t: Translator): string {
     case 'budget-unlogged':
       return t('budgetUnlogged.title');
     case 'chore-overdue':
+      // Deliberately the same "due today" phrasing as `chore-due-today`. A
+      // chore that is behind is still something to do TODAY, and leading with
+      // "Atrasada" made the popover read as a list of failures. The severity
+      // (warning vs info) and the subtitle carry the difference.
       return t('choreOverdue.title', {
         name: stringOf(alert.payload.choreName) ?? '',
       });
@@ -171,7 +172,7 @@ function renderTitle(alert: Alert, t: Translator): string {
   }
 }
 
-function renderSubtitle(alert: Alert, t: Translator, dateFormat: DateFormat): string {
+function renderSubtitle(alert: Alert, t: Translator): string {
   switch (alert.type) {
     case 'service-due-today': {
       const dueDay = numberOf(alert.payload.dueDay) ?? 0;
@@ -202,14 +203,34 @@ function renderSubtitle(alert: Alert, t: Translator, dateFormat: DateFormat): st
       return t('budgetUnlogged.subtitle', { days, currency });
     }
     case 'chore-overdue': {
+      // "Atrasada hace N días" rather than the due date itself: how late it is
+      // is the actionable part, and the raw date made the reader do the
+      // subtraction. Computed client-side because the payload carries the due
+      // date, not a delta.
       const date = stringOf(alert.payload.nextDueDate);
-      return t('choreOverdue.subtitle', { date: date ? formatDate(date, dateFormat) : '' });
+      return t('choreOverdue.subtitle', { days: date ? daysOverdue(date) : 0 });
     }
     case 'chore-due-today':
       // No date interpolated — "today" is the whole point, and echoing the
       // date back would just be the same information twice.
       return t('choreDueToday.subtitle');
   }
+}
+
+/**
+ * Whole days between a `YYYY-MM-DD` due date and today, floored at 0.
+ *
+ * Both ends are anchored at noon so a DST day still rounds to a whole number
+ * — the same trick `chore-status.ts` uses. Floored at 0 because a future date
+ * reaching this branch would mean the backend classified it as overdue, and a
+ * negative "hace -2 días" is worse than saying 0.
+ */
+function daysOverdue(dueDate: string): number {
+  const due = Date.parse(`${dueDate}T12:00:00`);
+  if (Number.isNaN(due)) return 0;
+  const today = new Date();
+  today.setHours(12, 0, 0, 0);
+  return Math.max(0, Math.round((today.getTime() - due) / 86_400_000));
 }
 
 function stringOf(v: string | number | null | undefined): string | undefined {
