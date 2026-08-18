@@ -25,6 +25,12 @@ export type UpdateHabitInput = z.infer<typeof updateHabitSchema>;
 export const habitLogSchema = z.object({
   date: z.string().min(1, 'required'),
   count: z.number().int().min(0),
+  /**
+   * Target for THIS day. Omitted, the server keeps the day's existing target
+   * and only falls back to the habit's default for a day with no log — so
+   * re-logging a day you forgot never re-stamps it with today's default.
+   */
+  targetCount: z.number().int().min(1).optional(),
   note: z.string().max(500).nullable().optional(),
 });
 

@@ -19,11 +19,16 @@ function buildLog(overrides: Partial<HabitLog> = {}): HabitLog {
     note: overrides.note ?? null,
     createdAt: overrides.createdAt ?? '2026-04-15T10:00:00.000Z',
     updatedAt: overrides.updatedAt ?? '2026-04-15T10:00:00.000Z',
+    targetCount: overrides.targetCount ?? 8,
   };
 }
 
-function renderHeatmap(logs: HabitLog[] = [], targetCount = 8, color: string | null = '#2196F3') {
-  return render(<HabitHeatmap logs={logs} targetCount={targetCount} color={color} />, {
+function renderHeatmap(
+  logs: HabitLog[] = [],
+  fallbackTarget = 8,
+  color: string | null = '#2196F3',
+) {
+  return render(<HabitHeatmap logs={logs} fallbackTarget={fallbackTarget} color={color} />, {
     wrapper: TestProviders,
   });
 }

@@ -224,6 +224,11 @@
     "notCompleted": "Not completed",
     "checkIn": "Check in",
     "undoCheckIn": "Undo check in",
+    "dayTarget": {
+      "edit": "Target for this day",
+      "increase": "Raise the target for this day",
+      "decrease": "Lower the target for this day"
+    },
     "viewDetail": "View habit",
     "frequencies": {
       "DAILY": "Daily",

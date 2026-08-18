@@ -16,7 +16,13 @@ const PADDING = 48; // p-6 * 2
 
 interface HabitHeatmapProps {
   logs: HabitLog[];
-  targetCount: number;
+  /**
+   * Target used for days that have NO log. Days that do have one use their own
+   * snapshotted `targetCount`: the point of per-day targets is that a finished
+   * day keeps its own denominator, and colouring the whole history against a
+   * single number is exactly the rewrite this feature removes.
+   */
+  fallbackTarget: number;
   color: string | null;
 }
 
@@ -57,7 +63,7 @@ function calculateWeeks(containerWidth: number): number {
   return Math.max(MIN_WEEKS, Math.min(MAX_WEEKS, weeks));
 }
 
-export function HabitHeatmap({ logs, targetCount, color }: HabitHeatmapProps) {
+export function HabitHeatmap({ logs, fallbackTarget, color }: HabitHeatmapProps) {
   const t = useTranslations('habits');
   const locale = useLocale();
   const containerRef = useRef<HTMLDivElement>(null);
@@ -160,6 +166,7 @@ export function HabitHeatmap({ logs, targetCount, color }: HabitHeatmapProps) {
     e: React.MouseEvent<SVGRectElement>,
     dateKey: string,
     count: number,
+    target: number,
     isFuture: boolean,
   ) {
     if (isFuture) return;
@@ -174,7 +181,7 @@ export function HabitHeatmap({ logs, targetCount, color }: HabitHeatmapProps) {
     const clampedX = Math.max(tooltipWidth / 2, Math.min(rawX, svgWidth - tooltipWidth / 2));
     const flippedDown = rawY - tooltipHeight - 8 < 0;
     setTooltip({
-      text: `${dateStr} · ${count}/${targetCount}`,
+      text: `${dateStr} · ${count}/${target}`,
       x: clampedX,
       y: flippedDown ? rawY + CELL_SIZE + 8 + tooltipHeight : rawY - 8,
       flippedDown,
@@ -233,7 +240,9 @@ export function HabitHeatmap({ logs, targetCount, color }: HabitHeatmapProps) {
             week.map((cell, dIdx) => {
               const log = logMap.get(cell.key);
               const count = log?.count ?? 0;
-              const level = cell.isFuture ? -1 : getLevel(count, targetCount);
+              // Each day is measured against ITS own target, not the habit's.
+              const target = log?.targetCount ?? fallbackTarget;
+              const level = cell.isFuture ? -1 : getLevel(count, target);
 
               return (
                 <rect
@@ -253,7 +262,7 @@ export function HabitHeatmap({ logs, targetCount, color }: HabitHeatmapProps) {
                     level > 0 ? { fill: baseColor, opacity: getLevelOpacity(level) } : undefined
                   }
                   strokeWidth={cell.isToday ? 1.5 : 0}
-                  onMouseEnter={(e) => handleCellHover(e, cell.key, count, cell.isFuture)}
+                  onMouseEnter={(e) => handleCellHover(e, cell.key, count, target, cell.isFuture)}
                   onMouseLeave={() => setTooltip(null)}
                 />
               );

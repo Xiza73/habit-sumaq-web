@@ -224,6 +224,11 @@
     "notCompleted": "No completado",
     "checkIn": "Registrar",
     "undoCheckIn": "Deshacer registro",
+    "dayTarget": {
+      "edit": "Objetivo del día",
+      "increase": "Aumentar el objetivo del día",
+      "decrease": "Reducir el objetivo del día"
+    },
     "viewDetail": "Ver hábito",
     "frequencies": {
       "DAILY": "Diario",

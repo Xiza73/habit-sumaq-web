@@ -163,21 +163,31 @@ export function useLogHabit() {
           old?.map((habit) => {
             if (habit.id !== habitId) return habit;
 
-            const newCount = data.count;
-            const completed = newCount >= habit.targetCount;
+            // Mirrors the server's resolution order: an explicit target for
+            // this call, else the day's existing one, else the habit default.
+            // Measuring against `habit.targetCount` here would make the
+            // optimistic row disagree with the row that comes back.
+            const target = data.targetCount ?? habit.todayLog?.targetCount ?? habit.periodTarget;
+            // The server caps the count at the target, so lowering a day's
+            // target truncates its count. Cap here too, or the row flashes an
+            // impossible "6/4" until the refetch lands.
+            const newCount = Math.min(data.count, target);
+            const completed = newCount >= target;
 
             return {
               ...habit,
               periodCount: habit.periodCount - (habit.todayLog?.count ?? 0) + newCount,
               periodCompleted: completed,
+              periodTarget: target,
               todayLog: habit.todayLog
-                ? { ...habit.todayLog, count: newCount, completed }
+                ? { ...habit.todayLog, count: newCount, completed, targetCount: target }
                 : {
                     id: 'optimistic',
                     habitId,
                     date: data.date,
                     count: newCount,
                     completed,
+                    targetCount: target,
                     note: data.note ?? null,
                     createdAt: new Date().toISOString(),
                     updatedAt: new Date().toISOString(),

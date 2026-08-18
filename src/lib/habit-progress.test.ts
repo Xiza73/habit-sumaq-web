@@ -8,7 +8,7 @@ describe('getHabitProgress', () => {
       todayLog: { count: 1 },
       periodCount: 2,
       periodCompleted: false,
-      targetCount: 3,
+      periodTarget: 3,
     });
     expect(result).toEqual({
       todayCount: 1,
@@ -23,7 +23,7 @@ describe('getHabitProgress', () => {
       todayLog: { count: 4 },
       periodCount: undefined,
       periodCompleted: undefined,
-      targetCount: 5,
+      periodTarget: 5,
     });
     expect(result.periodCount).toBe(4);
     expect(result.todayCount).toBe(4);
@@ -31,27 +31,30 @@ describe('getHabitProgress', () => {
   });
 
   it('falls back to 0 when there is no log and no periodCount', () => {
-    const result = getHabitProgress({ todayLog: null, targetCount: 3 });
+    const result = getHabitProgress({ todayLog: null, periodTarget: 3 });
     expect(result).toEqual({ todayCount: 0, periodCount: 0, isCompleted: false, progress: 0 });
   });
 
-  it('derives isCompleted from periodCount >= targetCount when the flag is absent', () => {
-    const result = getHabitProgress({ todayLog: { count: 3 }, targetCount: 3 });
+  it('derives isCompleted from periodCount >= periodTarget when the flag is absent', () => {
+    const result = getHabitProgress({ todayLog: { count: 3 }, periodTarget: 3 });
     expect(result.isCompleted).toBe(true);
   });
 
-  it('clamps progress to 1 when the count exceeds the target', () => {
-    const result = getHabitProgress({ periodCount: 6, targetCount: 3 });
+  it('clamps progress to 1 when the count overshoots the target', () => {
+    const result = getHabitProgress({ periodCount: 9, periodTarget: 3, todayLog: null });
     expect(result.progress).toBe(1);
   });
 
-  it('honors an explicit periodCompleted flag over the derived value', () => {
+  it('measures a day against ITS OWN target, not the habit default', () => {
+    // The day was logged with a target of 3 and finished it. Raising the
+    // habit's default to 4 afterwards must not turn this day back into 3/4.
     const result = getHabitProgress({
-      todayLog: { count: 0 },
-      periodCount: 0,
+      todayLog: { count: 3 },
+      periodCount: 3,
       periodCompleted: true,
-      targetCount: 3,
+      periodTarget: 3,
     });
     expect(result.isCompleted).toBe(true);
+    expect(result.progress).toBe(1);
   });
 });
