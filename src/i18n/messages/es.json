@@ -310,6 +310,7 @@
     },
     "status": {
       "paid": "Al día",
+      "today": "Toca hoy",
       "pending": "Pendiente",
       "overdue": "Atrasado · {period}"
     },

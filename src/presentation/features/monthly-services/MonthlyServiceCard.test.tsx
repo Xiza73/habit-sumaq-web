@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { type Category } from '@/core/domain/entities/category';
 import { type MonthlyService } from '@/core/domain/entities/monthly-service';
@@ -64,6 +64,15 @@ function renderCard(service: MonthlyService = baseService) {
 describe('MonthlyServiceCard', () => {
   beforeEach(() => {
     mockSettleMutate.mockClear();
+    // The status chip now depends on the day of month: an unpaid service is
+    // "Toca hoy" from its approximate due day onward. Without pinning the
+    // clock these tests would pass before the 15th and fail after it. Only
+    // `Date` is faked — userEvent deadlocks under fully-faked timers.
+    vi.useFakeTimers({ toFake: ['Date'], now: new Date('2026-04-10T12:00:00') });
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
   });
 
   it('renders service name and currency badge', () => {
@@ -73,12 +82,29 @@ describe('MonthlyServiceCard', () => {
   });
 
   it('shows a short "pending" badge without the period when pending', () => {
+    // Clock is pinned to the 10th and the fixture's due day is the 15th, so
+    // this is genuinely still pending.
     renderCard();
     // Deliberately does NOT include the period — the summary header already
     // shows the current month, so the chip stays compact.
     expect(screen.getByText(/pendiente/i)).toBeInTheDocument();
     expect(screen.queryByText(/abril/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/2026-04/)).not.toBeInTheDocument();
+  });
+
+  it('shows "Toca hoy" once the approximate due day arrives', () => {
+    vi.setSystemTime(new Date('2026-04-15T12:00:00'));
+    renderCard();
+    expect(screen.getByText(/toca hoy/i)).toBeInTheDocument();
+    expect(screen.queryByText(/pendiente/i)).not.toBeInTheDocument();
+  });
+
+  it('KEEPS showing "Toca hoy" days after, because the due day is approximate', () => {
+    // The regression that matters: with exact matching the chip lived for a
+    // single day a month, so missing that day meant missing it entirely.
+    vi.setSystemTime(new Date('2026-04-28T12:00:00'));
+    renderCard();
+    expect(screen.getByText(/toca hoy/i)).toBeInTheDocument();
   });
 
   it('shows paid status when isPaidForCurrentMonth is true', () => {
