@@ -310,6 +310,7 @@
     },
     "status": {
       "paid": "Up to date",
+      "today": "Due today",
       "pending": "Pending",
       "overdue": "Overdue · {period}"
     },
