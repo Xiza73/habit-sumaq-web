@@ -22,6 +22,7 @@ import { toSettleableDebtLoan } from '@/lib/monthly-service-linked-debt';
 import {
   canPayMonthlyService,
   MONTHLY_SERVICE_STATUS_CLASSES,
+  monthlyServiceStatusLabel,
   resolveMonthlyServiceStatus,
 } from '@/lib/monthly-service-status';
 import { cn } from '@/lib/utils';
@@ -197,13 +198,11 @@ export function MonthlyServicesTable({
           >
             {isArchived
               ? t('archived')
-              : status === 'paid'
-                ? t('status.paid')
-                : status === 'pending'
-                  ? t('status.pending')
-                  : t('status.overdue', {
-                      period: formatPeriodLabel(service.nextDuePeriod, locale),
-                    })}
+              : monthlyServiceStatusLabel(
+                  status,
+                  t,
+                  formatPeriodLabel(service.nextDuePeriod, locale),
+                )}
           </span>
         );
       },

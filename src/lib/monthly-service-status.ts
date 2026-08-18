@@ -22,6 +22,17 @@ export type MonthlyServiceStatusTone = 'paid' | 'today' | 'pending' | 'overdue';
  * looks like is the kind of inconsistency users notice without being able to
  * name it.
  *
+ * `today` runs **from the due day onward**, not on that day alone. `dueDay` is
+ * presented to the user as "Día aproximado de vencimiento — solo para ordenar
+ * y recordar", so matching it exactly would read an approximate value as an
+ * exact one: the state would exist for a single day a month, and missing that
+ * day would mean missing it entirely. Bills are paid on or after their
+ * reference date, so the state stays actionable until the service is paid or
+ * the period rolls over into overdue.
+ *
+ * (Chores keep exact equality on purpose — their `nextDueDate` is a computed,
+ * exact date, not an approximation.)
+ *
  * `dayOfMonth` is injectable so the derivation stays testable; it defaults to
  * the real current day, which keeps every existing call site unchanged.
  */
@@ -33,9 +44,9 @@ export function resolveMonthlyServiceStatus(
 ): MonthlyServiceStatusTone {
   if (service.isOverdue) return 'overdue';
   if (service.isPaidForCurrentMonth) return 'paid';
-  // `dueDay` is nullable — without one there is no "today" to speak of, and
+  // `dueDay` is nullable — without one there is no anchor to count from, and
   // the service simply stays pending for the whole period.
-  if (service.dueDay != null && service.dueDay === dayOfMonth) return 'today';
+  if (service.dueDay != null && dayOfMonth >= service.dueDay) return 'today';
   return 'pending';
 }
 
@@ -47,6 +58,26 @@ export const MONTHLY_SERVICE_STATUS_CLASSES: Record<MonthlyServiceStatusTone, st
   pending: 'bg-amber-500/15 text-amber-700 dark:text-amber-400',
   overdue: 'bg-destructive/15 text-destructive',
 };
+
+/**
+ * The chip's translated label for a tone.
+ *
+ * Lives here beside the tone and its classes because the card and the table
+ * previously each carried their own hardcoded three-way conditional. Adding
+ * `today` to the resolver left both of them silently falling through to the
+ * overdue branch — a state can no longer be half-added.
+ *
+ * Only `overdue` interpolates the period; every other tone is deliberately
+ * short, since the summary header already shows the current month.
+ */
+export function monthlyServiceStatusLabel(
+  status: MonthlyServiceStatusTone,
+  t: (key: string, values?: Record<string, string>) => string,
+  periodLabel: string,
+): string {
+  if (status === 'overdue') return t('status.overdue', { period: periodLabel });
+  return t(`status.${status}`);
+}
 
 /**
  * Whether the "Pagar" / "Saltear" actions should be offered.

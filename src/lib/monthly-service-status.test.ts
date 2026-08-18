@@ -28,13 +28,29 @@ describe('resolveMonthlyServiceStatus', () => {
     // what a due-today item looks like.
     const unpaid = { isOverdue: false, isPaidForCurrentMonth: false };
 
-    it('returns today when the due day is the current day of month', () => {
+    it('returns today on the due day itself', () => {
       expect(resolveMonthlyServiceStatus({ ...unpaid, dueDay: 15 }, 15)).toBe('today');
     });
 
-    it('stays pending on any other day of the month', () => {
+    it('stays pending before the due day', () => {
       expect(resolveMonthlyServiceStatus({ ...unpaid, dueDay: 15 }, 14)).toBe('pending');
-      expect(resolveMonthlyServiceStatus({ ...unpaid, dueDay: 15 }, 16)).toBe('pending');
+      expect(resolveMonthlyServiceStatus({ ...unpaid, dueDay: 15 }, 1)).toBe('pending');
+    });
+
+    it('STAYS today after the due day, because the date is approximate', () => {
+      // The field is labelled "Día aproximado de vencimiento — solo para
+      // ordenar y recordar". Matching it exactly would read an approximate
+      // value as an exact one, leaving the state alive for a single day a
+      // month: miss that day and you miss it entirely. Bills get paid on or
+      // after their reference date.
+      expect(resolveMonthlyServiceStatus({ ...unpaid, dueDay: 15 }, 16)).toBe('today');
+      expect(resolveMonthlyServiceStatus({ ...unpaid, dueDay: 15 }, 28)).toBe('today');
+      expect(resolveMonthlyServiceStatus({ ...unpaid, dueDay: 15 }, 31)).toBe('today');
+    });
+
+    it('is today from day 1 when the due day is the 1st', () => {
+      expect(resolveMonthlyServiceStatus({ ...unpaid, dueDay: 1 }, 1)).toBe('today');
+      expect(resolveMonthlyServiceStatus({ ...unpaid, dueDay: 1 }, 20)).toBe('today');
     });
 
     it('stays pending when the service has no due day at all', () => {
