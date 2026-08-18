@@ -24,11 +24,31 @@ export const alertKeys = {
  */
 const ALERTS_STALE_TIME_MS = 5 * 60 * 1000;
 
+/**
+ * How often the list refetches on its own.
+ *
+ * `staleTime` alone is not enough, and the difference is the whole bug it
+ * fixes: it only MARKS data stale, it never refetches. A refetch needs a
+ * trigger — mount, window focus, or reconnect. The desktop app runs with
+ * autostart and can sit open and focused for days, so none of those fire, and
+ * the popover could hold a day-old list indefinitely.
+ *
+ * That matters because every per-day alert is scoped to a calendar date: the
+ * ID embeds it, and dismissals expire at local midnight. Without a periodic
+ * refetch a user who dismissed the budget nudge yesterday would never see
+ * today's, even though the server is serving it.
+ *
+ * Matches `staleTime` so a poll always finds the cache already stale and
+ * actually goes to the network.
+ */
+export const ALERTS_REFETCH_INTERVAL_MS = ALERTS_STALE_TIME_MS;
+
 export function useAlerts() {
   return useQuery({
     queryKey: alertKeys.list(),
     queryFn: () => alertsApi.getAll(),
     staleTime: ALERTS_STALE_TIME_MS,
+    refetchInterval: ALERTS_REFETCH_INTERVAL_MS,
   });
 }
 
