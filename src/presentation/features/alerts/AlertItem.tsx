@@ -143,10 +143,16 @@ type Translator = ReturnType<typeof useTranslations>;
 
 function renderTitle(alert: Alert, t: Translator): string {
   switch (alert.type) {
-    case 'service-due-today':
-      return t('serviceDueToday.title', {
-        name: stringOf(alert.payload.serviceName) ?? '',
-      });
+    case 'service-due-today': {
+      const name = stringOf(alert.payload.serviceName) ?? '';
+      // No approximate day means the alert is the closing-window one, which
+      // says the service is due THIS MONTH — "vence hoy" would be a lie on
+      // the first two days of the window.
+      const hasDueDay = numberOf(alert.payload.dueDay) != null;
+      return hasDueDay
+        ? t('serviceDueToday.title', { name })
+        : t('serviceDueToday.titleClosing', { name });
+    }
     case 'service-overdue':
       return t('serviceOverdue.title', {
         name: stringOf(alert.payload.serviceName) ?? '',
@@ -175,16 +181,24 @@ function renderTitle(alert: Alert, t: Translator): string {
 function renderSubtitle(alert: Alert, t: Translator): string {
   switch (alert.type) {
     case 'service-due-today': {
-      const dueDay = numberOf(alert.payload.dueDay) ?? 0;
+      const dueDay = numberOf(alert.payload.dueDay);
       const currency = stringOf(alert.payload.currency);
       const amount = numberOf(alert.payload.estimatedAmount);
-      if (amount != null && isCurrency(currency)) {
-        return t('serviceDueToday.subtitleWithAmount', {
-          day: dueDay,
-          amount: formatCurrency(amount, currency),
-        });
+      const formattedAmount =
+        amount != null && isCurrency(currency) ? formatCurrency(amount, currency) : null;
+
+      // Anchorless service: count down the period instead of naming a day.
+      // Falling back to `?? 0` here is what printed "Día 0 del mes".
+      if (dueDay == null) {
+        const days = numberOf(alert.payload.daysLeftInPeriod) ?? 1;
+        return formattedAmount != null
+          ? t('serviceDueToday.subtitleClosingWithAmount', { days, amount: formattedAmount })
+          : t('serviceDueToday.subtitleClosing', { days });
       }
-      return t('serviceDueToday.subtitle', { day: dueDay });
+
+      return formattedAmount != null
+        ? t('serviceDueToday.subtitleWithAmount', { day: dueDay, amount: formattedAmount })
+        : t('serviceDueToday.subtitle', { day: dueDay });
     }
     case 'service-overdue': {
       const period = stringOf(alert.payload.overduePeriod) ?? '';
