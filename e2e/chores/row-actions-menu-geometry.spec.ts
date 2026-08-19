@@ -19,7 +19,18 @@ test.describe('Row actions menu — geometry', () => {
   /** Enough rows that the last one sits near the bottom of the viewport. */
   const ROW_COUNT = 14;
 
+  /**
+   * The kebab menu is the NARROW-screen affordance: `TableRowActions` renders
+   * inline icon buttons at `xl` and up (1280px) and only collapses into
+   * `RowActionsMenu` below that. Playwright's Desktop Chrome default is
+   * exactly 1280 — the wrong side of the breakpoint, where the menu does not
+   * exist at all.
+   */
+  const BELOW_XL = { width: 1100, height: 700 };
+
   async function seedAndOpenTable(auth: { api: APIRequestContext; page: Page }, testId: string) {
+    await auth.page.setViewportSize(BELOW_XL);
+
     for (let i = 0; i < ROW_COUNT; i++) {
       await createChore(auth.api, {
         name: `Quehacer ${i.toString().padStart(2, '0')} ${testId}`,
@@ -96,10 +107,10 @@ test.describe('Row actions menu — geometry', () => {
   });
 
   test('stays inside the viewport horizontally', async ({ auth }, testInfo) => {
-    // Narrow enough that a right-aligned menu would hang off the left edge
-    // without the clamp.
-    await auth.page.setViewportSize({ width: 800, height: 700 });
     await seedAndOpenTable(auth, testInfo.testId);
+    // Narrower still than the default above — enough that a right-aligned menu
+    // would hang off the edge without the clamp.
+    await auth.page.setViewportSize({ width: 800, height: 700 });
 
     await auth.page
       .getByRole('button', { name: /acciones/i })
