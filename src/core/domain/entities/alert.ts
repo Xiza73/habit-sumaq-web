@@ -17,6 +17,7 @@ export const ALERT_TYPES = [
   'budget-unlogged',
   'chore-overdue',
   'chore-due-today',
+  'reminder-due',
 ] as const;
 export type AlertType = (typeof ALERT_TYPES)[number];
 
@@ -76,6 +77,17 @@ export interface AlertPayloads {
     choreName: string;
     nextDueDate: string; // 'YYYY-MM-DD', == today in the user TZ
   };
+  /**
+   * A dated, still-pending reminder whose moment has arrived. Undated
+   * reminders never produce this alert, so `remindDate` is always set here
+   * even though the entity allows null.
+   */
+  'reminder-due': {
+    reminderId: string;
+    title: string;
+    remindDate: string; // 'YYYY-MM-DD', today or earlier
+    remindTime: string | null; // 'HH:mm'
+  };
 }
 
 export interface Alert {
@@ -127,6 +139,8 @@ export function getAlertHref(alert: Alert): string | null {
     case 'chore-overdue':
     case 'chore-due-today':
       return '/chores';
+    case 'reminder-due':
+      return '/reminders';
     default:
       return null;
   }

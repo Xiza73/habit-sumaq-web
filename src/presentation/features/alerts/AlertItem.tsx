@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 
 import {
   AlertTriangle,
+  Bell,
   CalendarClock,
   CheckCircle2,
   Receipt,
@@ -134,6 +135,8 @@ function AlertIcon({ type }: { type: AlertType }) {
     case 'chore-due-today':
       // Not the warning triangle: due today is a heads-up, not a miss.
       return <Repeat2 className="size-5" aria-hidden="true" />;
+    case 'reminder-due':
+      return <Bell className="size-5" aria-hidden="true" />;
     default:
       return <CheckCircle2 className="size-5" aria-hidden="true" />;
   }
@@ -174,6 +177,10 @@ function renderTitle(alert: Alert, t: Translator): string {
     case 'chore-due-today':
       return t('choreDueToday.title', {
         name: stringOf(alert.payload.choreName) ?? '',
+      });
+    case 'reminder-due':
+      return t('reminderDue.title', {
+        title: stringOf(alert.payload.title) ?? '',
       });
   }
 }
@@ -228,6 +235,16 @@ function renderSubtitle(alert: Alert, t: Translator): string {
       // No date interpolated — "today" is the whole point, and echoing the
       // date back would just be the same information twice.
       return t('choreDueToday.subtitle');
+    case 'reminder-due': {
+      const date = stringOf(alert.payload.remindDate);
+      const time = stringOf(alert.payload.remindTime);
+      // An overdue reminder says how long it has been waiting; today's says
+      // the hour if it has one, and otherwise just "today".
+      if (date && daysOverdue(date) > 0) {
+        return t('reminderDue.subtitleOverdue', { days: daysOverdue(date) });
+      }
+      return time ? t('reminderDue.subtitleAt', { time }) : t('reminderDue.subtitleToday');
+    }
   }
 }
 

@@ -182,7 +182,15 @@
     "DBT_009": "You must modify at least one field.",
     "DBT_010": "Amount exceeds the debt balance.",
     "DBT_011": "No pending items of that kind with this person.",
-    "generic": "An unexpected error occurred. Please try again."
+    "generic": "An unexpected error occurred. Please try again.",
+    "RMDR_001": "Reminder not found.",
+    "RMDR_002": "You do not have access to this reminder.",
+    "RMDR_003": "The title is required.",
+    "RMDR_004": "The title is too long.",
+    "RMDR_005": "The details are too long.",
+    "RMDR_006": "The date format is not valid.",
+    "RMDR_007": "The time format is not valid.",
+    "RMDR_008": "A time needs a date."
   },
   "habits": {
     "timer": {
@@ -465,6 +473,7 @@
     "priorities": "Priorities",
     "tasks": "Tasks",
     "chores": "Chores",
+    "reminders": "Reminders",
     "reports": "Reports",
     "settings": "Settings"
   },
@@ -887,6 +896,12 @@
       "choreDueToday": {
         "title": "Due today: {name}",
         "subtitle": "It is scheduled for today"
+      },
+      "reminderDue": {
+        "title": "Reminder: {title}",
+        "subtitleToday": "Due today",
+        "subtitleAt": "Due today at {time}",
+        "subtitleOverdue": "{days, plural, one {Pending for # day} other {Pending for # days}}"
       }
     }
   },
@@ -1031,5 +1046,29 @@
     "label": "View",
     "cards": "Cards",
     "table": "Table"
+  },
+  "reminders": {
+    "title": "Reminders",
+    "createReminder": "New reminder",
+    "editReminder": "Edit reminder",
+    "deleteReminder": "Delete reminder",
+    "deleteConfirm": "Delete this reminder?",
+    "emptyState": "No reminders yet. Write down something you do not want to forget.",
+    "titleLabel": "What to remember",
+    "titlePlaceholder": "Call the dentist",
+    "notesLabel": "Details (optional)",
+    "notesPlaceholder": "Ask about the cleaning quote",
+    "dateLabel": "Date (optional)",
+    "timeLabel": "Time (optional)",
+    "timeNeedsDate": "Pick a date before setting a time",
+    "markDone": "Mark as done",
+    "markPending": "Mark as pending",
+    "status": {
+      "overdue": "Overdue",
+      "today": "Today",
+      "upcoming": "Upcoming",
+      "undated": "No date",
+      "done": "Done"
+    }
   }
 }

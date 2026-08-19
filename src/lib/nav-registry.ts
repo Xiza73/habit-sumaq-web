@@ -1,5 +1,6 @@
 import {
   BarChart3,
+  Bell,
   CheckSquare,
   FolderTree,
   HandCoins,
@@ -41,6 +42,7 @@ export const FAVORITE_KEYS = [
   'quick-tasks',
   'tasks',
   'chores',
+  'reminders',
   // Reports — namespaced because there are two reports dashboards
   'reports-finances',
   'reports-routines',
@@ -105,6 +107,7 @@ export const NAV_REGISTRY: Record<FavoriteKey, NavEntry> = {
   },
   tasks: { key: 'tasks', href: '/tasks', labelKey: 'tasks', icon: ListChecks },
   chores: { key: 'chores', href: '/chores', labelKey: 'chores', icon: Repeat2 },
+  reminders: { key: 'reminders', href: '/reminders', labelKey: 'reminders', icon: Bell },
   // Reports
   'reports-finances': {
     key: 'reports-finances',
