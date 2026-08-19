@@ -58,6 +58,43 @@ describe('AlertItem', () => {
   });
 
   describe('per-type rendering', () => {
+    describe('reminder-due', () => {
+      function reminderAlert(remindDate: string, remindTime: string | null = null) {
+        return makeAlert({
+          type: 'reminder-due',
+          payload: { reminderId: 'rem-1', title: 'Llamar al dentista', remindDate, remindTime },
+        });
+      }
+
+      // The suite's clock is 2026-05-20.
+      const TODAY = '2026-05-20';
+
+      it('names the reminder in the title', () => {
+        renderItem(reminderAlert(TODAY));
+        expect(screen.getByText(/Recordatorio: Llamar al dentista/)).toBeInTheDocument();
+      });
+
+      it('says "toca hoy" for one dated today with no hour', () => {
+        renderItem(reminderAlert(TODAY));
+        expect(screen.getByText(/^Toca hoy$/)).toBeInTheDocument();
+      });
+
+      it('names the hour when there is one', () => {
+        renderItem(reminderAlert(TODAY, '15:00'));
+        expect(screen.getByText(/Toca hoy a las 15:00/)).toBeInTheDocument();
+      });
+
+      it('counts the days it has been pending once overdue', () => {
+        renderItem(reminderAlert('2026-05-17'));
+        expect(screen.getByText(/3 días que está pendiente/)).toBeInTheDocument();
+      });
+
+      it('ignores the hour once overdue — the moment has passed, it is just late', () => {
+        renderItem(reminderAlert('2026-05-17', '23:00'));
+        expect(screen.queryByText(/23:00/)).not.toBeInTheDocument();
+      });
+    });
+
     it('renders service-due-today with payload (name + day + amount)', () => {
       renderItem(
         makeAlert({

@@ -182,7 +182,15 @@
     "DBT_009": "Você precisa modificar ao menos um campo.",
     "DBT_010": "O valor excede o saldo da dívida.",
     "DBT_011": "Não há operações pendentes desse tipo com esta pessoa.",
-    "generic": "Ocorreu um erro inesperado. Tente novamente."
+    "generic": "Ocorreu um erro inesperado. Tente novamente.",
+    "RMDR_001": "Lembrete não encontrado.",
+    "RMDR_002": "Você não tem acesso a este lembrete.",
+    "RMDR_003": "O título é obrigatório.",
+    "RMDR_004": "O título é muito longo.",
+    "RMDR_005": "Os detalhes são muito longos.",
+    "RMDR_006": "O formato da data não é válido.",
+    "RMDR_007": "O formato da hora não é válido.",
+    "RMDR_008": "Não é possível definir uma hora sem uma data."
   },
   "habits": {
     "timer": {
@@ -465,6 +473,7 @@
     "priorities": "Prioridades",
     "tasks": "Tarefas",
     "chores": "Tarefas",
+    "reminders": "Lembretes",
     "reports": "Relatórios",
     "settings": "Configurações"
   },
@@ -879,6 +888,12 @@
       "choreDueToday": {
         "title": "Toca hoje: {name}",
         "subtitle": "Está agendada para hoje"
+      },
+      "reminderDue": {
+        "title": "Lembrete: {title}",
+        "subtitleToday": "É hoje",
+        "subtitleAt": "É hoje às {time}",
+        "subtitleOverdue": "{days, plural, one {Pendente há # dia} other {Pendente há # dias}}"
       }
     }
   },
@@ -1023,5 +1038,29 @@
     "label": "Visualização",
     "cards": "Cartões",
     "table": "Tabela"
+  },
+  "reminders": {
+    "title": "Lembretes",
+    "createReminder": "Novo lembrete",
+    "editReminder": "Editar lembrete",
+    "deleteReminder": "Excluir lembrete",
+    "deleteConfirm": "Excluir este lembrete?",
+    "emptyState": "Sem lembretes. Anote algo que você não quer esquecer.",
+    "titleLabel": "O que lembrar",
+    "titlePlaceholder": "Ligar para o dentista",
+    "notesLabel": "Detalhes (opcional)",
+    "notesPlaceholder": "Perguntar sobre o orçamento da limpeza",
+    "dateLabel": "Data (opcional)",
+    "timeLabel": "Hora (opcional)",
+    "timeNeedsDate": "Escolha uma data para poder definir a hora",
+    "markDone": "Marcar como feito",
+    "markPending": "Marcar como pendente",
+    "status": {
+      "overdue": "Atrasado",
+      "today": "Hoje",
+      "upcoming": "Próximo",
+      "undated": "Sem data",
+      "done": "Feito"
+    }
   }
 }

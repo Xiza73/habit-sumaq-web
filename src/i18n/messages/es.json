@@ -182,7 +182,15 @@
     "DBT_009": "Debés modificar al menos un campo.",
     "DBT_010": "El monto excede el saldo de la deuda.",
     "DBT_011": "No hay operaciones pendientes de ese tipo con esta persona.",
-    "generic": "Ocurrió un error inesperado. Intenta de nuevo."
+    "generic": "Ocurrió un error inesperado. Intenta de nuevo.",
+    "RMDR_001": "Recordatorio no encontrado.",
+    "RMDR_002": "No tenés acceso a este recordatorio.",
+    "RMDR_003": "El título es obligatorio.",
+    "RMDR_004": "El título es demasiado largo.",
+    "RMDR_005": "El detalle es demasiado largo.",
+    "RMDR_006": "La fecha no tiene un formato válido.",
+    "RMDR_007": "La hora no tiene un formato válido.",
+    "RMDR_008": "No se puede fijar una hora sin una fecha."
   },
   "habits": {
     "timer": {
@@ -465,6 +473,7 @@
     "priorities": "Prioridades",
     "tasks": "Tareas",
     "chores": "Quehaceres",
+    "reminders": "Recordatorios",
     "reports": "Reportes",
     "settings": "Configuración"
   },
@@ -879,6 +888,12 @@
       "choreDueToday": {
         "title": "Toca hoy: {name}",
         "subtitle": "La tenés programada para hoy"
+      },
+      "reminderDue": {
+        "title": "Recordatorio: {title}",
+        "subtitleToday": "Toca hoy",
+        "subtitleAt": "Toca hoy a las {time}",
+        "subtitleOverdue": "{days, plural, one {Hace # día} other {Hace # días}} que está pendiente"
       }
     }
   },
@@ -1023,5 +1038,29 @@
     "label": "Vista",
     "cards": "Tarjetas",
     "table": "Tabla"
+  },
+  "reminders": {
+    "title": "Recordatorios",
+    "createReminder": "Nuevo recordatorio",
+    "editReminder": "Editar recordatorio",
+    "deleteReminder": "Eliminar recordatorio",
+    "deleteConfirm": "¿Seguro que querés eliminar este recordatorio?",
+    "emptyState": "No tenés recordatorios. Anotá algo que no querés olvidar.",
+    "titleLabel": "Qué hay que recordar",
+    "titlePlaceholder": "Llamar al dentista",
+    "notesLabel": "Detalle (opcional)",
+    "notesPlaceholder": "Preguntar por el presupuesto de la limpieza",
+    "dateLabel": "Fecha (opcional)",
+    "timeLabel": "Hora (opcional)",
+    "timeNeedsDate": "Elegí una fecha para poder fijar la hora",
+    "markDone": "Marcar como hecho",
+    "markPending": "Marcar como pendiente",
+    "status": {
+      "overdue": "Atrasado",
+      "today": "Hoy",
+      "upcoming": "Próximo",
+      "undated": "Sin fecha",
+      "done": "Hecho"
+    }
   }
 }
