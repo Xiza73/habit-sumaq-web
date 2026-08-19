@@ -30,7 +30,12 @@ export const test = base.extend<Fixtures>({
       baseURL: API_BASE_URL,
       extraHTTPHeaders: { 'x-test-auth-secret': secret },
     });
-    const email = `e2e+${testInfo.testId}@habit-sumaq.test`;
+    // `testInfo.retry` is in the address on purpose. Seed data is keyed on
+    // testId, which is STABLE across retries, so a retry re-creating the same
+    // fixtures hit a 409 against the rows its own first attempt left behind —
+    // turning one real failure into three indistinguishable ones. A fresh
+    // user per attempt gives each retry a clean slate.
+    const email = `e2e+${testInfo.testId}-${testInfo.retry}@habit-sumaq.test`;
     const res = await setupCtx.post('/api/v1/auth/test-login', { data: { email } });
     expect(res.ok(), 'test-login failed — backend flags or secret mismatch').toBeTruthy();
     const payload = (await res.json()) as { data: { accessToken: string } };
