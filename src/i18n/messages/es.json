@@ -508,6 +508,11 @@
       "actualDailyAverageEmpty": "Todavía no hay días completos para promediar",
       "originalDailyTarget": "Objetivo diario original",
       "originalDailyTargetHint": "Si gastaras parejo todo el mes",
+      "recoveryIntro": "Para volver al diario inicial:",
+      "recoveryZeroSpend": "{days, plural, one {# día sin gastar} other {# días sin gastar}}",
+      "recoveryOr": "o",
+      "recoveryHalfSpend": "{days, plural, one {# día gastando la mitad} other {# días gastando la mitad}}",
+      "recoveryUnreachable": "El diario inicial ya no se recupera este mes, ni gastando cero el resto de los días.",
       "diffVsOriginalLabel": "Diferencia vs tu plan",
       "diffVsOriginalBelow": "Por DEBAJO al día — vas bien 🎉",
       "diffVsOriginalAbove": "Por ENCIMA al día — atento",
@@ -866,7 +871,10 @@
       "serviceDueToday": {
         "title": "Vence hoy: {name}",
         "subtitle": "Día {day} del mes",
-        "subtitleWithAmount": "Día {day} · {amount}"
+        "subtitleWithAmount": "Día {day} · {amount}",
+        "titleClosing": "Vence este mes: {name}",
+        "subtitleClosing": "{days, plural, one {Último día del mes} other {Quedan # días del mes}}",
+        "subtitleClosingWithAmount": "{days, plural, one {Último día} other {Quedan # días}} · {amount}"
       },
       "serviceOverdue": {
         "title": "Toca hoy: {name}",

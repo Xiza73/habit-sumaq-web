@@ -3,10 +3,10 @@ name: CI
 # The verification gate this repo never had. `desktop-release.yml` only fires
 # on tags and only builds installers, so until now nothing checked a PR.
 #
-# Scope note: the Playwright suite is NOT run here. Its config is already
-# CI-aware (it expects the job to start the frontend itself), but it also
-# needs the backend running with TEST_AUTH_ENABLED, which is a full-stack job
-# of its own. Vitest is what gates PRs today.
+# Three gates: vitest for the units, a pnpm-9 install to catch build-tooling
+# divergence, and Playwright against a real backend. The e2e job is the
+# full-stack one this file used to skip — it checks out the backend repo and
+# boots it with TEST_AUTH_ENABLED against a throwaway Postgres and Redis.
 
 on:
   # No branch filter on `pull_request` on purpose. A stacked PR targets its
@@ -92,3 +92,176 @@ jobs:
 
       - name: Install
         run: pnpm install --frozen-lockfile --prefer-offline
+
+  e2e:
+    name: End-to-end (real backend, Postgres and Redis)
+    runs-on: ubuntu-latest
+
+    # Playwright is the only layer that sees real layout. jsdom has none, so
+    # anything positional — the portalled row-actions menu flipping up, the
+    # clamp against the viewport edge — is invisible to vitest by construction.
+    # These specs existed for a while with nothing running them, which is worse
+    # than no specs: a suite nobody executes still reads as coverage.
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_DB: habit_sumaq_e2e
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: secret
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d habit_sumaq_e2e"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      # Not optional: Redis is the refresh-token store, and the auth fixture
+      # logs in through `POST /auth/test-login`, which hands back a refresh
+      # cookie. `ioredis` is configured with `lazyConnect`, so the backend
+      # boots fine without it and then fails at the first login instead.
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      # 32+ chars — the backend's Zod schema rejects TEST_AUTH_ENABLED=true
+      # with anything shorter. Throwaway value: it only ever authenticates
+      # against the throwaway database in this job.
+      TEST_AUTH_SECRET: ci-e2e-test-auth-secret-32-chars-min
+      E2E_BASE_URL: http://localhost:3000
+      E2E_API_URL: http://localhost:3010
+
+    steps:
+      - name: Checkout web
+        uses: actions/checkout@v4
+
+      # The backend is a separate PUBLIC repo, so no token is needed. Tracking
+      # `dev` rather than `master` is deliberate: web `dev` is meant to be
+      # compatible with backend `dev`, and pinning to `master` would let a
+      # contract change sit undetected until release day.
+      - name: Checkout backend
+        uses: actions/checkout@v4
+        with:
+          repository: Xiza73/habit-sumaq-backend
+          ref: dev
+          path: backend
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11
+
+      - name: Install Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install backend dependencies
+        working-directory: backend
+        run: pnpm install --frozen-lockfile
+
+      - name: Run migrations
+        working-directory: backend
+        run: pnpm migration:run
+        env:
+          NODE_ENV: test
+          DB_HOST: localhost
+          DB_PORT: 5432
+          DB_NAME: habit_sumaq_e2e
+          DB_USER: postgres
+          DB_PASSWORD: secret
+
+      - name: Build backend
+        working-directory: backend
+        run: pnpm build
+
+      # Logged to a file rather than the step's stdout: a backgrounded process
+      # writes into a shell that exits with the step, so a boot failure would
+      # otherwise show up only as an unexplained timeout further down.
+      - name: Start backend
+        working-directory: backend
+        run: node dist/main > /tmp/backend.log 2>&1 &
+        env:
+          NODE_ENV: test
+          PORT: 3010
+          APP_URL: http://localhost:3010
+          FRONTEND_URL: http://localhost:3000
+          DB_HOST: localhost
+          DB_PORT: 5432
+          DB_NAME: habit_sumaq_e2e
+          DB_USER: postgres
+          DB_PASSWORD: secret
+          REDIS_HOST: localhost
+          REDIS_PORT: 6379
+          JWT_ACCESS_SECRET: ci-e2e-jwt-access-secret-32-chars-min
+          JWT_REFRESH_SECRET: ci-e2e-jwt-refresh-secret-32-chars-min
+          # Never reachable — e2e authenticates through /auth/test-login, but
+          # the Zod schema requires the OAuth trio to be present regardless.
+          GOOGLE_CLIENT_ID: ci-e2e-unused
+          GOOGLE_CLIENT_SECRET: ci-e2e-unused
+          GOOGLE_CALLBACK_URL: http://localhost:3010/api/v1/auth/google/callback
+          TEST_AUTH_ENABLED: 'true'
+          TEST_AUTH_SECRET: ${{ env.TEST_AUTH_SECRET }}
+
+      - name: Install web dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build web
+        run: pnpm build
+        env:
+          NEXT_PUBLIC_API_URL: http://localhost:3010/api/v1
+          NEXT_PUBLIC_APP_URL: http://localhost:3000
+
+      - name: Start web
+        run: pnpm start > /tmp/web.log 2>&1 &
+        env:
+          PORT: 3000
+          NEXT_PUBLIC_API_URL: http://localhost:3010/api/v1
+          NEXT_PUBLIC_APP_URL: http://localhost:3000
+
+      # Poll both rather than sleeping a fixed number of seconds. A sleep that
+      # is long enough on a fast runner is a flake generator on a slow one.
+      - name: Wait for both servers
+        run: |
+          for i in $(seq 1 60); do
+            backend=$(curl -sf http://localhost:3010/api/v1/health >/dev/null && echo up || echo down)
+            web=$(curl -sf http://localhost:3000 >/dev/null && echo up || echo down)
+            if [ "$backend" = up ] && [ "$web" = up ]; then
+              echo "both up after ${i}s"
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "timed out — backend=$backend web=$web"
+          echo "--- backend log ---"; cat /tmp/backend.log || true
+          echo "--- web log ---"; cat /tmp/web.log || true
+          exit 1
+
+      - name: Install Playwright browser
+        run: pnpm test:e2e:install
+
+      - name: End-to-end tests
+        run: pnpm test:e2e
+
+      - name: Dump the server logs on failure
+        if: failure()
+        run: |
+          echo "--- backend log ---"; cat /tmp/backend.log || true
+          echo "--- web log ---"; cat /tmp/web.log || true
+
+      - name: Upload the Playwright report on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7

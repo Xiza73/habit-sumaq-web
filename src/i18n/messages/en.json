@@ -508,6 +508,11 @@
       "actualDailyAverageEmpty": "No full days yet to average",
       "originalDailyTarget": "Original daily target",
       "originalDailyTargetHint": "If you spent evenly across the whole month",
+      "recoveryIntro": "To get back to the opening daily figure:",
+      "recoveryZeroSpend": "{days, plural, one {# day spending nothing} other {# days spending nothing}}",
+      "recoveryOr": "or",
+      "recoveryHalfSpend": "{days, plural, one {# day at half} other {# days at half}}",
+      "recoveryUnreachable": "The opening daily figure is out of reach this month, even spending nothing for the rest of it.",
       "diffVsOriginalLabel": "Difference vs. plan",
       "diffVsOriginalBelow": "BELOW per day — on track 🎉",
       "diffVsOriginalAbove": "ABOVE per day — heads up",
@@ -866,7 +871,10 @@
       "serviceDueToday": {
         "title": "Due today: {name}",
         "subtitle": "Day {day} of the month",
-        "subtitleWithAmount": "Day {day} · {amount}"
+        "subtitleWithAmount": "Day {day} · {amount}",
+        "titleClosing": "Due this month: {name}",
+        "subtitleClosing": "{days, plural, one {Last day of the month} other {# days left in the month}}",
+        "subtitleClosingWithAmount": "{days, plural, one {Last day} other {# days left}} · {amount}"
       },
       "serviceOverdue": {
         "title": "Due today: {name}",

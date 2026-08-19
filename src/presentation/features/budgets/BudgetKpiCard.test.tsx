@@ -38,6 +38,8 @@ const activeBudget: BudgetWithKpi = {
   // 2000 / 16 = 125. Backend ships this; the new card recomputes locally
   // to support the locked-day model.
   dailyAllowance: 125,
+  initialDailyAllowance: 66.67,
+  recovery: { zeroSpendDays: 0, halfSpendDays: 0, recoverable: true },
   currentDate: '2026-04-15',
   movements: [],
   createdAt: '2026-04-01T00:00:00.000Z',
@@ -213,5 +215,41 @@ describe('BudgetKpiCard — simple layout (closed and future-month budgets)', ()
 
     expect(screen.queryByText(/disponible hoy/i)).not.toBeInTheDocument();
     expect(screen.getByText(/^disponible$/i)).toBeInTheDocument();
+  });
+});
+
+describe('BudgetKpiCard — recovery plan', () => {
+  it('says nothing when there is nothing to recover', () => {
+    renderCard({ recovery: { zeroSpendDays: 0, halfSpendDays: 0, recoverable: true } });
+    expect(screen.queryByText(/recuperar/i)).not.toBeInTheDocument();
+  });
+
+  it('states the zero-spend and half-spend days', () => {
+    renderCard({ recovery: { zeroSpendDays: 6, halfSpendDays: 12, recoverable: true } });
+
+    expect(screen.getByText(/6 días sin gastar/i)).toBeInTheDocument();
+    expect(screen.getByText(/12 días gastando la mitad/i)).toBeInTheDocument();
+  });
+
+  it('uses the singular for a single day', () => {
+    renderCard({ recovery: { zeroSpendDays: 1, halfSpendDays: 2, recoverable: true } });
+
+    expect(screen.getByText(/1 día sin gastar/i)).toBeInTheDocument();
+    expect(screen.queryByText(/1 días/i)).not.toBeInTheDocument();
+  });
+
+  it('says the month is unrecoverable instead of showing a count you cannot act on', () => {
+    // The backend sends a count even here, and rendering it would tell the
+    // user to hold out for more days than the month has left.
+    renderCard({ recovery: { zeroSpendDays: 21, halfSpendDays: 42, recoverable: false } });
+
+    expect(screen.getByText(/no se recupera este mes/i)).toBeInTheDocument();
+    expect(screen.queryByText(/21 días/i)).not.toBeInTheDocument();
+  });
+
+  it('renders nothing for a closed month', () => {
+    renderCard({ recovery: null, daysRemainingIncludingToday: 0 });
+    expect(screen.queryByText(/recuperar/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/no se recupera/i)).not.toBeInTheDocument();
   });
 });

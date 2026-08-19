@@ -13,7 +13,7 @@ import {
   Wallet,
 } from 'lucide-react';
 
-import { type BudgetWithKpi } from '@/core/domain/entities/budget';
+import { type BudgetRecoveryPlan, type BudgetWithKpi } from '@/core/domain/entities/budget';
 import { type Currency } from '@/core/domain/enums/currency.enum';
 
 import {
@@ -226,6 +226,13 @@ function ActiveBudgetBody({ budget, t }: ActiveBudgetBodyProps) {
         />
       </div>
 
+      {/* Deliberately NOT inside the collapsible breakdown below. It only
+          renders when there is something to recover, so it appears exactly
+          when it matters — and that is the moment it must not be one click
+          away. Behind the collapse it would be a statistic; here it is
+          guidance. */}
+      <RecoveryPlanLine recovery={budget.recovery} t={t} />
+
       {/* Collapsible breakdown — extra info for users who want to know
           "am I trending under or over my plan this month?". */}
       <button
@@ -326,6 +333,49 @@ function MonthSoFarSection({ budget, breakdown, history, t }: MonthSoFarSectionP
         )}
       </div>
     </section>
+  );
+}
+
+interface RecoveryPlanLineProps {
+  recovery: BudgetRecoveryPlan | null;
+  t: ReturnType<typeof useTranslations<'budgets'>>;
+}
+
+/**
+ * The answer to "and what do I do about it?", sitting right under the
+ * over/under-plan line that raises the question.
+ *
+ * Silent when there is nothing to recover — a zero-day plan is noise, and the
+ * section above already says the user is on or ahead of pace.
+ */
+function RecoveryPlanLine({ recovery, t }: RecoveryPlanLineProps) {
+  // Closed month: nothing left to recover into.
+  if (!recovery) return null;
+  if (recovery.zeroSpendDays <= 0) return null;
+
+  if (!recovery.recoverable) {
+    // The backend still sends a count here, but it meets or exceeds the days
+    // the month has left — telling the user to hold out longer than the month
+    // lasts is worse than telling them it is out of reach.
+    return (
+      <p className="mt-4 rounded-lg bg-muted/50 px-3 py-2 text-xs text-muted-foreground">
+        {t('kpi.recoveryUnreachable')}
+      </p>
+    );
+  }
+
+  return (
+    <p className="mt-4 rounded-lg bg-muted/50 px-3 py-2 text-xs text-muted-foreground">
+      {t('kpi.recoveryIntro')}{' '}
+      <strong className="font-medium text-foreground">
+        {t('kpi.recoveryZeroSpend', { days: recovery.zeroSpendDays })}
+      </strong>{' '}
+      {t('kpi.recoveryOr')}{' '}
+      <strong className="font-medium text-foreground">
+        {t('kpi.recoveryHalfSpend', { days: recovery.halfSpendDays })}
+      </strong>
+      .
+    </p>
   );
 }
 

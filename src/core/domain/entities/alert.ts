@@ -34,7 +34,18 @@ export interface AlertPayloads {
   'service-due-today': {
     serviceId: string;
     serviceName: string;
-    dueDay: number;
+    /**
+     * The user's approximate due day, or `null` when they never set one. In
+     * the null case the backend opens the alert for the closing days of the
+     * period instead, and there is no day to render.
+     */
+    dueDay: number | null;
+    /**
+     * Days left in the period INCLUDING today. Only set when `dueDay` is null
+     * — with a due day the copy uses the day. Computed server-side: the user's
+     * timezone lives there, so the client never derives "what day is it".
+     */
+    daysLeftInPeriod: number | null;
     currency: string;
     estimatedAmount: number | null;
   };

@@ -95,6 +95,52 @@ describe('AlertItem', () => {
       });
     });
 
+    describe('service-due-today with no approximate day', () => {
+      // The backend opens the alert for the last 3 days of the period when the
+      // service has no `dueDay`. There is no day to print, so "Día {day} del
+      // mes" would render "Día 0" — these get their own copy.
+      function closingAlert(daysLeftInPeriod: number, estimatedAmount: number | null = null) {
+        return makeAlert({
+          type: 'service-due-today',
+          payload: {
+            serviceName: 'Luz',
+            dueDay: null,
+            daysLeftInPeriod,
+            currency: 'PEN',
+            estimatedAmount,
+          },
+        });
+      }
+
+      it('never prints a day number', () => {
+        renderItem(closingAlert(3));
+        expect(screen.queryByText(/Día/)).not.toBeInTheDocument();
+        expect(screen.queryByText(/Día 0/)).not.toBeInTheDocument();
+      });
+
+      it('says it is due this month, not today', () => {
+        renderItem(closingAlert(3));
+        expect(screen.getByText(/Vence este mes: Luz/)).toBeInTheDocument();
+      });
+
+      it('counts the days left', () => {
+        renderItem(closingAlert(3));
+        expect(screen.getByText(/Quedan 3 días/)).toBeInTheDocument();
+      });
+
+      it('says "último día" on the last one rather than "quedan 1 días"', () => {
+        renderItem(closingAlert(1));
+        expect(screen.getByText(/Último día del mes/)).toBeInTheDocument();
+        expect(screen.queryByText(/Quedan 1/)).not.toBeInTheDocument();
+      });
+
+      it('appends the estimated amount when there is one', () => {
+        renderItem(closingAlert(2, 45.9));
+        expect(screen.getByText(/Quedan 2 días/)).toBeInTheDocument();
+        expect(screen.getByText(/45[.,]9/)).toBeInTheDocument();
+      });
+    });
+
     it('renders service-due-today with payload (name + day + amount)', () => {
       renderItem(
         makeAlert({
