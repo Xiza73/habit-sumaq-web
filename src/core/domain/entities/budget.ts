@@ -32,16 +32,21 @@ export interface Budget {
  * it. A6-B will drop it from the response entirely.
  */
 export interface BudgetRecoveryPlan {
-  /** Whole days spending nothing. */
-  zeroSpendDays: number;
-  /** Whole days spending half the opening allowance — always 2x the above. */
-  halfSpendDays: number;
   /**
-   * False when even spending nothing for the rest of the month falls short.
-   * Render "no recuperable este mes" rather than a count the user cannot act
-   * on — `zeroSpendDays` can meet or exceed the days that are actually left.
+   * Whole days spending nothing, or `null` when even total abstinence for the
+   * rest of the month falls short.
+   *
+   * `0` and `null` are different answers: `0` means there is nothing to
+   * recover, `null` means it cannot be done this month.
    */
-  recoverable: boolean;
+  zeroSpendDays: number | null;
+  /**
+   * Whole days at half the opening allowance — twice the zero-spend count —
+   * or `null` when that does not FIT in the days the month has left.
+   *
+   * Bounded independently: being twice as long, it runs out of month first.
+   */
+  halfSpendDays: number | null;
 }
 
 export interface BudgetWithKpi extends Budget {

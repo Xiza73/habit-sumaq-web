@@ -1069,6 +1069,8 @@
       "upcoming": "Próximo",
       "undated": "Sin fecha",
       "done": "Hecho"
-    }
+    },
+    "invalidDate": "La fecha no es válida",
+    "invalidTime": "La hora no es válida"
   }
 }

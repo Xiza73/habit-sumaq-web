@@ -1069,6 +1069,8 @@
       "upcoming": "Upcoming",
       "undated": "No date",
       "done": "Done"
-    }
+    },
+    "invalidDate": "That date is not valid",
+    "invalidTime": "That time is not valid"
   }
 }
