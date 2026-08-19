@@ -63,9 +63,34 @@ pnpm build        # Build de producción
 pnpm start        # Servidor de producción (requiere build previo)
 pnpm lint         # ESLint sobre todo el repo
 pnpm test         # Tests unitarios (Vitest)
-pnpm test:e2e     # Tests end-to-end (Playwright)
+pnpm test:e2e     # Tests end-to-end (Playwright) — ver abajo
 pnpm tsc --noEmit # Verificar tipos sin emitir
 ```
+
+### End-to-end
+
+Playwright es la única capa que ve layout real: jsdom no tiene motor de
+layout, así que todo lo posicional (el menú de acciones portaleado, el flip
+hacia arriba, el clamp contra el borde) es invisible para Vitest por
+construcción.
+
+La suite no usa Google OAuth — se autentica contra `POST /auth/test-login`,
+que el backend expone solo con `TEST_AUTH_ENABLED=true` (el schema de Zod lo
+rechaza en `NODE_ENV=production`).
+
+Para correrla en local hacen falta dos terminales:
+
+```bash
+TEST_AUTH_ENABLED=true TEST_AUTH_SECRET=<32+chars> pnpm start:dev   # backend
+```
+
+```bash
+TEST_AUTH_SECRET=<el mismo> pnpm test:e2e                           # web
+```
+
+En CI corre sola: el job `e2e` de [ci.yml](.github/workflows/ci.yml) clona el
+repo del backend, lo levanta contra un Postgres y un Redis descartables, y
+corre la suite en cada PR.
 
 ## Estructura de carpetas
 
