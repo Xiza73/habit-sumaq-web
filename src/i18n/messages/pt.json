@@ -857,7 +857,10 @@
       "serviceDueToday": {
         "title": "Vence hoje: {name}",
         "subtitle": "Dia {day} do mês",
-        "subtitleWithAmount": "Dia {day} · {amount}"
+        "subtitleWithAmount": "Dia {day} · {amount}",
+        "titleClosing": "Vence este mês: {name}",
+        "subtitleClosing": "{days, plural, one {Último dia do mês} other {Faltam # dias do mês}}",
+        "subtitleClosingWithAmount": "{days, plural, one {Último dia} other {Faltam # dias}} · {amount}"
       },
       "serviceOverdue": {
         "title": "Toca hoje: {name}",

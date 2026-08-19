@@ -857,7 +857,10 @@
       "serviceDueToday": {
         "title": "Due today: {name}",
         "subtitle": "Day {day} of the month",
-        "subtitleWithAmount": "Day {day} · {amount}"
+        "subtitleWithAmount": "Day {day} · {amount}",
+        "titleClosing": "Due this month: {name}",
+        "subtitleClosing": "{days, plural, one {Last day of the month} other {# days left in the month}}",
+        "subtitleClosingWithAmount": "{days, plural, one {Last day} other {# days left}} · {amount}"
       },
       "serviceOverdue": {
         "title": "Due today: {name}",
