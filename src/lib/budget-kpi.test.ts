@@ -32,6 +32,8 @@ function makeBudget(overrides: Partial<BudgetWithKpi> = {}): BudgetWithKpi {
     remaining: 1000,
     daysRemainingIncludingToday: 14,
     dailyAllowance: 35.71,
+    initialDailyAllowance: 48.39,
+    recovery: { zeroSpendDays: 0, halfSpendDays: 0, recoverable: true },
     currentDate: '2026-05-18',
     movements: [],
     createdAt: '2026-05-01T00:00:00.000Z',

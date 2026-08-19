@@ -31,6 +31,19 @@ export interface Budget {
  * stays for backwards-compat with the legacy API shape but no consumer reads
  * it. A6-B will drop it from the response entirely.
  */
+export interface BudgetRecoveryPlan {
+  /** Whole days spending nothing. */
+  zeroSpendDays: number;
+  /** Whole days spending half the opening allowance — always 2x the above. */
+  halfSpendDays: number;
+  /**
+   * False when even spending nothing for the rest of the month falls short.
+   * Render "no recuperable este mes" rather than a count the user cannot act
+   * on — `zeroSpendDays` can meet or exceed the days that are actually left.
+   */
+  recoverable: boolean;
+}
+
 export interface BudgetWithKpi extends Budget {
   spent: number;
   remaining: number;
@@ -45,6 +58,17 @@ export interface BudgetWithKpi extends Budget {
    * when the user has overspent. Null when the budget's month is closed.
    */
   dailyAllowance: number | null;
+  /**
+   * `amount / daysInMonth` — the allowance the month opened with, and the bar
+   * `recovery` aims at. Null when the budget's month is closed.
+   */
+  initialDailyAllowance: number | null;
+  /**
+   * How many days of restraint bring `dailyAllowance` back up to
+   * `initialDailyAllowance`. Null when the month is closed — there is nothing
+   * left to recover into.
+   */
+  recovery: BudgetRecoveryPlan | null;
   /** `YYYY-MM-DD` — today's date in the client timezone. */
   currentDate: string;
   movements: BudgetMovement[];
