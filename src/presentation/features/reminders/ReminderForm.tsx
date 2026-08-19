@@ -1,6 +1,6 @@
 'use client';
 
-import { useForm, useWatch } from 'react-hook-form';
+import { Controller, useForm, useWatch } from 'react-hook-form';
 import { useTranslations } from 'next-intl';
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -16,8 +16,11 @@ import {
 
 import { ApiError } from '@/infrastructure/api/api-error';
 
+import { DatePicker } from '@/presentation/components/ui/DatePicker';
+import { FieldGrid } from '@/presentation/components/ui/FieldGrid';
 import { Input } from '@/presentation/components/ui/Input';
 import { Modal } from '@/presentation/components/ui/Modal';
+import { TimePicker } from '@/presentation/components/ui/TimePicker';
 
 interface ReminderFormProps {
   open: boolean;
@@ -107,27 +110,60 @@ function Body({ reminder, onClose }: { reminder: Reminder | null; onClose: () =>
           )}
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
-          <div className="space-y-1.5">
-            <label htmlFor="reminder-date" className="text-sm font-medium">
-              {t('dateLabel')}
-            </label>
-            <Input id="reminder-date" type="date" {...form.register('remindDate')} />
-          </div>
-
-          <div className="space-y-1.5">
-            <label htmlFor="reminder-time" className="text-sm font-medium">
-              {t('timeLabel')}
-            </label>
-            <Input
-              id="reminder-time"
-              type="time"
-              disabled={!hasDate}
-              {...form.register('remindTime')}
+        <FieldGrid columns={2}>
+          <FieldGrid.Field
+            label={t('dateLabel')}
+            htmlFor="reminder-date"
+            error={form.formState.errors.remindDate && t('invalidDate')}
+          >
+            <Controller
+              control={form.control}
+              name="remindDate"
+              render={({ field }) => (
+                <DatePicker
+                  id="reminder-date"
+                  value={field.value ?? ''}
+                  onChange={(next) => {
+                    field.onChange(next);
+                    // Clearing the date clears the hour with it. Without this
+                    // the time input kept showing a value it could no longer
+                    // belong to, and only the submit mapping dropped it — so
+                    // the form said one thing and saved another.
+                    if (!next) form.setValue('remindTime', '');
+                  }}
+                />
+              )}
             />
-            {!hasDate && <p className="text-xs text-muted-foreground">{t('timeNeedsDate')}</p>}
-          </div>
-        </div>
+          </FieldGrid.Field>
+
+          <FieldGrid.Field
+            label={t('timeLabel')}
+            htmlFor="reminder-time"
+            // Rendering this is not cosmetic: `remindTime` carries the
+            // schema's time-without-date refinement, and without a visible
+            // error a blocked submit looks like a dead Save button.
+            error={
+              form.formState.errors.remindTime &&
+              (form.formState.errors.remindTime.message === 'time_without_date'
+                ? t('timeNeedsDate')
+                : t('invalidTime'))
+            }
+            hint={hasDate ? undefined : t('timeNeedsDate')}
+          >
+            <Controller
+              control={form.control}
+              name="remindTime"
+              render={({ field }) => (
+                <TimePicker
+                  id="reminder-time"
+                  value={field.value ?? ''}
+                  onChange={field.onChange}
+                  disabled={!hasDate}
+                />
+              )}
+            />
+          </FieldGrid.Field>
+        </FieldGrid>
 
         <div className="space-y-1.5">
           <label htmlFor="reminder-notes" className="text-sm font-medium">

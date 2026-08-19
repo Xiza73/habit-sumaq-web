@@ -88,6 +88,43 @@ describe('HabitHeatmap', () => {
     expect(filledRects[0].getAttribute('style') ?? '').toMatch(/var\(--primary\)/);
   });
 
+  it('colours a day complete against ITS OWN target, not the habit default', () => {
+    // The reported bug: yesterday was finished under a target of 2, the habit
+    // default is 8, and the cell rendered as partial. The per-cell denominator
+    // is the log's own `targetCount`.
+    const logs = [buildLog({ date: '2026-04-15', count: 2, targetCount: 2 })];
+    const { container } = renderHeatmap(logs, 8, '#FF0000');
+
+    const filled = Array.from(container.querySelectorAll<SVGRectElement>('svg rect')).find((r) =>
+      r.getAttribute('style')?.includes('fill'),
+    );
+    // Level 4 (target met) is full opacity. Measured against 8 it would be
+    // level 1 at 0.2, which is what the bug looked like on screen.
+    expect(filled?.getAttribute('style')).toMatch(/opacity:\s*1\b/);
+  });
+
+  it('still colours a day partial when it fell short of its own target', () => {
+    const logs = [buildLog({ date: '2026-04-15', count: 2, targetCount: 8 })];
+    const { container } = renderHeatmap(logs, 8, '#FF0000');
+
+    const filled = Array.from(container.querySelectorAll<SVGRectElement>('svg rect')).find((r) =>
+      r.getAttribute('style')?.includes('fill'),
+    );
+    expect(filled?.getAttribute('style')).not.toMatch(/opacity:\s*1\b/);
+  });
+
+  it('reports the day own target in the tooltip', () => {
+    const logs = [buildLog({ date: '2026-04-15', count: 2, targetCount: 2 })];
+    const { container } = renderHeatmap(logs, 8);
+
+    const filled = Array.from(container.querySelectorAll<SVGRectElement>('svg rect')).find((r) =>
+      r.getAttribute('style')?.includes('fill'),
+    );
+    fireEvent.mouseEnter(filled!);
+
+    expect(screen.getByText(/·\s*2\/2$/)).toBeInTheDocument();
+  });
+
   it('shows tooltip on cell hover with date and count', () => {
     const logs = [buildLog({ date: '2026-04-15', count: 3 })];
     const { container } = renderHeatmap(logs, 8);

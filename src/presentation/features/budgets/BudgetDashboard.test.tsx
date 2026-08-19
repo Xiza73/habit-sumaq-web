@@ -71,7 +71,7 @@ const populatedBudget: BudgetWithKpi = {
   daysRemainingIncludingToday: 16,
   dailyAllowance: 87.5,
   initialDailyAllowance: 66.67,
-  recovery: { zeroSpendDays: 0, halfSpendDays: 0, recoverable: true },
+  recovery: { zeroSpendDays: 0, halfSpendDays: 0 },
   currentDate: '2026-04-15',
   movements: [],
   createdAt: '2026-04-01T00:00:00.000Z',

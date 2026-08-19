@@ -351,12 +351,16 @@ interface RecoveryPlanLineProps {
 function RecoveryPlanLine({ recovery, t }: RecoveryPlanLineProps) {
   // Closed month: nothing left to recover into.
   if (!recovery) return null;
-  if (recovery.zeroSpendDays <= 0) return null;
 
-  if (!recovery.recoverable) {
-    // The backend still sends a count here, but it meets or exceeds the days
-    // the month has left — telling the user to hold out longer than the month
-    // lasts is worse than telling them it is out of reach.
+  const { zeroSpendDays, halfSpendDays } = recovery;
+
+  // 0 means there is nothing to recover — the user is on or ahead of pace, and
+  // a zero-day plan is noise. That is NOT the same as null.
+  if (zeroSpendDays === 0) return null;
+
+  // Neither plan fits in the days the month has left. Say so, rather than
+  // print a count that asks for more days than the month contains.
+  if (zeroSpendDays === null) {
     return (
       <p className="mt-4 rounded-lg bg-muted/50 px-3 py-2 text-xs text-muted-foreground">
         {t('kpi.recoveryUnreachable')}
@@ -368,12 +372,20 @@ function RecoveryPlanLine({ recovery, t }: RecoveryPlanLineProps) {
     <p className="mt-4 rounded-lg bg-muted/50 px-3 py-2 text-xs text-muted-foreground">
       {t('kpi.recoveryIntro')}{' '}
       <strong className="font-medium text-foreground">
-        {t('kpi.recoveryZeroSpend', { days: recovery.zeroSpendDays })}
-      </strong>{' '}
-      {t('kpi.recoveryOr')}{' '}
-      <strong className="font-medium text-foreground">
-        {t('kpi.recoveryHalfSpend', { days: recovery.halfSpendDays })}
+        {t('kpi.recoveryZeroSpend', { days: zeroSpendDays })}
       </strong>
+      {/* The half-spend plan is twice as long, so it can fall outside the
+          month while the zero-spend one still fits. When it does, the "o ..."
+          clause is dropped entirely instead of offering an impossible one. */}
+      {halfSpendDays !== null && (
+        <>
+          {' '}
+          {t('kpi.recoveryOr')}{' '}
+          <strong className="font-medium text-foreground">
+            {t('kpi.recoveryHalfSpend', { days: halfSpendDays })}
+          </strong>
+        </>
+      )}
       .
     </p>
   );

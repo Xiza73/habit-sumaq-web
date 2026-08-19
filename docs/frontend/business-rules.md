@@ -156,6 +156,22 @@ Reglas:
 - **Barra de progreso:** usar `Math.min(periodCount / periodTarget, 1)` para el cálculo visual.
 - **Check-in habilitado:** permitir check-in solo si `periodCount < periodTarget` (para WEEKLY) o `todayLog.count < periodTarget` (para DAILY).
 
+### Plan de recuperación del budget
+
+`recovery.zeroSpendDays` y `recovery.halfSpendDays` vienen en **`null`** cuando ese plan no
+entra en los días que quedan del mes. Se validan por separado: el de la mitad es el doble de
+largo, así que se queda sin mes antes.
+
+| Estado | Qué renderizar |
+| ------ | -------------- |
+| `zeroSpendDays: 0` | **Nada.** Estás en ritmo o adelantado; un plan de 0 días es ruido |
+| ambos con número | "N días sin gastar **o** 2N días gastando la mitad" |
+| solo `zeroSpendDays` | Solo esa cláusula — la de "o ... la mitad" se omite entera |
+| ambos `null` | "El diario inicial ya no se recupera este mes" |
+| `recovery: null` | Mes cerrado — nada |
+
+Ojo: `0` y `null` son respuestas distintas y no se pueden colapsar.
+
 ### Objetivo por día (`periodTarget`)
 
 El denominador que se renderiza es **siempre `periodTarget`**, nunca `habit.targetCount`.
@@ -164,7 +180,7 @@ El denominador que se renderiza es **siempre `periodTarget`**, nunca `habit.targ
 - **WEEKLY:** `periodTarget` es el `targetCount` del hábito — el objetivo pertenece a la semana, no a un día.
 - **Edición:** el denominador es editable inline (stepper) solo para hábitos **DAILY no archivados**. Ajustarlo re-envía el log de ese día con el count actual y el nuevo `targetCount`, por lo que se puede corregir un día pasado sin re-estampar el resto.
 - **Bajar el objetivo trunca el count:** el backend aplica `Math.min(count, targetCount)`. La UI espeja ese cap en el optimistic update.
-- **Heatmap:** cada celda se colorea contra el `targetCount` de su propio log; el prop `fallbackTarget` solo cubre días sin log.
+- **Heatmap:** cada celda se colorea contra el `targetCount` de su propio log; el prop `fallbackTarget` solo cubre días sin log. Esto depende de que `HabitLogResponseDto` exponga `targetCount` — sin ese campo en el wire, todas las celdas caen al default del hábito y el pasado se repinta.
 
 ### Vista diaria (`GET /habits/daily`)
 
