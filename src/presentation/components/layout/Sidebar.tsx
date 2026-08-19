@@ -8,6 +8,7 @@ import { useTranslations } from 'next-intl';
 
 import {
   BarChart3,
+  Bell,
   CheckSquare,
   FolderTree,
   HandCoins,
@@ -63,6 +64,7 @@ const NAV_SECTIONS: NavSection[] = [
       },
       { href: '/tasks', labelKey: 'tasks', icon: ListChecks, favoriteKey: 'tasks' },
       { href: '/chores', labelKey: 'chores', icon: Repeat2, favoriteKey: 'chores' },
+      { href: '/reminders', labelKey: 'reminders', icon: Bell, favoriteKey: 'reminders' },
     ],
   },
   {

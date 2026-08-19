@@ -110,10 +110,31 @@ export function HabitList() {
   function handleCheckIn(habit: HabitWithStats) {
     if (habit.periodCompleted) return;
     const currentCount = habit.todayLog?.count ?? 0;
-    if (currentCount >= habit.targetCount) return;
+    if (currentCount >= habit.periodTarget) return;
 
     logMutation.mutate(
       { habitId: habit.id, data: { date: selectedDate, count: currentCount + 1 } },
+      {
+        onError: (error) => {
+          if (error instanceof ApiError && error.code && tErrors.has(error.code)) {
+            toast.error(tErrors(error.code as 'HAB_003'));
+          } else {
+            toast.error(tErrors('generic'));
+          }
+        },
+      },
+    );
+  }
+
+  function handleTargetChange(habit: HabitWithStats, targetCount: number) {
+    // Re-send the day's current count alongside the new target. The server
+    // snapshots the target on THAT day's log, so past days keep theirs and
+    // back-filling a forgotten day never re-stamps it with today's default.
+    logMutation.mutate(
+      {
+        habitId: habit.id,
+        data: { date: selectedDate, count: habit.todayLog?.count ?? 0, targetCount },
+      },
       {
         onError: (error) => {
           if (error instanceof ApiError && error.code && tErrors.has(error.code)) {
@@ -296,6 +317,8 @@ export function HabitList() {
           onEdit={handleEdit}
           onArchive={handleArchive}
           onDelete={setDeletingHabit}
+          onTargetChange={handleTargetChange}
+          targetPending={logMutation.isPending}
         />
       ) : (
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -305,6 +328,8 @@ export function HabitList() {
               habit={habit}
               onCheckIn={handleCheckIn}
               onUndo={handleUndo}
+              onTargetChange={handleTargetChange}
+              targetPending={logMutation.isPending}
               onEdit={handleEdit}
               onArchive={handleArchive}
               onDelete={setDeletingHabit}

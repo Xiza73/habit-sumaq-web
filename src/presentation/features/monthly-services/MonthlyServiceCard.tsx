@@ -35,6 +35,7 @@ import { toSettleableDebtLoan } from '@/lib/monthly-service-linked-debt';
 import {
   canPayMonthlyService,
   MONTHLY_SERVICE_STATUS_CLASSES,
+  monthlyServiceStatusLabel,
   resolveMonthlyServiceStatus,
 } from '@/lib/monthly-service-status';
 import { cn } from '@/lib/utils';
@@ -131,16 +132,7 @@ export function MonthlyServiceCard({
                 : MONTHLY_SERVICE_STATUS_CLASSES[status],
             )}
           >
-            {isArchived
-              ? t('archived')
-              : status === 'paid'
-                ? t('status.paid')
-                : status === 'pending'
-                  ? // Normal pending (nextDuePeriod === current month) keeps it
-                    // short — the month is already shown in the summary header.
-                    t('status.pending')
-                  : // Overdue surfaces the period the user missed.
-                    t('status.overdue', { period: periodLabel })}
+            {isArchived ? t('archived') : monthlyServiceStatusLabel(status, t, periodLabel)}
           </span>
         </div>
 

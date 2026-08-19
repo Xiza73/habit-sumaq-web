@@ -27,6 +27,7 @@ describe('getAlertHref', () => {
     'budget-unlogged': '/budgets',
     'chore-overdue': '/chores',
     'chore-due-today': '/chores',
+    'reminder-due': '/reminders',
   };
 
   it.each(ALERT_TYPES)('maps "%s" to its in-app route', (type) => {

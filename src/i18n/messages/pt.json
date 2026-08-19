@@ -182,7 +182,15 @@
     "DBT_009": "Você precisa modificar ao menos um campo.",
     "DBT_010": "O valor excede o saldo da dívida.",
     "DBT_011": "Não há operações pendentes desse tipo com esta pessoa.",
-    "generic": "Ocorreu um erro inesperado. Tente novamente."
+    "generic": "Ocorreu um erro inesperado. Tente novamente.",
+    "RMDR_001": "Lembrete não encontrado.",
+    "RMDR_002": "Você não tem acesso a este lembrete.",
+    "RMDR_003": "O título é obrigatório.",
+    "RMDR_004": "O título é muito longo.",
+    "RMDR_005": "Os detalhes são muito longos.",
+    "RMDR_006": "O formato da data não é válido.",
+    "RMDR_007": "O formato da hora não é válido.",
+    "RMDR_008": "Não é possível definir uma hora sem uma data."
   },
   "habits": {
     "timer": {
@@ -224,6 +232,11 @@
     "notCompleted": "Não concluído",
     "checkIn": "Registrar",
     "undoCheckIn": "Desfazer registro",
+    "dayTarget": {
+      "edit": "Meta do dia",
+      "increase": "Aumentar a meta do dia",
+      "decrease": "Reduzir a meta do dia"
+    },
     "viewDetail": "Ver hábito",
     "frequencies": {
       "DAILY": "Diário",
@@ -310,6 +323,7 @@
     },
     "status": {
       "paid": "Em dia",
+      "today": "Toca hoje",
       "pending": "Pendente",
       "overdue": "Atrasado · {period}"
     },
@@ -459,6 +473,7 @@
     "priorities": "Prioridades",
     "tasks": "Tarefas",
     "chores": "Tarefas",
+    "reminders": "Lembretes",
     "reports": "Relatórios",
     "settings": "Configurações"
   },
@@ -493,6 +508,11 @@
       "actualDailyAverageEmpty": "Ainda não há dias completos para calcular a média",
       "originalDailyTarget": "Meta diária original",
       "originalDailyTargetHint": "Se gastasse igual o mês todo",
+      "recoveryIntro": "Para voltar ao diário inicial:",
+      "recoveryZeroSpend": "{days, plural, one {# dia sem gastar} other {# dias sem gastar}}",
+      "recoveryOr": "ou",
+      "recoveryHalfSpend": "{days, plural, one {# dia gastando metade} other {# dias gastando metade}}",
+      "recoveryUnreachable": "O diário inicial já não se recupera este mês, nem gastando zero o resto dos dias.",
       "diffVsOriginalLabel": "Diferença vs. seu plano",
       "diffVsOriginalBelow": "ABAIXO por dia — no caminho 🎉",
       "diffVsOriginalAbove": "ACIMA por dia — atenção",
@@ -851,11 +871,14 @@
       "serviceDueToday": {
         "title": "Vence hoje: {name}",
         "subtitle": "Dia {day} do mês",
-        "subtitleWithAmount": "Dia {day} · {amount}"
+        "subtitleWithAmount": "Dia {day} · {amount}",
+        "titleClosing": "Vence este mês: {name}",
+        "subtitleClosing": "{days, plural, one {Último dia do mês} other {Faltam # dias do mês}}",
+        "subtitleClosingWithAmount": "{days, plural, one {Último dia} other {Faltam # dias}} · {amount}"
       },
       "serviceOverdue": {
-        "title": "Atrasado: {name}",
-        "subtitle": "Pendente desde {period}"
+        "title": "Toca hoje: {name}",
+        "subtitle": "Atrasado desde {period}"
       },
       "habitsMidday": {
         "title": "{count, plural, one {Falta # hábito} other {Faltam # hábitos}}",
@@ -867,12 +890,18 @@
         "subtitle": "Já são {days} dias sem registros no seu orçamento {currency}"
       },
       "choreOverdue": {
-        "title": "Atrasada: {name}",
-        "subtitle": "Vencia em {date}"
+        "title": "Toca hoje: {name}",
+        "subtitle": "Atrasada há {days, plural, one {# dia} other {# dias}}"
       },
       "choreDueToday": {
         "title": "Toca hoje: {name}",
         "subtitle": "Está agendada para hoje"
+      },
+      "reminderDue": {
+        "title": "Lembrete: {title}",
+        "subtitleToday": "É hoje",
+        "subtitleAt": "É hoje às {time}",
+        "subtitleOverdue": "{days, plural, one {Pendente há # dia} other {Pendente há # dias}}"
       }
     }
   },
@@ -1017,5 +1046,31 @@
     "label": "Visualização",
     "cards": "Cartões",
     "table": "Tabela"
+  },
+  "reminders": {
+    "title": "Lembretes",
+    "createReminder": "Novo lembrete",
+    "editReminder": "Editar lembrete",
+    "deleteReminder": "Excluir lembrete",
+    "deleteConfirm": "Excluir este lembrete?",
+    "emptyState": "Sem lembretes. Anote algo que você não quer esquecer.",
+    "titleLabel": "O que lembrar",
+    "titlePlaceholder": "Ligar para o dentista",
+    "notesLabel": "Detalhes (opcional)",
+    "notesPlaceholder": "Perguntar sobre o orçamento da limpeza",
+    "dateLabel": "Data (opcional)",
+    "timeLabel": "Hora (opcional)",
+    "timeNeedsDate": "Escolha uma data para poder definir a hora",
+    "markDone": "Marcar como feito",
+    "markPending": "Marcar como pendente",
+    "status": {
+      "overdue": "Atrasado",
+      "today": "Hoje",
+      "upcoming": "Próximo",
+      "undated": "Sem data",
+      "done": "Feito"
+    },
+    "invalidDate": "A data não é válida",
+    "invalidTime": "A hora não é válida"
   }
 }

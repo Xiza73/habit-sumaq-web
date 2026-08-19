@@ -23,6 +23,8 @@ import { getHabitProgress } from '@/lib/habit-progress';
 import { getStreakStyle } from '@/lib/streak-styles';
 import { cn } from '@/lib/utils';
 
+import { DayTargetStepper } from './DayTargetStepper';
+
 interface HabitCardProps {
   habit: HabitWithStats;
   onCheckIn: (habit: HabitWithStats) => void;
@@ -30,6 +32,12 @@ interface HabitCardProps {
   onEdit: (habit: HabitWithStats) => void;
   onArchive: (habit: HabitWithStats) => void;
   onDelete: (habit: HabitWithStats) => void;
+  /**
+   * Sets the target for the day being shown. Omitted, the denominator renders
+   * as plain text — the list passes it, read-only surfaces do not.
+   */
+  onTargetChange?: (habit: HabitWithStats, targetCount: number) => void;
+  targetPending?: boolean;
 }
 
 export function HabitCard({
@@ -39,6 +47,8 @@ export function HabitCard({
   onEdit,
   onArchive,
   onDelete,
+  onTargetChange,
+  targetPending = false,
 }: HabitCardProps) {
   const t = useTranslations('habits');
   const tCommon = useTranslations('common');
@@ -145,8 +155,19 @@ export function HabitCard({
             <Flame className={cn('size-3.5', streakStyle.flameClass)} />
             <span className="tabular-nums">{habit.currentStreak}</span>
           </div>
-          <span className="text-xs tabular-nums text-muted-foreground">
-            {periodCount}/{habit.targetCount}
+          <span
+            data-testid="habit-progress"
+            className="flex items-center text-xs tabular-nums text-muted-foreground"
+          >
+            {periodCount}/
+            <DayTargetStepper
+              value={habit.periodTarget}
+              onChange={(next) => onTargetChange?.(habit, next)}
+              // WEEKLY targets belong to the week, not to a day, so they are
+              // only editable through the habit form.
+              editable={!!onTargetChange && !habit.isArchived && habit.frequency === 'DAILY'}
+              pending={targetPending}
+            />
           </span>
         </div>
 

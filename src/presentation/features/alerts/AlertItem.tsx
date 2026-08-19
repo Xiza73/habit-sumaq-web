@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 
 import {
   AlertTriangle,
+  Bell,
   CalendarClock,
   CheckCircle2,
   Receipt,
@@ -15,17 +16,15 @@ import {
 } from 'lucide-react';
 
 import { useDismissAlert } from '@/core/application/hooks/use-alerts';
-import { useDateFormat } from '@/core/application/hooks/use-user-settings';
 import {
   type Alert,
   type AlertSeverity,
   type AlertType,
   getAlertHref,
 } from '@/core/domain/entities/alert';
-import { type DateFormat } from '@/core/domain/enums/common.enums';
 import { type Currency } from '@/core/domain/enums/currency.enum';
 
-import { formatCurrency, formatDate } from '@/lib/format';
+import { formatCurrency } from '@/lib/format';
 import { cn } from '@/lib/utils';
 
 interface AlertItemProps {
@@ -52,7 +51,6 @@ interface AlertItemProps {
 export function AlertItem({ alert, onNavigate }: AlertItemProps) {
   const t = useTranslations('alerts.items');
   const tCommon = useTranslations('common');
-  const dateFormat = useDateFormat();
   const router = useRouter();
   const dismiss = useDismissAlert();
 
@@ -97,7 +95,7 @@ export function AlertItem({ alert, onNavigate }: AlertItemProps) {
       <div className="min-w-0 flex-1">
         <p className="text-sm font-medium leading-snug text-foreground">{renderTitle(alert, t)}</p>
         <p className="mt-0.5 text-xs leading-snug text-muted-foreground">
-          {renderSubtitle(alert, t, dateFormat)}
+          {renderSubtitle(alert, t)}
         </p>
       </div>
 
@@ -137,6 +135,8 @@ function AlertIcon({ type }: { type: AlertType }) {
     case 'chore-due-today':
       // Not the warning triangle: due today is a heads-up, not a miss.
       return <Repeat2 className="size-5" aria-hidden="true" />;
+    case 'reminder-due':
+      return <Bell className="size-5" aria-hidden="true" />;
     default:
       return <CheckCircle2 className="size-5" aria-hidden="true" />;
   }
@@ -146,10 +146,16 @@ type Translator = ReturnType<typeof useTranslations>;
 
 function renderTitle(alert: Alert, t: Translator): string {
   switch (alert.type) {
-    case 'service-due-today':
-      return t('serviceDueToday.title', {
-        name: stringOf(alert.payload.serviceName) ?? '',
-      });
+    case 'service-due-today': {
+      const name = stringOf(alert.payload.serviceName) ?? '';
+      // No approximate day means the alert is the closing-window one, which
+      // says the service is due THIS MONTH — "vence hoy" would be a lie on
+      // the first two days of the window.
+      const hasDueDay = numberOf(alert.payload.dueDay) != null;
+      return hasDueDay
+        ? t('serviceDueToday.title', { name })
+        : t('serviceDueToday.titleClosing', { name });
+    }
     case 'service-overdue':
       return t('serviceOverdue.title', {
         name: stringOf(alert.payload.serviceName) ?? '',
@@ -161,6 +167,10 @@ function renderTitle(alert: Alert, t: Translator): string {
     case 'budget-unlogged':
       return t('budgetUnlogged.title');
     case 'chore-overdue':
+      // Deliberately the same "due today" phrasing as `chore-due-today`. A
+      // chore that is behind is still something to do TODAY, and leading with
+      // "Atrasada" made the popover read as a list of failures. The severity
+      // (warning vs info) and the subtitle carry the difference.
       return t('choreOverdue.title', {
         name: stringOf(alert.payload.choreName) ?? '',
       });
@@ -168,22 +178,34 @@ function renderTitle(alert: Alert, t: Translator): string {
       return t('choreDueToday.title', {
         name: stringOf(alert.payload.choreName) ?? '',
       });
+    case 'reminder-due':
+      return t('reminderDue.title', {
+        title: stringOf(alert.payload.title) ?? '',
+      });
   }
 }
 
-function renderSubtitle(alert: Alert, t: Translator, dateFormat: DateFormat): string {
+function renderSubtitle(alert: Alert, t: Translator): string {
   switch (alert.type) {
     case 'service-due-today': {
-      const dueDay = numberOf(alert.payload.dueDay) ?? 0;
+      const dueDay = numberOf(alert.payload.dueDay);
       const currency = stringOf(alert.payload.currency);
       const amount = numberOf(alert.payload.estimatedAmount);
-      if (amount != null && isCurrency(currency)) {
-        return t('serviceDueToday.subtitleWithAmount', {
-          day: dueDay,
-          amount: formatCurrency(amount, currency),
-        });
+      const formattedAmount =
+        amount != null && isCurrency(currency) ? formatCurrency(amount, currency) : null;
+
+      // Anchorless service: count down the period instead of naming a day.
+      // Falling back to `?? 0` here is what printed "Día 0 del mes".
+      if (dueDay == null) {
+        const days = numberOf(alert.payload.daysLeftInPeriod) ?? 1;
+        return formattedAmount != null
+          ? t('serviceDueToday.subtitleClosingWithAmount', { days, amount: formattedAmount })
+          : t('serviceDueToday.subtitleClosing', { days });
       }
-      return t('serviceDueToday.subtitle', { day: dueDay });
+
+      return formattedAmount != null
+        ? t('serviceDueToday.subtitleWithAmount', { day: dueDay, amount: formattedAmount })
+        : t('serviceDueToday.subtitle', { day: dueDay });
     }
     case 'service-overdue': {
       const period = stringOf(alert.payload.overduePeriod) ?? '';
@@ -202,14 +224,44 @@ function renderSubtitle(alert: Alert, t: Translator, dateFormat: DateFormat): st
       return t('budgetUnlogged.subtitle', { days, currency });
     }
     case 'chore-overdue': {
+      // "Atrasada hace N días" rather than the due date itself: how late it is
+      // is the actionable part, and the raw date made the reader do the
+      // subtraction. Computed client-side because the payload carries the due
+      // date, not a delta.
       const date = stringOf(alert.payload.nextDueDate);
-      return t('choreOverdue.subtitle', { date: date ? formatDate(date, dateFormat) : '' });
+      return t('choreOverdue.subtitle', { days: date ? daysOverdue(date) : 0 });
     }
     case 'chore-due-today':
       // No date interpolated — "today" is the whole point, and echoing the
       // date back would just be the same information twice.
       return t('choreDueToday.subtitle');
+    case 'reminder-due': {
+      const date = stringOf(alert.payload.remindDate);
+      const time = stringOf(alert.payload.remindTime);
+      // An overdue reminder says how long it has been waiting; today's says
+      // the hour if it has one, and otherwise just "today".
+      if (date && daysOverdue(date) > 0) {
+        return t('reminderDue.subtitleOverdue', { days: daysOverdue(date) });
+      }
+      return time ? t('reminderDue.subtitleAt', { time }) : t('reminderDue.subtitleToday');
+    }
   }
+}
+
+/**
+ * Whole days between a `YYYY-MM-DD` due date and today, floored at 0.
+ *
+ * Both ends are anchored at noon so a DST day still rounds to a whole number
+ * — the same trick `chore-status.ts` uses. Floored at 0 because a future date
+ * reaching this branch would mean the backend classified it as overdue, and a
+ * negative "hace -2 días" is worse than saying 0.
+ */
+function daysOverdue(dueDate: string): number {
+  const due = Date.parse(`${dueDate}T12:00:00`);
+  if (Number.isNaN(due)) return 0;
+  const today = new Date();
+  today.setHours(12, 0, 0, 0);
+  return Math.max(0, Math.round((today.getTime() - due) / 86_400_000));
 }
 
 function stringOf(v: string | number | null | undefined): string | undefined {

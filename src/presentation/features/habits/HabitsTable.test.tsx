@@ -11,7 +11,7 @@ import messages from '@/i18n/messages/es.json';
 import { HabitsTable } from './HabitsTable';
 
 function makeHabit(overrides: Partial<HabitWithStats> = {}): HabitWithStats {
-  return {
+  const habit: HabitWithStats = {
     id: 'habit-1',
     userId: 'user-1',
     name: 'Leer',
@@ -29,8 +29,12 @@ function makeHabit(overrides: Partial<HabitWithStats> = {}): HabitWithStats {
     todayLog: null,
     periodCount: 1,
     periodCompleted: false,
+    periodTarget: 3,
     ...overrides,
   };
+  // A fixture that raises the habit's default target means it for the period
+  // denominator too, unless it sets `periodTarget` explicitly.
+  return { ...habit, periodTarget: overrides.periodTarget ?? habit.targetCount };
 }
 
 function renderTable(
@@ -72,7 +76,7 @@ describe('HabitsTable', () => {
     renderTable([makeHabit({ name: 'Leer', periodCount: 1, targetCount: 3 })]);
     expect(screen.getByText('Leer')).toBeInTheDocument();
     expect(screen.getByText('Diario')).toBeInTheDocument();
-    expect(screen.getByText('1/3')).toBeInTheDocument();
+    expect(screen.getByTestId('habit-progress')).toHaveTextContent('1/3');
   });
 
   it('fires onCheckIn for the habit when its register action is clicked', async () => {
@@ -130,6 +134,7 @@ describe('HabitsTable', () => {
         date: '2026-01-01',
         count: 2,
         completed: false,
+        targetCount: 3,
         note: null,
         createdAt: '2026-01-01T00:00:00.000Z',
         updatedAt: '2026-01-01T00:00:00.000Z',
@@ -144,6 +149,26 @@ describe('HabitsTable', () => {
   it('hides the undo action when today has no logs', () => {
     renderTable([makeHabit({ todayLog: null, periodCount: 0 })]);
     expect(screen.queryByRole('button', { name: /deshacer registro/i })).not.toBeInTheDocument();
+  });
+
+  describe('per-day target', () => {
+    it('fires onTargetChange with the new target for the day', async () => {
+      const user = userEvent.setup();
+      const onTargetChange = vi.fn();
+      const habit = makeHabit();
+      renderTable([habit], { onTargetChange });
+
+      await user.click(screen.getByRole('button', { name: 'Objetivo del día' }));
+      await user.click(screen.getByRole('button', { name: /aumentar/i }));
+
+      expect(onTargetChange).toHaveBeenCalledWith(habit, 4);
+    });
+
+    it('is not editable for a WEEKLY habit', () => {
+      renderTable([makeHabit({ frequency: 'WEEKLY' })], { onTargetChange: vi.fn() });
+      expect(screen.queryByRole('button', { name: 'Objetivo del día' })).not.toBeInTheDocument();
+      expect(screen.getByTestId('habit-progress')).toHaveTextContent('1/3');
+    });
   });
 
   it('offers unarchive (not archive) for an archived habit', () => {

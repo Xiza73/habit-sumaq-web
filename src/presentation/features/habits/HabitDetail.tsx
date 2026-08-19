@@ -22,6 +22,7 @@ import { getTodayLocaleDate } from '@/lib/format';
 import { getStreakStyle } from '@/lib/streak-styles';
 import { cn } from '@/lib/utils';
 
+import { DayTargetStepper } from './DayTargetStepper';
 import { HabitForm } from './HabitForm';
 import { HabitHeatmap } from './HabitHeatmap';
 import { ShareStreakButton } from './ShareStreakButton';
@@ -50,7 +51,7 @@ export function HabitDetail({ habitId }: HabitDetailProps) {
     if (!habit) return;
     if (habit.periodCompleted) return;
     const todayCount = habit.todayLog?.count ?? 0;
-    if (todayCount >= habit.targetCount) return;
+    if (todayCount >= habit.periodTarget) return;
     const today = getTodayLocaleDate();
     const newCount = todayCount + 1;
 
@@ -84,6 +85,16 @@ export function HabitDetail({ habitId }: HabitDetailProps) {
     );
   }
 
+  function handleTargetChange(targetCount: number) {
+    if (!habit) return;
+    // Re-send today's count with the new target so the server snapshots it on
+    // today's log only — yesterday keeps whatever target it was finished under.
+    logMutation.mutate({
+      habitId: habit.id,
+      data: { date: getTodayLocaleDate(), count: habit.todayLog?.count ?? 0, targetCount },
+    });
+  }
+
   function handleDelete() {
     setDeleteError(null);
     deleteMutation.mutate(habitId, {
@@ -112,8 +123,8 @@ export function HabitDetail({ habitId }: HabitDetailProps) {
 
   const todayCount = habit.todayLog?.count ?? 0;
   const periodCount = habit.periodCount ?? todayCount;
-  const isCompleted = habit.periodCompleted ?? periodCount >= habit.targetCount;
-  const progress = Math.min(periodCount / habit.targetCount, 1);
+  const isCompleted = habit.periodCompleted ?? periodCount >= habit.periodTarget;
+  const progress = Math.min(periodCount / habit.periodTarget, 1);
   const completionPercent = Math.round(habit.completionRate * 100);
   const streakStyle = getStreakStyle(habit.currentStreak);
   const logs = logsData?.data ?? [];
@@ -179,9 +190,21 @@ export function HabitDetail({ habitId }: HabitDetailProps) {
               <p className="text-sm text-muted-foreground">
                 {habit.frequency === 'WEEKLY' ? t('weeklyProgress') : t('todayProgress')}
               </p>
-              <p className="mt-1 text-3xl font-bold tabular-nums">
+              <p
+                data-testid="habit-progress"
+                className="mt-1 flex items-center text-3xl font-bold tabular-nums"
+              >
                 {periodCount}
-                <span className="text-lg text-muted-foreground">/{habit.targetCount}</span>
+                <span className="flex items-center text-lg text-muted-foreground">
+                  /
+                  <DayTargetStepper
+                    value={habit.periodTarget}
+                    onChange={handleTargetChange}
+                    // WEEKLY targets belong to the week, not to a day.
+                    editable={!habit.isArchived && habit.frequency === 'DAILY'}
+                    pending={logMutation.isPending}
+                  />
+                </span>
               </p>
             </div>
             {!habit.isArchived && (
@@ -283,7 +306,7 @@ export function HabitDetail({ habitId }: HabitDetailProps) {
       </div>
 
       {/* Heatmap */}
-      <HabitHeatmap logs={logs} targetCount={habit.targetCount} color={habit.color} />
+      <HabitHeatmap logs={logs} fallbackTarget={habit.targetCount} color={habit.color} />
 
       <HabitForm open={editOpen} habit={habit} onClose={() => setEditOpen(false)} />
 

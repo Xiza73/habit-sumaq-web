@@ -13,7 +13,7 @@ import {
   Wallet,
 } from 'lucide-react';
 
-import { type BudgetWithKpi } from '@/core/domain/entities/budget';
+import { type BudgetRecoveryPlan, type BudgetWithKpi } from '@/core/domain/entities/budget';
 import { type Currency } from '@/core/domain/enums/currency.enum';
 
 import {
@@ -226,6 +226,13 @@ function ActiveBudgetBody({ budget, t }: ActiveBudgetBodyProps) {
         />
       </div>
 
+      {/* Deliberately NOT inside the collapsible breakdown below. It only
+          renders when there is something to recover, so it appears exactly
+          when it matters — and that is the moment it must not be one click
+          away. Behind the collapse it would be a statistic; here it is
+          guidance. */}
+      <RecoveryPlanLine recovery={budget.recovery} t={t} />
+
       {/* Collapsible breakdown — extra info for users who want to know
           "am I trending under or over my plan this month?". */}
       <button
@@ -326,6 +333,61 @@ function MonthSoFarSection({ budget, breakdown, history, t }: MonthSoFarSectionP
         )}
       </div>
     </section>
+  );
+}
+
+interface RecoveryPlanLineProps {
+  recovery: BudgetRecoveryPlan | null;
+  t: ReturnType<typeof useTranslations<'budgets'>>;
+}
+
+/**
+ * The answer to "and what do I do about it?", sitting right under the
+ * over/under-plan line that raises the question.
+ *
+ * Silent when there is nothing to recover — a zero-day plan is noise, and the
+ * section above already says the user is on or ahead of pace.
+ */
+function RecoveryPlanLine({ recovery, t }: RecoveryPlanLineProps) {
+  // Closed month: nothing left to recover into.
+  if (!recovery) return null;
+
+  const { zeroSpendDays, halfSpendDays } = recovery;
+
+  // 0 means there is nothing to recover — the user is on or ahead of pace, and
+  // a zero-day plan is noise. That is NOT the same as null.
+  if (zeroSpendDays === 0) return null;
+
+  // Neither plan fits in the days the month has left. Say so, rather than
+  // print a count that asks for more days than the month contains.
+  if (zeroSpendDays === null) {
+    return (
+      <p className="mt-4 rounded-lg bg-muted/50 px-3 py-2 text-xs text-muted-foreground">
+        {t('kpi.recoveryUnreachable')}
+      </p>
+    );
+  }
+
+  return (
+    <p className="mt-4 rounded-lg bg-muted/50 px-3 py-2 text-xs text-muted-foreground">
+      {t('kpi.recoveryIntro')}{' '}
+      <strong className="font-medium text-foreground">
+        {t('kpi.recoveryZeroSpend', { days: zeroSpendDays })}
+      </strong>
+      {/* The half-spend plan is twice as long, so it can fall outside the
+          month while the zero-spend one still fits. When it does, the "o ..."
+          clause is dropped entirely instead of offering an impossible one. */}
+      {halfSpendDays !== null && (
+        <>
+          {' '}
+          {t('kpi.recoveryOr')}{' '}
+          <strong className="font-medium text-foreground">
+            {t('kpi.recoveryHalfSpend', { days: halfSpendDays })}
+          </strong>
+        </>
+      )}
+      .
+    </p>
   );
 }
 

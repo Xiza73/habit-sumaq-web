@@ -182,7 +182,15 @@
     "DBT_009": "Debés modificar al menos un campo.",
     "DBT_010": "El monto excede el saldo de la deuda.",
     "DBT_011": "No hay operaciones pendientes de ese tipo con esta persona.",
-    "generic": "Ocurrió un error inesperado. Intenta de nuevo."
+    "generic": "Ocurrió un error inesperado. Intenta de nuevo.",
+    "RMDR_001": "Recordatorio no encontrado.",
+    "RMDR_002": "No tenés acceso a este recordatorio.",
+    "RMDR_003": "El título es obligatorio.",
+    "RMDR_004": "El título es demasiado largo.",
+    "RMDR_005": "El detalle es demasiado largo.",
+    "RMDR_006": "La fecha no tiene un formato válido.",
+    "RMDR_007": "La hora no tiene un formato válido.",
+    "RMDR_008": "No se puede fijar una hora sin una fecha."
   },
   "habits": {
     "timer": {
@@ -224,6 +232,11 @@
     "notCompleted": "No completado",
     "checkIn": "Registrar",
     "undoCheckIn": "Deshacer registro",
+    "dayTarget": {
+      "edit": "Objetivo del día",
+      "increase": "Aumentar el objetivo del día",
+      "decrease": "Reducir el objetivo del día"
+    },
     "viewDetail": "Ver hábito",
     "frequencies": {
       "DAILY": "Diario",
@@ -310,6 +323,7 @@
     },
     "status": {
       "paid": "Al día",
+      "today": "Toca hoy",
       "pending": "Pendiente",
       "overdue": "Atrasado · {period}"
     },
@@ -459,6 +473,7 @@
     "priorities": "Prioridades",
     "tasks": "Tareas",
     "chores": "Quehaceres",
+    "reminders": "Recordatorios",
     "reports": "Reportes",
     "settings": "Configuración"
   },
@@ -493,6 +508,11 @@
       "actualDailyAverageEmpty": "Todavía no hay días completos para promediar",
       "originalDailyTarget": "Objetivo diario original",
       "originalDailyTargetHint": "Si gastaras parejo todo el mes",
+      "recoveryIntro": "Para volver al diario inicial:",
+      "recoveryZeroSpend": "{days, plural, one {# día sin gastar} other {# días sin gastar}}",
+      "recoveryOr": "o",
+      "recoveryHalfSpend": "{days, plural, one {# día gastando la mitad} other {# días gastando la mitad}}",
+      "recoveryUnreachable": "El diario inicial ya no se recupera este mes, ni gastando cero el resto de los días.",
       "diffVsOriginalLabel": "Diferencia vs tu plan",
       "diffVsOriginalBelow": "Por DEBAJO al día — vas bien 🎉",
       "diffVsOriginalAbove": "Por ENCIMA al día — atento",
@@ -851,11 +871,14 @@
       "serviceDueToday": {
         "title": "Vence hoy: {name}",
         "subtitle": "Día {day} del mes",
-        "subtitleWithAmount": "Día {day} · {amount}"
+        "subtitleWithAmount": "Día {day} · {amount}",
+        "titleClosing": "Vence este mes: {name}",
+        "subtitleClosing": "{days, plural, one {Último día del mes} other {Quedan # días del mes}}",
+        "subtitleClosingWithAmount": "{days, plural, one {Último día} other {Quedan # días}} · {amount}"
       },
       "serviceOverdue": {
-        "title": "Atrasado: {name}",
-        "subtitle": "Pendiente desde {period}"
+        "title": "Toca hoy: {name}",
+        "subtitle": "Atrasado desde {period}"
       },
       "habitsMidday": {
         "title": "{count, plural, one {Te falta # hábito} other {Te faltan # hábitos}}",
@@ -867,12 +890,18 @@
         "subtitle": "Van {days} días sin registrar en tu presupuesto {currency}"
       },
       "choreOverdue": {
-        "title": "Atrasada: {name}",
-        "subtitle": "Vencía el {date}"
+        "title": "Toca hoy: {name}",
+        "subtitle": "Atrasada hace {days, plural, one {# día} other {# días}}"
       },
       "choreDueToday": {
         "title": "Toca hoy: {name}",
         "subtitle": "La tenés programada para hoy"
+      },
+      "reminderDue": {
+        "title": "Recordatorio: {title}",
+        "subtitleToday": "Toca hoy",
+        "subtitleAt": "Toca hoy a las {time}",
+        "subtitleOverdue": "{days, plural, one {Hace # día} other {Hace # días}} que está pendiente"
       }
     }
   },
@@ -1017,5 +1046,31 @@
     "label": "Vista",
     "cards": "Tarjetas",
     "table": "Tabla"
+  },
+  "reminders": {
+    "title": "Recordatorios",
+    "createReminder": "Nuevo recordatorio",
+    "editReminder": "Editar recordatorio",
+    "deleteReminder": "Eliminar recordatorio",
+    "deleteConfirm": "¿Seguro que querés eliminar este recordatorio?",
+    "emptyState": "No tenés recordatorios. Anotá algo que no querés olvidar.",
+    "titleLabel": "Qué hay que recordar",
+    "titlePlaceholder": "Llamar al dentista",
+    "notesLabel": "Detalle (opcional)",
+    "notesPlaceholder": "Preguntar por el presupuesto de la limpieza",
+    "dateLabel": "Fecha (opcional)",
+    "timeLabel": "Hora (opcional)",
+    "timeNeedsDate": "Elegí una fecha para poder fijar la hora",
+    "markDone": "Marcar como hecho",
+    "markPending": "Marcar como pendiente",
+    "status": {
+      "overdue": "Atrasado",
+      "today": "Hoy",
+      "upcoming": "Próximo",
+      "undated": "Sin fecha",
+      "done": "Hecho"
+    },
+    "invalidDate": "La fecha no es válida",
+    "invalidTime": "La hora no es válida"
   }
 }

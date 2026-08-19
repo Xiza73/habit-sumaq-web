@@ -182,7 +182,15 @@
     "DBT_009": "You must modify at least one field.",
     "DBT_010": "Amount exceeds the debt balance.",
     "DBT_011": "No pending items of that kind with this person.",
-    "generic": "An unexpected error occurred. Please try again."
+    "generic": "An unexpected error occurred. Please try again.",
+    "RMDR_001": "Reminder not found.",
+    "RMDR_002": "You do not have access to this reminder.",
+    "RMDR_003": "The title is required.",
+    "RMDR_004": "The title is too long.",
+    "RMDR_005": "The details are too long.",
+    "RMDR_006": "The date format is not valid.",
+    "RMDR_007": "The time format is not valid.",
+    "RMDR_008": "A time needs a date."
   },
   "habits": {
     "timer": {
@@ -224,6 +232,11 @@
     "notCompleted": "Not completed",
     "checkIn": "Check in",
     "undoCheckIn": "Undo check in",
+    "dayTarget": {
+      "edit": "Target for this day",
+      "increase": "Raise the target for this day",
+      "decrease": "Lower the target for this day"
+    },
     "viewDetail": "View habit",
     "frequencies": {
       "DAILY": "Daily",
@@ -310,6 +323,7 @@
     },
     "status": {
       "paid": "Up to date",
+      "today": "Due today",
       "pending": "Pending",
       "overdue": "Overdue · {period}"
     },
@@ -459,6 +473,7 @@
     "priorities": "Priorities",
     "tasks": "Tasks",
     "chores": "Chores",
+    "reminders": "Reminders",
     "reports": "Reports",
     "settings": "Settings"
   },
@@ -493,6 +508,11 @@
       "actualDailyAverageEmpty": "No full days yet to average",
       "originalDailyTarget": "Original daily target",
       "originalDailyTargetHint": "If you spent evenly across the whole month",
+      "recoveryIntro": "To get back to the opening daily figure:",
+      "recoveryZeroSpend": "{days, plural, one {# day spending nothing} other {# days spending nothing}}",
+      "recoveryOr": "or",
+      "recoveryHalfSpend": "{days, plural, one {# day at half} other {# days at half}}",
+      "recoveryUnreachable": "The opening daily figure is out of reach this month, even spending nothing for the rest of it.",
       "diffVsOriginalLabel": "Difference vs. plan",
       "diffVsOriginalBelow": "BELOW per day — on track 🎉",
       "diffVsOriginalAbove": "ABOVE per day — heads up",
@@ -851,11 +871,14 @@
       "serviceDueToday": {
         "title": "Due today: {name}",
         "subtitle": "Day {day} of the month",
-        "subtitleWithAmount": "Day {day} · {amount}"
+        "subtitleWithAmount": "Day {day} · {amount}",
+        "titleClosing": "Due this month: {name}",
+        "subtitleClosing": "{days, plural, one {Last day of the month} other {# days left in the month}}",
+        "subtitleClosingWithAmount": "{days, plural, one {Last day} other {# days left}} · {amount}"
       },
       "serviceOverdue": {
-        "title": "Overdue: {name}",
-        "subtitle": "Pending since {period}"
+        "title": "Due today: {name}",
+        "subtitle": "Overdue since {period}"
       },
       "habitsMidday": {
         "title": "{count, plural, one {# habit still to go} other {# habits still to go}}",
@@ -867,12 +890,18 @@
         "subtitle": "{days} days with no entries in your {currency} budget"
       },
       "choreOverdue": {
-        "title": "Overdue: {name}",
-        "subtitle": "Was due on {date}"
+        "title": "Due today: {name}",
+        "subtitle": "{days, plural, one {# day} other {# days}} overdue"
       },
       "choreDueToday": {
         "title": "Due today: {name}",
         "subtitle": "It is scheduled for today"
+      },
+      "reminderDue": {
+        "title": "Reminder: {title}",
+        "subtitleToday": "Due today",
+        "subtitleAt": "Due today at {time}",
+        "subtitleOverdue": "{days, plural, one {Pending for # day} other {Pending for # days}}"
       }
     }
   },
@@ -1017,5 +1046,31 @@
     "label": "View",
     "cards": "Cards",
     "table": "Table"
+  },
+  "reminders": {
+    "title": "Reminders",
+    "createReminder": "New reminder",
+    "editReminder": "Edit reminder",
+    "deleteReminder": "Delete reminder",
+    "deleteConfirm": "Delete this reminder?",
+    "emptyState": "No reminders yet. Write down something you do not want to forget.",
+    "titleLabel": "What to remember",
+    "titlePlaceholder": "Call the dentist",
+    "notesLabel": "Details (optional)",
+    "notesPlaceholder": "Ask about the cleaning quote",
+    "dateLabel": "Date (optional)",
+    "timeLabel": "Time (optional)",
+    "timeNeedsDate": "Pick a date before setting a time",
+    "markDone": "Mark as done",
+    "markPending": "Mark as pending",
+    "status": {
+      "overdue": "Overdue",
+      "today": "Today",
+      "upcoming": "Upcoming",
+      "undated": "No date",
+      "done": "Done"
+    },
+    "invalidDate": "That date is not valid",
+    "invalidTime": "That time is not valid"
   }
 }

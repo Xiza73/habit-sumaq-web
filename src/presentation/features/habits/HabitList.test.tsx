@@ -26,12 +26,14 @@ const mockHabits: HabitWithStats[] = [
     completionRate: 0.8,
     periodCount: 6,
     periodCompleted: false,
+    periodTarget: 8,
     todayLog: {
       id: 'log-1',
       habitId: '1',
       date: '2026-03-13',
       count: 6,
       completed: false,
+      targetCount: 8,
       note: null,
       createdAt: '2026-03-13T10:00:00.000Z',
       updatedAt: '2026-03-13T10:00:00.000Z',
@@ -54,6 +56,7 @@ const mockHabits: HabitWithStats[] = [
     completionRate: 0.6,
     periodCount: 0,
     periodCompleted: false,
+    periodTarget: 1,
     todayLog: null,
   },
 ];
@@ -114,6 +117,24 @@ describe('HabitList', () => {
     const checkInButtons = screen.getAllByRole('button', { name: /registrar/i });
     await user.click(checkInButtons[0]);
     expect(mockLogMutate).toHaveBeenCalled();
+  });
+
+  it("sends the new target for the selected day, keeping that day's count", async () => {
+    const user = userEvent.setup();
+    renderList();
+
+    // First card: "Tomar agua", 6/8 logged today.
+    const [trigger] = screen.getAllByRole('button', { name: 'Objetivo del día' });
+    await user.click(trigger);
+    await user.click(screen.getAllByRole('button', { name: /aumentar/i })[0]);
+
+    expect(mockLogMutate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        habitId: '1',
+        data: expect.objectContaining({ count: 6, targetCount: 9 }),
+      }),
+      expect.anything(),
+    );
   });
 
   it('links habits to detail pages', () => {

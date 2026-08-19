@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { type Alert } from '@/core/domain/entities/alert';
 
@@ -47,9 +47,100 @@ function renderItem(alert: Alert, onNavigate?: () => void) {
 describe('AlertItem', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    // Only `Date` is faked, never the timers themselves — userEvent deadlocks
+    // under fully-faked timers unless every step advances them by hand. Same
+    // reasoning as ChoreCard.test.tsx.
+    vi.useFakeTimers({ toFake: ['Date'], now: new Date('2026-05-20T12:00:00') });
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
   });
 
   describe('per-type rendering', () => {
+    describe('reminder-due', () => {
+      function reminderAlert(remindDate: string, remindTime: string | null = null) {
+        return makeAlert({
+          type: 'reminder-due',
+          payload: { reminderId: 'rem-1', title: 'Llamar al dentista', remindDate, remindTime },
+        });
+      }
+
+      // The suite's clock is 2026-05-20.
+      const TODAY = '2026-05-20';
+
+      it('names the reminder in the title', () => {
+        renderItem(reminderAlert(TODAY));
+        expect(screen.getByText(/Recordatorio: Llamar al dentista/)).toBeInTheDocument();
+      });
+
+      it('says "toca hoy" for one dated today with no hour', () => {
+        renderItem(reminderAlert(TODAY));
+        expect(screen.getByText(/^Toca hoy$/)).toBeInTheDocument();
+      });
+
+      it('names the hour when there is one', () => {
+        renderItem(reminderAlert(TODAY, '15:00'));
+        expect(screen.getByText(/Toca hoy a las 15:00/)).toBeInTheDocument();
+      });
+
+      it('counts the days it has been pending once overdue', () => {
+        renderItem(reminderAlert('2026-05-17'));
+        expect(screen.getByText(/3 días que está pendiente/)).toBeInTheDocument();
+      });
+
+      it('ignores the hour once overdue — the moment has passed, it is just late', () => {
+        renderItem(reminderAlert('2026-05-17', '23:00'));
+        expect(screen.queryByText(/23:00/)).not.toBeInTheDocument();
+      });
+    });
+
+    describe('service-due-today with no approximate day', () => {
+      // The backend opens the alert for the last 3 days of the period when the
+      // service has no `dueDay`. There is no day to print, so "Día {day} del
+      // mes" would render "Día 0" — these get their own copy.
+      function closingAlert(daysLeftInPeriod: number, estimatedAmount: number | null = null) {
+        return makeAlert({
+          type: 'service-due-today',
+          payload: {
+            serviceName: 'Luz',
+            dueDay: null,
+            daysLeftInPeriod,
+            currency: 'PEN',
+            estimatedAmount,
+          },
+        });
+      }
+
+      it('never prints a day number', () => {
+        renderItem(closingAlert(3));
+        expect(screen.queryByText(/Día/)).not.toBeInTheDocument();
+        expect(screen.queryByText(/Día 0/)).not.toBeInTheDocument();
+      });
+
+      it('says it is due this month, not today', () => {
+        renderItem(closingAlert(3));
+        expect(screen.getByText(/Vence este mes: Luz/)).toBeInTheDocument();
+      });
+
+      it('counts the days left', () => {
+        renderItem(closingAlert(3));
+        expect(screen.getByText(/Quedan 3 días/)).toBeInTheDocument();
+      });
+
+      it('says "último día" on the last one rather than "quedan 1 días"', () => {
+        renderItem(closingAlert(1));
+        expect(screen.getByText(/Último día del mes/)).toBeInTheDocument();
+        expect(screen.queryByText(/Quedan 1/)).not.toBeInTheDocument();
+      });
+
+      it('appends the estimated amount when there is one', () => {
+        renderItem(closingAlert(2, 45.9));
+        expect(screen.getByText(/Quedan 2 días/)).toBeInTheDocument();
+        expect(screen.getByText(/45[.,]9/)).toBeInTheDocument();
+      });
+    });
+
     it('renders service-due-today with payload (name + day + amount)', () => {
       renderItem(
         makeAlert({
@@ -81,7 +172,6 @@ describe('AlertItem', () => {
           },
         }),
       );
-      expect(screen.getByText(/Atrasado/i)).toBeInTheDocument();
       expect(screen.getByText(/Internet/)).toBeInTheDocument();
       expect(screen.getByText(/2026-04/)).toBeInTheDocument();
     });
@@ -130,7 +220,12 @@ describe('AlertItem', () => {
       expect(screen.getByText(/3 días sin registrar en tu presupuesto PEN/)).toBeInTheDocument();
     });
 
-    it('renders chore-overdue with the due date in the subtitle', () => {
+    it('renders chore-overdue as an action for today, with the delay as context', () => {
+      // An overdue chore is still something to do TODAY. Leading with
+      // "Atrasada" made the whole popover read as a list of failures, and in
+      // practice a chore that is behind never reaches the due-today state at
+      // all — `nextDueDate < today` and `nextDueDate === today` cannot both
+      // hold, so the user only ever saw the past-tense copy.
       renderItem(
         makeAlert({
           id: 'chore-overdue:abc',
@@ -140,8 +235,59 @@ describe('AlertItem', () => {
           payload: { choreId: 'abc', choreName: 'Lavar el auto', nextDueDate: '2026-05-15' },
         }),
       );
+      expect(screen.getByText(/Toca hoy/i)).toBeInTheDocument();
       expect(screen.getByText(/Lavar el auto/)).toBeInTheDocument();
-      expect(screen.getByText(/2026-05-15/)).toBeInTheDocument();
+    });
+
+    it('counts the days a chore has been overdue', () => {
+      vi.setSystemTime(new Date('2026-05-20T12:00:00'));
+      renderItem(
+        makeAlert({
+          id: 'chore-overdue:abc',
+          type: 'chore-overdue',
+          severity: 'warning',
+          isDismissable: false,
+          payload: { choreId: 'abc', choreName: 'Lavar el auto', nextDueDate: '2026-05-15' },
+        }),
+      );
+      expect(screen.getByText(/5 días/)).toBeInTheDocument();
+    });
+
+    it('uses the singular for a chore one day overdue', () => {
+      vi.setSystemTime(new Date('2026-05-16T12:00:00'));
+      renderItem(
+        makeAlert({
+          id: 'chore-overdue:abc',
+          type: 'chore-overdue',
+          severity: 'warning',
+          isDismissable: false,
+          payload: { choreId: 'abc', choreName: 'Lavar el auto', nextDueDate: '2026-05-15' },
+        }),
+      );
+      expect(screen.getByText(/1 día(?!s)/)).toBeInTheDocument();
+    });
+
+    it('renders service-overdue as an action for today too', () => {
+      renderItem(
+        makeAlert({
+          id: 'service-overdue:abc',
+          type: 'service-overdue',
+          severity: 'warning',
+          isDismissable: false,
+          payload: {
+            serviceName: 'Internet',
+            overduePeriod: '2026-04',
+            currency: 'PEN',
+            estimatedAmount: 120,
+          },
+        }),
+      );
+      // Same present-tense framing as chores — the two modules should not
+      // disagree about how a late item is phrased.
+      expect(screen.getByText(/Toca hoy/i)).toBeInTheDocument();
+      expect(screen.getByText(/Internet/)).toBeInTheDocument();
+      // The period still appears, as the context for how late it is.
+      expect(screen.getByText(/2026-04/)).toBeInTheDocument();
     });
   });
 

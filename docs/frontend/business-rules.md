@@ -153,8 +153,34 @@ Reglas:
 
 - **Hábitos DAILY:** `periodCount` = count de hoy. Equivale a `todayLog?.count ?? 0`.
 - **Hábitos WEEKLY:** `periodCount` = suma de counts de todos los logs de la semana ISO actual (lunes a domingo). Un hábito semanal puede tener `todayLog` null o con count 0 y aún así `periodCompleted = true` si la cuota semanal ya se cumplió en otros días.
-- **Barra de progreso:** usar `Math.min(periodCount / targetCount, 1)` para el cálculo visual.
-- **Check-in habilitado:** permitir check-in solo si `periodCount < targetCount` (para WEEKLY) o `todayLog.count < targetCount` (para DAILY).
+- **Barra de progreso:** usar `Math.min(periodCount / periodTarget, 1)` para el cálculo visual.
+- **Check-in habilitado:** permitir check-in solo si `periodCount < periodTarget` (para WEEKLY) o `todayLog.count < periodTarget` (para DAILY).
+
+### Plan de recuperación del budget
+
+`recovery.zeroSpendDays` y `recovery.halfSpendDays` vienen en **`null`** cuando ese plan no
+entra en los días que quedan del mes. Se validan por separado: el de la mitad es el doble de
+largo, así que se queda sin mes antes.
+
+| Estado | Qué renderizar |
+| ------ | -------------- |
+| `zeroSpendDays: 0` | **Nada.** Estás en ritmo o adelantado; un plan de 0 días es ruido |
+| ambos con número | "N días sin gastar **o** 2N días gastando la mitad" |
+| solo `zeroSpendDays` | Solo esa cláusula — la de "o ... la mitad" se omite entera |
+| ambos `null` | "El diario inicial ya no se recupera este mes" |
+| `recovery: null` | Mes cerrado — nada |
+
+Ojo: `0` y `null` son respuestas distintas y no se pueden colapsar.
+
+### Objetivo por día (`periodTarget`)
+
+El denominador que se renderiza es **siempre `periodTarget`**, nunca `habit.targetCount`.
+
+- **DAILY:** `periodTarget` es el objetivo del día que se está mirando, no el default del hábito. El backend lo snapshotea en `habit_logs.targetCount` al escribir el log, así que un día terminado conserva su denominador: subir el objetivo del hábito de 3 a 4 no convierte los días ya completos en `3/4`.
+- **WEEKLY:** `periodTarget` es el `targetCount` del hábito — el objetivo pertenece a la semana, no a un día.
+- **Edición:** el denominador es editable inline (stepper) solo para hábitos **DAILY no archivados**. Ajustarlo re-envía el log de ese día con el count actual y el nuevo `targetCount`, por lo que se puede corregir un día pasado sin re-estampar el resto.
+- **Bajar el objetivo trunca el count:** el backend aplica `Math.min(count, targetCount)`. La UI espeja ese cap en el optimistic update.
+- **Heatmap:** cada celda se colorea contra el `targetCount` de su propio log; el prop `fallbackTarget` solo cubre días sin log. Esto depende de que `HabitLogResponseDto` exponga `targetCount` — sin ese campo en el wire, todas las celdas caen al default del hábito y el pasado se repinta.
 
 ### Vista diaria (`GET /habits/daily`)
 
@@ -179,6 +205,43 @@ Reglas:
 7. **DELETE está bloqueado si el chore tiene logs** (error `CHRE_001`). Mostrar el CTA "Archivar" como alternativa.
 8. **Categoría es free-text.** El form ofrece autocompletado con un `<datalist>` poblado desde las categorías ya usadas por el usuario, pero acepta cualquier string ≤ 50 chars.
 9. **Las fechas (`startDate`, `nextDueDate`, `lastDoneDate`, `doneAt`) viajan como `YYYY-MM-DD`** directo al backend. Los chores no usan el helper `dateInputToBackendIso` — el backend acepta el día calendario nativo en estos endpoints.
+
+---
+
+## Recordatorios
+
+Algo que hay que hacer **una vez**, opcionalmente en una fecha, opcionalmente a una hora.
+Es el módulo que faltaba: ni Prioridades ni Tareas tienen campo de fecha, y Quehaceres es
+recurrente por diseño (completarlo corre la próxima fecha).
+
+### Las tres formas
+
+| `remindDate` | `remindTime` | Significado |
+| ------------ | ------------ | ----------- |
+| null | null | Nota suelta. Se lista, **nunca alerta** — avisar de algo que el usuario todavía no agendó castiga anotar cosas. |
+| definida | null | Toca ese día, a cualquier hora. |
+| definida | definida | Toca ese día, **a partir de** esa hora. |
+
+Hora sin fecha **no es una cuarta forma**: una hora sola no dice nada sobre cuándo pasa algo
+que pasa una vez. El backend la rechaza (`RMDR_008`), el form deshabilita el campo de hora
+mientras no haya fecha, y borrar la fecha borra la hora con ella.
+
+### Estado vs. alerta
+
+El estado de la lista es **solo por fecha**: `overdue` / `today` / `upcoming` / `undated` / `done`.
+La hora gatilla la **alerta**, no el estado — un recordatorio de las 23:00 sigue siendo algo
+que tenés que hacer hoy, y una lista que lo llamara "Próximo" hasta las 23:00 estaría mintiendo
+sobre tu día.
+
+La hora aplica **solo el día para el que se fijó**. Pasado ese día el recordatorio está
+simplemente atrasado, todo el día. Si no fuera así, uno de las 23:00 de la semana pasada se
+escondería cada mañana y reaparecería a las 23:00 — que es exactamente cómo se pierde.
+
+### Orden de la lista
+
+Por accionabilidad: `overdue` → `today` → `upcoming` → `undated` → `done`. Dentro del bucket,
+por fecha ascendente, así que **el atrasado más viejo va primero** (el que más venís esquivando).
+Los empates se rompen por hora, y los sin hora van antes porque vencen desde el arranque del día.
 
 ---
 

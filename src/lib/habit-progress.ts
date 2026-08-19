@@ -7,8 +7,13 @@
  * `periodCompleted`) on some responses, so the fallbacks mirror the original
  * card logic exactly:
  *   - `periodCount` falls back to `todayLog.count`, then `0`.
- *   - `isCompleted` falls back to `periodCount >= targetCount`.
+ *   - `isCompleted` falls back to `periodCount >= periodTarget`.
  *   - `progress` is the ratio clamped to `[0, 1]`.
+ *
+ * The denominator is ALWAYS `periodTarget` — the target that applies to the
+ * period being shown — never the habit's `targetCount`. For a DAILY habit the
+ * two differ whenever the day was logged under a different target, and using
+ * the habit's default is what made raising it rewrite finished days.
  *
  * `todayCount` (today's raw log count) is surfaced separately because the card
  * gates the "undo" (minus) control on `todayCount > 0`.
@@ -18,7 +23,7 @@ interface HabitProgressInput {
   todayLog?: { count: number } | null;
   periodCount?: number;
   periodCompleted?: boolean;
-  targetCount: number;
+  periodTarget: number;
 }
 
 export interface HabitProgress {
@@ -28,14 +33,14 @@ export interface HabitProgress {
   periodCount: number;
   /** Whether the period target is met. */
   isCompleted: boolean;
-  /** Ratio of `periodCount / targetCount`, clamped to `[0, 1]`. */
+  /** Ratio of `periodCount / periodTarget`, clamped to `[0, 1]`. */
   progress: number;
 }
 
 export function getHabitProgress(habit: HabitProgressInput): HabitProgress {
   const todayCount = habit.todayLog?.count ?? 0;
   const periodCount = habit.periodCount ?? todayCount;
-  const isCompleted = habit.periodCompleted ?? periodCount >= habit.targetCount;
-  const progress = Math.min(periodCount / habit.targetCount, 1);
+  const isCompleted = habit.periodCompleted ?? periodCount >= habit.periodTarget;
+  const progress = Math.min(periodCount / habit.periodTarget, 1);
   return { todayCount, periodCount, isCompleted, progress };
 }

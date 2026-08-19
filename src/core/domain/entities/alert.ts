@@ -17,6 +17,7 @@ export const ALERT_TYPES = [
   'budget-unlogged',
   'chore-overdue',
   'chore-due-today',
+  'reminder-due',
 ] as const;
 export type AlertType = (typeof ALERT_TYPES)[number];
 
@@ -33,7 +34,18 @@ export interface AlertPayloads {
   'service-due-today': {
     serviceId: string;
     serviceName: string;
-    dueDay: number;
+    /**
+     * The user's approximate due day, or `null` when they never set one. In
+     * the null case the backend opens the alert for the closing days of the
+     * period instead, and there is no day to render.
+     */
+    dueDay: number | null;
+    /**
+     * Days left in the period INCLUDING today. Only set when `dueDay` is null
+     * — with a due day the copy uses the day. Computed server-side: the user's
+     * timezone lives there, so the client never derives "what day is it".
+     */
+    daysLeftInPeriod: number | null;
     currency: string;
     estimatedAmount: number | null;
   };
@@ -64,6 +76,17 @@ export interface AlertPayloads {
     choreId: string;
     choreName: string;
     nextDueDate: string; // 'YYYY-MM-DD', == today in the user TZ
+  };
+  /**
+   * A dated, still-pending reminder whose moment has arrived. Undated
+   * reminders never produce this alert, so `remindDate` is always set here
+   * even though the entity allows null.
+   */
+  'reminder-due': {
+    reminderId: string;
+    title: string;
+    remindDate: string; // 'YYYY-MM-DD', today or earlier
+    remindTime: string | null; // 'HH:mm'
   };
 }
 
@@ -116,6 +139,8 @@ export function getAlertHref(alert: Alert): string | null {
     case 'chore-overdue':
     case 'chore-due-today':
       return '/chores';
+    case 'reminder-due':
+      return '/reminders';
     default:
       return null;
   }
