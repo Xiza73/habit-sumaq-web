@@ -165,12 +165,16 @@ largo, así que se queda sin mes antes.
 | Estado | Qué renderizar |
 | ------ | -------------- |
 | `zeroSpendDays: 0` | **Nada.** Estás en ritmo o adelantado; un plan de 0 días es ruido |
-| ambos con número | "N días sin gastar **o** 2N días gastando la mitad" |
-| solo `zeroSpendDays` | Solo esa cláusula — la de "o ... la mitad" se omite entera |
-| ambos `null` | "El diario inicial ya no se recupera este mes" |
+| `partialSpend` con valor | "N días sin gastar **o** M días gastando {fracción}" |
+| `partialSpend: null` | Solo la cláusula de días sin gastar — la de "o ..." se omite entera |
+| `zeroSpendDays: null` | "El diario inicial ya no se recupera este mes" |
 | `recovery: null` | Mes cerrado — nada |
 
 Ojo: `0` y `null` son respuestas distintas y no se pueden colapsar.
+
+`partialSpend.fraction` es `HALF`, `THIRD` o `QUARTER`, y el copy sale de esa discriminante —
+la UI **no** asume cuál recibió. El backend ya eligió la fracción más suave que entra en los
+días que quedan; el web solo la renderiza.
 
 ### Objetivo por día (`periodTarget`)
 
