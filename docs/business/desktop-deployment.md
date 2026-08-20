@@ -87,6 +87,38 @@ versión**, y web + desktop quedan alineados.
 El tag `desktop-v*` sigue disponible para un rebuild **solo de escritorio**
 (cambios del shell nativo / íconos) entre releases web.
 
+## Logs de la app instalada
+
+Desde v0.12.1 el build de **release** escribe logs a archivo. Antes solo lo hacía el build de
+debug, así que un reporte de bug del escritorio no tenía ninguna evidencia detrás y solo se
+podía responder con teorías.
+
+| SO | Ruta |
+| -- | ---- |
+| Windows | `%APPDATA%\com.habitsumaq.app\logs\habit-sumaq.log` |
+| macOS | `~/Library/Logs/com.habitsumaq.app/habit-sumaq.log` |
+| Linux | `~/.local/share/com.habitsumaq.app/logs/habit-sumaq.log` |
+
+Rota a 1 MB y conserva un archivo (`KeepOne`) — es diagnóstico, no auditoría.
+
+### Cómo leer un problema de doble instancia
+
+Cada arranque escribe una línea con versión y **pid**. El handoff de single-instance escribe
+otra cuando un segundo proceso le cede el paso al que ya corre.
+
+```
+habit-sumaq starting — version 0.12.1, pid 12345
+single-instance: a second launch handed off to this instance
+```
+
+- **Una sola línea de `starting`** y después líneas de handoff → el single instance funciona.
+- **Dos líneas de `starting` con pids distintos** y ninguna de handoff → el lock no se está
+  compartiendo. Ahí sí hay bug, y el log lo prueba en vez de inferirlo de una captura.
+
+Causa habitual del segundo caso: una versión **anterior a v0.11.0** todavía instalada. Esos
+builds no traen el plugin, así que no reclaman el lock y conviven con el nuevo sin enterarse.
+Revisar *Aplicaciones instaladas* y desinstalar lo viejo antes de concluir que el plugin falla.
+
 ## Follow-ups conocidos
 
 - **Firma de código:** los instaladores salen sin firmar → Windows SmartScreen
