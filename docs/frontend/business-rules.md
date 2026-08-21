@@ -165,12 +165,16 @@ largo, así que se queda sin mes antes.
 | Estado | Qué renderizar |
 | ------ | -------------- |
 | `zeroSpendDays: 0` | **Nada.** Estás en ritmo o adelantado; un plan de 0 días es ruido |
-| ambos con número | "N días sin gastar **o** 2N días gastando la mitad" |
-| solo `zeroSpendDays` | Solo esa cláusula — la de "o ... la mitad" se omite entera |
-| ambos `null` | "El diario inicial ya no se recupera este mes" |
+| `partialSpend` con valor | "N días sin gastar **o** M días gastando {fracción}" |
+| `partialSpend: null` | Solo la cláusula de días sin gastar — la de "o ..." se omite entera |
+| `zeroSpendDays: null` | "El diario inicial ya no se recupera este mes" |
 | `recovery: null` | Mes cerrado — nada |
 
 Ojo: `0` y `null` son respuestas distintas y no se pueden colapsar.
+
+`partialSpend.fraction` es `HALF`, `THIRD` o `QUARTER`, y el copy sale de esa discriminante —
+la UI **no** asume cuál recibió. El backend ya eligió la fracción más suave que entra en los
+días que quedan; el web solo la renderiza.
 
 ### Objetivo por día (`periodTarget`)
 
@@ -263,6 +267,29 @@ escondería cada mañana y reaparecería a las 23:00 — que es exactamente cóm
 Por accionabilidad: `overdue` → `today` → `upcoming` → `undated` → `done`. Dentro del bucket,
 por fecha ascendente, así que **el atrasado más viejo va primero** (el que más venís esquivando).
 Los empates se rompen por hora, y los sin hora van antes porque vencen desde el arranque del día.
+
+---
+
+### Estados de un servicio mensual
+
+| Situación | Estado | Tono |
+| --------- | ------ | ---- |
+| Antes del día aproximado | `pending` | ámbar |
+| **Exactamente** ese día | `today` | primario |
+| Ya pasó ese día, mismo mes, impago | `pastDueDay` | naranja |
+| Pasó el mes entero | `overdue` | rojo |
+| Pagado | `paid` | verde |
+
+`today` corría **desde** el día aproximado en adelante, lo que mantenía el servicio accionable
+todo el mes — correcto — pero etiquetaba el 28 como "toca hoy" porque la referencia era el 15.
+Los dos siguen siendo accionables; simplemente dejan de decir que son el mismo día.
+
+Un servicio **sin** `dueDay` no tiene día que pasar: se queda en `pending` todo el período.
+`overdue` y `paid` siguen ganándole a los dos.
+
+Quehaceres mantiene igualdad exacta y **no** tiene estado equivalente: su `nextDueDate` es una
+fecha exacta calculada que se corre al completar, así que no hay nada que "pasar" dentro de un
+período.
 
 ---
 

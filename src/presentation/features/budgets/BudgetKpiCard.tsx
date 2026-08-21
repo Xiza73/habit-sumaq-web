@@ -13,7 +13,11 @@ import {
   Wallet,
 } from 'lucide-react';
 
-import { type BudgetRecoveryPlan, type BudgetWithKpi } from '@/core/domain/entities/budget';
+import {
+  type BudgetRecoveryPlan,
+  type BudgetWithKpi,
+  type PartialSpendFraction,
+} from '@/core/domain/entities/budget';
 import { type Currency } from '@/core/domain/enums/currency.enum';
 
 import {
@@ -336,6 +340,15 @@ function MonthSoFarSection({ budget, breakdown, history, t }: MonthSoFarSectionP
   );
 }
 
+const PARTIAL_SPEND_KEY: Record<
+  PartialSpendFraction,
+  'kpi.recoveryHalfSpend' | 'kpi.recoveryThirdSpend' | 'kpi.recoveryQuarterSpend'
+> = {
+  HALF: 'kpi.recoveryHalfSpend',
+  THIRD: 'kpi.recoveryThirdSpend',
+  QUARTER: 'kpi.recoveryQuarterSpend',
+};
+
 interface RecoveryPlanLineProps {
   recovery: BudgetRecoveryPlan | null;
   t: ReturnType<typeof useTranslations<'budgets'>>;
@@ -352,7 +365,7 @@ function RecoveryPlanLine({ recovery, t }: RecoveryPlanLineProps) {
   // Closed month: nothing left to recover into.
   if (!recovery) return null;
 
-  const { zeroSpendDays, halfSpendDays } = recovery;
+  const { zeroSpendDays, partialSpend } = recovery;
 
   // 0 means there is nothing to recover — the user is on or ahead of pace, and
   // a zero-day plan is noise. That is NOT the same as null.
@@ -374,15 +387,16 @@ function RecoveryPlanLine({ recovery, t }: RecoveryPlanLineProps) {
       <strong className="font-medium text-foreground">
         {t('kpi.recoveryZeroSpend', { days: zeroSpendDays })}
       </strong>
-      {/* The half-spend plan is twice as long, so it can fall outside the
-          month while the zero-spend one still fits. When it does, the "o ..."
-          clause is dropped entirely instead of offering an impossible one. */}
-      {halfSpendDays !== null && (
+      {/* The backend already picked the gentlest fraction that fits the days
+          left. When none does — not even a quarter, the shortest of them —
+          the clause is dropped entirely rather than offering a plan longer
+          than the month. */}
+      {partialSpend !== null && (
         <>
           {' '}
           {t('kpi.recoveryOr')}{' '}
           <strong className="font-medium text-foreground">
-            {t('kpi.recoveryHalfSpend', { days: halfSpendDays })}
+            {t(PARTIAL_SPEND_KEY[partialSpend.fraction], { days: partialSpend.days })}
           </strong>
         </>
       )}

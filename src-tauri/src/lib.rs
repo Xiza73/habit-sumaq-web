@@ -15,7 +15,14 @@ pub fn run() {
     use tauri::Manager;
 
     builder = builder.plugin(tauri_plugin_single_instance::init(|app, _argv, _cwd| {
+      // Logged at info so a release build can answer the only question that
+      // matters when someone reports "it still opens twice": did the second
+      // process reach this callback at all? No line here means the handoff
+      // never happened and the lock is not being shared.
+      log::info!("single-instance: a second launch handed off to this instance");
+
       let Some(window) = app.get_webview_window("main") else {
+        log::warn!("single-instance: no window named 'main' to raise");
         return;
       };
       // All three, in this order, and none of them is redundant:
@@ -45,13 +52,37 @@ pub fn run() {
 
   builder
     .setup(|app| {
+      // Logging used to be debug-only, which meant the builds people actually
+      // install wrote nothing at all — a desktop bug report had no evidence
+      // behind it and could only be answered with guesses.
+      //
+      // Release writes to a rotating file in the OS log directory; debug also
+      // keeps stdout so `pnpm tauri dev` stays readable.
+      let mut log_builder = tauri_plugin_log::Builder::default()
+        .level(log::LevelFilter::Info)
+        .target(tauri_plugin_log::Target::new(
+          tauri_plugin_log::TargetKind::LogDir { file_name: Some("habit-sumaq".into()) },
+        ))
+        .max_file_size(1_000_000)
+        .rotation_strategy(tauri_plugin_log::RotationStrategy::KeepOne);
+
       if cfg!(debug_assertions) {
-        app.handle().plugin(
-          tauri_plugin_log::Builder::default()
-            .level(log::LevelFilter::Info)
-            .build(),
-        )?;
+        log_builder = log_builder.target(tauri_plugin_log::Target::new(
+          tauri_plugin_log::TargetKind::Stdout,
+        ));
       }
+
+      app.handle().plugin(log_builder.build())?;
+
+      // First line of every run. Two of these with different pids, and no
+      // handoff line between them, is single-instance failing — stated as a
+      // fact from the log rather than inferred from a screenshot.
+      log::info!(
+        "habit-sumaq starting — version {}, pid {}",
+        app.package_info().version,
+        std::process::id()
+      );
+
       Ok(())
     })
     .run(tauri::generate_context!())

@@ -7,7 +7,7 @@ import { type MonthlyService } from '@/core/domain/entities/monthly-service';
  * rule identically.
  */
 
-export type MonthlyServiceStatusTone = 'paid' | 'today' | 'pending' | 'overdue';
+export type MonthlyServiceStatusTone = 'paid' | 'today' | 'pastDueDay' | 'pending' | 'overdue';
 
 /**
  * Resolve the badge tone for a service.
@@ -22,16 +22,23 @@ export type MonthlyServiceStatusTone = 'paid' | 'today' | 'pending' | 'overdue';
  * looks like is the kind of inconsistency users notice without being able to
  * name it.
  *
- * `today` runs **from the due day onward**, not on that day alone. `dueDay` is
- * presented to the user as "Día aproximado de vencimiento — solo para ordenar
- * y recordar", so matching it exactly would read an approximate value as an
- * exact one: the state would exist for a single day a month, and missing that
- * day would mean missing it entirely. Bills are paid on or after their
- * reference date, so the state stays actionable until the service is paid or
- * the period rolls over into overdue.
+ * The due window carries **two** states, split on which side of the reference
+ * date we are:
  *
- * (Chores keep exact equality on purpose — their `nextDueDate` is a computed,
- * exact date, not an approximation.)
+ *   today === dueDay   → `today`
+ *   today  >  dueDay   → `pastDueDay`
+ *
+ * `today` used to run from the due day onward, which kept the service
+ * actionable all month — right — but labelled the 28th "toca hoy" because the
+ * reference date was the 15th, which is false. Both remain actionable; they
+ * just stop claiming to be the same day.
+ *
+ * Neither is `overdue`, which means the whole period elapsed. This is the
+ * state between "the date you wrote down is today" and "the month went by".
+ *
+ * (Chores keep exact equality with no past-day state — their `nextDueDate` is
+ * a computed exact date that rolls forward on completion, so there is nothing
+ * to be "past" within a period.)
  *
  * `dayOfMonth` is injectable so the derivation stays testable; it defaults to
  * the real current day, which keeps every existing call site unchanged.
@@ -46,7 +53,8 @@ export function resolveMonthlyServiceStatus(
   if (service.isPaidForCurrentMonth) return 'paid';
   // `dueDay` is nullable — without one there is no anchor to count from, and
   // the service simply stays pending for the whole period.
-  if (service.dueDay != null && dayOfMonth >= service.dueDay) return 'today';
+  if (service.dueDay != null && dayOfMonth === service.dueDay) return 'today';
+  if (service.dueDay != null && dayOfMonth > service.dueDay) return 'pastDueDay';
   return 'pending';
 }
 
@@ -55,6 +63,9 @@ export const MONTHLY_SERVICE_STATUS_CLASSES: Record<MonthlyServiceStatusTone, st
   // Same tone chores gives its own `today`: louder than pending's amber, but
   // not the red reserved for "you already missed this".
   today: 'bg-primary/15 text-primary',
+  // Between today's primary and overdue's red: the reference date went by,
+  // but the month has not.
+  pastDueDay: 'bg-orange-500/15 text-orange-700 dark:text-orange-400',
   pending: 'bg-amber-500/15 text-amber-700 dark:text-amber-400',
   overdue: 'bg-destructive/15 text-destructive',
 };

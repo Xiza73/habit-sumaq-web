@@ -99,12 +99,17 @@ describe('MonthlyServiceCard', () => {
     expect(screen.queryByText(/pendiente/i)).not.toBeInTheDocument();
   });
 
-  it('KEEPS showing "Toca hoy" days after, because the due day is approximate', () => {
-    // The regression that matters: with exact matching the chip lived for a
-    // single day a month, so missing that day meant missing it entirely.
+  it('switches to "Pasó la fecha" after the due day, still not pending', () => {
+    // The regression this originally guarded — the chip must not live for a
+    // single day a month — still holds: the service stays flagged all period.
+    // It just stops calling the 28th "hoy" when the reference date was the
+    // 15th.
     vi.setSystemTime(new Date('2026-04-28T12:00:00'));
     renderCard();
-    expect(screen.getByText(/toca hoy/i)).toBeInTheDocument();
+
+    expect(screen.getByText(/pasó la fecha/i)).toBeInTheDocument();
+    expect(screen.queryByText(/toca hoy/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/pendiente/i)).not.toBeInTheDocument();
   });
 
   it('shows paid status when isPaidForCurrentMonth is true', () => {

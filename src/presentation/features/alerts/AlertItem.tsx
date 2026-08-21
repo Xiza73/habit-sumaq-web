@@ -130,6 +130,10 @@ function AlertIcon({ type }: { type: AlertType }) {
       return <Sparkles className="size-5" aria-hidden="true" />;
     case 'budget-unlogged':
       return <Receipt className="size-5" aria-hidden="true" />;
+    case 'service-past-due-day':
+      // Same clock as due-today rather than the overdue triangle: the month is
+      // still running, so this is late, not missed.
+      return <CalendarClock className="size-5" aria-hidden="true" />;
     case 'chore-overdue':
       return <AlertTriangle className="size-5" aria-hidden="true" />;
     case 'chore-due-today':
@@ -156,6 +160,10 @@ function renderTitle(alert: Alert, t: Translator): string {
         ? t('serviceDueToday.title', { name })
         : t('serviceDueToday.titleClosing', { name });
     }
+    case 'service-past-due-day':
+      return t('servicePastDueDay.title', {
+        name: stringOf(alert.payload.serviceName) ?? '',
+      });
     case 'service-overdue':
       return t('serviceOverdue.title', {
         name: stringOf(alert.payload.serviceName) ?? '',
@@ -206,6 +214,19 @@ function renderSubtitle(alert: Alert, t: Translator): string {
       return formattedAmount != null
         ? t('serviceDueToday.subtitleWithAmount', { day: dueDay, amount: formattedAmount })
         : t('serviceDueToday.subtitle', { day: dueDay });
+    }
+    case 'service-past-due-day': {
+      const days = numberOf(alert.payload.daysPastDueDay) ?? 0;
+      const day = numberOf(alert.payload.dueDay) ?? 0;
+      const currency = stringOf(alert.payload.currency);
+      const amount = numberOf(alert.payload.estimatedAmount);
+
+      return amount != null && isCurrency(currency)
+        ? t('servicePastDueDay.subtitleWithAmount', {
+            days,
+            amount: formatCurrency(amount, currency),
+          })
+        : t('servicePastDueDay.subtitle', { days, day });
     }
     case 'service-overdue': {
       const period = stringOf(alert.payload.overduePeriod) ?? '';
