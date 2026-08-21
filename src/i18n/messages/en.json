@@ -517,7 +517,9 @@
       "diffVsOriginalBelow": "BELOW per day — on track 🎉",
       "diffVsOriginalAbove": "ABOVE per day — heads up",
       "dailyHistoryTitle": "Last {count, plural, one {# day} other {# days}}",
-      "dailyHistoryReferenceHint": "The line marks today's daily allowance ({amount})"
+      "dailyHistoryReferenceHint": "The line marks today's daily allowance ({amount})",
+      "recoveryThirdSpend": "{days, plural, one {# day at a third} other {# days at a third}}",
+      "recoveryQuarterSpend": "{days, plural, one {# day at a quarter} other {# days at a quarter}}"
     },
     "empty": {
       "title": "No budget for {period} in {currency}",

@@ -39,7 +39,7 @@ const activeBudget: BudgetWithKpi = {
   // to support the locked-day model.
   dailyAllowance: 125,
   initialDailyAllowance: 66.67,
-  recovery: { zeroSpendDays: 0, halfSpendDays: 0 },
+  recovery: { zeroSpendDays: 0, partialSpend: null },
   currentDate: '2026-04-15',
   movements: [],
   createdAt: '2026-04-01T00:00:00.000Z',
@@ -220,36 +220,47 @@ describe('BudgetKpiCard — simple layout (closed and future-month budgets)', ()
 
 describe('BudgetKpiCard — recovery plan', () => {
   it('says nothing when there is nothing to recover', () => {
-    renderCard({ recovery: { zeroSpendDays: 0, halfSpendDays: 0 } });
+    renderCard({ recovery: { zeroSpendDays: 0, partialSpend: null } });
     expect(screen.queryByText(/recuperar/i)).not.toBeInTheDocument();
   });
 
-  it('states both plans when both fit the month', () => {
-    renderCard({ recovery: { zeroSpendDays: 6, halfSpendDays: 12 } });
+  it('offers the half-spend plan when it fits', () => {
+    renderCard({ recovery: { zeroSpendDays: 6, partialSpend: { fraction: 'HALF', days: 12 } } });
 
     expect(screen.getByText(/6 días sin gastar/i)).toBeInTheDocument();
     expect(screen.getByText(/12 días gastando la mitad/i)).toBeInTheDocument();
   });
 
-  it('shows only the zero-spend plan when the half-spend one does not fit', () => {
-    // The reported bug: with 12 days left the card said "18 días gastando la
-    // mitad". The half plan is twice as long, so it runs out of month first
-    // and the backend now sends it as null.
-    renderCard({ recovery: { zeroSpendDays: 7, halfSpendDays: null } });
+  it('offers a third when the half-spend plan does not fit', () => {
+    renderCard({ recovery: { zeroSpendDays: 7, partialSpend: { fraction: 'THIRD', days: 11 } } });
 
     expect(screen.getByText(/7 días sin gastar/i)).toBeInTheDocument();
-    expect(screen.queryByText(/gastando la mitad/i)).not.toBeInTheDocument();
+    expect(screen.getByText(/11 días gastando un tercio/i)).toBeInTheDocument();
+    expect(screen.queryByText(/la mitad/i)).not.toBeInTheDocument();
+  });
+
+  it('offers a quarter as the last rung', () => {
+    renderCard({ recovery: { zeroSpendDays: 9, partialSpend: { fraction: 'QUARTER', days: 12 } } });
+
+    expect(screen.getByText(/12 días gastando un cuarto/i)).toBeInTheDocument();
+  });
+
+  it('drops the clause entirely when no fraction fits', () => {
+    renderCard({ recovery: { zeroSpendDays: 10, partialSpend: null } });
+
+    expect(screen.getByText(/10 días sin gastar/i)).toBeInTheDocument();
+    expect(screen.queryByText(/gastando/i)).not.toBeInTheDocument();
   });
 
   it('uses the singular for a single day', () => {
-    renderCard({ recovery: { zeroSpendDays: 1, halfSpendDays: 2 } });
+    renderCard({ recovery: { zeroSpendDays: 1, partialSpend: { fraction: 'HALF', days: 2 } } });
 
     expect(screen.getByText(/1 día sin gastar/i)).toBeInTheDocument();
     expect(screen.queryByText(/1 días/i)).not.toBeInTheDocument();
   });
 
-  it('says the month cannot be recovered when neither plan fits', () => {
-    renderCard({ recovery: { zeroSpendDays: null, halfSpendDays: null } });
+  it('says the month cannot be recovered when not even zero-spend fits', () => {
+    renderCard({ recovery: { zeroSpendDays: null, partialSpend: null } });
 
     expect(screen.getByText(/no se recupera este mes/i)).toBeInTheDocument();
   });

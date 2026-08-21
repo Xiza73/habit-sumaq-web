@@ -517,7 +517,9 @@
       "diffVsOriginalBelow": "Por DEBAJO al día — vas bien 🎉",
       "diffVsOriginalAbove": "Por ENCIMA al día — atento",
       "dailyHistoryTitle": "Últimos {count, plural, one {# día} other {# días}}",
-      "dailyHistoryReferenceHint": "La línea marca tu daily allowance de hoy ({amount})"
+      "dailyHistoryReferenceHint": "La línea marca tu daily allowance de hoy ({amount})",
+      "recoveryThirdSpend": "{days, plural, one {# día gastando un tercio} other {# días gastando un tercio}}",
+      "recoveryQuarterSpend": "{days, plural, one {# día gastando un cuarto} other {# días gastando un cuarto}}"
     },
     "empty": {
       "title": "No tienes presupuesto para {period} en {currency}",
