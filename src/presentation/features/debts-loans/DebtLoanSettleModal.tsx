@@ -14,8 +14,6 @@ import { Modal } from '@/presentation/components/ui/Modal';
 import { formatCurrency } from '@/lib/format';
 import { cn } from '@/lib/utils';
 
-type SettleMode = 'real' | 'informal';
-
 export interface DebtLoanSettleInput {
   type: DebtLoanType;
   amount: number;
@@ -38,8 +36,9 @@ interface DebtLoanSettleModalProps {
  *    otherwise it locks to the single side with pending.
  *  - an **amount** (capped at the selected direction's pending total, with a
  *    "Todo" shortcut). The backend distributes it FIFO (oldest-first).
- *  - a **mode** (real-payment moves the currency pool / informal-close only
- *    marks SETTLED).
+ *
+ * Settling is ALWAYS a real payment: it moves the currency pool. The informal
+ * close is still supported by the API but is no longer offered here.
  *
  * State lives in `<Body>`; the outer shell remounts via
  * `key={row.reference + row.currency}` so reopening for another row resets
@@ -93,7 +92,6 @@ function Body({
 
   const [type, setType] = useState<DebtLoanType>(hasDebt ? 'DEBT' : 'LOAN');
   const [amount, setAmount] = useState<number>(pendingFor(hasDebt ? 'DEBT' : 'LOAN'));
-  const [mode, setMode] = useState<SettleMode>('real');
   const [touched, setTouched] = useState(false);
 
   const pending = pendingFor(type);
@@ -135,7 +133,10 @@ function Body({
       setTouched(true);
       return;
     }
-    onConfirm({ type, amount, realPayment: mode === 'real' });
+    // Always a real payment. The mode selector asked a question with one
+    // real answer, and picking the other silently skipped the currency pool —
+    // a setting you could get wrong without noticing until the balance drifted.
+    onConfirm({ type, amount, realPayment: true });
   }
 
   return (
@@ -208,52 +209,6 @@ function Body({
         {touched && invalid && <p className="text-xs text-destructive">{t('invalidAmount')}</p>}
         <p className="text-xs text-muted-foreground">{t('fifoNote')}</p>
       </div>
-
-      <fieldset className="space-y-2">
-        <legend className="text-sm font-medium">{t('mode')}</legend>
-
-        <label
-          className={cn(
-            'flex cursor-pointer items-start gap-3 rounded-md border border-border p-3 transition-colors',
-            mode === 'real' ? 'border-primary bg-primary/5' : 'hover:bg-muted',
-          )}
-        >
-          <input
-            type="radio"
-            name="dl-settle-mode"
-            value="real"
-            checked={mode === 'real'}
-            onChange={() => setMode('real')}
-            className="mt-0.5"
-          />
-          <div className="text-sm">
-            <p className="font-medium">{t('real')}</p>
-            <p className="text-xs text-muted-foreground">
-              {t('realHint', { currency: row.currency })}
-            </p>
-          </div>
-        </label>
-
-        <label
-          className={cn(
-            'flex cursor-pointer items-start gap-3 rounded-md border border-border p-3 transition-colors',
-            mode === 'informal' ? 'border-primary bg-primary/5' : 'hover:bg-muted',
-          )}
-        >
-          <input
-            type="radio"
-            name="dl-settle-mode"
-            value="informal"
-            checked={mode === 'informal'}
-            onChange={() => setMode('informal')}
-            className="mt-0.5"
-          />
-          <div className="text-sm">
-            <p className="font-medium">{t('informal')}</p>
-            <p className="text-xs text-muted-foreground">{t('informalHint')}</p>
-          </div>
-        </label>
-      </fieldset>
 
       <div className="flex justify-end gap-2">
         <button

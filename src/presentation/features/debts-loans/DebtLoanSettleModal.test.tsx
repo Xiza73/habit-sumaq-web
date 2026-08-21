@@ -82,7 +82,7 @@ describe('DebtLoanSettleModal', () => {
     expect(amount).toHaveValue(300);
   });
 
-  it('confirms with the DEBT direction, amount and realPayment=true by default (real mode)', async () => {
+  it('confirms with the DEBT direction, amount and realPayment=true', async () => {
     const user = userEvent.setup();
     const { onConfirm } = renderModal(makeRow({ pendingDebt: 500, pendingLoan: 0, netOwed: -500 }));
 
@@ -95,14 +95,28 @@ describe('DebtLoanSettleModal', () => {
     expect(onConfirm).toHaveBeenCalledWith({ type: 'DEBT', amount: 200, realPayment: true });
   });
 
-  it('confirms with realPayment=false when informal mode is selected', async () => {
-    const user = userEvent.setup();
-    const { onConfirm } = renderModal(makeRow({ pendingDebt: 0, pendingLoan: 400, netOwed: 400 }));
+  it('offers no settle-mode choice at all', () => {
+    // Settling is always a real payment now. The radio group asked a question
+    // with one real answer, and picking the other one silently skipped the
+    // currency pool — a setting you could get wrong without noticing.
+    renderModal(makeRow({ pendingDebt: 500, pendingLoan: 300, netOwed: -200 }));
 
-    await user.click(screen.getByRole('radio', { name: /Cierre informal/i }));
+    // The DIRECTION radios stay — this row has pending on both sides, so
+    // choosing debt vs loan is a real question. What is gone is the mode
+    // group: its legend and both of its options.
+    expect(screen.queryByText('¿Cómo lo cerrás?')).not.toBeInTheDocument();
+    expect(screen.queryByText('Pago real')).not.toBeInTheDocument();
+    expect(screen.queryByText('Cierre informal')).not.toBeInTheDocument();
+    expect(screen.queryAllByRole('radio')).toHaveLength(2);
+  });
+
+  it('still sends realPayment=true with no selector present', async () => {
+    const user = userEvent.setup();
+    const { onConfirm } = renderModal(makeRow({ pendingDebt: 500, pendingLoan: 0, netOwed: -500 }));
+
     await user.click(screen.getByRole('button', { name: /^Confirmar$/i }));
 
-    expect(onConfirm).toHaveBeenCalledWith({ type: 'LOAN', amount: 400, realPayment: false });
+    expect(onConfirm).toHaveBeenCalledWith(expect.objectContaining({ realPayment: true }));
   });
 
   it('blocks confirm when the amount exceeds the selected direction pending total', async () => {
