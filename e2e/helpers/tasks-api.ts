@@ -57,7 +57,7 @@ export interface SeededTask {
   sectionId: string;
   title: string;
   description: string | null;
-  completed: boolean;
+  status: 'PENDING' | 'IN_REVIEW' | 'DONE';
   completedAt: string | null;
   position: number;
 }

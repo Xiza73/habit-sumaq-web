@@ -9,13 +9,15 @@ import {
 
 test.describe('Tasks — complete', () => {
   /**
-   * Toggling the checkbox on a task fires the optimistic update in
-   * `useUpdateTask` — the card UI flips to "completed" before the network
-   * round-trip. We verify both:
-   *  - The UI shows the line-through/check (visible state change).
-   *  - The backend persists `completed: true` + `completedAt: <date>`.
+   * The checkbox cycles PENDING -> IN_REVIEW -> DONE, so reaching "done"
+   * takes two clicks, and the middle state renders as `indeterminate`
+   * rather than checked.
+   *
+   * Both hops are verified against the browser AND the backend: the
+   * optimistic update in `useUpdateTask` flips the control before the PATCH
+   * lands, so asserting only the UI would pass even if nothing persisted.
    */
-  test('toggling the checkbox marks the task completed and persists it', async ({
+  test('cycles the checkbox through review to done and persists each hop', async ({
     auth,
   }, testInfo) => {
     for (const s of await listSections(auth.api)) await deleteSection(auth.api, s.id);
@@ -38,23 +40,41 @@ test.describe('Tasks — complete', () => {
       const checkbox = row.getByRole('checkbox');
       await expect(checkbox).not.toBeChecked();
 
+      // First hop: pending -> in review. Indeterminate, NOT checked — saying
+      // "done" here would be the bug the third state exists to avoid.
       await checkbox.click();
-
-      // Optimistic update — checkbox flips before the PATCH lands.
-      await expect(checkbox).toBeChecked();
-
-      // Backend persists the toggle. Poll because the optimistic UI may
-      // have already moved past the PATCH; we want to confirm the server
-      // saw it.
+      await expect(checkbox).not.toBeChecked();
       await expect
         .poll(
           async () => {
             const tasks = await listTasks(auth.api);
-            return tasks.find((t) => t.id === task.id)?.completed;
+            return tasks.find((t) => t.id === task.id)?.status;
           },
-          { message: 'backend did not persist completed=true', timeout: 5_000 },
+          { message: 'backend did not persist IN_REVIEW', timeout: 5_000 },
         )
-        .toBe(true);
+        .toBe('IN_REVIEW');
+
+      // `completedAt` must still be null: it is what the weekly cleanup
+      // measures against, so stamping it mid-validation would make an
+      // unfinished task sweepable.
+      const inReview = (await listTasks(auth.api)).find((t) => t.id === task.id);
+      expect(inReview?.completedAt).toBeNull();
+
+      // Second hop: in review -> done.
+      await checkbox.click();
+      await expect(checkbox).toBeChecked();
+      await expect
+        .poll(
+          async () => {
+            const tasks = await listTasks(auth.api);
+            return tasks.find((t) => t.id === task.id)?.status;
+          },
+          { message: 'backend did not persist DONE', timeout: 5_000 },
+        )
+        .toBe('DONE');
+
+      const done = (await listTasks(auth.api)).find((t) => t.id === task.id);
+      expect(done?.completedAt).not.toBeNull();
     } finally {
       // Cascade — deleting the section wipes the task.
       await deleteSection(auth.api, section.id);
