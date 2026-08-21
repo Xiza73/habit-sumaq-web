@@ -16,6 +16,8 @@ import { type Currency } from '@/core/domain/enums/currency.enum';
 
 import { ApiError } from '@/infrastructure/api/api-error';
 
+import { DatePicker } from '@/presentation/components/ui/DatePicker';
+
 import { formatCurrency } from '@/lib/format';
 
 /**
@@ -62,15 +64,22 @@ export function DebtLoanPaymentsList({ debtId, fallbackCurrency }: DebtLoanPayme
     });
   }
 
-  function handleSave(payment: DebtLoanPayment, amount: number, note: string) {
+  function handleSave(payment: DebtLoanPayment, amount: number, note: string, paidAt: string) {
     const trimmedNote = note.trim();
-    const data: { amount?: number; note?: string | null } = {};
+    const data: { amount?: number; note?: string | null; paidAt?: string } = {};
     if (amount !== payment.amount) data.amount = amount;
     // Backend treats `null` as "clear the note". A blank submit on a
     // previously-empty note is a no-op we don't want to send (would
     // trigger DBT_009).
     const prevNote = payment.note ?? '';
     if (trimmedNote !== prevNote) data.note = trimmedNote === '' ? null : trimmedNote;
+
+    // Compared on the calendar day, which is all the picker can express —
+    // comparing full instants would send a "change" on every save, since the
+    // stored time-of-day is not in the control.
+    if (paidAt !== payment.paidAt.slice(0, 10)) {
+      data.paidAt = new Date(`${paidAt}T12:00:00`).toISOString();
+    }
 
     if (Object.keys(data).length === 0) {
       // Nothing actually changed — collapse the form and skip the
@@ -117,7 +126,7 @@ export function DebtLoanPaymentsList({ debtId, fallbackCurrency }: DebtLoanPayme
             fallbackCurrency={fallbackCurrency}
             saving={updateMutation.isPending}
             onCancel={() => setEditingId(null)}
-            onSave={(amount, note) => handleSave(p, amount, note)}
+            onSave={(amount, note, paidAt) => handleSave(p, amount, note, paidAt)}
           />
         ) : (
           <PaymentReadRow
@@ -160,7 +169,7 @@ function PaymentReadRow({
             </span>
           )}
           <span className="text-muted-foreground">
-            · {new Date(payment.createdAt).toLocaleString()}
+            · {new Date(payment.paidAt).toLocaleDateString()}
           </span>
         </div>
         {payment.note && <p className="mt-0.5 break-words text-muted-foreground">{payment.note}</p>}
@@ -202,11 +211,13 @@ function PaymentEditRow({
   fallbackCurrency: Currency;
   saving: boolean;
   onCancel: () => void;
-  onSave: (amount: number, note: string) => void;
+  onSave: (amount: number, note: string, paidAt: string) => void;
 }) {
   const t = useTranslations('debts.detail.payments');
   const [amount, setAmount] = useState(String(payment.amount));
   const [note, setNote] = useState(payment.note ?? '');
+  // `YYYY-MM-DD` for the picker; the instant is rebuilt on submit.
+  const [paidAt, setPaidAt] = useState(payment.paidAt.slice(0, 10));
 
   const parsedAmount = Number(amount);
   const isAmountValid = Number.isFinite(parsedAmount) && parsedAmount > 0;
@@ -215,7 +226,7 @@ function PaymentEditRow({
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!isAmountValid || saving) return;
-    onSave(parsedAmount, note);
+    onSave(parsedAmount, note, paidAt);
   }
 
   return (
@@ -237,6 +248,16 @@ function PaymentEditRow({
             />
             <span className="text-[10px] uppercase tracking-wide">{displayCurrency}</span>
           </label>
+
+          <div className="w-40">
+            <DatePicker
+              compact
+              value={paidAt}
+              onChange={setPaidAt}
+              disabled={saving}
+              aria-label={t('paidAtLabel')}
+            />
+          </div>
         </div>
         <input
           type="text"
