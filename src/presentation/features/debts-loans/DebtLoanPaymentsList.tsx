@@ -11,6 +11,7 @@ import {
   useDeleteDebtLoanPayment,
   useUpdateDebtLoanPayment,
 } from '@/core/application/hooks/use-debts-loans';
+import { useDateFormat } from '@/core/application/hooks/use-user-settings';
 import { type DebtLoanPayment } from '@/core/domain/entities/debt-loan';
 import { type Currency } from '@/core/domain/enums/currency.enum';
 
@@ -18,7 +19,7 @@ import { ApiError } from '@/infrastructure/api/api-error';
 
 import { DatePicker } from '@/presentation/components/ui/DatePicker';
 
-import { formatCurrency } from '@/lib/format';
+import { formatCurrency, formatDate } from '@/lib/format';
 
 /**
  * Payment history for a single active debt/loan row. Rendered inline
@@ -157,6 +158,7 @@ function PaymentReadRow({
   onDelete: () => void;
 }) {
   const t = useTranslations('debts.detail.payments');
+  const dateFormat = useDateFormat();
   const displayCurrency = payment.currency ?? fallbackCurrency;
   return (
     <li className="flex items-start justify-between gap-2 rounded-md bg-muted/40 px-2 py-1.5 text-xs">
@@ -169,7 +171,10 @@ function PaymentReadRow({
             </span>
           )}
           <span className="text-muted-foreground">
-            · {new Date(payment.paidAt).toLocaleDateString()}
+            {/* `formatDate`, not `toLocaleDateString`: the latter formats in
+                the BROWSER locale and ignores the user's `dateFormat`
+                preference, which is what every other date in the app honours. */}
+            · {formatDate(payment.paidAt, dateFormat)}
           </span>
         </div>
         {payment.note && <p className="mt-0.5 break-words text-muted-foreground">{payment.note}</p>}
