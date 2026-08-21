@@ -325,7 +325,8 @@
       "paid": "Em dia",
       "today": "Toca hoje",
       "pending": "Pendente",
-      "overdue": "Atrasado · {period}"
+      "overdue": "Atrasado · {period}",
+      "pastDueDay": "Passou a data"
     },
     "actions": {
       "pay": "Pagar",
@@ -902,6 +903,11 @@
         "subtitleToday": "É hoje",
         "subtitleAt": "É hoje às {time}",
         "subtitleOverdue": "{days, plural, one {Pendente há # dia} other {Pendente há # dias}}"
+      },
+      "servicePastDueDay": {
+        "title": "Passou a data: {name}",
+        "subtitle": "{days, plural, one {Há # dia} other {Há # dias}} do dia {day}",
+        "subtitleWithAmount": "{days, plural, one {Há # dia} other {Há # dias}} · {amount}"
       }
     }
   },

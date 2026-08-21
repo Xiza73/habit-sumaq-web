@@ -22,6 +22,7 @@ describe('getAlertHref', () => {
   // Cross-reference: `NAV_SECTIONS` in `src/presentation/components/layout/Sidebar.tsx`.
   const EXPECTED_HREFS: Record<Alert['type'], string> = {
     'service-due-today': '/services',
+    'service-past-due-day': '/services',
     'service-overdue': '/services',
     'habits-midday': '/habits',
     'budget-unlogged': '/budgets',

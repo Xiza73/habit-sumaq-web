@@ -325,7 +325,8 @@
       "paid": "Up to date",
       "today": "Due today",
       "pending": "Pending",
-      "overdue": "Overdue · {period}"
+      "overdue": "Overdue · {period}",
+      "pastDueDay": "Past due date"
     },
     "actions": {
       "pay": "Pay",
@@ -902,6 +903,11 @@
         "subtitleToday": "Due today",
         "subtitleAt": "Due today at {time}",
         "subtitleOverdue": "{days, plural, one {Pending for # day} other {Pending for # days}}"
+      },
+      "servicePastDueDay": {
+        "title": "Past due date: {name}",
+        "subtitle": "{days, plural, one {# day} other {# days}} past day {day}",
+        "subtitleWithAmount": "{days, plural, one {# day} other {# days}} past · {amount}"
       }
     }
   },

@@ -95,6 +95,43 @@ describe('AlertItem', () => {
       });
     });
 
+    describe('service-past-due-day', () => {
+      function pastDue(daysPastDueDay: number, estimatedAmount: number | null = null) {
+        return makeAlert({
+          type: 'service-past-due-day',
+          payload: {
+            serviceName: 'Luz',
+            dueDay: 15,
+            daysPastDueDay,
+            currency: 'PEN',
+            estimatedAmount,
+          },
+        });
+      }
+
+      it('says the date went by rather than claiming it is today', () => {
+        renderItem(pastDue(4));
+
+        expect(screen.getByText(/Pasó la fecha: Luz/)).toBeInTheDocument();
+        expect(screen.queryByText(/hoy/i)).not.toBeInTheDocument();
+      });
+
+      it('counts how long it has been waiting', () => {
+        renderItem(pastDue(4));
+        expect(screen.getByText(/Hace 4 días del día 15/)).toBeInTheDocument();
+      });
+
+      it('uses the singular for one day', () => {
+        renderItem(pastDue(1));
+        expect(screen.getByText(/Hace 1 día del día 15/)).toBeInTheDocument();
+      });
+
+      it('shows the estimated amount when there is one', () => {
+        renderItem(pastDue(4, 45.9));
+        expect(screen.getByText(/45[.,]9/)).toBeInTheDocument();
+      });
+    });
+
     describe('service-due-today with no approximate day', () => {
       // The backend opens the alert for the last 3 days of the period when the
       // service has no `dueDay`. There is no day to print, so "Día {day} del
