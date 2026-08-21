@@ -39,6 +39,14 @@ vi.mock('@/presentation/components/ui/DatePicker', () => ({
   ),
 }));
 
+// The user's `dateFormat` preference, so the row can be checked against a
+// format the browser locale would never produce on its own.
+const mockDateFormat = vi.fn(() => 'DD/MM/YYYY');
+vi.mock('@/core/application/hooks/use-user-settings', async (importOriginal) => ({
+  ...(await importOriginal<object>()),
+  useDateFormat: () => mockDateFormat(),
+}));
+
 vi.mock('sonner', () => ({
   toast: { success: vi.fn(), error: vi.fn() },
 }));
@@ -137,6 +145,29 @@ describe('DebtLoanPaymentsList', () => {
     expect(vi.mocked(debtsLoansApi.updatePayment).mock.calls[0][1]).not.toHaveProperty('createdAt');
   });
 
+  it("renders the date in the user's configured format", async () => {
+    // `toLocaleDateString()` formats in the BROWSER locale, which ignores the
+    // preference entirely — a user set to DD/MM/YYYY saw whatever Chrome felt
+    // like. Every other date in the app goes through `formatDate`.
+    mockDateFormat.mockReturnValue('DD/MM/YYYY');
+    vi.mocked(debtsLoansApi.listPayments).mockResolvedValue([
+      makePayment({ paidAt: '2026-04-02T12:00:00.000Z' }),
+    ]);
+    renderList();
+
+    expect(await screen.findByText(/02\/04\/2026/)).toBeInTheDocument();
+  });
+
+  it('follows the preference when it changes', async () => {
+    mockDateFormat.mockReturnValue('YYYY-MM-DD');
+    vi.mocked(debtsLoansApi.listPayments).mockResolvedValue([
+      makePayment({ paidAt: '2026-04-02T12:00:00.000Z' }),
+    ]);
+    renderList();
+
+    expect(await screen.findByText(/2026-04-02/)).toBeInTheDocument();
+  });
+
   it('shows the payment date from paidAt, not createdAt', async () => {
     // A backdated payment must read as its real date. Showing createdAt here
     // is exactly the bug: the row would keep claiming the day it was entered.
@@ -145,7 +176,8 @@ describe('DebtLoanPaymentsList', () => {
     ]);
     renderList();
 
-    expect(await screen.findByText(/2\/4\/2026|4\/2\/2026/)).toBeInTheDocument();
+    mockDateFormat.mockReturnValue('DD/MM/YYYY');
+    expect(await screen.findByText(/02\/04\/2026/)).toBeInTheDocument();
   });
 
   it('calls the delete mutation after confirmation', async () => {
