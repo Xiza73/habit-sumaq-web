@@ -249,6 +249,29 @@ Los empates se rompen por hora, y los sin hora van antes porque vencen desde el 
 
 ---
 
+### Estados de un servicio mensual
+
+| Situación | Estado | Tono |
+| --------- | ------ | ---- |
+| Antes del día aproximado | `pending` | ámbar |
+| **Exactamente** ese día | `today` | primario |
+| Ya pasó ese día, mismo mes, impago | `pastDueDay` | naranja |
+| Pasó el mes entero | `overdue` | rojo |
+| Pagado | `paid` | verde |
+
+`today` corría **desde** el día aproximado en adelante, lo que mantenía el servicio accionable
+todo el mes — correcto — pero etiquetaba el 28 como "toca hoy" porque la referencia era el 15.
+Los dos siguen siendo accionables; simplemente dejan de decir que son el mismo día.
+
+Un servicio **sin** `dueDay` no tiene día que pasar: se queda en `pending` todo el período.
+`overdue` y `paid` siguen ganándole a los dos.
+
+Quehaceres mantiene igualdad exacta y **no** tiene estado equivalente: su `nextDueDate` es una
+fecha exacta calculada que se corre al completar, así que no hay nada que "pasar" dentro de un
+período.
+
+---
+
 ## Presupuestos
 
 1. **Uno por (usuario, año-mes, moneda).** El backend rechaza un segundo con esa misma terna.
