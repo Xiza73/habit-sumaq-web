@@ -41,13 +41,17 @@ export interface BudgetRecoveryPlan {
    */
   zeroSpendDays: number | null;
   /**
-   * Whole days at half the opening allowance — twice the zero-spend count —
-   * or `null` when that does not FIT in the days the month has left.
+   * The gentlest partial-spend plan that still fits the days the month has
+   * left, or `null` when not even the strictest one does.
    *
-   * Bounded independently: being twice as long, it runs out of month first.
+   * `k_f = k0 / (1 - f)`, so spending LESS takes FEWER days: half is 2×k0,
+   * a third 1.5×k0, a quarter 1.33×k0. The ladder runs longest-first and
+   * stops at the first rung that fits.
    */
-  halfSpendDays: number | null;
+  partialSpend: { fraction: PartialSpendFraction; days: number } | null;
 }
+
+export type PartialSpendFraction = 'HALF' | 'THIRD' | 'QUARTER';
 
 export interface BudgetWithKpi extends Budget {
   spent: number;

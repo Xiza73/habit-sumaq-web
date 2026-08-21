@@ -24,7 +24,7 @@ const baseTask: Task = {
   sectionId: 'sec-1',
   title: 'Llamar al banco',
   description: null,
-  completed: false,
+  status: 'PENDING',
   completedAt: null,
   position: 1,
   createdAt: '2026-04-20T00:00:00.000Z',
@@ -69,29 +69,59 @@ describe('TaskItem', () => {
     rerender(
       <DndContext>
         <SortableContext items={['tk-1']} strategy={verticalListSortingStrategy}>
-          <TaskItem task={{ ...baseTask, completed: true }} onEdit={vi.fn()} />
+          <TaskItem task={{ ...baseTask, status: 'DONE' }} onEdit={vi.fn()} />
         </SortableContext>
       </DndContext>,
     );
     expect(screen.getByRole('checkbox')).toBeChecked();
   });
 
-  it('toggles `completed` when the checkbox is clicked', async () => {
+  it('moves a pending task into review, not straight to done', async () => {
+    // The control cycles pending -> in review -> done -> pending. Jumping a
+    // pending task straight to done would make the middle state unreachable
+    // from the only control the row has.
     const user = userEvent.setup();
     renderItem();
 
     await user.click(screen.getByRole('checkbox'));
 
-    expect(mockUpdateMutate).toHaveBeenCalledWith({ id: 'tk-1', data: { completed: true } });
+    expect(mockUpdateMutate).toHaveBeenCalledWith({ id: 'tk-1', data: { status: 'IN_REVIEW' } });
   });
 
-  it('un-completes a completed task when the checkbox is unchecked', async () => {
+  it('moves a task in review to done', async () => {
     const user = userEvent.setup();
-    renderItem({ task: { completed: true } });
+    renderItem({ task: { status: 'IN_REVIEW' } });
 
     await user.click(screen.getByRole('checkbox'));
 
-    expect(mockUpdateMutate).toHaveBeenCalledWith({ id: 'tk-1', data: { completed: false } });
+    expect(mockUpdateMutate).toHaveBeenCalledWith({ id: 'tk-1', data: { status: 'DONE' } });
+  });
+
+  it('shows a task in review as indeterminate, not checked', () => {
+    // `indeterminate` is literally "partially done", which is what in-review
+    // means. Rendering it checked would say the task is finished.
+    renderItem({ task: { status: 'IN_REVIEW' } });
+
+    const box = screen.getByRole<HTMLInputElement>('checkbox');
+    expect(box.indeterminate).toBe(true);
+    expect(box).not.toBeChecked();
+  });
+
+  it('labels the checkbox with the state it moves TO', () => {
+    renderItem();
+    expect(screen.getByRole('checkbox')).toHaveAccessibleName(/validación/i);
+
+    renderItem({ task: { status: 'IN_REVIEW' } });
+    expect(screen.getAllByRole('checkbox')[1]).toHaveAccessibleName(/hecha/i);
+  });
+
+  it('cycles a done task back to pending', async () => {
+    const user = userEvent.setup();
+    renderItem({ task: { status: 'DONE' } });
+
+    await user.click(screen.getByRole('checkbox'));
+
+    expect(mockUpdateMutate).toHaveBeenCalledWith({ id: 'tk-1', data: { status: 'PENDING' } });
   });
 
   it('calls onEdit when the edit button is clicked', async () => {

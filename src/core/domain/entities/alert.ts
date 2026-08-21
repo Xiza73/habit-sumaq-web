@@ -12,6 +12,7 @@
 
 export const ALERT_TYPES = [
   'service-due-today',
+  'service-past-due-day',
   'service-overdue',
   'habits-midday',
   'budget-unlogged',
@@ -46,6 +47,19 @@ export interface AlertPayloads {
      * timezone lives there, so the client never derives "what day is it".
      */
     daysLeftInPeriod: number | null;
+    currency: string;
+    estimatedAmount: number | null;
+  };
+  /**
+   * Still due this period, unpaid, and the approximate payment day has gone
+   * by. Distinct from `service-due-today`, which is that day itself, and from
+   * `service-overdue`, which is the whole period having elapsed.
+   */
+  'service-past-due-day': {
+    serviceId: string;
+    serviceName: string;
+    dueDay: number;
+    daysPastDueDay: number;
     currency: string;
     estimatedAmount: number | null;
   };
@@ -130,6 +144,7 @@ export interface AlertsListResponse {
 export function getAlertHref(alert: Alert): string | null {
   switch (alert.type) {
     case 'service-due-today':
+    case 'service-past-due-day':
     case 'service-overdue':
       return '/services';
     case 'habits-midday':

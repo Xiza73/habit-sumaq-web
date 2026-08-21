@@ -325,7 +325,8 @@
       "paid": "Al día",
       "today": "Toca hoy",
       "pending": "Pendiente",
-      "overdue": "Atrasado · {period}"
+      "overdue": "Atrasado · {period}",
+      "pastDueDay": "Pasó la fecha"
     },
     "actions": {
       "pay": "Pagar",
@@ -517,7 +518,9 @@
       "diffVsOriginalBelow": "Por DEBAJO al día — vas bien 🎉",
       "diffVsOriginalAbove": "Por ENCIMA al día — atento",
       "dailyHistoryTitle": "Últimos {count, plural, one {# día} other {# días}}",
-      "dailyHistoryReferenceHint": "La línea marca tu daily allowance de hoy ({amount})"
+      "dailyHistoryReferenceHint": "La línea marca tu daily allowance de hoy ({amount})",
+      "recoveryThirdSpend": "{days, plural, one {# día gastando un tercio} other {# días gastando un tercio}}",
+      "recoveryQuarterSpend": "{days, plural, one {# día gastando un cuarto} other {# días gastando un cuarto}}"
     },
     "empty": {
       "title": "No tienes presupuesto para {period} en {currency}",
@@ -735,7 +738,9 @@
       "createSuccess": "Sección creada",
       "editSuccess": "Sección actualizada",
       "emptyTasks": "Sin tareas en esta sección",
-      "toggle": "Mostrar u ocultar la sección {name}"
+      "toggle": "Mostrar u ocultar la sección {name}",
+      "inReview": "En validación",
+      "inReviewShort": "⏳"
     },
     "task": {
       "add": "Nueva tarea",
@@ -759,7 +764,10 @@
       "markComplete": "Marcar como hecha",
       "markIncomplete": "Marcar como pendiente",
       "dragHandle": "Arrastrar tarea",
-      "createNeedsSection": "Crea una sección primero"
+      "createNeedsSection": "Crea una sección primero",
+      "markInReview": "Marcar en validación",
+      "markDone": "Marcar como hecha",
+      "markPending": "Marcar como pendiente"
     }
   },
   "quickTasks": {
@@ -902,6 +910,11 @@
         "subtitleToday": "Toca hoy",
         "subtitleAt": "Toca hoy a las {time}",
         "subtitleOverdue": "{days, plural, one {Hace # día} other {Hace # días}} que está pendiente"
+      },
+      "servicePastDueDay": {
+        "title": "Pasó la fecha: {name}",
+        "subtitle": "{days, plural, one {Hace # día} other {Hace # días}} del día {day}",
+        "subtitleWithAmount": "{days, plural, one {Hace # día} other {Hace # días}} · {amount}"
       }
     }
   },
@@ -1029,7 +1042,8 @@
         "delete": "Eliminar pago",
         "deleteConfirm": "¿Eliminar este pago?",
         "updateSuccess": "Pago actualizado",
-        "deleteSuccess": "Pago eliminado"
+        "deleteSuccess": "Pago eliminado",
+        "paidAtLabel": "Fecha del pago"
       }
     },
     "table": {

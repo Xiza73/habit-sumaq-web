@@ -37,20 +37,41 @@ describe('resolveMonthlyServiceStatus', () => {
       expect(resolveMonthlyServiceStatus({ ...unpaid, dueDay: 15 }, 1)).toBe('pending');
     });
 
-    it('STAYS today after the due day, because the date is approximate', () => {
-      // The field is labelled "Día aproximado de vencimiento — solo para
-      // ordenar y recordar". Matching it exactly would read an approximate
-      // value as an exact one, leaving the state alive for a single day a
-      // month: miss that day and you miss it entirely. Bills get paid on or
-      // after their reference date.
-      expect(resolveMonthlyServiceStatus({ ...unpaid, dueDay: 15 }, 16)).toBe('today');
-      expect(resolveMonthlyServiceStatus({ ...unpaid, dueDay: 15 }, 28)).toBe('today');
-      expect(resolveMonthlyServiceStatus({ ...unpaid, dueDay: 15 }, 31)).toBe('today');
+    it('becomes pastDueDay after the due day, not a stretched today', () => {
+      // It stays actionable — the field is approximate and the bill is still
+      // payable this month — but calling the 28th "today" because the
+      // reference date was the 15th is simply false. The state now says which
+      // side of that date we are on.
+      expect(resolveMonthlyServiceStatus({ ...unpaid, dueDay: 15 }, 16)).toBe('pastDueDay');
+      expect(resolveMonthlyServiceStatus({ ...unpaid, dueDay: 15 }, 28)).toBe('pastDueDay');
+      expect(resolveMonthlyServiceStatus({ ...unpaid, dueDay: 15 }, 31)).toBe('pastDueDay');
     });
 
-    it('is today from day 1 when the due day is the 1st', () => {
+    it('is today on day 1 and pastDueDay afterwards when the due day is the 1st', () => {
+      // Pins what the old day-1 case really guarded: such a service does not
+      // go quiet for the rest of the month.
       expect(resolveMonthlyServiceStatus({ ...unpaid, dueDay: 1 }, 1)).toBe('today');
-      expect(resolveMonthlyServiceStatus({ ...unpaid, dueDay: 1 }, 20)).toBe('today');
+      expect(resolveMonthlyServiceStatus({ ...unpaid, dueDay: 1 }, 20)).toBe('pastDueDay');
+    });
+
+    it('never reports pastDueDay for a service with no due day', () => {
+      // No anchor means no day to be past. It stays pending all period.
+      expect(resolveMonthlyServiceStatus({ ...unpaid, dueDay: null }, 28)).toBe('pending');
+    });
+
+    it('keeps overdue and paid ahead of pastDueDay', () => {
+      expect(
+        resolveMonthlyServiceStatus(
+          { isOverdue: true, isPaidForCurrentMonth: false, dueDay: 15 },
+          28,
+        ),
+      ).toBe('overdue');
+      expect(
+        resolveMonthlyServiceStatus(
+          { isOverdue: false, isPaidForCurrentMonth: true, dueDay: 15 },
+          28,
+        ),
+      ).toBe('paid');
     });
 
     it('stays pending when the service has no due day at all', () => {

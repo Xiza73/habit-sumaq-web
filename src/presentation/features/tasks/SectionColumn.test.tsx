@@ -45,7 +45,7 @@ function makeTask(overrides: Partial<Task> = {}): Task {
     sectionId: 'sec-1',
     title: 'Comprar pan',
     description: null,
-    completed: false,
+    status: 'PENDING',
     completedAt: null,
     position: 1,
     createdAt: '2026-04-20T00:00:00.000Z',
@@ -58,6 +58,7 @@ function renderColumn(
   overrides: {
     section?: Partial<Section>;
     pendingTasks?: Task[];
+    inReviewTasks?: Task[];
     completedTasks?: Task[];
     sortable?: boolean;
   } = {},
@@ -66,6 +67,7 @@ function renderColumn(
   const props = {
     section,
     pendingTasks: overrides.pendingTasks ?? [],
+    inReviewTasks: overrides.inReviewTasks ?? [],
     completedTasks: overrides.completedTasks ?? [],
     sortable: overrides.sortable ?? false,
     onAddTask: vi.fn(),
@@ -97,7 +99,7 @@ describe('SectionColumn', () => {
   it('renders the section name and the counters', () => {
     renderColumn({
       pendingTasks: [makeTask({ id: 'a' }), makeTask({ id: 'b' })],
-      completedTasks: [makeTask({ id: 'c', completed: true })],
+      completedTasks: [makeTask({ id: 'c', status: 'DONE' })],
     });
     expect(screen.getByRole('heading', { level: 2, name: 'Trabajo' })).toBeInTheDocument();
     // Counter shows "2 · 1 ✓" — pending count first, completed after a

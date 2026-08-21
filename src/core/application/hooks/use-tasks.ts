@@ -32,7 +32,7 @@ export function useCreateTask() {
 }
 
 /**
- * Optimistic toggle for `completed` so the checkbox feels instant. Other
+ * Optimistic status change so the control feels instant. Other
  * field updates (title, description, sectionId) wait for the round trip
  * since they don't have a "lights up immediately" UX expectation.
  */
@@ -43,7 +43,7 @@ export function useUpdateTask() {
     mutationFn: ({ id, data }: { id: string; data: UpdateTaskInput }) => tasksApi.update(id, data),
 
     onMutate: async ({ id, data }) => {
-      if (data.completed === undefined) return;
+      if (data.status === undefined) return;
 
       await queryClient.cancelQueries({ queryKey: tasksKeys.list() });
       const previous = queryClient.getQueryData<Task[]>(tasksKeys.list());
@@ -54,8 +54,11 @@ export function useUpdateTask() {
             t.id === id
               ? {
                   ...t,
-                  completed: data.completed ?? t.completed,
-                  completedAt: data.completed ? new Date().toISOString() : null,
+                  status: data.status ?? t.status,
+                  // Mirrors the server: stamped only on entering DONE, and
+                  // cleared on leaving — including back to IN_REVIEW, so the
+                  // task stops being eligible for the weekly sweep.
+                  completedAt: data.status === 'DONE' ? new Date().toISOString() : null,
                 }
               : t,
           ),
