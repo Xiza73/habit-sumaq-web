@@ -1,5 +1,7 @@
 import { z } from 'zod/v4';
 
+import { TASK_STATUSES } from '@/core/domain/entities/task';
+
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export const createTaskSchema = z.object({
@@ -12,7 +14,7 @@ export type CreateTaskInput = z.infer<typeof createTaskSchema>;
 export const updateTaskSchema = z.object({
   title: z.string().min(1, 'required').max(120, 'max_length').optional(),
   description: z.string().max(5000, 'max_length').nullable().optional(),
-  completed: z.boolean().optional(),
+  status: z.enum(TASK_STATUSES).optional(),
   /** Cross-section move — backend reassigns `position` to end of target. */
   sectionId: z.string().regex(UUID_REGEX, 'invalid_uuid').optional(),
 });

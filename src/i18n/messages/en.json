@@ -735,7 +735,9 @@
       "createSuccess": "Section created",
       "editSuccess": "Section updated",
       "emptyTasks": "No tasks in this section",
-      "toggle": "Show or hide the {name} section"
+      "toggle": "Show or hide the {name} section",
+      "inReview": "In review",
+      "inReviewShort": "⏳"
     },
     "task": {
       "add": "New task",
@@ -759,7 +761,10 @@
       "markComplete": "Mark as done",
       "markIncomplete": "Mark as pending",
       "dragHandle": "Drag task",
-      "createNeedsSection": "Create a section first"
+      "createNeedsSection": "Create a section first",
+      "markInReview": "Mark as in review",
+      "markDone": "Mark as done",
+      "markPending": "Mark as pending"
     }
   },
   "quickTasks": {

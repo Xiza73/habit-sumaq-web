@@ -9,12 +9,26 @@ import { ChevronDown, GripVertical, Pencil, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { useDeleteTask, useUpdateTask } from '@/core/application/hooks/use-tasks';
-import { type Task } from '@/core/domain/entities/task';
+import { type Task, type TaskStatus } from '@/core/domain/entities/task';
 
 import { ConfirmDialog } from '@/presentation/components/feedback/ConfirmDialog';
 import { QuickTaskMarkdown } from '@/presentation/features/quick-tasks/QuickTaskMarkdown';
 
 import { cn } from '@/lib/utils';
+
+/** Click order: pending → validating → done → pending. */
+const NEXT_STATUS: Record<TaskStatus, TaskStatus> = {
+  PENDING: 'IN_REVIEW',
+  IN_REVIEW: 'DONE',
+  DONE: 'PENDING',
+};
+
+/** Names the state the click MOVES TO, not the one it is in. */
+const NEXT_STATUS_LABEL: Record<TaskStatus, string> = {
+  PENDING: 'task.markInReview',
+  IN_REVIEW: 'task.markDone',
+  DONE: 'task.markPending',
+};
 
 interface TaskItemProps {
   task: Task;
@@ -56,7 +70,7 @@ export function TaskItem({ task, sortable = false, onEdit }: TaskItemProps) {
   const hasDescription = task.description !== null && task.description.trim().length > 0;
 
   function handleToggle() {
-    updateMutation.mutate({ id: task.id, data: { completed: !task.completed } });
+    updateMutation.mutate({ id: task.id, data: { status: NEXT_STATUS[task.status] } });
   }
 
   function handleRowExpand() {
@@ -88,7 +102,7 @@ export function TaskItem({ task, sortable = false, onEdit }: TaskItemProps) {
         style={style}
         className={cn(
           'group rounded-lg border border-border bg-card transition-colors',
-          task.completed && 'bg-muted/40',
+          task.status === 'DONE' && 'bg-muted/40',
         )}
       >
         <div
@@ -117,19 +131,27 @@ export function TaskItem({ task, sortable = false, onEdit }: TaskItemProps) {
             <span className="w-3" aria-hidden="true" />
           )}
 
+          {/* Three states in one control. `indeterminate` is exactly what
+              IN_REVIEW means — partially done — and clicking cycles forward,
+              with the label naming the state it is MOVING TO so the next
+              click is never a guess. */}
           <input
             type="checkbox"
-            checked={task.completed}
+            ref={(el) => {
+              if (el) el.indeterminate = task.status === 'IN_REVIEW';
+            }}
+            checked={task.status === 'DONE'}
             onChange={handleToggle}
             onClick={(e) => e.stopPropagation()}
-            aria-label={task.completed ? t('task.markIncomplete') : t('task.markComplete')}
+            aria-label={t(NEXT_STATUS_LABEL[task.status])}
             className="size-4 shrink-0 cursor-pointer rounded border-input accent-primary"
           />
 
           <span
             className={cn(
               'flex-1 min-w-0 truncate text-sm font-medium',
-              task.completed && 'text-muted-foreground line-through',
+              task.status === 'DONE' && 'text-muted-foreground line-through',
+              task.status === 'IN_REVIEW' && 'text-muted-foreground',
             )}
           >
             {task.title}

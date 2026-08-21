@@ -45,7 +45,7 @@ const mockTask: Task = {
   sectionId: sectionA.id,
   title: 'Llamar al banco',
   description: 'Preguntar por la tarjeta',
-  completed: false,
+  status: 'PENDING',
   completedAt: null,
   position: 1,
   createdAt: '2026-04-20T00:00:00.000Z',

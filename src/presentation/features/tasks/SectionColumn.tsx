@@ -33,6 +33,7 @@ import { TaskItem } from './TaskItem';
 interface SectionColumnProps {
   section: Section;
   pendingTasks: Task[];
+  inReviewTasks: Task[];
   completedTasks: Task[];
   /** True when the parent dashboard is rendering inside a sortable section context. */
   sortable: boolean;
@@ -63,6 +64,7 @@ interface SectionColumnProps {
 export function SectionColumn({
   section,
   pendingTasks,
+  inReviewTasks,
   completedTasks,
   sortable,
   onAddTask,
@@ -209,6 +211,7 @@ export function SectionColumn({
         <h2 className="flex-1 truncate text-sm font-semibold">{section.name}</h2>
         <span className="text-xs text-muted-foreground">
           {pendingTasks.length}
+          {inReviewTasks.length > 0 && ` · ${inReviewTasks.length} ${t('section.inReviewShort')}`}
           {completedTasks.length > 0 && ` · ${completedTasks.length} ✓`}
         </span>
         <div className="flex items-center gap-1">
@@ -250,7 +253,9 @@ export function SectionColumn({
 
       {!collapsed && (
         <div className="space-y-2 p-3 sm:p-4">
-          {pendingTasks.length === 0 && completedTasks.length === 0 ? (
+          {pendingTasks.length === 0 &&
+          inReviewTasks.length === 0 &&
+          completedTasks.length === 0 ? (
             <p className="py-4 text-center text-xs text-muted-foreground">
               {t('section.emptyTasks')}
             </p>
@@ -275,9 +280,28 @@ export function SectionColumn({
                 </DndContext>
               )}
 
-              {completedTasks.length > 0 && (
+              {/* Its own labelled group rather than folded into either
+                  neighbour: seeing what you are still checking is the entire
+                  reason the state exists. */}
+              {inReviewTasks.length > 0 && (
                 <>
                   {pendingTasks.length > 0 && (
+                    <div className="my-2 border-t border-dashed border-border" />
+                  )}
+                  <p className="mb-1 text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+                    {t('section.inReview')}
+                  </p>
+                  <div className="space-y-2">
+                    {inReviewTasks.map((task) => (
+                      <TaskItem key={task.id} task={task} onEdit={onEditTask} />
+                    ))}
+                  </div>
+                </>
+              )}
+
+              {completedTasks.length > 0 && (
+                <>
+                  {(pendingTasks.length > 0 || inReviewTasks.length > 0) && (
                     <div className="my-2 border-t border-dashed border-border" />
                   )}
                   <div className="space-y-2">
