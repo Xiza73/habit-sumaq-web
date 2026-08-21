@@ -61,7 +61,7 @@ export const settleAmountByReferenceSchema = z.object({
 export type SettleAmountByReferenceInput = z.infer<typeof settleAmountByReferenceSchema>;
 
 /**
- * PATCH /debts/payments/:paymentId — edit amount and/or note of a
+ * PATCH /debts/payments/:paymentId — edit amount, note and/or paidAt of a
  * payment in the history. The backend enforces "at least one field"
  * (DBT_009); we mirror it via `.refine` so the form rejects empty
  * submits before the network hop.
@@ -74,8 +74,13 @@ export const updateDebtLoanPaymentSchema = z
   .object({
     amount: z.number().min(0.01, 'min_amount').optional(),
     note: z.string().max(255).nullable().optional(),
+    /**
+     * ISO instant for when the money moved. Never `createdAt`: that is the
+     * audit record of when the row was written, and it must not follow.
+     */
+    paidAt: z.string().optional(),
   })
-  .refine((v) => v.amount !== undefined || v.note !== undefined, {
+  .refine((v) => v.amount !== undefined || v.note !== undefined || v.paidAt !== undefined, {
     message: 'at_least_one_field',
   });
 export type UpdateDebtLoanPaymentInput = z.infer<typeof updateDebtLoanPaymentSchema>;

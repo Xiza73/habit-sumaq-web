@@ -293,6 +293,38 @@ período.
 
 ---
 
+## Deudas y préstamos — subpagos
+
+### Liquidar siempre es pago real
+
+El modal de settle ya **no** ofrece elegir entre pago real y cierre informal. Siempre manda
+`realPayment: true`, o sea que siempre mueve el balance interno de la moneda. La API sigue
+aceptando el flag, así que un cierre informal sigue siendo posible, pero no se ofrece como
+una decisión que se podía tomar mal sin darse cuenta.
+
+El selector de **dirección** (deuda vs préstamo) se queda: con pendiente de los dos lados es
+una pregunta real con dos respuestas reales.
+
+### `paidAt` vs `createdAt`
+
+| Campo | Qué es | Editable |
+| ----- | ------ | -------- |
+| `paidAt` | Cuándo se movió el dinero | **sí** |
+| `createdAt` | Cuándo se escribió la fila | no |
+
+La lista muestra y ordena por **`paidAt`** — corregir la fecha de un pago tiene que moverlo
+en el historial, que es justamente para lo que se edita.
+
+`createdAt` **nunca** se manda desde la UI. Es el registro de auditoría de cuándo se cargó;
+si lo arrastráramos junto con la corrección, backdatear un pago reescribiría el historial de
+cuándo se ingresó, que es lo único que un audit trail no puede hacer.
+
+El form solo envía los campos que cambiaron, y la fecha se compara por **día calendario** —
+que es todo lo que el picker puede expresar. Comparar instantes completos mandaría un cambio
+en cada guardado, porque la hora almacenada no está en el control.
+
+---
+
 ## Presupuestos
 
 1. **Uno por (usuario, año-mes, moneda).** El backend rechaza un segundo con esa misma terna.

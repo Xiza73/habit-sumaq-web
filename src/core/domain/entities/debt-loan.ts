@@ -78,7 +78,7 @@ export interface SettleAmountResult {
 
 /**
  * Row shape from `GET /debts/:id/payments`. One per settle event applied
- * to a debt/loan, ordered by `createdAt` DESC by the backend. `currency`
+ * to a debt/loan, ordered by `paidAt` DESC by the backend. `currency`
  * is `null` for informal-close settles (the settle didn't touch the pool).
  */
 export interface DebtLoanPayment {
@@ -86,5 +86,11 @@ export interface DebtLoanPayment {
   amount: number;
   currency: Currency | null;
   note: string | null;
+  /** When this row was written. Audit only — never edited. */
   createdAt: string;
+  /**
+   * When the money actually moved. This is the date the UI shows and the one
+   * the user can correct; `createdAt` must not follow it.
+   */
+  paidAt: string;
 }
