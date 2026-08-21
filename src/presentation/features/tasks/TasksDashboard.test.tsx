@@ -52,7 +52,7 @@ function makeTask(overrides: Partial<Task> = {}): Task {
     sectionId: sectionA.id,
     title: 'Comprar pan',
     description: null,
-    completed: false,
+    status: 'PENDING',
     completedAt: null,
     position: 1,
     createdAt: '2026-04-20T00:00:00.000Z',
@@ -100,11 +100,11 @@ describe('TasksDashboard', () => {
   it('renders both pending and completed tasks under the right section', () => {
     sectionsData = [sectionA];
     tasksData = [
-      makeTask({ id: 'a', title: 'Llamar al banco', completed: false }),
+      makeTask({ id: 'a', title: 'Llamar al banco', status: 'PENDING' }),
       makeTask({
         id: 'b',
         title: 'Pagar luz',
-        completed: true,
+        status: 'DONE',
         completedAt: '2026-04-22T12:00:00.000Z',
       }),
     ];

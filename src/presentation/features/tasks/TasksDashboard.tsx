@@ -68,14 +68,19 @@ export function TasksDashboard() {
   // Group tasks by section once per render. Sorted by position via the
   // backend's ordering — we just bucketize.
   const tasksBySection = useMemo(() => {
-    const map = new Map<string, { pending: Task[]; completed: Task[] }>();
+    const map = new Map<string, { pending: Task[]; inReview: Task[]; completed: Task[] }>();
     for (const section of sections) {
-      map.set(section.id, { pending: [], completed: [] });
+      map.set(section.id, { pending: [], inReview: [], completed: [] });
     }
     for (const task of tasks) {
       const bucket = map.get(task.sectionId);
       if (!bucket) continue;
-      (task.completed ? bucket.completed : bucket.pending).push(task);
+      // Validating tasks get their own bucket rather than being folded into
+      // either neighbour — the point of the state is being able to SEE what
+      // you are still checking.
+      if (task.status === 'DONE') bucket.completed.push(task);
+      else if (task.status === 'IN_REVIEW') bucket.inReview.push(task);
+      else bucket.pending.push(task);
     }
     return map;
   }, [sections, tasks]);
@@ -209,12 +214,17 @@ export function TasksDashboard() {
           <SortableContext items={sections.map((s) => s.id)} strategy={verticalListSortingStrategy}>
             <div className="space-y-4">
               {sections.map((section) => {
-                const bucket = tasksBySection.get(section.id) ?? { pending: [], completed: [] };
+                const bucket = tasksBySection.get(section.id) ?? {
+                  pending: [],
+                  inReview: [],
+                  completed: [],
+                };
                 return (
                   <SectionColumn
                     key={section.id}
                     section={section}
                     pendingTasks={bucket.pending}
+                    inReviewTasks={bucket.inReview}
                     completedTasks={bucket.completed}
                     sortable={sections.length > 1}
                     onAddTask={openCreateTask}

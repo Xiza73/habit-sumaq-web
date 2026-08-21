@@ -738,7 +738,9 @@
       "createSuccess": "Sección creada",
       "editSuccess": "Sección actualizada",
       "emptyTasks": "Sin tareas en esta sección",
-      "toggle": "Mostrar u ocultar la sección {name}"
+      "toggle": "Mostrar u ocultar la sección {name}",
+      "inReview": "En validación",
+      "inReviewShort": "⏳"
     },
     "task": {
       "add": "Nueva tarea",
@@ -762,7 +764,10 @@
       "markComplete": "Marcar como hecha",
       "markIncomplete": "Marcar como pendiente",
       "dragHandle": "Arrastrar tarea",
-      "createNeedsSection": "Crea una sección primero"
+      "createNeedsSection": "Crea una sección primero",
+      "markInReview": "Marcar en validación",
+      "markDone": "Marcar como hecha",
+      "markPending": "Marcar como pendiente"
     }
   },
   "quickTasks": {

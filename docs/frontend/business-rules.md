@@ -194,6 +194,27 @@ El denominador que se renderiza es **siempre `periodTarget`**, nunca `habit.targ
 
 ---
 
+## Tareas — estados
+
+`PENDING → IN_REVIEW → DONE`. Reemplaza al booleano `completed`, que necesitaba un tercer
+valor: "la terminé pero la estoy validando".
+
+**Control**: un solo checkbox por fila que **cicla** en ese orden. `IN_REVIEW` se pinta con
+`indeterminate`, que significa literalmente "parcialmente hecho". El `aria-label` nombra el
+estado al que **va a mover** el click, no en el que está, así que el próximo click nunca se
+adivina.
+
+**Agrupación**: cada sección lista pendientes → **En validación** (con su propio encabezado) →
+hechas. El grupo del medio existe justamente para poder VER qué estás verificando; plegarlo
+dentro de cualquiera de los vecinos anularía la feature.
+
+**Lo que no se puede colapsar**: el cleanup semanal borra físicamente las tareas `DONE`. Una
+tarea en validación tiene que sobrevivir ese barrido, así que `completedAt` se sella **solo**
+al entrar a `DONE` y se limpia al salir — incluso volviendo a `IN_REVIEW`. El optimistic
+update del hook espeja esa misma regla.
+
+---
+
 ## Quehaceres (Chores)
 
 1. **Cadencia inmutable.** `intervalValue` y `intervalUnit` no son editables después de la creación. Para cambiar el ritmo, se borra el chore y se crea uno nuevo, o se mueve `nextDueDate` manualmente.
