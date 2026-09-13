@@ -885,7 +885,7 @@
         "subtitleClosingWithAmount": "{days, plural, one {Last day} other {# days left}} · {amount}"
       },
       "serviceOverdue": {
-        "title": "Due today: {name}",
+        "title": "Pending: {name}",
         "subtitle": "Overdue since {period}"
       },
       "habitsMidday": {
@@ -898,7 +898,7 @@
         "subtitle": "{days} days with no entries in your {currency} budget"
       },
       "choreOverdue": {
-        "title": "Due today: {name}",
+        "title": "Pending: {name}",
         "subtitle": "{days, plural, one {# day} other {# days}} overdue"
       },
       "choreDueToday": {
