@@ -71,12 +71,12 @@ resultaron distintos a la hipótesis inicial, ver la columna "Diagnóstico".
 
 **Tanda 1 — quick wins.** Todo chico, alto ratio. Independientes entre sí.
 
-| #   | Item                                                | Repo    | Diagnóstico                                                                                                                                                                                                                                                                                                                                                         |
-| --- | --------------------------------------------------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| F3  | Título de alerta de chore overdue dice "Toca hoy"   | web     | **NO es tema de estados.** `CHORE_OVERDUE` y `CHORE_DUE_TODAY` son alert types separados y el backend emite el correcto. `choreOverdue.title` se copió de `choreDueToday.title`. Fix = 3 strings en `src/i18n/messages/{en,es,pt}.json`. El `subtitle` ya está bien.                                                                                                |
-| F5  | Card de Chores crece con nombres largos             | web     | El nombre empuja la etiqueta de categoría abajo y el chip de estado más abajo. Layout puro.                                                                                                                                                                                                                                                                         |
-| F8  | Default de `favoriteKeys` apunta a módulos borrados | backend | Default = `['accounts','transactions','habits','quick-tasks']`; `accounts` y `transactions` murieron en v1.0.0. El frontend filtra las keys muertas pero `length` sigue en 4 → pega contra `MAX_FAVORITES` → no puede agregar, y como no se renderizan tampoco puede quitarlas. **Soft-lock para todo usuario nuevo.** Mantener el fix MÍNIMO: F2 lo va a extender. |
-| F4a | App desktop abre múltiples instancias               | web     | **No es bug, es build sin publicar.** `86c4d2a feat(desktop): keep a single instance` llegó después del tag `desktop-v0.6.0`. Fix = cortar release desktop.                                                                                                                                                                                                         |
+| #   | Item                                                | Repo    | Diagnóstico                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| --- | --------------------------------------------------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| F3  | Título de alerta de chore overdue dice "Toca hoy"   | web     | **NO es tema de estados ni copy-paste: es una decisión deliberada que hay que revisar.** `CHORE_OVERDUE` y `CHORE_DUE_TODAY` son alert types separados y el backend emite el correcto. El título en presente lo eligió el [PR #136](https://github.com/Xiza73/habit-sumaq-web/pull/136) (`feat/alerts/present-tense-overdue-copy`) para que el popover no se leyera como lista de fracasos, y está fijado por tests en `AlertItem.test.tsx`. Lo que #136 no cubrió es que el **subtitle contradice al title** en la misma tarjeta ("Toca hoy" arriba, "3 días atrasada" abajo). Requiere decisión de producto — ver abajo. |
+| F5  | Card de Chores crece con nombres largos             | web     | El nombre empuja la etiqueta de categoría abajo y el chip de estado más abajo. Layout puro.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| F8  | Default de `favoriteKeys` apunta a módulos borrados | backend | Default = `['accounts','transactions','habits','quick-tasks']`; `accounts` y `transactions` murieron en v1.0.0. El frontend filtra las keys muertas pero `length` sigue en 4 → pega contra `MAX_FAVORITES` → no puede agregar, y como no se renderizan tampoco puede quitarlas. **Soft-lock para todo usuario nuevo.** Mantener el fix MÍNIMO: F2 lo va a extender.                                                                                                                                                                                                                                                        |
+| F4a | App desktop abre múltiples instancias               | web     | **No es bug, es build sin publicar.** `86c4d2a feat(desktop): keep a single instance` llegó después del tag `desktop-v0.6.0`. Fix = cortar release desktop.                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
 
 **Tanda 2 — bugs de lógica.**
 
@@ -92,6 +92,35 @@ resultaron distintos a la hipótesis inicial, ver la columna "Diagnóstico".
 | F1  | Color por valor en la vista de tabla       | web                    | Las cards diferencian valores por color; la tabla perdió ese canal. Regla: si un módulo tiene color por valor, la tabla debe poder mostrarlo. |
 | F2  | Habilitar/deshabilitar módulos en Settings | web + backend (mínimo) | Ver validación abajo.                                                                                                                         |
 | F7  | Shields de racha en Habits                 | web + backend          | Ver spec abajo.                                                                                                                               |
+
+##### F3 — decisión de producto pendiente
+
+Hoy conviven **tres** filosofías de copy para alertas vencidas:
+
+| Alert type                          | Título           | Postura                                                                    |
+| ----------------------------------- | ---------------- | -------------------------------------------------------------------------- |
+| `service-past-due-day`              | "Pasó la fecha"  | Evita "hoy" a propósito — hay un test que afirma que la palabra NO aparece |
+| `service-due-today` (sin due day)   | "Vence este mes" | Evita "hoy" a propósito                                                    |
+| `chore-overdue` / `service-overdue` | "Toca hoy"       | Presente deliberado (PR #136)                                              |
+
+El PR #136 razonó que un ítem atrasado sigue siendo algo para hacer HOY, y que
+liderar con "Atrasada" convertía el popover en una lista de fracasos. El
+razonamiento se sostiene — pero cubrió la coherencia entre **títulos**, no la
+que hay entre **título y subtítulo**. En la misma tarjeta se lee "Toca hoy"
+arriba y "3 días atrasada" abajo, y eso es lo que el usuario reportó.
+
+Opciones:
+
+1. **Título accionable pero sin afirmar "hoy"** (ej. "Pendiente: {name}"),
+   subtítulo intacto. Conserva la intención de #136 y se alinea con la postura
+   que `service-past-due-day` ya tomó. **Recomendada.**
+2. **Volver al pasado** ("Atrasada: {name}"). Revierte #136.
+3. **Ablandar el subtítulo** para que no contradiga. Deja la incoherencia de
+   fondo intacta.
+
+Cualquiera que se elija, los tests de `AlertItem.test.tsx` que fijan "Toca hoy"
+se actualizan en el mismo PR — son el contrato de esta decisión, no un
+obstáculo.
 
 ##### F2 — validación del alcance backend
 
