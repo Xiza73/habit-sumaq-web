@@ -198,9 +198,39 @@ la cubre.
 > límites de período que use `StatsCalculator` (`toWeekKey` / `toWeekStart`).
 > Dos definiciones de "semana" en el mismo dominio es un bug esperando su turno.
 
-Decisiones que quedan para la fase de diseño: si al ganar un escudo con el
-stock lleno se pierde o se acumula, y si el rescate se audita por hábito para
-impedir dos rescates de la misma racha.
+##### F7 — el mecanismo (hallazgo que define el diseño)
+
+**La racha no está almacenada en ningún lado.** No hay columna de streak ni en
+`habits` ni en `habit_logs`: `StatsCalculator` la deriva en cada lectura,
+caminando hacia atrás sobre las fechas completadas hasta encontrar un hueco.
+
+Por eso "rescatar una racha" no puede ser `streak = N` — no hay dónde ponerlo.
+Tiene que significar **que el cálculo trate el período perdido como cumplido**,
+y eso deja dos caminos:
+
+| Camino                                           | Problema                                                                                                                                                                                      |
+| ------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Escribir un log sintético en el día perdido      | **Corrompe la historia.** El completion rate lo cuenta como hecho, el calendario muestra un día que no se hizo, el longest streak se infla. Se compra una racha con una mentira en los datos. |
+| Tabla aparte de rescates que el cálculo consulta | Los logs quedan intactos. **Este.**                                                                                                                                                           |
+
+> **Consecuencia:** la auditoría por hábito **no es una política elegible, es el
+> mecanismo**. `habit_streak_rescues` con único en `(habitId, period)` tiene que
+> existir para que el feature funcione, y de paso hace imposible rescatar dos
+> veces el mismo período.
+
+##### F7 — decisiones cerradas
+
+| Pregunta                                        | Decisión      | Por qué                                                                                                                       |
+| ----------------------------------------------- | ------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| Escudo ganado con el stock lleno (2)            | **Se pierde** | El tope es lo que le da valor al escudo. Acumulando, en seis meses hay ocho y la mecánica pierde toda tensión.                |
+| ¿El período rescatado cuenta para la **racha**? | **Sí**        | Es exactamente lo que el escudo existe para proteger.                                                                         |
+| ¿Para el **longest streak**?                    | **Sí**        | Es la misma racha que se está salvando.                                                                                       |
+| ¿Para el **completion rate**?                   | **NO**        | La racha es motivación; el completion rate es honestidad. Si el escudo infla los dos, no queda ninguna métrica que no mienta. |
+
+**Cuándo se gana el escudo:** al **registrar** un hábito (`POST` de log), no al
+leer. Un `GET` que otorga escudos es un efecto secundario escondido en una
+lectura, y además la única forma de que una racha llegue a 20 días es
+registrando — que es justo donde el cálculo ya corre.
 
 ### 📈 Fase 2 — Killer feature + crecimiento (6-8 semanas)
 
