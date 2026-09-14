@@ -23,12 +23,16 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 
-import { useFavoriteKeys, useUpdateUserSettings } from '@/core/application/hooks/use-user-settings';
+import {
+  useDisabledModules,
+  useFavoriteKeys,
+  useUpdateUserSettings,
+} from '@/core/application/hooks/use-user-settings';
 import { useUIStore } from '@/core/application/stores/ui.store';
 
 import { ApiError } from '@/infrastructure/api/api-error';
 
-import { isFavoriteKey, MAX_FAVORITES } from '@/lib/nav-registry';
+import { isFavoriteKey, isModuleEnabled, MAX_FAVORITES } from '@/lib/nav-registry';
 import { cn } from '@/lib/utils';
 
 interface NavItem {
@@ -114,8 +118,19 @@ export function Sidebar() {
   const navRef = useRef<HTMLElement | null>(null);
 
   const favoriteKeys = useFavoriteKeys();
+  const disabledModules = useDisabledModules();
   const updateSettings = useUpdateUserSettings();
   const favoriteKeysSet = new Set(favoriteKeys);
+
+  // Drop the modules the user switched off, then drop any section left with
+  // nothing in it — a heading over an empty space reads as a rendering bug.
+  // Items without a `favoriteKey` (Settings) are never filterable and stay.
+  const visibleSections = NAV_SECTIONS.map((section) => ({
+    ...section,
+    items: section.items.filter(
+      (item) => !item.favoriteKey || isModuleEnabled(item.favoriteKey, disabledModules),
+    ),
+  })).filter((section) => section.items.length > 0);
 
   /**
    * Toggle a key in/out of the user's favorites. Called from right-click on
@@ -330,7 +345,7 @@ export function Sidebar() {
             'hover:[&::-webkit-scrollbar-thumb]:bg-muted-foreground/40',
           )}
         >
-          {NAV_SECTIONS.map((section) => (
+          {visibleSections.map((section) => (
             <div key={section.titleKey ?? section.items[0].href}>
               {section.titleKey && (
                 <span className="mb-1 block px-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">

@@ -8,14 +8,23 @@ import { useTranslations } from 'next-intl';
 import { Settings, Star } from 'lucide-react';
 import { toast } from 'sonner';
 
-import { useFavoriteKeys, useUpdateUserSettings } from '@/core/application/hooks/use-user-settings';
+import {
+  useDisabledModules,
+  useFavoriteKeys,
+  useUpdateUserSettings,
+} from '@/core/application/hooks/use-user-settings';
 
 import { ApiError } from '@/infrastructure/api/api-error';
 
 import { FavoriteSlotPickerModal } from '@/presentation/features/navigation/FavoriteSlotPickerModal';
 import { useLongPress } from '@/presentation/hooks/use-long-press';
 
-import { DEFAULT_FAVORITES, getNavEntries, MAX_FAVORITES, type NavEntry } from '@/lib/nav-registry';
+import {
+  DEFAULT_FAVORITES,
+  getEnabledNavEntries,
+  MAX_FAVORITES,
+  type NavEntry,
+} from '@/lib/nav-registry';
 import { cn } from '@/lib/utils';
 
 const SETTINGS_HREF = '/settings';
@@ -38,15 +47,23 @@ export function MobileNav() {
   const tFavorites = useTranslations('settings.favorites');
 
   const favoriteKeys = useFavoriteKeys();
+  const disabledModules = useDisabledModules();
   const updateSettings = useUpdateUserSettings();
 
   const [pickerSlot, setPickerSlot] = useState<number | null>(null);
 
   // Resolve to NavEntry[], silently dropping any keys that aren't in the
   // registry (e.g. a route we removed since the user last set their
-  // favorites). Slot order = array order, capped at MAX_FAVORITES.
+  // favorites) and any module the user switched off. Slot order = array
+  // order, capped at MAX_FAVORITES.
+  //
+  // Favorites should never name a disabled module — `ModulesSection` strips
+  // it in the same write that disables it — so this filter only catches a
+  // stale read: the toggle happened on another device and this client has
+  // not refetched settings yet. Cheaper than rendering a slot that leads
+  // somewhere the user chose to hide.
   const entries: (NavEntry | null)[] = Array.from({ length: MAX_FAVORITES }, (_, i) => {
-    const resolved = getNavEntries([favoriteKeys[i] ?? '']);
+    const resolved = getEnabledNavEntries([favoriteKeys[i] ?? ''], disabledModules);
     return resolved[0] ?? null;
   });
 

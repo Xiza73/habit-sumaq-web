@@ -2,9 +2,11 @@
 
 import { useTranslations } from 'next-intl';
 
+import { useDisabledModules } from '@/core/application/hooks/use-user-settings';
+
 import { Modal } from '@/presentation/components/ui/Modal';
 
-import { FAVORITE_KEYS, NAV_REGISTRY } from '@/lib/nav-registry';
+import { FAVORITE_KEYS, isModuleEnabled, NAV_REGISTRY } from '@/lib/nav-registry';
 import { cn } from '@/lib/utils';
 
 interface FavoriteSlotPickerModalProps {
@@ -19,14 +21,18 @@ interface FavoriteSlotPickerModalProps {
 }
 
 /**
- * Long-press picker for a mobile bottom-nav slot. Lists every key in the
- * registry; tapping one calls `onPick` and closes. The parent
+ * Long-press picker for a mobile bottom-nav slot. Lists every module the
+ * user has switched ON; tapping one calls `onPick` and closes. The parent
  * (`MobileNav`) handles the slot semantics — if the picked key is already
  * in another slot, the parent SWAPS the two so we never end up with
  * duplicates (backend rejects them anyway).
  *
  * Keys that are currently in another slot are marked visually + with a
  * caption so the user knows tapping them moves them, not duplicates them.
+ *
+ * Disabled modules are left out entirely rather than shown greyed: offering
+ * a slot that would render nothing is worse than not offering it, and it
+ * would put back the very key `ModulesSection` just removed from favorites.
  */
 export function FavoriteSlotPickerModal({
   open,
@@ -38,13 +44,16 @@ export function FavoriteSlotPickerModal({
   const t = useTranslations('favoritePicker');
   const tNav = useTranslations('navigation');
 
+  const disabledModules = useDisabledModules();
+  const selectableKeys = FAVORITE_KEYS.filter((key) => isModuleEnabled(key, disabledModules));
+
   const currentKeyInSlot = favoriteKeys[slotIndex];
 
   return (
     <Modal open={open} onClose={onClose} title={t('title')}>
       <p className="mb-3 text-sm text-muted-foreground">{t('subtitle')}</p>
       <ul className="grid grid-cols-1 gap-1.5 sm:grid-cols-2">
-        {FAVORITE_KEYS.map((key) => {
+        {selectableKeys.map((key) => {
           const entry = NAV_REGISTRY[key];
           const isInAnotherSlot = favoriteKeys.includes(key) && key !== currentKeyInSlot;
           const isInThisSlot = key === currentKeyInSlot;

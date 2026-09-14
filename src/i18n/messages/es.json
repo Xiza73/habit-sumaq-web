@@ -102,6 +102,14 @@
       "auckland": "Auckland (UTC+12)",
       "utc": "UTC (sin offset)"
     },
+    "modules": {
+      "title": "Módulos",
+      "subtitle": "Apagá los que no uses. Desaparecen del menú, de los reportes y de las alertas.",
+      "on": "Activo",
+      "off": "Apagado",
+      "dataKeptHint": "Apagar un módulo no borra nada: tus datos quedan intactos y vuelven al encenderlo.",
+      "saveError": "No pudimos guardar tus módulos. Intentá de nuevo."
+    },
     "favorites": {
       "title": "Favoritos del menú",
       "subtitle": "Elegí hasta {max} módulos para acceso rápido. Settings siempre está disponible.",

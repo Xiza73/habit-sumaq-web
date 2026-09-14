@@ -102,6 +102,14 @@
       "auckland": "Auckland (UTC+12)",
       "utc": "UTC (sem offset)"
     },
+    "modules": {
+      "title": "Módulos",
+      "subtitle": "Desligue os que você não usa. Somem do menu, dos relatórios e dos alertas.",
+      "on": "Ativo",
+      "off": "Desligado",
+      "dataKeptHint": "Desligar um módulo não apaga nada: seus dados ficam intactos e voltam ao ligá-lo.",
+      "saveError": "Não conseguimos salvar seus módulos. Tente novamente."
+    },
     "favorites": {
       "title": "Favoritos do menu",
       "subtitle": "Escolha até {max} módulos para acesso rápido. Configurações sempre está lá.",

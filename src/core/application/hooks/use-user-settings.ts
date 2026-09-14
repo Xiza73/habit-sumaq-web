@@ -59,6 +59,19 @@ export function useFavoriteKeys(): string[] {
   return settings?.favoriteKeys ?? DEFAULT_FAVORITES;
 }
 
+/**
+ * Modules the user switched off in Settings.
+ *
+ * Falls back to an EMPTY array while the query loads, and for a backend that
+ * predates the column. That direction of failure matters: an empty list means
+ * "nothing disabled", so a slow or missing response shows the user everything
+ * rather than briefly hiding modules they never turned off.
+ */
+export function useDisabledModules(): string[] {
+  const { data: settings } = useUserSettings();
+  return settings?.disabledModules ?? [];
+}
+
 export function useUpdateUserSettings() {
   const queryClient = useQueryClient();
 

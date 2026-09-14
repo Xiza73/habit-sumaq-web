@@ -192,3 +192,44 @@ export function getNavEntries(keys: readonly string[]): NavEntry[] {
   }
   return result;
 }
+
+/**
+ * The module groups the Settings toggles render, in the same order and with
+ * the same headings the sidebar uses. Kept here rather than in the component
+ * so "what modules exist, and how are they grouped" has one answer.
+ *
+ * `labelKey` resolves under the `navigation.*` i18n namespace — the same keys
+ * the sidebar uses for its section headings — so the two surfaces can never
+ * drift into calling the same group by different names.
+ */
+export const MODULE_GROUPS: { labelKey: string; keys: readonly FavoriteKey[] }[] = [
+  { labelKey: 'routines', keys: ['habits', 'quick-tasks', 'tasks', 'chores', 'reminders'] },
+  { labelKey: 'finances', keys: ['debts', 'categories', 'services', 'budgets'] },
+  { labelKey: 'reports', keys: ['reports-finances', 'reports-routines'] },
+];
+
+/**
+ * Whether a module is switched on for the user.
+ *
+ * Takes the DISABLED list rather than an enabled one on purpose: the stored
+ * value is the exception list, so a module added to the registry later is on
+ * for everyone without touching a single stored row.
+ */
+export function isModuleEnabled(key: string, disabledModules: readonly string[]): boolean {
+  return !disabledModules.includes(key);
+}
+
+/**
+ * `getNavEntries`, minus the modules the user switched off.
+ *
+ * Favorites should never contain a disabled module in the first place —
+ * `ModulesSection` strips it in the same write that disables it — but this
+ * filter is what keeps a stale value (another device, an interrupted write)
+ * from rendering a nav item that leads somewhere the user chose to hide.
+ */
+export function getEnabledNavEntries(
+  keys: readonly string[],
+  disabledModules: readonly string[],
+): NavEntry[] {
+  return getNavEntries(keys).filter((entry) => isModuleEnabled(entry.key, disabledModules));
+}
