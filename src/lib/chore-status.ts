@@ -89,3 +89,25 @@ export function getChoreStatus(
   if (diffDays <= upcomingWindowDays(cadence)) return 'upcoming';
   return 'horizon';
 }
+
+/**
+ * Tailwind classes for the chore status chip.
+ *
+ * Lives here rather than in a component because BOTH views render it — the
+ * card and the table each used to keep their own copy of this map. They
+ * happened to agree, but nothing made them: change a colour in one and the
+ * same chore would show two different states depending on the view mode, with
+ * no test to notice. Same reason `MONTHLY_SERVICE_STATUS_CLASSES` lives in
+ * `monthly-service-status.ts`.
+ */
+export const CHORE_STATUS_CLASSES: Record<ChoreStatus, string> = {
+  overdue: 'bg-destructive/15 text-destructive',
+  // Today is the only actionable state, so it gets the strongest non-alarming
+  // colour — louder than upcoming's amber, but not the red reserved for
+  // "you already missed this".
+  today: 'bg-primary/15 text-primary',
+  upcoming: 'bg-amber-500/15 text-amber-700 dark:text-amber-400',
+  // Horizon stays very low contrast on purpose — those chores are not "due"
+  // any time soon and shouldn't fight for attention with the upcoming ones.
+  horizon: 'bg-muted text-muted-foreground',
+};
