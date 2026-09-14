@@ -3,7 +3,17 @@
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 
-import { Archive, ArchiveRestore, Check, Eye, Minus, Pencil, Plus, Trash2 } from 'lucide-react';
+import {
+  Archive,
+  ArchiveRestore,
+  Check,
+  Eye,
+  Minus,
+  Pencil,
+  Plus,
+  Target,
+  Trash2,
+} from 'lucide-react';
 
 import { type HabitWithStats } from '@/core/domain/entities/habit';
 
@@ -62,8 +72,25 @@ export function HabitsTable({
   const columns: DataTableColumn<HabitWithStats>[] = [
     {
       key: 'name',
+      // The habit's colour is the only thing that tells two rows apart at a
+      // glance, and the card view already leans on it (`HabitCard` tints the
+      // same icon). Dropping it in the table made the list read as
+      // undifferentiated text. Mirrors `CategoriesTable`'s name cell — the
+      // other module whose entity carries a user-picked colour — so both
+      // tables surface colour the same way.
       header: t('table.name'),
-      render: (habit) => <span className="font-medium">{habit.name}</span>,
+      render: (habit) => (
+        <div className="flex items-center gap-2">
+          <span
+            data-testid="habit-color"
+            className="flex size-7 shrink-0 items-center justify-center rounded-md"
+            style={{ backgroundColor: habit.color ? `${habit.color}20` : undefined }}
+          >
+            <Target className="size-4" style={{ color: habit.color ?? undefined }} />
+          </span>
+          <span className="font-medium">{habit.name}</span>
+        </div>
+      ),
     },
     {
       key: 'frequency',

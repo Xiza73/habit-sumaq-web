@@ -79,6 +79,21 @@ describe('HabitsTable', () => {
     expect(screen.getByTestId('habit-progress')).toHaveTextContent('1/3');
   });
 
+  // The colour is what tells two rows apart at a glance, and the table was
+  // originally built without it even though the card view had it. These pin it
+  // so a future rewrite of the name cell cannot drop it again unnoticed.
+  it("carries the habit's colour into the name cell", () => {
+    renderTable([makeHabit({ color: '#22c55e' })]);
+    const swatch = screen.getByTestId('habit-color');
+    expect(swatch.querySelector('svg')).toHaveStyle({ color: '#22c55e' });
+  });
+
+  it('leaves the swatch uncoloured when the habit has none', () => {
+    renderTable([makeHabit({ color: null })]);
+    const swatch = screen.getByTestId('habit-color');
+    expect(swatch.querySelector('svg')).not.toHaveStyle({ color: '#22c55e' });
+  });
+
   it('fires onCheckIn for the habit when its register action is clicked', async () => {
     const user = userEvent.setup();
     const habit = makeHabit();
