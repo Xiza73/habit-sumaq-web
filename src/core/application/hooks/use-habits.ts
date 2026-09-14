@@ -20,6 +20,7 @@ import { detectMilestoneCrossed } from '@/lib/streak-milestones';
 import { useCelebrationStore } from '../stores/celebration.store';
 
 import { alertKeys } from './use-alerts';
+import { userSettingsKeys } from './use-user-settings';
 
 export const habitKeys = {
   all: ['habits'] as const,
@@ -134,6 +135,25 @@ function readStreakFromCache(
   }
 
   return null;
+}
+
+/**
+ * Spends a streak shield on the period a habit just missed.
+ *
+ * Invalidates habits AND user settings: the streak changes, and so does the
+ * shield count the rescue button reads. Invalidating only the first would
+ * leave the button offering a shield that is already gone.
+ */
+export function useRescueStreak() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (habitId: string) => habitsApi.rescueStreak(habitId),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: habitKeys.all });
+      void queryClient.invalidateQueries({ queryKey: userSettingsKeys.all });
+    },
+  });
 }
 
 export function useLogHabit() {

@@ -13,6 +13,7 @@ import {
   MoreVertical,
   Pencil,
   Plus,
+  Shield,
   Target,
   Trash2,
 } from 'lucide-react';
@@ -38,6 +39,17 @@ interface HabitCardProps {
    */
   onTargetChange?: (habit: HabitWithStats, targetCount: number) => void;
   targetPending?: boolean;
+  /**
+   * Spends a streak shield on `habit.rescuableDate`. Omitted on read-only
+   * surfaces — the row then simply does not offer the action.
+   */
+  onRescueStreak?: (habit: HabitWithStats) => void;
+  /**
+   * Shields the user holds. Drives whether the rescue row is actionable or
+   * only informative — see the row itself for why it shows at zero.
+   */
+  streakShields?: number;
+  rescuePending?: boolean;
 }
 
 export function HabitCard({
@@ -48,6 +60,9 @@ export function HabitCard({
   onArchive,
   onDelete,
   onTargetChange,
+  onRescueStreak,
+  streakShields = 0,
+  rescuePending = false,
   targetPending = false,
 }: HabitCardProps) {
   const t = useTranslations('habits');
@@ -210,6 +225,33 @@ export function HabitCard({
           style={{ width: `${progress * 100}%` }}
         />
       </div>
+
+      {/*
+        Shown whenever a period is rescuable — even at zero shields, where it
+        renders disabled. This is the one moment the mechanic is teachable: a
+        streak is actually at risk right now. Hiding it until the user happens
+        to hold a shield AND have a gap means most people never learn the
+        feature exists. It is deliberately NOT shown when there is nothing to
+        rescue, which is what keeps it from reading as a nag.
+      */}
+      {!habit.isArchived && habit.rescuableDate && onRescueStreak && (
+        <button
+          type="button"
+          onClick={() => onRescueStreak(habit)}
+          disabled={streakShields === 0 || rescuePending}
+          className={cn(
+            'mt-3 flex w-full items-center justify-center gap-2 rounded-lg border px-3 py-2 text-xs font-medium transition-colors',
+            streakShields > 0
+              ? 'border-amber-500/40 bg-amber-500/10 text-amber-700 hover:bg-amber-500/20 dark:text-amber-400'
+              : 'cursor-not-allowed border-border text-muted-foreground',
+          )}
+        >
+          <Shield className="size-3.5 shrink-0" />
+          {streakShields > 0
+            ? t('rescueStreak.action', { count: streakShields })
+            : t('rescueStreak.noShields')}
+        </button>
+      )}
 
       {habit.isArchived && (
         <div className="mt-3 rounded-md bg-muted px-2 py-1 text-center text-xs text-muted-foreground">

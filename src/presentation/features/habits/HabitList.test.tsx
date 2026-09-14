@@ -27,6 +27,7 @@ const mockHabits: HabitWithStats[] = [
     periodCount: 6,
     periodCompleted: false,
     periodTarget: 8,
+    rescuableDate: null,
     todayLog: {
       id: 'log-1',
       habitId: '1',
@@ -57,6 +58,7 @@ const mockHabits: HabitWithStats[] = [
     periodCount: 0,
     periodCompleted: false,
     periodTarget: 1,
+    rescuableDate: null,
     todayLog: null,
   },
 ];
@@ -64,6 +66,7 @@ const mockHabits: HabitWithStats[] = [
 const mockLogMutate = vi.fn();
 const mockArchiveMutate = vi.fn();
 const mockDeleteMutate = vi.fn();
+const mockRescueMutate = vi.fn();
 
 vi.mock('@/core/application/hooks/use-habits', () => ({
   useDailyHabits: () => ({ data: mockHabits, isLoading: false }),
@@ -73,6 +76,9 @@ vi.mock('@/core/application/hooks/use-habits', () => ({
   useDeleteHabit: () => ({ mutate: mockDeleteMutate, isPending: false }),
   useCreateHabit: () => ({ mutate: vi.fn(), isPending: false }),
   useUpdateHabit: () => ({ mutate: vi.fn(), isPending: false }),
+  // vi.mock replaces the WHOLE module, so every hook the component reaches
+  // for has to be listed — a new one left out is `undefined` at call time.
+  useRescueStreak: () => ({ mutate: mockRescueMutate, isPending: false }),
 }));
 
 function renderList() {

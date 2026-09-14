@@ -12,8 +12,9 @@ import {
   useDeleteHabit,
   useHabits,
   useLogHabit,
+  useRescueStreak,
 } from '@/core/application/hooks/use-habits';
-import { useDateFormat } from '@/core/application/hooks/use-user-settings';
+import { useDateFormat, useStreakShields } from '@/core/application/hooks/use-user-settings';
 import { useViewMode } from '@/core/application/hooks/use-view-mode';
 import { type HabitWithStats } from '@/core/domain/entities/habit';
 
@@ -62,6 +63,7 @@ function shiftDate(dateStr: string, days: number): string {
 export function HabitList() {
   const t = useTranslations('habits');
   const tErrors = useTranslations('errors');
+  const tRescue = useTranslations('habits.rescueStreak');
   const dateFormat = useDateFormat();
 
   const [showArchived, setShowArchived] = useState(false);
@@ -81,6 +83,8 @@ export function HabitList() {
   const archiveMutation = useArchiveHabit();
   const deleteMutation = useDeleteHabit();
   const logMutation = useLogHabit();
+  const rescueMutation = useRescueStreak();
+  const streakShields = useStreakShields();
 
   const habits = showArchived ? allHabits : dailyHabits;
   const isLoading = showArchived ? isAllLoading : isDailyLoading;
@@ -105,6 +109,31 @@ export function HabitList() {
   function handleCloseForm() {
     setFormOpen(false);
     setEditingHabit(null);
+  }
+
+  /**
+   * Spends a shield on the period this habit just missed.
+   *
+   * Sends no date: the backend decides which period is rescuable, so the
+   * client cannot ask for the wrong one — and cannot drift from the window
+   * logic if it ever changes.
+   */
+  function handleRescueStreak(habit: HabitWithStats) {
+    rescueMutation.mutate(habit.id, {
+      onSuccess: () => {
+        toast.success(tRescue('success'));
+      },
+      onError: (error) => {
+        // HAB_007 (no shields) and HAB_008 (nothing to rescue) are 409s that
+        // describe a state, and both have their own localized copy — surface
+        // those rather than a generic failure, so the user learns WHY.
+        toast.error(
+          error instanceof ApiError && error.code && tErrors.has(error.code)
+            ? tErrors(error.code as 'HAB_001')
+            : tRescue('error'),
+        );
+      },
+    });
   }
 
   function handleCheckIn(habit: HabitWithStats) {
@@ -319,6 +348,9 @@ export function HabitList() {
           onDelete={setDeletingHabit}
           onTargetChange={handleTargetChange}
           targetPending={logMutation.isPending}
+          onRescueStreak={handleRescueStreak}
+          streakShields={streakShields}
+          rescuePending={rescueMutation.isPending}
         />
       ) : (
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -333,6 +365,9 @@ export function HabitList() {
               onEdit={handleEdit}
               onArchive={handleArchive}
               onDelete={setDeletingHabit}
+              onRescueStreak={handleRescueStreak}
+              streakShields={streakShields}
+              rescuePending={rescueMutation.isPending}
             />
           ))}
         </div>

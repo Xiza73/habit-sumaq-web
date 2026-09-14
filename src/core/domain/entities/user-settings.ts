@@ -49,6 +49,13 @@ export interface UserSettings {
    * default used to cause.
    */
   disabledModules: string[];
+  /**
+   * Streak shields in hand, 0..2. READ ONLY — the backend has no PATCH field
+   * for it. One is earned per calendar month by reaching a 20-period streak on
+   * some habit, and one is spent per rescue. Earning one on a full stock loses
+   * it rather than banking it.
+   */
+  streakShields: number;
   createdAt: string;
   updatedAt: string;
 }

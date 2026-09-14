@@ -26,6 +26,7 @@ const mockHabit: HabitWithStats = {
   periodCount: 6,
   periodCompleted: false,
   periodTarget: 8,
+  rescuableDate: null,
   todayLog: {
     id: 'log-1',
     habitId: '1',
@@ -145,5 +146,72 @@ describe('HabitCard', () => {
     renderCard();
     const link = screen.getByRole('link');
     expect(link).toHaveAttribute('href', '/habits/1');
+  });
+});
+
+describe('HabitCard — streak shield rescue', () => {
+  const rescuable: HabitWithStats = { ...mockHabit, rescuableDate: '2026-03-12' };
+
+  it('offers the rescue when a period is rescuable and the user has a shield', () => {
+    renderCard(rescuable, { onRescueStreak: vi.fn(), streakShields: 1 });
+
+    const button = screen.getByRole('button', { name: /rescatar racha/i });
+    expect(button).toBeEnabled();
+  });
+
+  it('fires onRescueStreak with the habit', async () => {
+    const user = userEvent.setup();
+    const onRescueStreak = vi.fn();
+    renderCard(rescuable, { onRescueStreak, streakShields: 2 });
+
+    await user.click(screen.getByRole('button', { name: /rescatar racha/i }));
+
+    expect(onRescueStreak).toHaveBeenCalledWith(rescuable);
+  });
+
+  // Deliberate: this is the one teachable moment for the mechanic — a streak
+  // is actually at risk right now. Hiding it until the user happens to hold a
+  // shield AND have a gap means most people never learn the feature exists.
+  it('still shows the row at zero shields, disabled and explaining why', () => {
+    renderCard(rescuable, { onRescueStreak: vi.fn(), streakShields: 0 });
+
+    const button = screen.getByRole('button', { name: /sin escudos/i });
+    expect(button).toBeDisabled();
+  });
+
+  it('shows nothing when there is no period to rescue', () => {
+    renderCard(
+      { ...mockHabit, rescuableDate: null },
+      {
+        onRescueStreak: vi.fn(),
+        streakShields: 2,
+      },
+    );
+
+    expect(
+      screen.queryByRole('button', { name: /rescatar racha|sin escudos/i }),
+    ).not.toBeInTheDocument();
+  });
+
+  it('shows nothing on an archived habit', () => {
+    renderCard(
+      { ...rescuable, isArchived: true },
+      {
+        onRescueStreak: vi.fn(),
+        streakShields: 2,
+      },
+    );
+
+    expect(
+      screen.queryByRole('button', { name: /rescatar racha|sin escudos/i }),
+    ).not.toBeInTheDocument();
+  });
+
+  it('shows nothing on a read-only surface that passes no handler', () => {
+    renderCard(rescuable, { streakShields: 2 });
+
+    expect(
+      screen.queryByRole('button', { name: /rescatar racha|sin escudos/i }),
+    ).not.toBeInTheDocument();
   });
 });

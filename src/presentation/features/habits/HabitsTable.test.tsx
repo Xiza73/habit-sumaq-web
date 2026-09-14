@@ -30,6 +30,7 @@ function makeHabit(overrides: Partial<HabitWithStats> = {}): HabitWithStats {
     periodCount: 1,
     periodCompleted: false,
     periodTarget: 3,
+    rescuableDate: null,
     ...overrides,
   };
   // A fixture that raises the habit's default target means it for the period
@@ -190,5 +191,54 @@ describe('HabitsTable', () => {
     renderTable([makeHabit({ isArchived: true })]);
     expect(screen.getByRole('button', { name: /^desarchivar$/i })).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /registrar/i })).not.toBeInTheDocument();
+  });
+});
+
+describe('HabitsTable — streak shield rescue', () => {
+  const rescuable = () => makeHabit({ rescuableDate: '2026-03-12' });
+
+  it('offers the rescue when a period is rescuable and the user has a shield', () => {
+    renderTable([rescuable()], { onRescueStreak: vi.fn(), streakShields: 1 });
+
+    expect(screen.getByRole('button', { name: /rescatar racha/i })).toBeEnabled();
+  });
+
+  it('fires onRescueStreak with the habit', async () => {
+    const user = userEvent.setup();
+    const onRescueStreak = vi.fn();
+    const habit = rescuable();
+    renderTable([habit], { onRescueStreak, streakShields: 2 });
+
+    await user.click(screen.getByRole('button', { name: /rescatar racha/i }));
+
+    expect(onRescueStreak).toHaveBeenCalledWith(habit);
+  });
+
+  it('shows it disabled at zero shields, same as the card', () => {
+    renderTable([rescuable()], { onRescueStreak: vi.fn(), streakShields: 0 });
+
+    expect(screen.getByRole('button', { name: /sin escudos/i })).toBeDisabled();
+  });
+
+  it('shows nothing when there is no period to rescue', () => {
+    renderTable([makeHabit({ rescuableDate: null })], {
+      onRescueStreak: vi.fn(),
+      streakShields: 2,
+    });
+
+    expect(
+      screen.queryByRole('button', { name: /rescatar racha|sin escudos/i }),
+    ).not.toBeInTheDocument();
+  });
+
+  it('shows nothing on an archived habit', () => {
+    renderTable([makeHabit({ rescuableDate: '2026-03-12', isArchived: true })], {
+      onRescueStreak: vi.fn(),
+      streakShields: 2,
+    });
+
+    expect(
+      screen.queryByRole('button', { name: /rescatar racha|sin escudos/i }),
+    ).not.toBeInTheDocument();
   });
 });
