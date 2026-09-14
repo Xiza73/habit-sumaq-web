@@ -42,25 +42,25 @@ Antes de implementar cualquier feature, consulta los documentos relevantes:
 Decisiones de producto y monetización mapeadas para el presente y el futuro.
 Estos docs no son contrato técnico — son la memoria estratégica del proyecto.
 
-| Documento              | Ruta                                                           | Status      |
-| ---------------------- | -------------------------------------------------------------- | ----------- |
-| Índice                 | [README.md](docs/business/README.md)                           | —           |
-| Pricing & Tiering      | [pricing.md](docs/business/pricing.md)                         | BORRADOR    |
-| Growth roadmap         | [growth-roadmap.md](docs/business/growth-roadmap.md)           | ACTIVO      |
-| Coach IA (feature)     | [coach-ia-feature.md](docs/business/coach-ia-feature.md)       | BORRADOR    |
-| Habit Timer (feature)  | [habit-timer-feature.md](docs/business/habit-timer-feature.md) | BORRADOR    |
-| TWA deployment         | [twa-deployment.md](docs/business/twa-deployment.md)           | OPERACIONAL |
-| Desktop deployment     | [desktop-deployment.md](docs/business/desktop-deployment.md)   | OPERACIONAL |
+| Documento             | Ruta                                                           | Status      |
+| --------------------- | -------------------------------------------------------------- | ----------- |
+| Índice                | [README.md](docs/business/README.md)                           | —           |
+| Pricing & Tiering     | [pricing.md](docs/business/pricing.md)                         | BORRADOR    |
+| Growth roadmap        | [growth-roadmap.md](docs/business/growth-roadmap.md)           | ACTIVO      |
+| Coach IA (feature)    | [coach-ia-feature.md](docs/business/coach-ia-feature.md)       | BORRADOR    |
+| Habit Timer (feature) | [habit-timer-feature.md](docs/business/habit-timer-feature.md) | BORRADOR    |
+| TWA deployment        | [twa-deployment.md](docs/business/twa-deployment.md)           | OPERACIONAL |
+| Desktop deployment    | [desktop-deployment.md](docs/business/desktop-deployment.md)   | OPERACIONAL |
 
 ### Docs compartidos con el backend (single source of truth)
 
 Estos tres documentos describen el **contrato** que el backend expone. Por eso viven canónicamente en `habit-sumaq-backend` y este repo solo tiene stubs con el link:
 
-| Documento         | Stub local                                            | Canonical (backend)                                                                                                                       |
-| ----------------- | ----------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
-| API Reference     | [api-reference.md](docs/frontend/api-reference.md)    | [habit-sumaq-backend/docs/frontend/api-reference.md](https://github.com/Xiza73/habit-sumaq-backend/blob/master/docs/frontend/api-reference.md) |
-| Enums             | [enums.md](docs/frontend/enums.md)                    | [habit-sumaq-backend/docs/frontend/enums.md](https://github.com/Xiza73/habit-sumaq-backend/blob/master/docs/frontend/enums.md)                 |
-| Códigos de Error  | [error-codes.md](docs/frontend/error-codes.md)        | [habit-sumaq-backend/docs/frontend/error-codes.md](https://github.com/Xiza73/habit-sumaq-backend/blob/master/docs/frontend/error-codes.md)     |
+| Documento        | Stub local                                         | Canonical (backend)                                                                                                                            |
+| ---------------- | -------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| API Reference    | [api-reference.md](docs/frontend/api-reference.md) | [habit-sumaq-backend/docs/frontend/api-reference.md](https://github.com/Xiza73/habit-sumaq-backend/blob/master/docs/frontend/api-reference.md) |
+| Enums            | [enums.md](docs/frontend/enums.md)                 | [habit-sumaq-backend/docs/frontend/enums.md](https://github.com/Xiza73/habit-sumaq-backend/blob/master/docs/frontend/enums.md)                 |
+| Códigos de Error | [error-codes.md](docs/frontend/error-codes.md)     | [habit-sumaq-backend/docs/frontend/error-codes.md](https://github.com/Xiza73/habit-sumaq-backend/blob/master/docs/frontend/error-codes.md)     |
 
 Si trabajás local y tenés ambos repos clonados adyacentes, los paths relativos son `../../habit-sumaq-backend/docs/frontend/*.md`.
 
@@ -163,6 +163,28 @@ git checkout dev && git merge master && git push   # sync dev con master
 - **Hotfixes urgentes en producción**: branch `hotfix/<descripción>` desde master, PR a master, después mergear master → dev. Excepción, no regla.
 - Convenciones de naming: `feat/<module>/<description>`, `fix/<module>/<description>`, `chore/<area>/<description>`, `test/<module>/<description>`, `docs/<area>/<description>`.
 - Commits atómicos. Un commit = un cambio lógico.
+- **Nunca mergear sin mirar los checks.** `gh pr merge` mergea de inmediato: no espera a CI ni le importa que esté en rojo, y `dev` no tiene protección de rama que lo impida.
+
+**Antes de mergear un PR:**
+
+```bash
+gh pr checks <n>                  # TODOS en pass. "pending" no es "pass"
+gh pr view <n> --json mergeStateStatus -q .mergeStateStatus   # CLEAN, no UNSTABLE
+```
+
+**PRs apilados** (uno con base en la rama de otro), dos trampas que ya costaron caro:
+
+1. Mergear la base con `--delete-branch` **cierra** el PR hijo, y después no se
+   puede reabrir ni retargetear — hay que crear uno nuevo. Mergear la base
+   **sin** borrar, después el hijo, y recién ahí borrar las dos ramas.
+2. Un PR puede figurar `MERGED` **sin que sus commits hayan llegado a `dev`**
+   (si se mergeó contra una base ya borrada). Verificar **contenido**:
+   `git ls-tree origin/dev --name-only <ruta>`.
+
+**Al agregar un hook a un módulo que otros tests mockean:** `vi.mock('<módulo>')`
+reemplaza el módulo **entero**, así que el hook nuevo queda `undefined` y explota
+al llamarse. Buscar todos los `vi.mock` de ese path y agregarlo — agregar
+`useDisabledModules` a `use-user-settings` rompió 12 tests de esa forma.
 
 ### Seguridad
 
