@@ -150,6 +150,8 @@
     "HAB_004": "Não é possível registrar em uma data futura",
     "HAB_005": "A quantidade objetivo deve ser pelo menos 1",
     "HAB_006": "Você não tem acesso a este hábito",
+    "HAB_007": "Você não tem escudos de sequência",
+    "HAB_008": "Não há nada para resgatar neste hábito agora",
     "MSVC_001": "Não é possível excluir um serviço com pagamentos. Arquive-o no lugar.",
     "MSVC_002": "Serviço mensal não encontrado.",
     "MSVC_003": "Você já tem um serviço ativo com esse nome.",
@@ -316,6 +318,12 @@
       "target": "Meta",
       "todayProgress": "Progresso de hoje",
       "actions": "Ações"
+    },
+    "rescueStreak": {
+      "action": "Resgatar sequência · {count, plural, one {# escudo} other {# escudos}}",
+      "noShields": "Sem escudos — você ganha um por mês",
+      "success": "Sequência resgatada",
+      "error": "Não conseguimos resgatar a sequência. Tente novamente."
     }
   },
   "monthlyServices": {

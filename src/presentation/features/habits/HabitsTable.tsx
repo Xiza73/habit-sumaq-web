@@ -11,6 +11,7 @@ import {
   Minus,
   Pencil,
   Plus,
+  Shield,
   Target,
   Trash2,
 } from 'lucide-react';
@@ -39,6 +40,10 @@ interface HabitsTableProps {
   /** Sets the target for the day being shown. See `HabitCard`. */
   onTargetChange?: (habit: HabitWithStats, targetCount: number) => void;
   targetPending?: boolean;
+  /** Spends a streak shield on `habit.rescuableDate`. See `HabitCard`. */
+  onRescueStreak?: (habit: HabitWithStats) => void;
+  streakShields?: number;
+  rescuePending?: boolean;
 }
 
 const ICON_BUTTON_CLASS =
@@ -49,8 +54,9 @@ const ICON_BUTTON_CLASS =
  * wired to the EXACT handlers the cards use (`onCheckIn`, `onUndo`, `onEdit`,
  * `onArchive`, `onDelete`), so the table exposes the SAME per-habit actions the
  * card does — including opening the habit detail (the whole card is a link) via
- * an explicit "view" action, and the conditional undo (shown only when today's
- * count > 0, matching the card's minus button).
+ * an explicit "view" action, the conditional undo (shown only when today's
+ * count > 0, matching the card's minus button), and the streak rescue (shown
+ * only when the habit has a rescuable period, matching the card's row).
  *
  * The focus-timer is intentionally left out of the table: it is a list-level
  * action (a single header button in `HabitList`, not a per-habit control), so
@@ -65,6 +71,9 @@ export function HabitsTable({
   onDelete,
   onTargetChange,
   targetPending = false,
+  onRescueStreak,
+  streakShields = 0,
+  rescuePending = false,
 }: HabitsTableProps) {
   const t = useTranslations('habits');
   const tCommon = useTranslations('common');
@@ -154,6 +163,37 @@ export function HabitsTable({
             >
               <Eye className="size-3.5" aria-hidden />
             </Link>
+            {/*
+              Same rule as the card: offered whenever a period is rescuable,
+              disabled rather than hidden at zero shields so the mechanic is
+              discoverable exactly when a streak is at risk. The table's whole
+              contract is exposing the SAME per-habit actions the card does.
+            */}
+            {!habit.isArchived && habit.rescuableDate && onRescueStreak && (
+              <button
+                type="button"
+                onClick={() => onRescueStreak(habit)}
+                disabled={streakShields === 0 || rescuePending}
+                aria-label={
+                  streakShields > 0
+                    ? t('rescueStreak.action', { count: streakShields })
+                    : t('rescueStreak.noShields')
+                }
+                title={
+                  streakShields > 0
+                    ? t('rescueStreak.action', { count: streakShields })
+                    : t('rescueStreak.noShields')
+                }
+                className={cn(
+                  'inline-flex size-7 items-center justify-center rounded-md transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary',
+                  streakShields > 0
+                    ? 'text-amber-600 hover:bg-muted dark:text-amber-400'
+                    : 'cursor-not-allowed text-muted-foreground/50',
+                )}
+              >
+                <Shield className="size-3.5" aria-hidden />
+              </button>
+            )}
             {!habit.isArchived && todayCount > 0 && (
               <button
                 type="button"

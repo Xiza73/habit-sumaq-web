@@ -48,4 +48,17 @@ export interface HabitWithStats extends Habit {
    * `habit.targetCount` — that is the bug this field exists to prevent.
    */
   periodTarget: number;
+  /**
+   * The period a streak shield can rescue RIGHT NOW, as `YYYY-MM-DD`, or null
+   * when there is nothing to rescue. For a WEEKLY habit it is the Monday of
+   * the rescuable week.
+   *
+   * Recomputed by the backend on every read — the window closes on its own as
+   * the period passes, so this is never stale.
+   *
+   * The rescue button needs BOTH this and `streakShields > 0` from settings:
+   * one says there is something to save, the other that the user can pay for
+   * it.
+   */
+  rescuableDate: string | null;
 }

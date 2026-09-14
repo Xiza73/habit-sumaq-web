@@ -45,6 +45,18 @@ export const habitsApi = {
     return httpClient.delete<void>(`/habits/${id}`);
   },
 
+  /**
+   * Spends one streak shield on the period this habit just missed. No body —
+   * the backend decides which period is rescuable, so the client cannot ask
+   * for the wrong one.
+   *
+   * Rejects with HAB_007 (no shields) or HAB_008 (nothing to rescue). Both are
+   * 409s: state, not validation.
+   */
+  rescueStreak(habitId: string): Promise<{ rescuedDate: string }> {
+    return httpClient.post<{ rescuedDate: string }>(`/habits/${habitId}/rescue-streak`, {});
+  },
+
   createLog(habitId: string, data: HabitLogInput): Promise<HabitLog> {
     return httpClient.post<HabitLog>(`/habits/${habitId}/logs`, data);
   },

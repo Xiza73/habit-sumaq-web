@@ -150,6 +150,8 @@
     "HAB_004": "No se puede registrar en una fecha futura",
     "HAB_005": "La cantidad objetivo debe ser al menos 1",
     "HAB_006": "No tienes acceso a este hábito",
+    "HAB_007": "No tienes escudos de racha disponibles",
+    "HAB_008": "No hay nada que rescatar en este hábito ahora",
     "MSVC_001": "No se puede eliminar un servicio con pagos. Archívalo en su lugar.",
     "MSVC_002": "Servicio mensual no encontrado.",
     "MSVC_003": "Ya tienes un servicio activo con ese nombre.",
@@ -316,6 +318,12 @@
       "target": "Objetivo",
       "todayProgress": "Progreso de hoy",
       "actions": "Acciones"
+    },
+    "rescueStreak": {
+      "action": "Rescatar racha · {count, plural, one {# escudo} other {# escudos}}",
+      "noShields": "Sin escudos — se gana uno por mes",
+      "success": "Racha rescatada",
+      "error": "No pudimos rescatar la racha. Intentá de nuevo."
     }
   },
   "monthlyServices": {

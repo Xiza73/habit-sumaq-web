@@ -80,6 +80,19 @@ export function useDisabledModules(): string[] {
  */
 const NO_DISABLED_MODULES: string[] = [];
 
+/**
+ * Streak shields in hand.
+ *
+ * Falls back to 0 while settings load, and that direction matters: 0 hides the
+ * rescue action, so a slow response never offers a button that would fail on
+ * click. Showing nothing briefly beats promising something the backend will
+ * refuse.
+ */
+export function useStreakShields(): number {
+  const { data: settings } = useUserSettings();
+  return settings?.streakShields ?? 0;
+}
+
 export function useUpdateUserSettings() {
   const queryClient = useQueryClient();
 

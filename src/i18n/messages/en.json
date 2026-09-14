@@ -150,6 +150,8 @@
     "HAB_004": "Cannot log a future date",
     "HAB_005": "Target count must be at least 1",
     "HAB_006": "You don't have access to this habit",
+    "HAB_007": "You don't have any streak shields",
+    "HAB_008": "There is nothing to rescue on this habit right now",
     "MSVC_001": "Cannot delete a service with payments. Archive it instead.",
     "MSVC_002": "Monthly service not found.",
     "MSVC_003": "You already have an active service with that name.",
@@ -316,6 +318,12 @@
       "target": "Target",
       "todayProgress": "Today progress",
       "actions": "Actions"
+    },
+    "rescueStreak": {
+      "action": "Rescue streak · {count, plural, one {# shield} other {# shields}}",
+      "noShields": "No shields — you earn one a month",
+      "success": "Streak rescued",
+      "error": "We couldn't rescue the streak. Try again."
     }
   },
   "monthlyServices": {
