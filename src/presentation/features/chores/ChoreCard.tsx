@@ -83,12 +83,25 @@ export function ChoreCard({
         </div>
 
         <div className="min-w-0 flex-1">
-          <div className="flex flex-wrap items-center gap-2">
-            <p className="truncate font-medium">{chore.name}</p>
+          {/*
+            `min-w-0` on the name is what makes its `truncate` work at all: a
+            flex item defaults to `min-width: auto`, which for nowrap text is
+            its full content width, so it refuses to shrink and never gets an
+            ellipsis. Without it the row had to wrap, which pushed the category
+            tag — and the status chip under it — onto their own lines and grew
+            the card by a third.
+
+            Category is free text up to 50 chars, so it is capped at 45% and
+            truncates inside that. The cap is what keeps the name readable: with
+            both merely shrinkable, flex splits the deficit by content width and
+            a long category crushes a short name down to an ellipsis.
+          */}
+          <div className="flex items-center gap-2">
+            <p className="min-w-0 truncate font-medium">{chore.name}</p>
             {chore.category && (
-              <span className="inline-flex shrink-0 items-center gap-1 rounded-md border border-border px-1.5 py-0.5 text-[10px] uppercase tracking-wide text-muted-foreground">
-                <Tag className="size-3" />
-                {chore.category}
+              <span className="inline-flex max-w-[45%] shrink-0 items-center gap-1 rounded-md border border-border px-1.5 py-0.5 text-[10px] uppercase tracking-wide text-muted-foreground">
+                <Tag className="size-3 shrink-0" />
+                <span className="truncate">{chore.category}</span>
               </span>
             )}
           </div>
