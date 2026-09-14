@@ -8,7 +8,12 @@ import { type Alert, type AlertsListResponse } from '@/core/domain/entities/aler
 
 import { alertsApi } from '@/infrastructure/api/alerts.api';
 
-import { ALERTS_REFETCH_INTERVAL_MS, computeUnreadCount, useAlerts } from './use-alerts';
+import {
+  ALERTS_REFETCH_INTERVAL_MS,
+  computeUnreadCount,
+  useAlerts,
+  useUnreadAlertCount,
+} from './use-alerts';
 
 vi.mock('@/infrastructure/api/alerts.api', () => ({
   alertsApi: {
@@ -16,6 +21,12 @@ vi.mock('@/infrastructure/api/alerts.api', () => ({
     dismiss: vi.fn(),
     markSeen: vi.fn(),
   },
+}));
+
+let mockDisabledModules: string[] = [];
+
+vi.mock('./use-user-settings', () => ({
+  useDisabledModules: () => mockDisabledModules,
 }));
 
 function makeAlert(overrides: Partial<Alert>): Alert {
@@ -116,5 +127,85 @@ describe('useAlerts staleness', () => {
     // to a day would let the exact bug it fixes happen again.
     expect(ALERTS_REFETCH_INTERVAL_MS).toBeLessThanOrEqual(60 * 60 * 1000);
     expect(ALERTS_REFETCH_INTERVAL_MS).toBeGreaterThan(0);
+  });
+});
+
+describe('useAlerts module filtering', () => {
+  function renderAlerts() {
+    const queryClient = new QueryClient({
+      defaultOptions: { queries: { retry: false, gcTime: 0 } },
+    });
+    return renderHook(() => useAlerts(), {
+      wrapper: ({ children }) =>
+        createElement(QueryClientProvider, { client: queryClient }, children),
+    });
+  }
+
+  function renderUnreadCount() {
+    const queryClient = new QueryClient({
+      defaultOptions: { queries: { retry: false, gcTime: 0 } },
+    });
+    return renderHook(() => useUnreadAlertCount(), {
+      wrapper: ({ children }) =>
+        createElement(QueryClientProvider, { client: queryClient }, children),
+    });
+  }
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockDisabledModules = [];
+    vi.mocked(alertsApi.getAll).mockResolvedValue({
+      alerts: [
+        makeAlert({ id: 'a1', type: 'chore-overdue' }),
+        makeAlert({ id: 'a2', type: 'service-due-today' }),
+        makeAlert({ id: 'a3', type: 'habits-midday' }),
+      ],
+      lastSeenAt: null,
+    });
+  });
+
+  it('returns every alert when nothing is disabled', async () => {
+    const { result } = renderAlerts();
+    await vi.waitFor(() => expect(result.current.data).toBeDefined());
+
+    expect(result.current.data?.alerts.map((a) => a.id)).toEqual(['a1', 'a2', 'a3']);
+  });
+
+  it('drops the alerts belonging to a disabled module', async () => {
+    mockDisabledModules = ['chores'];
+    const { result } = renderAlerts();
+    await vi.waitFor(() => expect(result.current.data).toBeDefined());
+
+    expect(result.current.data?.alerts.map((a) => a.id)).toEqual(['a2', 'a3']);
+  });
+
+  it('drops every alert type a module owns, not just one of them', async () => {
+    // `services` owns three alert types; disabling it has to silence all of
+    // them, which is what the total `ALERT_MODULE_KEY` record is there for.
+    mockDisabledModules = ['services'];
+    vi.mocked(alertsApi.getAll).mockResolvedValue({
+      alerts: [
+        makeAlert({ id: 's1', type: 'service-due-today' }),
+        makeAlert({ id: 's2', type: 'service-past-due-day' }),
+        makeAlert({ id: 's3', type: 'service-overdue' }),
+        makeAlert({ id: 'k1', type: 'reminder-due' }),
+      ],
+      lastSeenAt: null,
+    });
+
+    const { result } = renderAlerts();
+    await vi.waitFor(() => expect(result.current.data).toBeDefined());
+
+    expect(result.current.data?.alerts.map((a) => a.id)).toEqual(['k1']);
+  });
+
+  it('keeps the bell badge in step with what the popover will show', async () => {
+    // The reason the filter lives in the query's `select` rather than in the
+    // popover: both surfaces read this one hook, so a badge can never promise
+    // an alert the list then hides.
+    mockDisabledModules = ['chores', 'habits'];
+    const { result } = renderUnreadCount();
+
+    await vi.waitFor(() => expect(result.current).toBe(1));
   });
 });

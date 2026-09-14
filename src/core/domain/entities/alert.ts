@@ -26,6 +26,26 @@ export const ALERT_SEVERITIES = ['info', 'warning'] as const;
 export type AlertSeverity = (typeof ALERT_SEVERITIES)[number];
 
 /**
+ * Which module each alert belongs to, as a key from `nav-registry`. Drives
+ * the alerts filter: a user who switched a module off should not be nagged
+ * about it, and the bell should not count what the popover will not show.
+ *
+ * Typed as a total `Record<AlertType, ...>` on purpose — adding an alert type
+ * without deciding which module owns it is a compile error, not an alert that
+ * silently ignores the user's setting.
+ */
+export const ALERT_MODULE_KEY: Record<AlertType, string> = {
+  'service-due-today': 'services',
+  'service-past-due-day': 'services',
+  'service-overdue': 'services',
+  'habits-midday': 'habits',
+  'budget-unlogged': 'budgets',
+  'chore-overdue': 'chores',
+  'chore-due-today': 'chores',
+  'reminder-due': 'reminders',
+};
+
+/**
  * Discriminated payload per `AlertType`. The wire payload is loosely typed
  * (`Record<string, string | number | null>`) on purpose so adding a new key
  * server-side doesn't require an immediate frontend ship — readers narrow
