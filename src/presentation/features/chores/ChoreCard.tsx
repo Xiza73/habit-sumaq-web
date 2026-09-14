@@ -21,7 +21,7 @@ import {
 import { useDateFormat } from '@/core/application/hooks/use-user-settings';
 import { type Chore } from '@/core/domain/entities/chore';
 
-import { type ChoreStatus, getChoreStatus } from '@/lib/chore-status';
+import { CHORE_STATUS_CLASSES, getChoreStatus } from '@/lib/chore-status';
 import { formatDate, getTodayLocaleDate } from '@/lib/format';
 import { cn } from '@/lib/utils';
 
@@ -34,18 +34,6 @@ interface ChoreCardProps {
   onDelete: (chore: Chore) => void;
   onViewHistory: (chore: Chore) => void;
 }
-
-const STATUS_CLASSES: Record<ChoreStatus, string> = {
-  overdue: 'bg-destructive/15 text-destructive',
-  // Today is the only actionable state, so it gets the strongest non-alarming
-  // colour — louder than upcoming's amber, but not the red reserved for
-  // "you already missed this".
-  today: 'bg-primary/15 text-primary',
-  upcoming: 'bg-amber-500/15 text-amber-700 dark:text-amber-400',
-  // Horizon stays very low contrast on purpose — those chores are not "due"
-  // any time soon and shouldn't fight for attention with the upcoming ones.
-  horizon: 'bg-muted text-muted-foreground',
-};
 
 export function ChoreCard({
   chore,
@@ -109,7 +97,7 @@ export function ChoreCard({
           <span
             className={cn(
               'mt-1 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium',
-              isArchived ? 'bg-muted text-muted-foreground' : STATUS_CLASSES[status],
+              isArchived ? 'bg-muted text-muted-foreground' : CHORE_STATUS_CLASSES[status],
             )}
           >
             {isArchived ? t('archived') : t(`status.${status}`)}

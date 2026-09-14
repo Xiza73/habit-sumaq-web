@@ -11,7 +11,7 @@ import { DataTable, type DataTableColumn } from '@/presentation/components/ui/Da
 import { type RowAction } from '@/presentation/components/ui/RowActionsMenu';
 import { TableRowActions } from '@/presentation/components/ui/TableRowActions';
 
-import { type ChoreStatus, getChoreStatus } from '@/lib/chore-status';
+import { CHORE_STATUS_CLASSES, getChoreStatus } from '@/lib/chore-status';
 import { formatDate, getTodayLocaleDate } from '@/lib/format';
 import { cn } from '@/lib/utils';
 
@@ -30,13 +30,6 @@ interface ChoresTableProps {
   /** Delete a chore (same handler the cards use). */
   onDelete: (chore: Chore) => void;
 }
-
-const STATUS_CLASSES: Record<ChoreStatus, string> = {
-  overdue: 'bg-destructive/15 text-destructive',
-  today: 'bg-primary/15 text-primary',
-  upcoming: 'bg-amber-500/15 text-amber-700 dark:text-amber-400',
-  horizon: 'bg-muted text-muted-foreground',
-};
 
 /**
  * Table view of the chores list. Built on the shared `DataTable` primitive and
@@ -111,7 +104,7 @@ export function ChoresTable({
           <span
             className={cn(
               'inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium',
-              isArchived ? 'bg-muted text-muted-foreground' : STATUS_CLASSES[status],
+              isArchived ? 'bg-muted text-muted-foreground' : CHORE_STATUS_CLASSES[status],
             )}
           >
             {isArchived ? t('archived') : t(`status.${status}`)}
