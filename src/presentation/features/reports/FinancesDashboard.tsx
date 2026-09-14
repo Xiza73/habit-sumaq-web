@@ -4,10 +4,12 @@ import { useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
 
 import { useFinancesDashboard } from '@/core/application/hooks/use-reports';
+import { useDisabledModules } from '@/core/application/hooks/use-user-settings';
 import { type ReportPeriod } from '@/core/domain/entities/reports';
 
 import { analytics } from '@/lib/analytics';
 import { formatCurrency } from '@/lib/format';
+import { isModuleEnabled } from '@/lib/nav-registry';
 import { cn } from '@/lib/utils';
 
 import { BarList } from './BarList';
@@ -20,6 +22,17 @@ export function FinancesDashboard() {
 
   const [period, setPeriod] = useState<ReportPeriod>('month');
   const { data, isLoading, isError } = useFinancesDashboard(period);
+
+  // Only the sections that belong to a switchable module are gated. Balance,
+  // period flow and daily flow are aggregates over everything the user has —
+  // they don't belong to any one module, so there is nothing to hide.
+  //
+  // The backend still computes the hidden sections. Wasteful, but the payload
+  // is small and cutting it would mean teaching the reports endpoints about a
+  // nav preference — a much worse trade than a few unused fields.
+  const disabledModules = useDisabledModules();
+  const showCategories = isModuleEnabled('categories', disabledModules);
+  const showDebts = isModuleEnabled('debts', disabledModules);
 
   // Track each render of this dashboard once on mount. Period changes don't
   // re-fire — the event answers "did the user open Finances", not "how often
@@ -97,67 +110,85 @@ export function FinancesDashboard() {
             )}
           </section>
 
-          {/* Top categories + Debts side by side on desktop */}
-          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-            <section>
-              <SectionHeader title={t('topExpenseCategories')} />
-              {data.topExpenseCategories.length === 0 ? (
-                <EmptyState message={t('topCategoriesEmpty')} />
-              ) : (
-                <BarList
-                  items={data.topExpenseCategories.map((cat) => ({
-                    label: cat.name ?? t('uncategorized'),
-                    value: formatCurrency(cat.total, cat.currency),
-                    percentage: cat.percentage,
-                    color: cat.color,
-                  }))}
-                  // Defensive — the parent guard means BarList never renders
-                  // the empty state here, but the prop is required.
-                  emptyMessage={t('topCategoriesEmpty')}
-                />
+          {/* Top categories + Debts side by side on desktop.
+              Each belongs to a module the user can switch off, so the row
+              collapses to one column when only one survives and disappears
+              entirely when neither does. Keeping `lg:grid-cols-2` with a
+              single child would leave a conspicuous empty half. */}
+          {(showCategories || showDebts) && (
+            <div
+              className={cn(
+                'grid grid-cols-1 gap-6',
+                showCategories && showDebts && 'lg:grid-cols-2',
               )}
-            </section>
+            >
+              {showCategories && (
+                <section>
+                  <SectionHeader title={t('topExpenseCategories')} />
+                  {data.topExpenseCategories.length === 0 ? (
+                    <EmptyState message={t('topCategoriesEmpty')} />
+                  ) : (
+                    <BarList
+                      items={data.topExpenseCategories.map((cat) => ({
+                        label: cat.name ?? t('uncategorized'),
+                        value: formatCurrency(cat.total, cat.currency),
+                        percentage: cat.percentage,
+                        color: cat.color,
+                      }))}
+                      // Defensive — the parent guard means BarList never renders
+                      // the empty state here, but the prop is required.
+                      emptyMessage={t('topCategoriesEmpty')}
+                    />
+                  )}
+                </section>
+              )}
 
-            <section>
-              <SectionHeader title={t('pendingDebts')} />
-              {data.pendingDebts.length === 0 ? (
-                <EmptyState message={t('pendingDebtsEmpty')} />
-              ) : (
-                <div className="space-y-3">
-                  {data.pendingDebts.map((d) => (
-                    <div key={d.currency} className="rounded-xl border border-border bg-card p-4">
-                      <div className="flex items-center justify-between gap-3">
-                        <span className="text-sm text-muted-foreground">{t('owesYou')}</span>
-                        <span className="font-medium text-emerald-500">
-                          {formatCurrency(d.owesYou, d.currency)}
-                        </span>
-                      </div>
-                      <div className="mt-2 flex items-center justify-between gap-3">
-                        <span className="text-sm text-muted-foreground">{t('youOwe')}</span>
-                        <span className="font-medium text-rose-500">
-                          {formatCurrency(d.youOwe, d.currency)}
-                        </span>
-                      </div>
-                      <div className="mt-2 flex items-center justify-between gap-3 border-t border-border pt-2">
-                        <span className="text-sm font-medium">
-                          {t('net')} ({d.currency})
-                        </span>
-                        <span
-                          className={cn(
-                            'font-bold',
-                            d.net > 0 && 'text-emerald-500',
-                            d.net < 0 && 'text-rose-500',
-                          )}
+              {showDebts && (
+                <section>
+                  <SectionHeader title={t('pendingDebts')} />
+                  {data.pendingDebts.length === 0 ? (
+                    <EmptyState message={t('pendingDebtsEmpty')} />
+                  ) : (
+                    <div className="space-y-3">
+                      {data.pendingDebts.map((d) => (
+                        <div
+                          key={d.currency}
+                          className="rounded-xl border border-border bg-card p-4"
                         >
-                          {formatCurrency(d.net, d.currency)}
-                        </span>
-                      </div>
+                          <div className="flex items-center justify-between gap-3">
+                            <span className="text-sm text-muted-foreground">{t('owesYou')}</span>
+                            <span className="font-medium text-emerald-500">
+                              {formatCurrency(d.owesYou, d.currency)}
+                            </span>
+                          </div>
+                          <div className="mt-2 flex items-center justify-between gap-3">
+                            <span className="text-sm text-muted-foreground">{t('youOwe')}</span>
+                            <span className="font-medium text-rose-500">
+                              {formatCurrency(d.youOwe, d.currency)}
+                            </span>
+                          </div>
+                          <div className="mt-2 flex items-center justify-between gap-3 border-t border-border pt-2">
+                            <span className="text-sm font-medium">
+                              {t('net')} ({d.currency})
+                            </span>
+                            <span
+                              className={cn(
+                                'font-bold',
+                                d.net > 0 && 'text-emerald-500',
+                                d.net < 0 && 'text-rose-500',
+                              )}
+                            >
+                              {formatCurrency(d.net, d.currency)}
+                            </span>
+                          </div>
+                        </div>
+                      ))}
                     </div>
-                  ))}
-                </div>
+                  )}
+                </section>
               )}
-            </section>
-          </div>
+            </div>
+          )}
 
           {/* Daily flow — one chart per currency */}
           <section>

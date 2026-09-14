@@ -69,8 +69,16 @@ export function useFavoriteKeys(): string[] {
  */
 export function useDisabledModules(): string[] {
   const { data: settings } = useUserSettings();
-  return settings?.disabledModules ?? [];
+  return settings?.disabledModules ?? NO_DISABLED_MODULES;
 }
+
+/**
+ * Module-level constant rather than a `?? []` literal: the fallback is
+ * returned on every render while settings load, and a fresh array each time
+ * would give consumers a new reference to memoize against — enough to make a
+ * `useMemo`/`select` keyed on it recompute forever.
+ */
+const NO_DISABLED_MODULES: string[] = [];
 
 export function useUpdateUserSettings() {
   const queryClient = useQueryClient();

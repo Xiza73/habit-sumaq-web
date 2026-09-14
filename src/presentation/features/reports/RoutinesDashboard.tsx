@@ -6,9 +6,11 @@ import { useTranslations } from 'next-intl';
 import { Flame, Trophy } from 'lucide-react';
 
 import { useRoutinesDashboard } from '@/core/application/hooks/use-reports';
+import { useDisabledModules } from '@/core/application/hooks/use-user-settings';
 import { type ReportPeriod } from '@/core/domain/entities/reports';
 
 import { analytics } from '@/lib/analytics';
+import { isModuleEnabled } from '@/lib/nav-registry';
 import { getStreakStyle } from '@/lib/streak-styles';
 import { cn } from '@/lib/utils';
 
@@ -20,6 +22,13 @@ export function RoutinesDashboard() {
 
   const [period, setPeriod] = useState<ReportPeriod>('month');
   const { data, isLoading, isError } = useRoutinesDashboard(period);
+
+  // "Today" mixes two modules in one section — a habits KPI and a quick-tasks
+  // one — so each card is gated separately and the section itself only goes
+  // when both are off. Top streaks is habits-only.
+  const disabledModules = useDisabledModules();
+  const showHabits = isModuleEnabled('habits', disabledModules);
+  const showQuickTasks = isModuleEnabled('quick-tasks', disabledModules);
 
   // One event per dashboard mount — see FinancesDashboard for rationale.
   useEffect(() => {
@@ -37,91 +46,105 @@ export function RoutinesDashboard() {
     >
       {data && (
         <div className="space-y-8">
-          {/* Today's KPIs */}
-          <section>
-            <SectionHeader title={t('today')} />
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-              <KpiCard
-                label={t('habitsCompletion')}
-                value={`${data.habitCompletionToday.completedToday}/${data.habitCompletionToday.dueToday}`}
-                subtitle={t('habitsCompletionSubtitle', {
-                  rate: Math.round(data.habitCompletionToday.rate * 100),
-                })}
-                footer={<ProgressBar value={data.habitCompletionToday.rate} color="primary" />}
-              />
-              <KpiCard
-                label={t('quickTasksCompletion')}
-                value={`${data.quickTasksToday.completed}/${data.quickTasksToday.total}`}
-                subtitle={t('quickTasksPending', { count: data.quickTasksToday.pending })}
-                footer={
-                  <ProgressBar
-                    value={
-                      data.quickTasksToday.total > 0
-                        ? data.quickTasksToday.completed / data.quickTasksToday.total
-                        : 0
-                    }
-                    color="primary"
+          {/* Today's KPIs — one card per module, so each is gated on its own
+              and the whole section goes when both modules are off. */}
+          {(showHabits || showQuickTasks) && (
+            <section>
+              <SectionHeader title={t('today')} />
+              <div
+                className={cn(
+                  'grid grid-cols-1 gap-3',
+                  showHabits && showQuickTasks && 'sm:grid-cols-2',
+                )}
+              >
+                {showHabits && (
+                  <KpiCard
+                    label={t('habitsCompletion')}
+                    value={`${data.habitCompletionToday.completedToday}/${data.habitCompletionToday.dueToday}`}
+                    subtitle={t('habitsCompletionSubtitle', {
+                      rate: Math.round(data.habitCompletionToday.rate * 100),
+                    })}
+                    footer={<ProgressBar value={data.habitCompletionToday.rate} color="primary" />}
                   />
-                }
-              />
-            </div>
-          </section>
+                )}
+                {showQuickTasks && (
+                  <KpiCard
+                    label={t('quickTasksCompletion')}
+                    value={`${data.quickTasksToday.completed}/${data.quickTasksToday.total}`}
+                    subtitle={t('quickTasksPending', { count: data.quickTasksToday.pending })}
+                    footer={
+                      <ProgressBar
+                        value={
+                          data.quickTasksToday.total > 0
+                            ? data.quickTasksToday.completed / data.quickTasksToday.total
+                            : 0
+                        }
+                        color="primary"
+                      />
+                    }
+                  />
+                )}
+              </div>
+            </section>
+          )}
 
           {/* Top habit streaks */}
-          <section>
-            <SectionHeader title={t('topStreaks')} />
-            {data.topHabitStreaks.length === 0 ? (
-              <p className="text-sm text-muted-foreground">{t('topStreaksEmpty')}</p>
-            ) : (
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                {data.topHabitStreaks.map((streak) => {
-                  const streakStyle = getStreakStyle(streak.currentStreak);
-                  return (
-                    <div
-                      key={streak.habitId}
-                      className={cn(
-                        'flex flex-col gap-3 rounded-xl border bg-card p-4',
-                        streakStyle.cardClass || 'border-border',
-                      )}
-                    >
-                      <div className="flex items-center gap-2">
-                        <span
-                          className="size-3 shrink-0 rounded-full"
-                          style={{ backgroundColor: streak.color ?? 'var(--color-primary)' }}
-                          aria-hidden="true"
-                        />
-                        <p className="truncate font-medium">{streak.name}</p>
-                      </div>
-                      <div className="grid grid-cols-2 gap-3">
+          {showHabits && (
+            <section>
+              <SectionHeader title={t('topStreaks')} />
+              {data.topHabitStreaks.length === 0 ? (
+                <p className="text-sm text-muted-foreground">{t('topStreaksEmpty')}</p>
+              ) : (
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                  {data.topHabitStreaks.map((streak) => {
+                    const streakStyle = getStreakStyle(streak.currentStreak);
+                    return (
+                      <div
+                        key={streak.habitId}
+                        className={cn(
+                          'flex flex-col gap-3 rounded-xl border bg-card p-4',
+                          streakStyle.cardClass || 'border-border',
+                        )}
+                      >
                         <div className="flex items-center gap-2">
-                          <Flame
-                            className={cn('size-4', streakStyle.flameClass)}
+                          <span
+                            className="size-3 shrink-0 rounded-full"
+                            style={{ backgroundColor: streak.color ?? 'var(--color-primary)' }}
                             aria-hidden="true"
                           />
-                          <div>
-                            <p className="text-xs text-muted-foreground">{t('currentStreak')}</p>
-                            <p className="text-lg font-bold">{streak.currentStreak}</p>
+                          <p className="truncate font-medium">{streak.name}</p>
+                        </div>
+                        <div className="grid grid-cols-2 gap-3">
+                          <div className="flex items-center gap-2">
+                            <Flame
+                              className={cn('size-4', streakStyle.flameClass)}
+                              aria-hidden="true"
+                            />
+                            <div>
+                              <p className="text-xs text-muted-foreground">{t('currentStreak')}</p>
+                              <p className="text-lg font-bold">{streak.currentStreak}</p>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Trophy className="size-4 text-amber-500" aria-hidden="true" />
+                            <div>
+                              <p className="text-xs text-muted-foreground">{t('longestStreak')}</p>
+                              <p className="text-lg font-bold">{streak.longestStreak}</p>
+                            </div>
                           </div>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <Trophy className="size-4 text-amber-500" aria-hidden="true" />
-                          <div>
-                            <p className="text-xs text-muted-foreground">{t('longestStreak')}</p>
-                            <p className="text-lg font-bold">{streak.longestStreak}</p>
-                          </div>
+                        <div className="text-xs text-muted-foreground">
+                          {t('completionRate', {
+                            rate: Math.round(streak.completionRate * 100),
+                          })}
                         </div>
                       </div>
-                      <div className="text-xs text-muted-foreground">
-                        {t('completionRate', {
-                          rate: Math.round(streak.completionRate * 100),
-                        })}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </section>
+                    );
+                  })}
+                </div>
+              )}
+            </section>
+          )}
         </div>
       )}
     </ReportShell>
