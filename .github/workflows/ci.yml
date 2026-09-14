@@ -29,15 +29,15 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Install pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@v6
         with:
           version: 11
 
       - name: Install Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: pnpm
@@ -78,15 +78,21 @@ jobs:
     # than surfacing on whichever platform happens to lag furthest behind.
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Install pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@v6
         with:
           version: 9
 
+      # No `cache:` here on purpose: this job exists to prove a COLD install
+      # works under the oldest pnpm, and a warm cache would hide the very
+      # failure it looks for. setup-node v5 would have switched caching on by
+      # itself off a `packageManager` field in package.json; v6+ limits that
+      # automatic caching to npm, so pnpm stays uncached whatever package.json
+      # grows.
       - name: Install Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: 22
 
@@ -141,26 +147,26 @@ jobs:
 
     steps:
       - name: Checkout web
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       # The backend is a separate PUBLIC repo, so no token is needed. Tracking
       # `dev` rather than `master` is deliberate: web `dev` is meant to be
       # compatible with backend `dev`, and pinning to `master` would let a
       # contract change sit undetected until release day.
       - name: Checkout backend
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           repository: Xiza73/habit-sumaq-backend
           ref: dev
           path: backend
 
       - name: Install pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@v6
         with:
           version: 11
 
       - name: Install Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: pnpm
@@ -258,9 +264,12 @@ jobs:
           echo "--- backend log ---"; cat /tmp/backend.log || true
           echo "--- web log ---"; cat /tmp/web.log || true
 
+      # v7, not v5: upload-artifact kept the node20 runtime all the way
+      # through v5 and only moved to node24 in v6. Bumping one major here
+      # would have read as an upgrade and changed nothing.
       - name: Upload the Playwright report on failure
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: playwright-report
           path: playwright-report/
