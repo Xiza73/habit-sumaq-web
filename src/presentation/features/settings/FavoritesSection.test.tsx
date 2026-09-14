@@ -9,10 +9,12 @@ import { FavoritesSection } from './FavoritesSection';
 // A6-W.5 dropped `accounts` (after A6-W.3 dropped `transactions`). Use
 // v1.0.0-valid keys throughout.
 let mockFavoriteKeys: string[] = ['debts', 'budgets', 'habits', 'quick-tasks'];
+let mockDisabledModules: string[] = [];
 const mockUpdateMutate = vi.fn();
 
 vi.mock('@/core/application/hooks/use-user-settings', () => ({
   useFavoriteKeys: () => mockFavoriteKeys,
+  useDisabledModules: () => mockDisabledModules,
   useUserSettings: () => ({ data: null, isLoading: false }),
   useDateFormat: () => 'YYYY-MM-DD',
   useUpdateUserSettings: () => ({ mutate: mockUpdateMutate, isPending: false }),
@@ -30,6 +32,7 @@ describe('FavoritesSection', () => {
   beforeEach(() => {
     mockUpdateMutate.mockClear();
     mockFavoriteKeys = ['debts', 'budgets', 'habits', 'quick-tasks'];
+    mockDisabledModules = [];
   });
 
   it('renders every favoritable key with its label', () => {
@@ -110,5 +113,17 @@ describe('FavoritesSection', () => {
     // a user who hasn't discovered right-click learns about it here.
     const section = screen.getByRole('heading', { name: /favoritos/i }).closest('section');
     expect(within(section as HTMLElement).getByText(/click derecho/i)).toBeInTheDocument();
+  });
+
+  it('does not offer a module the user switched off', () => {
+    // Other half of the invariant `ModulesSection` maintains: it drops a
+    // module from favorites when disabling it, and this list must not let the
+    // user put it straight back. A favorite pointing at a hidden module would
+    // hold a slot while rendering nothing.
+    mockDisabledModules = ['chores'];
+    renderSection();
+
+    expect(screen.queryByRole('button', { name: /Quehaceres/ })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Hábitos/ })).toBeInTheDocument();
   });
 });

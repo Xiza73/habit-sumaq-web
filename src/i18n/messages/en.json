@@ -102,6 +102,14 @@
       "auckland": "Auckland (UTC+12)",
       "utc": "UTC (no offset)"
     },
+    "modules": {
+      "title": "Modules",
+      "subtitle": "Switch off the ones you don't use. They disappear from the menu, the reports and the alerts.",
+      "on": "On",
+      "off": "Off",
+      "dataKeptHint": "Switching a module off deletes nothing — your data stays put and comes back when you switch it on.",
+      "saveError": "We couldn't save your modules. Try again."
+    },
     "favorites": {
       "title": "Menu favorites",
       "subtitle": "Pick up to {max} modules for quick access. Settings is always there.",
