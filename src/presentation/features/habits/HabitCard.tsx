@@ -50,6 +50,13 @@ interface HabitCardProps {
    */
   streakShields?: number;
   rescuePending?: boolean;
+  /**
+   * Drops the rescue covering the period in view and takes the shield back.
+   * Omitted on read-only surfaces, where the shield then reads as a plain
+   * marker with no action.
+   */
+  onReleaseRescue?: (habit: HabitWithStats) => void;
+  releasePending?: boolean;
 }
 
 export function HabitCard({
@@ -64,6 +71,8 @@ export function HabitCard({
   streakShields = 0,
   rescuePending = false,
   targetPending = false,
+  onReleaseRescue,
+  releasePending = false,
 }: HabitCardProps) {
   const t = useTranslations('habits');
   const tCommon = useTranslations('common');
@@ -198,25 +207,65 @@ export function HabitCard({
                 <Minus className="size-3" />
               </button>
             )}
-            <button
-              type="button"
-              onClick={() => onCheckIn(habit)}
-              disabled={isCompleted}
-              className={cn(
-                'flex size-9 items-center justify-center rounded-full transition-colors',
-                isCompleted
-                  ? 'bg-income/20 text-income'
-                  : 'border border-border text-muted-foreground hover:border-primary hover:text-primary',
-              )}
-              aria-label={t('checkIn')}
-            >
-              {isCompleted ? <Check className="size-4" /> : <Plus className="size-4" />}
-            </button>
+            {/*
+              A rescued period does NOT get a plain check-in button. Logging
+              over a shield spends it on a period that no longer needs it, and
+              before this the UI gave no sign the day was protected at all.
+
+              Deliberately not a `disabled` button: a disabled control cannot
+              be clicked, so it cannot explain itself. The shield says what the
+              state is AND offers the way out — release it, take the shield
+              back, then log the day like any other.
+            */}
+            {habit.periodRescued ? (
+              <button
+                type="button"
+                onClick={() => onReleaseRescue?.(habit)}
+                disabled={!onReleaseRescue || releasePending}
+                className={cn(
+                  'flex size-9 items-center justify-center rounded-full border transition-colors',
+                  onReleaseRescue
+                    ? 'border-amber-500/40 bg-amber-500/10 text-amber-700 hover:bg-amber-500/20 dark:text-amber-400'
+                    : 'cursor-default border-amber-500/40 bg-amber-500/10 text-amber-700 dark:text-amber-400',
+                )}
+                aria-label={t('releaseRescue.action')}
+                title={t('releaseRescue.action')}
+              >
+                <Shield className="size-4" />
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={() => onCheckIn(habit)}
+                disabled={isCompleted}
+                className={cn(
+                  'flex size-9 items-center justify-center rounded-full transition-colors',
+                  isCompleted
+                    ? 'bg-income/20 text-income'
+                    : 'border border-border text-muted-foreground hover:border-primary hover:text-primary',
+                )}
+                aria-label={t('checkIn')}
+              >
+                {isCompleted ? <Check className="size-4" /> : <Plus className="size-4" />}
+              </button>
+            )}
           </div>
         )}
       </div>
 
-      <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-muted">
+      {/*
+        The fill stays empty on a rescued period — nothing WAS done, and the
+        completion rate says so. What changes is the track: amber instead of
+        the neutral muted, so an empty bar reads as "protected" rather than
+        "you missed this". That ambiguity is what made a user log over their
+        own shield.
+      */}
+      <div
+        className={cn(
+          'mt-3 h-1.5 overflow-hidden rounded-full',
+          habit.periodRescued ? 'bg-amber-500/25' : 'bg-muted',
+        )}
+      >
         <div
           className={cn(
             'h-full rounded-full transition-all duration-300',

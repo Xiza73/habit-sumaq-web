@@ -306,7 +306,12 @@ export function HabitDetail({ habitId }: HabitDetailProps) {
       </div>
 
       {/* Heatmap */}
-      <HabitHeatmap logs={logs} fallbackTarget={habit.targetCount} color={habit.color} />
+      <HabitHeatmap
+        logs={logs}
+        fallbackTarget={habit.targetCount}
+        color={habit.color}
+        rescuedDates={habit.rescuedDates}
+      />
 
       <HabitForm open={editOpen} habit={habit} onClose={() => setEditOpen(false)} />
 

@@ -324,6 +324,19 @@
       "noShields": "Sem escudos — você ganha um por mês",
       "success": "Sequência resgatada",
       "error": "Não conseguimos resgatar a sequência. Tente novamente."
+    },
+    "releaseRescue": {
+      "action": "Dia protegido por um escudo",
+      "confirmTitle": "Liberar o escudo",
+      "confirmBody": "Este período está protegido por um escudo. Para registrá-lo é preciso liberá-lo: o escudo volta ao seu inventário.",
+      "confirmBodyLost": "Este período está protegido por um escudo. Para registrá-lo é preciso liberá-lo, mas seu inventário já está cheio ({max}), então o escudo será perdido.",
+      "confirm": "Liberar e registrar",
+      "success": "Escudo devolvido ao inventário",
+      "successLost": "Resgate liberado. O escudo não voltou: seu inventário já estava cheio.",
+      "error": "Não conseguimos liberar o resgate. Tente novamente."
+    },
+    "heatmap": {
+      "rescued": "Protegido por um escudo"
     }
   },
   "monthlyServices": {

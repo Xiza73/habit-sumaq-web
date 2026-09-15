@@ -49,6 +49,8 @@ function makeHabit(currentStreak: number): HabitWithStats {
     periodCompleted: false,
     periodTarget: 1,
     rescuableDate: null,
+    periodRescued: false,
+    rescuedDates: [],
   };
 }
 

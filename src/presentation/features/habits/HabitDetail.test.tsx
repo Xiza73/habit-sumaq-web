@@ -27,6 +27,8 @@ const mockHabit: HabitWithStats = {
   periodCompleted: false,
   periodTarget: 8,
   rescuableDate: null,
+  periodRescued: false,
+  rescuedDates: [],
   todayLog: {
     id: 'log-1',
     habitId: '1',

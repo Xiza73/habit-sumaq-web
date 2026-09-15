@@ -24,6 +24,16 @@ interface HabitHeatmapProps {
    */
   fallbackTarget: number;
   color: string | null;
+  /**
+   * Periods covered by a spent shield. They have NO log, so without this the
+   * history paints them as plain misses and tells the user they skipped a day
+   * they actually paid to protect.
+   *
+   * For a WEEKLY habit each entry is the Monday of the rescued week, and only
+   * that cell is marked. Painting all seven would claim seven protected days
+   * when the shield covered one PERIOD.
+   */
+  rescuedDates?: string[];
 }
 
 function getLevel(count: number, target: number): number {
@@ -63,7 +73,12 @@ function calculateWeeks(containerWidth: number): number {
   return Math.max(MIN_WEEKS, Math.min(MAX_WEEKS, weeks));
 }
 
-export function HabitHeatmap({ logs, fallbackTarget, color }: HabitHeatmapProps) {
+export function HabitHeatmap({
+  logs,
+  fallbackTarget,
+  color,
+  rescuedDates = [],
+}: HabitHeatmapProps) {
   const t = useTranslations('habits');
   const locale = useLocale();
   const containerRef = useRef<HTMLDivElement>(null);
@@ -87,6 +102,8 @@ export function HabitHeatmap({ logs, fallbackTarget, color }: HabitHeatmapProps)
     if (containerRef.current) observer.observe(containerRef.current);
     return () => observer.disconnect();
   }, [updateWeeks]);
+
+  const rescuedSet = useMemo(() => new Set(rescuedDates), [rescuedDates]);
 
   const logMap = useMemo(() => {
     const map = new Map<string, HabitLog>();
@@ -168,6 +185,7 @@ export function HabitHeatmap({ logs, fallbackTarget, color }: HabitHeatmapProps)
     count: number,
     target: number,
     isFuture: boolean,
+    isRescued: boolean,
   ) {
     if (isFuture) return;
     const rect = e.currentTarget.getBoundingClientRect();
@@ -181,7 +199,10 @@ export function HabitHeatmap({ logs, fallbackTarget, color }: HabitHeatmapProps)
     const clampedX = Math.max(tooltipWidth / 2, Math.min(rawX, svgWidth - tooltipWidth / 2));
     const flippedDown = rawY - tooltipHeight - 8 < 0;
     setTooltip({
-      text: `${dateStr} · ${count}/${target}`,
+      // A rescued day reads as protected, not as done — it has no count to
+      // show, and pretending otherwise is the lie the shield was built to
+      // avoid.
+      text: isRescued ? `${dateStr} · ${t('heatmap.rescued')}` : `${dateStr} · ${count}/${target}`,
       x: clampedX,
       y: flippedDown ? rawY + CELL_SIZE + 8 + tooltipHeight : rawY - 8,
       flippedDown,
@@ -243,6 +264,10 @@ export function HabitHeatmap({ logs, fallbackTarget, color }: HabitHeatmapProps)
               // Each day is measured against ITS own target, not the habit's.
               const target = log?.targetCount ?? fallbackTarget;
               const level = cell.isFuture ? -1 : getLevel(count, target);
+              // Only when the day has nothing of its own: a period that was
+              // rescued AND later logged for real is a completed day, and it
+              // should look like one.
+              const isRescued = !cell.isFuture && level === 0 && rescuedSet.has(cell.key);
 
               return (
                 <rect
@@ -255,14 +280,19 @@ export function HabitHeatmap({ logs, fallbackTarget, color }: HabitHeatmapProps)
                   className={cn(
                     'transition-opacity',
                     level === -1 && 'fill-transparent',
-                    level === 0 && 'fill-muted',
+                    level === 0 && !isRescued && 'fill-muted',
+                    // Amber, never the habit's own colour: a shield is not a
+                    // dimmer version of having done it.
+                    isRescued && 'fill-amber-500/40',
                     cell.isToday && 'stroke-foreground/30',
                   )}
                   style={
                     level > 0 ? { fill: baseColor, opacity: getLevelOpacity(level) } : undefined
                   }
                   strokeWidth={cell.isToday ? 1.5 : 0}
-                  onMouseEnter={(e) => handleCellHover(e, cell.key, count, target, cell.isFuture)}
+                  onMouseEnter={(e) =>
+                    handleCellHover(e, cell.key, count, target, cell.isFuture, isRescued)
+                  }
                   onMouseLeave={() => setTooltip(null)}
                 />
               );
