@@ -12,11 +12,12 @@ import {
   useDeleteHabit,
   useHabits,
   useLogHabit,
+  useReleaseRescue,
   useRescueStreak,
 } from '@/core/application/hooks/use-habits';
 import { useDateFormat, useStreakShields } from '@/core/application/hooks/use-user-settings';
 import { useViewMode } from '@/core/application/hooks/use-view-mode';
-import { type HabitWithStats } from '@/core/domain/entities/habit';
+import { type HabitWithStats, MAX_STREAK_SHIELDS } from '@/core/domain/entities/habit';
 
 import { ApiError } from '@/infrastructure/api/api-error';
 
@@ -64,6 +65,7 @@ export function HabitList() {
   const t = useTranslations('habits');
   const tErrors = useTranslations('errors');
   const tRescue = useTranslations('habits.rescueStreak');
+  const tRelease = useTranslations('habits.releaseRescue');
   const dateFormat = useDateFormat();
 
   const [showArchived, setShowArchived] = useState(false);
@@ -84,6 +86,8 @@ export function HabitList() {
   const deleteMutation = useDeleteHabit();
   const logMutation = useLogHabit();
   const rescueMutation = useRescueStreak();
+  const releaseMutation = useReleaseRescue();
+  const [releasingHabit, setReleasingHabit] = useState<HabitWithStats | null>(null);
   const streakShields = useStreakShields();
 
   const habits = showArchived ? allHabits : dailyHabits;
@@ -134,6 +138,35 @@ export function HabitList() {
         );
       },
     });
+  }
+
+  /**
+   * A rescued period cannot simply be logged: the shield has to come back
+   * first. Confirmed rather than done on the click, because at a full stock
+   * the shield is LOST — that is a trade the user has to see before making it,
+   * not a toast after.
+   */
+  function handleReleaseConfirm() {
+    const habit = releasingHabit;
+    if (!habit) return;
+
+    releaseMutation.mutate(
+      { habitId: habit.id, date: selectedDate },
+      {
+        onSuccess: ({ shieldReturned }) => {
+          setReleasingHabit(null);
+          toast.success(shieldReturned ? tRelease('success') : tRelease('successLost'));
+        },
+        onError: (error) => {
+          setReleasingHabit(null);
+          toast.error(
+            error instanceof ApiError && error.code && tErrors.has(error.code)
+              ? tErrors(error.code as 'HAB_001')
+              : tRelease('error'),
+          );
+        },
+      },
+    );
   }
 
   function handleCheckIn(habit: HabitWithStats) {
@@ -351,6 +384,8 @@ export function HabitList() {
           onRescueStreak={handleRescueStreak}
           streakShields={streakShields}
           rescuePending={rescueMutation.isPending}
+          onReleaseRescue={setReleasingHabit}
+          releasePending={releaseMutation.isPending}
         />
       ) : (
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -368,6 +403,8 @@ export function HabitList() {
               onRescueStreak={handleRescueStreak}
               streakShields={streakShields}
               rescuePending={rescueMutation.isPending}
+              onReleaseRescue={setReleasingHabit}
+              releasePending={releaseMutation.isPending}
             />
           ))}
         </div>
@@ -379,6 +416,22 @@ export function HabitList() {
         open={timerOpen}
         onClose={() => setTimerOpen(false)}
         habits={dailyHabits ?? []}
+      />
+
+      <ConfirmDialog
+        open={!!releasingHabit}
+        title={tRelease('confirmTitle')}
+        description={
+          // The stock is already known here, so the warning lands BEFORE the
+          // trade instead of as an after-the-fact toast.
+          streakShields >= MAX_STREAK_SHIELDS
+            ? tRelease('confirmBodyLost', { max: MAX_STREAK_SHIELDS })
+            : tRelease('confirmBody')
+        }
+        confirmLabel={tRelease('confirm')}
+        loading={releaseMutation.isPending}
+        onConfirm={handleReleaseConfirm}
+        onCancel={() => setReleasingHabit(null)}
       />
 
       <ConfirmDialog

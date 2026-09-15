@@ -27,10 +27,19 @@ function renderHeatmap(
   logs: HabitLog[] = [],
   fallbackTarget = 8,
   color: string | null = '#2196F3',
+  rescuedDates: string[] = [],
 ) {
-  return render(<HabitHeatmap logs={logs} fallbackTarget={fallbackTarget} color={color} />, {
-    wrapper: TestProviders,
-  });
+  return render(
+    <HabitHeatmap
+      logs={logs}
+      fallbackTarget={fallbackTarget}
+      color={color}
+      rescuedDates={rescuedDates}
+    />,
+    {
+      wrapper: TestProviders,
+    },
+  );
 }
 
 describe('HabitHeatmap', () => {
@@ -186,5 +195,37 @@ describe('HabitHeatmap', () => {
     const labels = Array.from(container.querySelectorAll<SVGTextElement>('svg text'));
     const dayLabels = labels.filter((t) => t.getAttribute('x') === '0');
     expect(dayLabels).toHaveLength(4);
+  });
+});
+
+describe('HabitHeatmap — rescued periods', () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    vi.setSystemTime(FIXED_NOW);
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it('marks a rescued day instead of painting it as a plain miss', () => {
+    // A rescued period has no log, so before this the history told the user
+    // they skipped a day they had actually paid a shield to protect.
+    const { container } = renderHeatmap([], 8, '#2196F3', ['2026-04-15']);
+
+    expect(container.querySelectorAll('[class*="fill-amber-500"]')).toHaveLength(1);
+  });
+
+  it('leaves a rescued day that was later logged looking completed', () => {
+    // Releasing is not the only way a rescued day gets done. If it carries a
+    // real log it is a real completion, and the amber marker would understate it.
+    const { container } = renderHeatmap(
+      [buildLog({ date: '2026-04-15', count: 8, completed: true, targetCount: 8 })],
+      8,
+      '#2196F3',
+      ['2026-04-15'],
+    );
+
+    expect(container.querySelectorAll('[class*="fill-amber-500"]')).toHaveLength(0);
   });
 });

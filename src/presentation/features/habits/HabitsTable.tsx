@@ -44,6 +44,9 @@ interface HabitsTableProps {
   onRescueStreak?: (habit: HabitWithStats) => void;
   streakShields?: number;
   rescuePending?: boolean;
+  /** Drops the rescue covering the period in view. See `HabitCard`. */
+  onReleaseRescue?: (habit: HabitWithStats) => void;
+  releasePending?: boolean;
 }
 
 const ICON_BUTTON_CLASS =
@@ -74,6 +77,8 @@ export function HabitsTable({
   onRescueStreak,
   streakShields = 0,
   rescuePending = false,
+  onReleaseRescue,
+  releasePending = false,
 }: HabitsTableProps) {
   const t = useTranslations('habits');
   const tCommon = useTranslations('common');
@@ -134,7 +139,12 @@ export function HabitsTable({
                 pending={targetPending}
               />
             </span>
-            <div className="h-1.5 w-24 overflow-hidden rounded-full bg-muted">
+            <div
+              className={cn(
+                'h-1.5 w-24 overflow-hidden rounded-full',
+                habit.periodRescued ? 'bg-amber-500/25' : 'bg-muted',
+              )}
+            >
               <div
                 className={cn(
                   'h-full rounded-full transition-all',
@@ -205,25 +215,40 @@ export function HabitsTable({
                 <Minus className="size-3.5" aria-hidden />
               </button>
             )}
-            {!habit.isArchived && (
-              <button
-                type="button"
-                onClick={() => onCheckIn(habit)}
-                disabled={isCompleted}
-                aria-label={t('checkIn')}
-                title={t('checkIn')}
-                className={cn(
-                  'inline-flex size-7 items-center justify-center rounded-md transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary',
-                  isCompleted ? 'cursor-not-allowed text-income' : 'text-primary hover:bg-muted',
-                )}
-              >
-                {isCompleted ? (
-                  <Check className="size-3.5" aria-hidden />
-                ) : (
-                  <Plus className="size-3.5" aria-hidden />
-                )}
-              </button>
-            )}
+            {/* Same rule as the card: a rescued period offers release, not a
+                check-in. The two views must not disagree about whether a day
+                can be logged. */}
+            {!habit.isArchived &&
+              (habit.periodRescued ? (
+                <button
+                  type="button"
+                  onClick={() => onReleaseRescue?.(habit)}
+                  disabled={!onReleaseRescue || releasePending}
+                  aria-label={t('releaseRescue.action')}
+                  title={t('releaseRescue.action')}
+                  className="inline-flex size-7 items-center justify-center rounded-md text-amber-600 transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary dark:text-amber-400"
+                >
+                  <Shield className="size-3.5" aria-hidden />
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => onCheckIn(habit)}
+                  disabled={isCompleted}
+                  aria-label={t('checkIn')}
+                  title={t('checkIn')}
+                  className={cn(
+                    'inline-flex size-7 items-center justify-center rounded-md transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary',
+                    isCompleted ? 'cursor-not-allowed text-income' : 'text-primary hover:bg-muted',
+                  )}
+                >
+                  {isCompleted ? (
+                    <Check className="size-3.5" aria-hidden />
+                  ) : (
+                    <Plus className="size-3.5" aria-hidden />
+                  )}
+                </button>
+              ))}
             <button
               type="button"
               onClick={() => onEdit(habit)}

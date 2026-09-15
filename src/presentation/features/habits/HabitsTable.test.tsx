@@ -31,6 +31,8 @@ function makeHabit(overrides: Partial<HabitWithStats> = {}): HabitWithStats {
     periodCompleted: false,
     periodTarget: 3,
     rescuableDate: null,
+    periodRescued: false,
+    rescuedDates: [],
     ...overrides,
   };
   // A fixture that raises the habit's default target means it for the period
@@ -240,5 +242,25 @@ describe('HabitsTable — streak shield rescue', () => {
     expect(
       screen.queryByRole('button', { name: /rescatar racha|sin escudos/i }),
     ).not.toBeInTheDocument();
+  });
+});
+
+describe('HabitsTable — a rescued period', () => {
+  it('offers release instead of a check-in, exactly like the card', async () => {
+    // Parity, not decoration: if one view lets the day be logged and the other
+    // does not, the shield can still be burned by switching view mode.
+    const user = userEvent.setup();
+    const onCheckIn = vi.fn();
+    const onReleaseRescue = vi.fn();
+    const habit = makeHabit({ periodRescued: true, periodCount: 0 });
+
+    renderTable([habit], { onCheckIn, onReleaseRescue });
+
+    expect(screen.queryByRole('button', { name: /marcar/i })).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: /protegido por un escudo/i }));
+
+    expect(onReleaseRescue).toHaveBeenCalledWith(habit);
+    expect(onCheckIn).not.toHaveBeenCalled();
   });
 });

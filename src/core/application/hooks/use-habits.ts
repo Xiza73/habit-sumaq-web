@@ -156,6 +156,27 @@ export function useRescueStreak() {
   });
 }
 
+/**
+ * Drops the rescue covering a period and takes the shield back, so the day can
+ * be logged for real.
+ *
+ * Invalidates settings alongside habits for the same reason `useRescueStreak`
+ * does: the shield stock moved, and the rescue button elsewhere on the page
+ * reads it. Leaving it stale shows a count the server no longer agrees with.
+ */
+export function useReleaseRescue() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ habitId, date }: { habitId: string; date: string }) =>
+      habitsApi.releaseRescue(habitId, date),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: habitKeys.all });
+      void queryClient.invalidateQueries({ queryKey: userSettingsKeys.all });
+    },
+  });
+}
+
 export function useLogHabit() {
   const queryClient = useQueryClient();
   const t = useTranslations('habits.milestones');

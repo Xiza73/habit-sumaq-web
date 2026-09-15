@@ -27,6 +27,8 @@ const mockHabit: HabitWithStats = {
   periodCompleted: false,
   periodTarget: 8,
   rescuableDate: null,
+  periodRescued: false,
+  rescuedDates: [],
   todayLog: {
     id: 'log-1',
     habitId: '1',
@@ -212,6 +214,34 @@ describe('HabitCard — streak shield rescue', () => {
 
     expect(
       screen.queryByRole('button', { name: /rescatar racha|sin escudos/i }),
+    ).not.toBeInTheDocument();
+  });
+});
+
+describe('HabitCard — a rescued period', () => {
+  const rescued: HabitWithStats = { ...mockHabit, periodRescued: true, periodCount: 0 };
+
+  it('offers release instead of a check-in', async () => {
+    // The whole bug: the day looked ordinary, so the user logged over their
+    // own shield and burned it on a period that no longer needed protecting.
+    const onCheckIn = vi.fn();
+    const onReleaseRescue = vi.fn();
+    const user = userEvent.setup();
+    renderCard(rescued, { onCheckIn, onReleaseRescue });
+
+    expect(screen.queryByRole('button', { name: /marcar/i })).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: /protegido por un escudo/i }));
+
+    expect(onReleaseRescue).toHaveBeenCalledWith(rescued);
+    expect(onCheckIn).not.toHaveBeenCalled();
+  });
+
+  it('keeps the plain check-in when the period is not rescued', () => {
+    renderCard({ ...mockHabit, periodRescued: false }, { onReleaseRescue: vi.fn() });
+
+    expect(
+      screen.queryByRole('button', { name: /protegido por un escudo/i }),
     ).not.toBeInTheDocument();
   });
 });

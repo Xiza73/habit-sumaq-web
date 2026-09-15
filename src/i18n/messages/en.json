@@ -324,6 +324,19 @@
       "noShields": "No shields — you earn one a month",
       "success": "Streak rescued",
       "error": "We couldn't rescue the streak. Try again."
+    },
+    "releaseRescue": {
+      "action": "Day protected by a shield",
+      "confirmTitle": "Release the shield",
+      "confirmBody": "This period is protected by a shield. Logging it means releasing the shield first — it goes back to your stock.",
+      "confirmBodyLost": "This period is protected by a shield. Logging it means releasing the shield first, but your stock is already full ({max}), so the shield will be lost.",
+      "confirm": "Release and log",
+      "success": "Shield back in your stock",
+      "successLost": "Rescue released. The shield did not come back: your stock was already full.",
+      "error": "We could not release the rescue. Try again."
+    },
+    "heatmap": {
+      "rescued": "Protected by a shield"
     }
   },
   "monthlyServices": {

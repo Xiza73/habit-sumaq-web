@@ -108,14 +108,14 @@
       "on": "Activo",
       "off": "Apagado",
       "dataKeptHint": "Apagar un módulo no borra nada: tus datos quedan intactos y vuelven al encenderlo.",
-      "saveError": "No pudimos guardar tus módulos. Intentá de nuevo."
+      "saveError": "No pudimos guardar tus módulos. Intenta de nuevo."
     },
     "favorites": {
       "title": "Favoritos del menú",
       "subtitle": "Elegí hasta {max} módulos para acceso rápido. Settings siempre está disponible.",
       "maxReached": "Llegaste al máximo de {max}. Sacá uno para agregar otro.",
       "saveSuccess": "Favoritos guardados",
-      "saveError": "No pudimos guardar tus favoritos. Intentá de nuevo.",
+      "saveError": "No pudimos guardar tus favoritos. Intenta de nuevo.",
       "rightClickHint": "Click derecho sobre un módulo para marcarlo como favorito"
     }
   },
@@ -323,7 +323,20 @@
       "action": "Rescatar racha · {count, plural, one {# escudo} other {# escudos}}",
       "noShields": "Sin escudos — se gana uno por mes",
       "success": "Racha rescatada",
-      "error": "No pudimos rescatar la racha. Intentá de nuevo."
+      "error": "No pudimos rescatar la racha. Intenta de nuevo."
+    },
+    "releaseRescue": {
+      "action": "Día protegido por un escudo",
+      "confirmTitle": "Liberar el escudo",
+      "confirmBody": "Este período está protegido por un escudo. Para registrarlo hay que liberarlo: el escudo vuelve a tu inventario.",
+      "confirmBodyLost": "Este período está protegido por un escudo. Para registrarlo hay que liberarlo, pero tu inventario ya está lleno ({max}), así que el escudo se perderá.",
+      "confirm": "Liberar y registrar",
+      "success": "Escudo devuelto a tu inventario",
+      "successLost": "Rescate liberado. El escudo no volvió: tu inventario ya estaba lleno.",
+      "error": "No pudimos liberar el rescate. Intenta de nuevo."
+    },
+    "heatmap": {
+      "rescued": "Protegido con un escudo"
     }
   },
   "monthlyServices": {
