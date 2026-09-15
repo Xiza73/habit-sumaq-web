@@ -7,10 +7,12 @@ import { MobileNav } from './MobileNav';
 
 // Hoisted state — let-bound so each test can swap before re-rendering.
 let mockFavoriteKeys: string[] = ['accounts', 'transactions', 'habits', 'quick-tasks'];
+let mockDisabledModules: string[] = [];
 const mockUpdateMutate = vi.fn();
 
 vi.mock('@/core/application/hooks/use-user-settings', () => ({
   useFavoriteKeys: () => mockFavoriteKeys,
+  useDisabledModules: () => mockDisabledModules,
   useUserSettings: () => ({ data: null, isLoading: false }),
   useDateFormat: () => 'YYYY-MM-DD',
   useUpdateUserSettings: () => ({ mutate: mockUpdateMutate, isPending: false }),
@@ -33,6 +35,7 @@ function renderNav() {
 describe('MobileNav', () => {
   beforeEach(() => {
     mockUpdateMutate.mockClear();
+    mockDisabledModules = [];
     // A6-W.5 dropped `accounts` (after A6-W.3 dropped `transactions`).
     // Defaults now lead with `debts` + `budgets` for the finances slots.
     mockFavoriteKeys = ['debts', 'budgets', 'habits', 'quick-tasks'];

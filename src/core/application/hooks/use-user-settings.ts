@@ -59,6 +59,40 @@ export function useFavoriteKeys(): string[] {
   return settings?.favoriteKeys ?? DEFAULT_FAVORITES;
 }
 
+/**
+ * Modules the user switched off in Settings.
+ *
+ * Falls back to an EMPTY array while the query loads, and for a backend that
+ * predates the column. That direction of failure matters: an empty list means
+ * "nothing disabled", so a slow or missing response shows the user everything
+ * rather than briefly hiding modules they never turned off.
+ */
+export function useDisabledModules(): string[] {
+  const { data: settings } = useUserSettings();
+  return settings?.disabledModules ?? NO_DISABLED_MODULES;
+}
+
+/**
+ * Module-level constant rather than a `?? []` literal: the fallback is
+ * returned on every render while settings load, and a fresh array each time
+ * would give consumers a new reference to memoize against — enough to make a
+ * `useMemo`/`select` keyed on it recompute forever.
+ */
+const NO_DISABLED_MODULES: string[] = [];
+
+/**
+ * Streak shields in hand.
+ *
+ * Falls back to 0 while settings load, and that direction matters: 0 hides the
+ * rescue action, so a slow response never offers a button that would fail on
+ * click. Showing nothing briefly beats promising something the backend will
+ * refuse.
+ */
+export function useStreakShields(): number {
+  const { data: settings } = useUserSettings();
+  return settings?.streakShields ?? 0;
+}
+
 export function useUpdateUserSettings() {
   const queryClient = useQueryClient();
 

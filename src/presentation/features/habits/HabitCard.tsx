@@ -13,6 +13,7 @@ import {
   MoreVertical,
   Pencil,
   Plus,
+  Shield,
   Target,
   Trash2,
 } from 'lucide-react';
@@ -38,6 +39,24 @@ interface HabitCardProps {
    */
   onTargetChange?: (habit: HabitWithStats, targetCount: number) => void;
   targetPending?: boolean;
+  /**
+   * Spends a streak shield on `habit.rescuableDate`. Omitted on read-only
+   * surfaces — the row then simply does not offer the action.
+   */
+  onRescueStreak?: (habit: HabitWithStats) => void;
+  /**
+   * Shields the user holds. Drives whether the rescue row is actionable or
+   * only informative — see the row itself for why it shows at zero.
+   */
+  streakShields?: number;
+  rescuePending?: boolean;
+  /**
+   * Drops the rescue covering the period in view and takes the shield back.
+   * Omitted on read-only surfaces, where the shield then reads as a plain
+   * marker with no action.
+   */
+  onReleaseRescue?: (habit: HabitWithStats) => void;
+  releasePending?: boolean;
 }
 
 export function HabitCard({
@@ -48,7 +67,12 @@ export function HabitCard({
   onArchive,
   onDelete,
   onTargetChange,
+  onRescueStreak,
+  streakShields = 0,
+  rescuePending = false,
   targetPending = false,
+  onReleaseRescue,
+  releasePending = false,
 }: HabitCardProps) {
   const t = useTranslations('habits');
   const tCommon = useTranslations('common');
@@ -183,25 +207,65 @@ export function HabitCard({
                 <Minus className="size-3" />
               </button>
             )}
-            <button
-              type="button"
-              onClick={() => onCheckIn(habit)}
-              disabled={isCompleted}
-              className={cn(
-                'flex size-9 items-center justify-center rounded-full transition-colors',
-                isCompleted
-                  ? 'bg-income/20 text-income'
-                  : 'border border-border text-muted-foreground hover:border-primary hover:text-primary',
-              )}
-              aria-label={t('checkIn')}
-            >
-              {isCompleted ? <Check className="size-4" /> : <Plus className="size-4" />}
-            </button>
+            {/*
+              A rescued period does NOT get a plain check-in button. Logging
+              over a shield spends it on a period that no longer needs it, and
+              before this the UI gave no sign the day was protected at all.
+
+              Deliberately not a `disabled` button: a disabled control cannot
+              be clicked, so it cannot explain itself. The shield says what the
+              state is AND offers the way out — release it, take the shield
+              back, then log the day like any other.
+            */}
+            {habit.periodRescued ? (
+              <button
+                type="button"
+                onClick={() => onReleaseRescue?.(habit)}
+                disabled={!onReleaseRescue || releasePending}
+                className={cn(
+                  'flex size-9 items-center justify-center rounded-full border transition-colors',
+                  onReleaseRescue
+                    ? 'border-amber-500/40 bg-amber-500/10 text-amber-700 hover:bg-amber-500/20 dark:text-amber-400'
+                    : 'cursor-default border-amber-500/40 bg-amber-500/10 text-amber-700 dark:text-amber-400',
+                )}
+                aria-label={t('releaseRescue.action')}
+                title={t('releaseRescue.action')}
+              >
+                <Shield className="size-4" />
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={() => onCheckIn(habit)}
+                disabled={isCompleted}
+                className={cn(
+                  'flex size-9 items-center justify-center rounded-full transition-colors',
+                  isCompleted
+                    ? 'bg-income/20 text-income'
+                    : 'border border-border text-muted-foreground hover:border-primary hover:text-primary',
+                )}
+                aria-label={t('checkIn')}
+              >
+                {isCompleted ? <Check className="size-4" /> : <Plus className="size-4" />}
+              </button>
+            )}
           </div>
         )}
       </div>
 
-      <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-muted">
+      {/*
+        The fill stays empty on a rescued period — nothing WAS done, and the
+        completion rate says so. What changes is the track: amber instead of
+        the neutral muted, so an empty bar reads as "protected" rather than
+        "you missed this". That ambiguity is what made a user log over their
+        own shield.
+      */}
+      <div
+        className={cn(
+          'mt-3 h-1.5 overflow-hidden rounded-full',
+          habit.periodRescued ? 'bg-amber-500/25' : 'bg-muted',
+        )}
+      >
         <div
           className={cn(
             'h-full rounded-full transition-all duration-300',
@@ -210,6 +274,33 @@ export function HabitCard({
           style={{ width: `${progress * 100}%` }}
         />
       </div>
+
+      {/*
+        Shown whenever a period is rescuable — even at zero shields, where it
+        renders disabled. This is the one moment the mechanic is teachable: a
+        streak is actually at risk right now. Hiding it until the user happens
+        to hold a shield AND have a gap means most people never learn the
+        feature exists. It is deliberately NOT shown when there is nothing to
+        rescue, which is what keeps it from reading as a nag.
+      */}
+      {!habit.isArchived && habit.rescuableDate && onRescueStreak && (
+        <button
+          type="button"
+          onClick={() => onRescueStreak(habit)}
+          disabled={streakShields === 0 || rescuePending}
+          className={cn(
+            'mt-3 flex w-full items-center justify-center gap-2 rounded-lg border px-3 py-2 text-xs font-medium transition-colors',
+            streakShields > 0
+              ? 'border-amber-500/40 bg-amber-500/10 text-amber-700 hover:bg-amber-500/20 dark:text-amber-400'
+              : 'cursor-not-allowed border-border text-muted-foreground',
+          )}
+        >
+          <Shield className="size-3.5 shrink-0" />
+          {streakShields > 0
+            ? t('rescueStreak.action', { count: streakShields })
+            : t('rescueStreak.noShields')}
+        </button>
+      )}
 
       {habit.isArchived && (
         <div className="mt-3 rounded-md bg-muted px-2 py-1 text-center text-xs text-muted-foreground">

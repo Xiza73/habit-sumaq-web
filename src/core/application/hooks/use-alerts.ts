@@ -1,10 +1,14 @@
-import { useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import { type AlertsListResponse } from '@/core/domain/entities/alert';
+import { ALERT_MODULE_KEY, type AlertsListResponse } from '@/core/domain/entities/alert';
 
 import { alertsApi } from '@/infrastructure/api/alerts.api';
+
+import { isModuleEnabled } from '@/lib/nav-registry';
+
+import { useDisabledModules } from './use-user-settings';
 
 export const alertKeys = {
   all: ['alerts'] as const,
@@ -44,11 +48,29 @@ const ALERTS_STALE_TIME_MS = 5 * 60 * 1000;
 export const ALERTS_REFETCH_INTERVAL_MS = ALERTS_STALE_TIME_MS;
 
 export function useAlerts() {
+  const disabledModules = useDisabledModules();
+
+  // Filtering here rather than in the popover is what keeps the bell badge
+  // honest: `useUnreadAlertCount` reads this same query, so a badge can never
+  // count an alert the popover will not show. The cache still holds the full
+  // server response — only what consumers see is narrowed — so switching a
+  // module back on needs no refetch.
+  const select = useCallback(
+    (data: AlertsListResponse): AlertsListResponse => ({
+      ...data,
+      alerts: data.alerts.filter((alert) =>
+        isModuleEnabled(ALERT_MODULE_KEY[alert.type], disabledModules),
+      ),
+    }),
+    [disabledModules],
+  );
+
   return useQuery({
     queryKey: alertKeys.list(),
     queryFn: () => alertsApi.getAll(),
     staleTime: ALERTS_STALE_TIME_MS,
     refetchInterval: ALERTS_REFETCH_INTERVAL_MS,
+    select,
   });
 }
 

@@ -45,6 +45,40 @@ export const habitsApi = {
     return httpClient.delete<void>(`/habits/${id}`);
   },
 
+  /**
+   * Spends one streak shield on the period this habit just missed. No body —
+   * the backend decides which period is rescuable, so the client cannot ask
+   * for the wrong one.
+   *
+   * Rejects with HAB_007 (no shields) or HAB_008 (nothing to rescue). Both are
+   * 409s: state, not validation.
+   */
+  rescueStreak(habitId: string): Promise<{ rescuedDate: string }> {
+    return httpClient.post<{ rescuedDate: string }>(`/habits/${habitId}/rescue-streak`, {});
+  },
+
+  /**
+   * Gives back the shield spent on `date` and drops the rescue, so the period
+   * can be logged for real.
+   *
+   * `date` can be any day of a rescued WEEKLY period — the backend resolves it
+   * to the stored Monday and echoes that back as `releasedDate`.
+   *
+   * `shieldReturned` is false when the stock was already at the cap: the
+   * rescue is released either way, but the shield is gone. Warn BEFORE
+   * confirming, not after.
+   *
+   * Rejects with HAB_009 when no rescue covers that period.
+   */
+  releaseRescue(
+    habitId: string,
+    date: string,
+  ): Promise<{ releasedDate: string; shieldReturned: boolean }> {
+    return httpClient.delete<{ releasedDate: string; shieldReturned: boolean }>(
+      `/habits/${habitId}/rescue-streak/${date}`,
+    );
+  },
+
   createLog(habitId: string, data: HabitLogInput): Promise<HabitLog> {
     return httpClient.post<HabitLog>(`/habits/${habitId}/logs`, data);
   },

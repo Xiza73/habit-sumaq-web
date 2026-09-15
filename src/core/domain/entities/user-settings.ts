@@ -32,6 +32,30 @@ export interface UserSettings {
    * are silently skipped when consumed.
    */
   favoriteKeys: string[];
+  /**
+   * Nav keys the user switched OFF in Settings. Hidden from the sidebar and
+   * mobile nav, from their slice of the reports dashboards, and from the
+   * alerts popover. Empty (the default) means every module is on.
+   *
+   * Free-form strings like `favoriteKeys`, resolved through the same
+   * `nav-registry`. Uncapped server-side: disabling everything is valid,
+   * since Settings is never in this list.
+   *
+   * INVARIANT: a key here is never also in `favoriteKeys`. `ModulesSection`
+   * drops a module from favorites in the same PATCH that disables it, so the
+   * `MAX_FAVORITES` cap always counts favorites the user can actually reach.
+   * Without it, a favorite pointing at a disabled module would occupy a slot
+   * while rendering nothing — the same soft-lock the stale `favoriteKeys`
+   * default used to cause.
+   */
+  disabledModules: string[];
+  /**
+   * Streak shields in hand, 0..2. READ ONLY — the backend has no PATCH field
+   * for it. One is earned per calendar month by reaching a 20-period streak on
+   * some habit, and one is spent per rescue. Earning one on a full stock loses
+   * it rather than banking it.
+   */
+  streakShields: number;
   createdAt: string;
   updatedAt: string;
 }

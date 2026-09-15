@@ -14,11 +14,13 @@ import { habitsApi } from '@/infrastructure/api/habits.api';
 
 import { analytics } from '@/lib/analytics';
 import { fireCelebrationConfetti } from '@/lib/confetti';
+import { getTodayLocaleDate } from '@/lib/format';
 import { detectMilestoneCrossed } from '@/lib/streak-milestones';
 
 import { useCelebrationStore } from '../stores/celebration.store';
 
 import { alertKeys } from './use-alerts';
+import { userSettingsKeys } from './use-user-settings';
 
 export const habitKeys = {
   all: ['habits'] as const,
@@ -135,6 +137,46 @@ function readStreakFromCache(
   return null;
 }
 
+/**
+ * Spends a streak shield on the period a habit just missed.
+ *
+ * Invalidates habits AND user settings: the streak changes, and so does the
+ * shield count the rescue button reads. Invalidating only the first would
+ * leave the button offering a shield that is already gone.
+ */
+export function useRescueStreak() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (habitId: string) => habitsApi.rescueStreak(habitId),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: habitKeys.all });
+      void queryClient.invalidateQueries({ queryKey: userSettingsKeys.all });
+    },
+  });
+}
+
+/**
+ * Drops the rescue covering a period and takes the shield back, so the day can
+ * be logged for real.
+ *
+ * Invalidates settings alongside habits for the same reason `useRescueStreak`
+ * does: the shield stock moved, and the rescue button elsewhere on the page
+ * reads it. Leaving it stale shows a count the server no longer agrees with.
+ */
+export function useReleaseRescue() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ habitId, date }: { habitId: string; date: string }) =>
+      habitsApi.releaseRescue(habitId, date),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: habitKeys.all });
+      void queryClient.invalidateQueries({ queryKey: userSettingsKeys.all });
+    },
+  });
+}
+
 export function useLogHabit() {
   const queryClient = useQueryClient();
   const t = useTranslations('habits.milestones');
@@ -215,6 +257,23 @@ export function useLogHabit() {
         queryClient.refetchQueries({ queryKey: habitKeys.daily(data.date) }),
         queryClient.refetchQueries({ queryKey: habitKeys.detail(habitId) }),
       ]);
+
+      // A milestone celebrates reaching a streak TODAY — not discovering one
+      // while back-filling. `HabitList` logs whatever date its picker holds,
+      // so filling in a day you forgot can push `currentStreak` past a
+      // milestone: the number is real, but the moment is not, and a modal
+      // congratulating you for a Tuesday you just remembered reads as a bug.
+      //
+      // Comparing against today also covers both frequencies without a
+      // per-frequency branch. A DAILY habit's occurrence IS today; a WEEKLY
+      // one can be logged any day of its week, and the day the user actually
+      // closes it out is the day worth celebrating. Logging an earlier day of
+      // the current week stays silent, which is the conservative side to err
+      // on — the share button on HabitDetail is still there for it.
+      //
+      // Deliberately placed after the refetch above: the cache still has to
+      // end up correct for a back-filled day, only the celebration is gated.
+      if (data.date !== getTodayLocaleDate()) return;
 
       const prevStreak = context?.prevStreak ?? null;
       const newStreak = readStreakFromCache(queryClient, habitId, data.date);

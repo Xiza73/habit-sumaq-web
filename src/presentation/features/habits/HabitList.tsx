@@ -12,10 +12,12 @@ import {
   useDeleteHabit,
   useHabits,
   useLogHabit,
+  useReleaseRescue,
+  useRescueStreak,
 } from '@/core/application/hooks/use-habits';
-import { useDateFormat } from '@/core/application/hooks/use-user-settings';
+import { useDateFormat, useStreakShields } from '@/core/application/hooks/use-user-settings';
 import { useViewMode } from '@/core/application/hooks/use-view-mode';
-import { type HabitWithStats } from '@/core/domain/entities/habit';
+import { type HabitWithStats, MAX_STREAK_SHIELDS } from '@/core/domain/entities/habit';
 
 import { ApiError } from '@/infrastructure/api/api-error';
 
@@ -62,6 +64,8 @@ function shiftDate(dateStr: string, days: number): string {
 export function HabitList() {
   const t = useTranslations('habits');
   const tErrors = useTranslations('errors');
+  const tRescue = useTranslations('habits.rescueStreak');
+  const tRelease = useTranslations('habits.releaseRescue');
   const dateFormat = useDateFormat();
 
   const [showArchived, setShowArchived] = useState(false);
@@ -81,6 +85,10 @@ export function HabitList() {
   const archiveMutation = useArchiveHabit();
   const deleteMutation = useDeleteHabit();
   const logMutation = useLogHabit();
+  const rescueMutation = useRescueStreak();
+  const releaseMutation = useReleaseRescue();
+  const [releasingHabit, setReleasingHabit] = useState<HabitWithStats | null>(null);
+  const streakShields = useStreakShields();
 
   const habits = showArchived ? allHabits : dailyHabits;
   const isLoading = showArchived ? isAllLoading : isDailyLoading;
@@ -105,6 +113,60 @@ export function HabitList() {
   function handleCloseForm() {
     setFormOpen(false);
     setEditingHabit(null);
+  }
+
+  /**
+   * Spends a shield on the period this habit just missed.
+   *
+   * Sends no date: the backend decides which period is rescuable, so the
+   * client cannot ask for the wrong one — and cannot drift from the window
+   * logic if it ever changes.
+   */
+  function handleRescueStreak(habit: HabitWithStats) {
+    rescueMutation.mutate(habit.id, {
+      onSuccess: () => {
+        toast.success(tRescue('success'));
+      },
+      onError: (error) => {
+        // HAB_007 (no shields) and HAB_008 (nothing to rescue) are 409s that
+        // describe a state, and both have their own localized copy — surface
+        // those rather than a generic failure, so the user learns WHY.
+        toast.error(
+          error instanceof ApiError && error.code && tErrors.has(error.code)
+            ? tErrors(error.code as 'HAB_001')
+            : tRescue('error'),
+        );
+      },
+    });
+  }
+
+  /**
+   * A rescued period cannot simply be logged: the shield has to come back
+   * first. Confirmed rather than done on the click, because at a full stock
+   * the shield is LOST — that is a trade the user has to see before making it,
+   * not a toast after.
+   */
+  function handleReleaseConfirm() {
+    const habit = releasingHabit;
+    if (!habit) return;
+
+    releaseMutation.mutate(
+      { habitId: habit.id, date: selectedDate },
+      {
+        onSuccess: ({ shieldReturned }) => {
+          setReleasingHabit(null);
+          toast.success(shieldReturned ? tRelease('success') : tRelease('successLost'));
+        },
+        onError: (error) => {
+          setReleasingHabit(null);
+          toast.error(
+            error instanceof ApiError && error.code && tErrors.has(error.code)
+              ? tErrors(error.code as 'HAB_001')
+              : tRelease('error'),
+          );
+        },
+      },
+    );
   }
 
   function handleCheckIn(habit: HabitWithStats) {
@@ -319,6 +381,11 @@ export function HabitList() {
           onDelete={setDeletingHabit}
           onTargetChange={handleTargetChange}
           targetPending={logMutation.isPending}
+          onRescueStreak={handleRescueStreak}
+          streakShields={streakShields}
+          rescuePending={rescueMutation.isPending}
+          onReleaseRescue={setReleasingHabit}
+          releasePending={releaseMutation.isPending}
         />
       ) : (
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -333,6 +400,11 @@ export function HabitList() {
               onEdit={handleEdit}
               onArchive={handleArchive}
               onDelete={setDeletingHabit}
+              onRescueStreak={handleRescueStreak}
+              streakShields={streakShields}
+              rescuePending={rescueMutation.isPending}
+              onReleaseRescue={setReleasingHabit}
+              releasePending={releaseMutation.isPending}
             />
           ))}
         </div>
@@ -344,6 +416,22 @@ export function HabitList() {
         open={timerOpen}
         onClose={() => setTimerOpen(false)}
         habits={dailyHabits ?? []}
+      />
+
+      <ConfirmDialog
+        open={!!releasingHabit}
+        title={tRelease('confirmTitle')}
+        description={
+          // The stock is already known here, so the warning lands BEFORE the
+          // trade instead of as an after-the-fact toast.
+          streakShields >= MAX_STREAK_SHIELDS
+            ? tRelease('confirmBodyLost', { max: MAX_STREAK_SHIELDS })
+            : tRelease('confirmBody')
+        }
+        confirmLabel={tRelease('confirm')}
+        loading={releaseMutation.isPending}
+        onConfirm={handleReleaseConfirm}
+        onCancel={() => setReleasingHabit(null)}
       />
 
       <ConfirmDialog

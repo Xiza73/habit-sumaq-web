@@ -5,11 +5,15 @@ import { useTranslations } from 'next-intl';
 import { Star } from 'lucide-react';
 import { toast } from 'sonner';
 
-import { useFavoriteKeys, useUpdateUserSettings } from '@/core/application/hooks/use-user-settings';
+import {
+  useDisabledModules,
+  useFavoriteKeys,
+  useUpdateUserSettings,
+} from '@/core/application/hooks/use-user-settings';
 
 import { ApiError } from '@/infrastructure/api/api-error';
 
-import { FAVORITE_KEYS, MAX_FAVORITES, NAV_REGISTRY } from '@/lib/nav-registry';
+import { FAVORITE_KEYS, isModuleEnabled, MAX_FAVORITES, NAV_REGISTRY } from '@/lib/nav-registry';
 import { cn } from '@/lib/utils';
 
 /**
@@ -31,9 +35,16 @@ export function FavoritesSection() {
   const tErrors = useTranslations('errors');
 
   const favoriteKeys = useFavoriteKeys();
+  const disabledModules = useDisabledModules();
   const updateSettings = useUpdateUserSettings();
   const favoriteSet = new Set(favoriteKeys);
   const atMax = favoriteKeys.length >= MAX_FAVORITES;
+
+  // A module the user switched off cannot be favorited: the slot would render
+  // nothing and still count against MAX_FAVORITES. `ModulesSection` already
+  // drops a module from favorites when disabling it; hiding it here is the
+  // other half of that invariant — you cannot put back what it just removed.
+  const selectableKeys = FAVORITE_KEYS.filter((key) => isModuleEnabled(key, disabledModules));
 
   function toggle(key: string) {
     const isCurrentlyFavorite = favoriteSet.has(key);
@@ -74,7 +85,7 @@ export function FavoritesSection() {
         <p className="text-sm text-muted-foreground">{t('subtitle', { max: MAX_FAVORITES })}</p>
       </div>
       <ul className="grid grid-cols-1 gap-1.5 sm:grid-cols-2">
-        {FAVORITE_KEYS.map((key) => {
+        {selectableKeys.map((key) => {
           const entry = NAV_REGISTRY[key];
           const isFavorite = favoriteSet.has(key);
           // Disable the "add" action when the user is already at max. The

@@ -30,6 +30,9 @@ function makeHabit(overrides: Partial<HabitWithStats> = {}): HabitWithStats {
     periodCount: 1,
     periodCompleted: false,
     periodTarget: 3,
+    rescuableDate: null,
+    periodRescued: false,
+    rescuedDates: [],
     ...overrides,
   };
   // A fixture that raises the habit's default target means it for the period
@@ -77,6 +80,21 @@ describe('HabitsTable', () => {
     expect(screen.getByText('Leer')).toBeInTheDocument();
     expect(screen.getByText('Diario')).toBeInTheDocument();
     expect(screen.getByTestId('habit-progress')).toHaveTextContent('1/3');
+  });
+
+  // The colour is what tells two rows apart at a glance, and the table was
+  // originally built without it even though the card view had it. These pin it
+  // so a future rewrite of the name cell cannot drop it again unnoticed.
+  it("carries the habit's colour into the name cell", () => {
+    renderTable([makeHabit({ color: '#22c55e' })]);
+    const swatch = screen.getByTestId('habit-color');
+    expect(swatch.querySelector('svg')).toHaveStyle({ color: '#22c55e' });
+  });
+
+  it('leaves the swatch uncoloured when the habit has none', () => {
+    renderTable([makeHabit({ color: null })]);
+    const swatch = screen.getByTestId('habit-color');
+    expect(swatch.querySelector('svg')).not.toHaveStyle({ color: '#22c55e' });
   });
 
   it('fires onCheckIn for the habit when its register action is clicked', async () => {
@@ -175,5 +193,74 @@ describe('HabitsTable', () => {
     renderTable([makeHabit({ isArchived: true })]);
     expect(screen.getByRole('button', { name: /^desarchivar$/i })).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /registrar/i })).not.toBeInTheDocument();
+  });
+});
+
+describe('HabitsTable — streak shield rescue', () => {
+  const rescuable = () => makeHabit({ rescuableDate: '2026-03-12' });
+
+  it('offers the rescue when a period is rescuable and the user has a shield', () => {
+    renderTable([rescuable()], { onRescueStreak: vi.fn(), streakShields: 1 });
+
+    expect(screen.getByRole('button', { name: /rescatar racha/i })).toBeEnabled();
+  });
+
+  it('fires onRescueStreak with the habit', async () => {
+    const user = userEvent.setup();
+    const onRescueStreak = vi.fn();
+    const habit = rescuable();
+    renderTable([habit], { onRescueStreak, streakShields: 2 });
+
+    await user.click(screen.getByRole('button', { name: /rescatar racha/i }));
+
+    expect(onRescueStreak).toHaveBeenCalledWith(habit);
+  });
+
+  it('shows it disabled at zero shields, same as the card', () => {
+    renderTable([rescuable()], { onRescueStreak: vi.fn(), streakShields: 0 });
+
+    expect(screen.getByRole('button', { name: /sin escudos/i })).toBeDisabled();
+  });
+
+  it('shows nothing when there is no period to rescue', () => {
+    renderTable([makeHabit({ rescuableDate: null })], {
+      onRescueStreak: vi.fn(),
+      streakShields: 2,
+    });
+
+    expect(
+      screen.queryByRole('button', { name: /rescatar racha|sin escudos/i }),
+    ).not.toBeInTheDocument();
+  });
+
+  it('shows nothing on an archived habit', () => {
+    renderTable([makeHabit({ rescuableDate: '2026-03-12', isArchived: true })], {
+      onRescueStreak: vi.fn(),
+      streakShields: 2,
+    });
+
+    expect(
+      screen.queryByRole('button', { name: /rescatar racha|sin escudos/i }),
+    ).not.toBeInTheDocument();
+  });
+});
+
+describe('HabitsTable — a rescued period', () => {
+  it('offers release instead of a check-in, exactly like the card', async () => {
+    // Parity, not decoration: if one view lets the day be logged and the other
+    // does not, the shield can still be burned by switching view mode.
+    const user = userEvent.setup();
+    const onCheckIn = vi.fn();
+    const onReleaseRescue = vi.fn();
+    const habit = makeHabit({ periodRescued: true, periodCount: 0 });
+
+    renderTable([habit], { onCheckIn, onReleaseRescue });
+
+    expect(screen.queryByRole('button', { name: /marcar/i })).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: /protegido por un escudo/i }));
+
+    expect(onReleaseRescue).toHaveBeenCalledWith(habit);
+    expect(onCheckIn).not.toHaveBeenCalled();
   });
 });

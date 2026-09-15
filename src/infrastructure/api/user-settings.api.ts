@@ -18,6 +18,16 @@ export interface UpdateUserSettingsDto {
    * free-form; the canonical set lives in `src/lib/nav-registry.ts`.
    */
   favoriteKeys?: string[];
+  /**
+   * Modules the user switched off. No duplicates, and — unlike
+   * `favoriteKeys` — no maximum: disabling every module is a valid state,
+   * because Settings is never in this list. Empty array clears it.
+   *
+   * Send it together with `favoriteKeys` when disabling a module that is
+   * currently a favorite, so the two never disagree. See the invariant on
+   * `UserSettings.disabledModules`.
+   */
+  disabledModules?: string[];
 }
 
 export const userSettingsApi = {

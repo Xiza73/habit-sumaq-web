@@ -102,6 +102,14 @@
       "auckland": "Auckland (UTC+12)",
       "utc": "UTC (sem offset)"
     },
+    "modules": {
+      "title": "Módulos",
+      "subtitle": "Desligue os que você não usa. Somem do menu, dos relatórios e dos alertas.",
+      "on": "Ativo",
+      "off": "Desligado",
+      "dataKeptHint": "Desligar um módulo não apaga nada: seus dados ficam intactos e voltam ao ligá-lo.",
+      "saveError": "Não conseguimos salvar seus módulos. Tente novamente."
+    },
     "favorites": {
       "title": "Favoritos do menu",
       "subtitle": "Escolha até {max} módulos para acesso rápido. Configurações sempre está lá.",
@@ -142,6 +150,8 @@
     "HAB_004": "Não é possível registrar em uma data futura",
     "HAB_005": "A quantidade objetivo deve ser pelo menos 1",
     "HAB_006": "Você não tem acesso a este hábito",
+    "HAB_007": "Você não tem escudos de sequência",
+    "HAB_008": "Não há nada para resgatar neste hábito agora",
     "MSVC_001": "Não é possível excluir um serviço com pagamentos. Arquive-o no lugar.",
     "MSVC_002": "Serviço mensal não encontrado.",
     "MSVC_003": "Você já tem um serviço ativo com esse nome.",
@@ -308,6 +318,25 @@
       "target": "Meta",
       "todayProgress": "Progresso de hoje",
       "actions": "Ações"
+    },
+    "rescueStreak": {
+      "action": "Resgatar sequência · {count, plural, one {# escudo} other {# escudos}}",
+      "noShields": "Sem escudos — você ganha um por mês",
+      "success": "Sequência resgatada",
+      "error": "Não conseguimos resgatar a sequência. Tente novamente."
+    },
+    "releaseRescue": {
+      "action": "Dia protegido por um escudo",
+      "confirmTitle": "Liberar o escudo",
+      "confirmBody": "Este período está protegido por um escudo. Para registrá-lo é preciso liberá-lo: o escudo volta ao seu inventário.",
+      "confirmBodyLost": "Este período está protegido por um escudo. Para registrá-lo é preciso liberá-lo, mas seu inventário já está cheio ({max}), então o escudo será perdido.",
+      "confirm": "Liberar e registrar",
+      "success": "Escudo devolvido ao inventário",
+      "successLost": "Resgate liberado. O escudo não voltou: seu inventário já estava cheio.",
+      "error": "Não conseguimos liberar o resgate. Tente novamente."
+    },
+    "heatmap": {
+      "rescued": "Protegido por um escudo"
     }
   },
   "monthlyServices": {
@@ -885,7 +914,7 @@
         "subtitleClosingWithAmount": "{days, plural, one {Último dia} other {Faltam # dias}} · {amount}"
       },
       "serviceOverdue": {
-        "title": "Toca hoje: {name}",
+        "title": "Pendente: {name}",
         "subtitle": "Atrasado desde {period}"
       },
       "habitsMidday": {
@@ -898,7 +927,7 @@
         "subtitle": "Já são {days} dias sem registros no seu orçamento {currency}"
       },
       "choreOverdue": {
-        "title": "Toca hoje: {name}",
+        "title": "Pendente: {name}",
         "subtitle": "Atrasada há {days, plural, one {# dia} other {# dias}}"
       },
       "choreDueToday": {

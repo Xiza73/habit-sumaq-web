@@ -21,7 +21,7 @@ import {
 import { useDateFormat } from '@/core/application/hooks/use-user-settings';
 import { type Chore } from '@/core/domain/entities/chore';
 
-import { type ChoreStatus, getChoreStatus } from '@/lib/chore-status';
+import { CHORE_STATUS_CLASSES, getChoreStatus } from '@/lib/chore-status';
 import { formatDate, getTodayLocaleDate } from '@/lib/format';
 import { cn } from '@/lib/utils';
 
@@ -34,18 +34,6 @@ interface ChoreCardProps {
   onDelete: (chore: Chore) => void;
   onViewHistory: (chore: Chore) => void;
 }
-
-const STATUS_CLASSES: Record<ChoreStatus, string> = {
-  overdue: 'bg-destructive/15 text-destructive',
-  // Today is the only actionable state, so it gets the strongest non-alarming
-  // colour — louder than upcoming's amber, but not the red reserved for
-  // "you already missed this".
-  today: 'bg-primary/15 text-primary',
-  upcoming: 'bg-amber-500/15 text-amber-700 dark:text-amber-400',
-  // Horizon stays very low contrast on purpose — those chores are not "due"
-  // any time soon and shouldn't fight for attention with the upcoming ones.
-  horizon: 'bg-muted text-muted-foreground',
-};
 
 export function ChoreCard({
   chore,
@@ -83,12 +71,25 @@ export function ChoreCard({
         </div>
 
         <div className="min-w-0 flex-1">
-          <div className="flex flex-wrap items-center gap-2">
-            <p className="truncate font-medium">{chore.name}</p>
+          {/*
+            `min-w-0` on the name is what makes its `truncate` work at all: a
+            flex item defaults to `min-width: auto`, which for nowrap text is
+            its full content width, so it refuses to shrink and never gets an
+            ellipsis. Without it the row had to wrap, which pushed the category
+            tag — and the status chip under it — onto their own lines and grew
+            the card by a third.
+
+            Category is free text up to 50 chars, so it is capped at 45% and
+            truncates inside that. The cap is what keeps the name readable: with
+            both merely shrinkable, flex splits the deficit by content width and
+            a long category crushes a short name down to an ellipsis.
+          */}
+          <div className="flex items-center gap-2">
+            <p className="min-w-0 truncate font-medium">{chore.name}</p>
             {chore.category && (
-              <span className="inline-flex shrink-0 items-center gap-1 rounded-md border border-border px-1.5 py-0.5 text-[10px] uppercase tracking-wide text-muted-foreground">
-                <Tag className="size-3" />
-                {chore.category}
+              <span className="inline-flex max-w-[45%] shrink-0 items-center gap-1 rounded-md border border-border px-1.5 py-0.5 text-[10px] uppercase tracking-wide text-muted-foreground">
+                <Tag className="size-3 shrink-0" />
+                <span className="truncate">{chore.category}</span>
               </span>
             )}
           </div>
@@ -96,7 +97,7 @@ export function ChoreCard({
           <span
             className={cn(
               'mt-1 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium',
-              isArchived ? 'bg-muted text-muted-foreground' : STATUS_CLASSES[status],
+              isArchived ? 'bg-muted text-muted-foreground' : CHORE_STATUS_CLASSES[status],
             )}
           >
             {isArchived ? t('archived') : t(`status.${status}`)}

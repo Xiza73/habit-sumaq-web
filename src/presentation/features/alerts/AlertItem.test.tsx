@@ -257,12 +257,20 @@ describe('AlertItem', () => {
       expect(screen.getByText(/3 días sin registrar en tu presupuesto PEN/)).toBeInTheDocument();
     });
 
-    it('renders chore-overdue as an action for today, with the delay as context', () => {
-      // An overdue chore is still something to do TODAY. Leading with
-      // "Atrasada" made the whole popover read as a list of failures, and in
-      // practice a chore that is behind never reaches the due-today state at
-      // all — `nextDueDate < today` and `nextDueDate === today` cannot both
-      // hold, so the user only ever saw the past-tense copy.
+    it('frames an overdue chore as still pending, without claiming it is due today', () => {
+      // Two constraints pull against each other here.
+      //
+      // An overdue chore IS still something to do, so the title stays framed
+      // as an action — leading with "Atrasada" turned the whole popover into
+      // a list of failures. That was the point of the present-tense pass.
+      //
+      // But "Toca hoy" as the title sat directly above "5 días atrasada" as
+      // the subtitle, and the card contradicted itself. The earlier reasoning
+      // (`nextDueDate < today` and `nextDueDate === today` cannot both hold)
+      // only ever covered title-vs-title, never title-vs-subtitle.
+      //
+      // "Pendiente" satisfies both: still an action, no date claim to
+      // contradict. Same stance `service-past-due-day` already takes below.
       renderItem(
         makeAlert({
           id: 'chore-overdue:abc',
@@ -272,8 +280,8 @@ describe('AlertItem', () => {
           payload: { choreId: 'abc', choreName: 'Lavar el auto', nextDueDate: '2026-05-15' },
         }),
       );
-      expect(screen.getByText(/Toca hoy/i)).toBeInTheDocument();
-      expect(screen.getByText(/Lavar el auto/)).toBeInTheDocument();
+      expect(screen.getByText(/Pendiente: Lavar el auto/)).toBeInTheDocument();
+      expect(screen.queryByText(/hoy/i)).not.toBeInTheDocument();
     });
 
     it('counts the days a chore has been overdue', () => {
@@ -304,7 +312,7 @@ describe('AlertItem', () => {
       expect(screen.getByText(/1 día(?!s)/)).toBeInTheDocument();
     });
 
-    it('renders service-overdue as an action for today too', () => {
+    it('frames an overdue service as still pending too', () => {
       renderItem(
         makeAlert({
           id: 'service-overdue:abc',
@@ -319,10 +327,10 @@ describe('AlertItem', () => {
           },
         }),
       );
-      // Same present-tense framing as chores — the two modules should not
-      // disagree about how a late item is phrased.
-      expect(screen.getByText(/Toca hoy/i)).toBeInTheDocument();
-      expect(screen.getByText(/Internet/)).toBeInTheDocument();
+      // Same framing as chores — the two modules should not disagree about
+      // how a late item is phrased.
+      expect(screen.getByText(/Pendiente: Internet/)).toBeInTheDocument();
+      expect(screen.queryByText(/hoy/i)).not.toBeInTheDocument();
       // The period still appears, as the context for how late it is.
       expect(screen.getByText(/2026-04/)).toBeInTheDocument();
     });

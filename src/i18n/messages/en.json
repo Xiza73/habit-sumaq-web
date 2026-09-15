@@ -102,6 +102,14 @@
       "auckland": "Auckland (UTC+12)",
       "utc": "UTC (no offset)"
     },
+    "modules": {
+      "title": "Modules",
+      "subtitle": "Switch off the ones you don't use. They disappear from the menu, the reports and the alerts.",
+      "on": "On",
+      "off": "Off",
+      "dataKeptHint": "Switching a module off deletes nothing — your data stays put and comes back when you switch it on.",
+      "saveError": "We couldn't save your modules. Try again."
+    },
     "favorites": {
       "title": "Menu favorites",
       "subtitle": "Pick up to {max} modules for quick access. Settings is always there.",
@@ -142,6 +150,8 @@
     "HAB_004": "Cannot log a future date",
     "HAB_005": "Target count must be at least 1",
     "HAB_006": "You don't have access to this habit",
+    "HAB_007": "You don't have any streak shields",
+    "HAB_008": "There is nothing to rescue on this habit right now",
     "MSVC_001": "Cannot delete a service with payments. Archive it instead.",
     "MSVC_002": "Monthly service not found.",
     "MSVC_003": "You already have an active service with that name.",
@@ -308,6 +318,25 @@
       "target": "Target",
       "todayProgress": "Today progress",
       "actions": "Actions"
+    },
+    "rescueStreak": {
+      "action": "Rescue streak · {count, plural, one {# shield} other {# shields}}",
+      "noShields": "No shields — you earn one a month",
+      "success": "Streak rescued",
+      "error": "We couldn't rescue the streak. Try again."
+    },
+    "releaseRescue": {
+      "action": "Day protected by a shield",
+      "confirmTitle": "Release the shield",
+      "confirmBody": "This period is protected by a shield. Logging it means releasing the shield first — it goes back to your stock.",
+      "confirmBodyLost": "This period is protected by a shield. Logging it means releasing the shield first, but your stock is already full ({max}), so the shield will be lost.",
+      "confirm": "Release and log",
+      "success": "Shield back in your stock",
+      "successLost": "Rescue released. The shield did not come back: your stock was already full.",
+      "error": "We could not release the rescue. Try again."
+    },
+    "heatmap": {
+      "rescued": "Protected by a shield"
     }
   },
   "monthlyServices": {
@@ -885,7 +914,7 @@
         "subtitleClosingWithAmount": "{days, plural, one {Last day} other {# days left}} · {amount}"
       },
       "serviceOverdue": {
-        "title": "Due today: {name}",
+        "title": "Pending: {name}",
         "subtitle": "Overdue since {period}"
       },
       "habitsMidday": {
@@ -898,7 +927,7 @@
         "subtitle": "{days} days with no entries in your {currency} budget"
       },
       "choreOverdue": {
-        "title": "Due today: {name}",
+        "title": "Pending: {name}",
         "subtitle": "{days, plural, one {# day} other {# days}} overdue"
       },
       "choreDueToday": {

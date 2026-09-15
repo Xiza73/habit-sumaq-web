@@ -13,12 +13,12 @@
 
 ## Estado actual (snapshot)
 
-| Métrica            | Hoy           | Meta Fase 1 | Meta Fase 2  | Meta Fase 3  |
-| ------------------ | ------------- | ----------- | ------------ | ------------ |
-| MAU                | ~2            | 30-50       | 100-200      | 200-300      |
-| D7 retention       | (sin medir)   | >25%        | >30%         | >35%         |
-| Activation rate    | (sin medir)   | >50%        | >60%         | >65%         |
-| MRR                | $0            | $0          | $0           | ~$50         |
+| Métrica         | Hoy         | Meta Fase 1 | Meta Fase 2 | Meta Fase 3 |
+| --------------- | ----------- | ----------- | ----------- | ----------- |
+| MAU             | ~2          | 30-50       | 100-200     | 200-300     |
+| D7 retention    | (sin medir) | >25%        | >30%        | >35%        |
+| Activation rate | (sin medir) | >50%        | >60%        | >65%        |
+| MRR             | $0          | $0          | $0          | ~$50        |
 
 ---
 
@@ -55,14 +55,183 @@ Items que surgieron mientras laburábamos Fase 1. Priorizados por
 **impacto / esfuerzo**, no por orden de aparición. Se agendan dentro de Fase 1
 salvo el que diga lo contrario.
 
-| Prio | Item                                          | Tipo    | Esfuerzo | Notas                                                                                                                                                                            |
-| ---- | --------------------------------------------- | ------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1 ✅ | **Crear categoría inline en TransactionForm** | Feature | ~3-4h    | Frontend-only. Shipped en PR #60. El `Select` de categoría tiene un botón "+ Crear nueva" que abre el `CategoryForm` modal y auto-selecciona la nueva categoría. |
-| 2 ✅ | **Habit counter UX** (investigar)             | Polish  | 30min    | Investigated. El feature de contador (`+`/`-` botones con progress) **ya existe y funciona**. Lo que el user pedía era un **cronómetro** (modo basado en tiempo), que es un feature distinto — spec'd en [habit-timer-feature.md](habit-timer-feature.md), agendado para Fase 2. |
-| 3    | **Persistencia de secciones colapsadas en Tasks** | Bug     | ~5h (back+front) | `Section` entity no tiene `isCollapsed` → state es local → al refresh se pierde. Fix: nueva column en `sections` + endpoint PATCH + frontend con optimistic. Requiere coord backend. **Próximo en cola.** |
-| 4    | **Date format unificado en forms**            | Bug     | ~6-10h   | 8 forms usan `<input type="date">` que ignora `userSettings.dateFormat` (HTML5 renderiza en locale del SO). Wire format está OK (`YYYY-MM-DD`), display NO. Fix proper: custom `<DatePicker>` component (ej. con `react-day-picker`) que reemplace todos los `type="date"`. Refactor mediano. |
-| 5 🟡 | **APK del PWA**                               | Ops     | 1-2h     | Path A (PWABuilder) ejecutado, APK generado y compartido con friends & family. Path B (Play Store) pendiente. Ver [twa-deployment.md](twa-deployment.md).                                       |
-| 6    | **Quitar URL bar del TWA** (`assetlinks.json`) | Ops     | ~1h      | El APK actual de Path A muestra una barra de URL de Chrome arriba — por falta de verificación de Digital Asset Links. Fix: subir `public/.well-known/assetlinks.json` con el SHA-256 del keystore generado por PWABuilder (está en `signing-key-info.txt` del ZIP) + redeploy. Vercel sirve el static automáticamente. |
+| Prio | Item                                              | Tipo    | Esfuerzo         | Notas                                                                                                                                                                                                                                                                            |
+| ---- | ------------------------------------------------- | ------- | ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1 ✅ | **Crear categoría inline en TransactionForm**     | Feature | ~3-4h            | Frontend-only. Shipped en PR #60. El `Select` de categoría tiene un botón "+ Crear nueva" que abre el `CategoryForm` modal y auto-selecciona la nueva categoría.                                                                                                                 |
+| 2 ✅ | **Habit counter UX** (investigar)                 | Polish  | 30min            | Investigated. El feature de contador (`+`/`-` botones con progress) **ya existe y funciona**. Lo que el user pedía era un **cronómetro** (modo basado en tiempo), que es un feature distinto — spec'd en [habit-timer-feature.md](habit-timer-feature.md), agendado para Fase 2. |
+| 3 ✅ | **Persistencia de secciones colapsadas en Tasks** | Bug     | ~5h (back+front) | Shipped. Column `isCollapsed` en `sections` (migration `AddIsCollapsedToSections1741000021000`) + endpoint PATCH + frontend con optimistic.                                                                                                                                      |
+| 4 ✅ | **Date format unificado en forms**                | Bug     | ~6-10h           | Shipped. Existe `src/presentation/components/ui/DatePicker.tsx`; el único `type="date"` que queda en el repo es el que ese componente envuelve. Respeta `userSettings.dateFormat`.                                                                                               |
+| 5 🟡 | **APK del PWA**                                   | Ops     | 1-2h             | Path A (PWABuilder) ejecutado, APK generado y compartido con friends & family. Path B (Play Store) pendiente. Ver [twa-deployment.md](twa-deployment.md).                                                                                                                        |
+| 6 ✅ | **Quitar URL bar del TWA** (`assetlinks.json`)    | Ops     | ~1h              | Shipped. `public/.well-known/assetlinks.json` en el repo, servido por Vercel.                                                                                                                                                                                                    |
+
+#### Backlog Sept 2026 (triaged, orden aprobado)
+
+Ronda de feedback de uso real. Triage hecho contra el código — tres items
+resultaron distintos a la hipótesis inicial, ver la columna "Diagnóstico".
+
+**Tanda 1 — quick wins.** Todo chico, alto ratio. Independientes entre sí.
+
+| #   | Item                                                | Repo    | Diagnóstico                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| --- | --------------------------------------------------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| F3  | Título de alerta de chore overdue dice "Toca hoy"   | web     | **NO es tema de estados ni copy-paste: es una decisión deliberada que hay que revisar.** `CHORE_OVERDUE` y `CHORE_DUE_TODAY` son alert types separados y el backend emite el correcto. El título en presente lo eligió el [PR #136](https://github.com/Xiza73/habit-sumaq-web/pull/136) (`feat/alerts/present-tense-overdue-copy`) para que el popover no se leyera como lista de fracasos, y está fijado por tests en `AlertItem.test.tsx`. Lo que #136 no cubrió es que el **subtitle contradice al title** en la misma tarjeta ("Toca hoy" arriba, "3 días atrasada" abajo). ✅ Resuelto con "Pendiente: {name}" en [PR #153](https://github.com/Xiza73/habit-sumaq-web/pull/153) — ver abajo. |
+| F5  | Card de Chores crece con nombres largos             | web     | El nombre empuja la etiqueta de categoría abajo y el chip de estado más abajo. Layout puro.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| F8  | Default de `favoriteKeys` apunta a módulos borrados | backend | Default = `['accounts','transactions','habits','quick-tasks']`; `accounts` y `transactions` murieron en v1.0.0. El frontend filtra las keys muertas pero `length` sigue en 4 → pega contra `MAX_FAVORITES` → no puede agregar, y como no se renderizan tampoco puede quitarlas. **Soft-lock para todo usuario nuevo.** Mantener el fix MÍNIMO: F2 lo va a extender.                                                                                                                                                                                                                                                                                                                               |
+| F4a | App desktop abre múltiples instancias               | web     | **No es bug ni hace falta shippear nada: ya está publicado.** `86c4d2a feat(desktop): keep a single instance` es ancestro de `v0.13.0`, cuyo release está publicado desde 2026-08-21 con los 4 instaladores adjuntos. `git log v0.13.0..dev -- src-tauri` da **0 commits**, así que ese instalador es el build desktop más nuevo posible. El usuario corre el instalador `desktop-v0.6.0` de julio. ✅ Se resuelve instalando `v0.13.0` — cortar `desktop-v0.7.0` habría publicado el mismo código Rust con un número de versión MENOR. Ver abajo.                                                                                                                                                |
+
+**Tanda 2 — bugs de lógica.**
+
+| #   | Item                                          | Repo | Diagnóstico                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| --- | --------------------------------------------- | ---- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| F6  | Modal de racha sale al marcar días anteriores | web  | `HabitList` loguea la fecha de su date picker, así que rellenar un día olvidado empujaba `currentStreak` sobre un milestone y disparaba la celebración. ✅ Resuelto con un guard `data.date !== getTodayLocaleDate()` en `useLogHabit`, colocado **después** del refetch para que el día rellenado igual llegue a la cache — shipped en [PR #155](https://github.com/Xiza73/habit-sumaq-web/pull/155). Nota: se había anticipado que F6 produciría el helper de "período" que F7 necesita, y **no fue así** — F6 solo necesita "¿es hoy?". F7 tiene que construir ese helper igual. |
+| F4b | No aparece "abrir al iniciar máquina"         | web  | Falla en **runtime**, no por código faltante: capabilities `autostart:allow-*` presentes en el tag, `AutostartSection` montada en `settings/page.tsx`. `useAutostart` cae a `'unsupported'` y esconde la sección si `isTauri()` da false o si el plugin tira error. ✅ **Era el mismo build viejo que F4a, no un bug.** Instalando `v0.13.0` el toggle aparece y funciona. Cero código.                                                                                                                                                                                             |
+
+##### Cómo funciona realmente el release desktop
+
+Vale dejarlo escrito porque se asumió mal una vez y casi cuesta un release
+duplicado. `.github/workflows/desktop-release.yml`:
+
+- Dispara con tags **`v*`** (release de web) **y** `desktop-v*`. O sea: **cada
+  release de web ya adjunta instaladores**. No existe "cortar un release desktop
+  aparte" salvo que se toque `src-tauri`.
+- **Sincroniza la versión desde el tag** y reescribe `tauri.conf.json` en CI. El
+  valor commiteado en ese archivo solo rige en runs de `workflow_dispatch`, así
+  que verlo desactualizado NO significa que los instaladores lo estén.
+- **`releaseDraft: true`** → el GitHub Release se crea como **borrador** con los
+  instaladores adjuntos, para revisar antes de publicar.
+
+> **Antes de cortar cualquier release, verificar si ya está publicado:**
+> `gh release view <tag> --json assets,isDraft,publishedAt` y
+> `git merge-base --is-ancestor <commit> <tag>`. Dos comandos que contestan si
+> hace falta trabajo o no.
+
+**Tanda 3 — features con diseño.**
+
+| #   | Item                                       | Repo                   | Alcance                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| --- | ------------------------------------------ | ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| F1  | Color por valor en la vista de tabla       | web                    | ✅ Shipped en [PR #156](https://github.com/Xiza73/habit-sumaq-web/pull/156). **Mucho más chico de lo que parecía.** Auditados los 5 módulos con tabla: solo `habit` y `category` tienen campo `color`; `chore`, `monthly-service` y `debt-loan` NO lo tienen, y su único color es el de estado, que las tablas ya llevaban. Categories ya mostraba el suyo (ícono teñido + columna Color). **El hueco entero era `HabitsTable`**, cuya celda de nombre era `<span>{habit.name}</span>` pelado. Resuelto espejando la celda de `CategoriesTable`.                                                                                                                                                                                                                                                                                                                                                                                                            |
+| F2  | Habilitar/deshabilitar módulos en Settings | web + backend (mínimo) | ✅ Shipped en tres PRs: [backend#94](https://github.com/Xiza73/habit-sumaq-backend/pull/94) (columna `disabledModules`), [web#157](https://github.com/Xiza73/habit-sumaq-web/pull/157) (toggles + navegación) y [web#158](https://github.com/Xiza73/habit-sumaq-web/pull/158) (reportes + alertas). Las 11 entradas del registry son apagables. Se sostiene **un invariante** en vez de casos especiales por superficie: `favoriteKeys` nunca nombra un módulo apagado — `ModulesSection` lo quita en el mismo PATCH que lo apaga, y los pickers no lo ofrecen de vuelta. El filtro de alertas vive en el `select` de la query, no en el popover, para que el badge de la campana no pueda contar lo que la lista va a esconder. Ver validación abajo.                                                                                                                                                                                                      |
+| F7  | Shields de racha en Habits                 | web + backend          | ✅ Shipped en seis PRs: [backend#95](https://github.com/Xiza73/habit-sumaq-backend/pull/95) (`StatsCalculator` acepta `rescuedDates` y los cuenta para la racha, nunca para el completion rate), [backend#97](https://github.com/Xiza73/habit-sumaq-backend/pull/97) + [backend#98](https://github.com/Xiza73/habit-sumaq-backend/pull/98) (tabla `habit_streak_rescues`; el 98 es el hotfix de los módulos e2e que mergeé en rojo), [backend#99](https://github.com/Xiza73/habit-sumaq-backend/pull/99) (otorgar el escudo al registrar + `findRescuableDate`), [backend#101](https://github.com/Xiza73/habit-sumaq-backend/pull/101) (gastar el escudo), [backend#102](https://github.com/Xiza73/habit-sumaq-backend/pull/102) (DTOs: `streakShields` y `rescuableDate`) y [web#161](https://github.com/Xiza73/habit-sumaq-web/pull/161) (botón de rescate en card y tabla). Spec y decisiones cerradas abajo.                                            |
+| F9  | Deduplicar `STATUS_CLASSES` de chores      | web                    | ✅ Shipped en [PR #162](https://github.com/Xiza73/habit-sumaq-web/pull/162). Surgió revisando F1: el mismo `Record<ChoreStatus, string>` estaba copiado literal en `ChoreCard.tsx` y `ChoresTable.tsx`. Ahora vive una sola vez en `src/lib/chore-status.ts` como `CHORE_STATUS_CLASSES`, junto a `getChoreStatus` — mismo patrón que `MONTHLY_SERVICE_STATUS_CLASSES` en `src/lib/monthly-service-status.ts`. Los comentarios de diseño de la copia de `ChoreCard` se movieron con el mapa (por qué `today` lleva el color fuerte no alarmante y `horizon` va deliberadamente apagado). **Lo que impide que vuelva**: `chore-status-parity.test.tsx` renderiza card y tabla sobre el mismo quehacer y compara el chip en los 4 estados, cada vista contra la fuente única — no una contra la otra, porque así un drift compartido pasaría. Verificado que falla: reintroducir el mapa local con `upcoming` en orange en vez de amber pone el test en rojo. |
+
+##### F3 — decisión tomada
+
+Convivían **tres** filosofías de copy para alertas vencidas:
+
+| Alert type                          | Título           | Postura                                                                    |
+| ----------------------------------- | ---------------- | -------------------------------------------------------------------------- |
+| `service-past-due-day`              | "Pasó la fecha"  | Evita "hoy" a propósito — hay un test que afirma que la palabra NO aparece |
+| `service-due-today` (sin due day)   | "Vence este mes" | Evita "hoy" a propósito                                                    |
+| `chore-overdue` / `service-overdue` | "Toca hoy"       | Afirmaba "hoy" (PR #136)                                                   |
+
+El PR #136 razonó que un ítem atrasado sigue siendo algo para hacer HOY, y que
+liderar con "Atrasada" convertía el popover en una lista de fracasos. El
+razonamiento se sostiene — pero cubrió la coherencia entre **títulos**, no la
+que hay entre **título y subtítulo**. En la misma tarjeta se leía "Toca hoy"
+arriba y "3 días atrasada" abajo, y eso es lo que el usuario reportó.
+
+**Resuelto con "Pendiente: {name}"** (`Pending` / `Pendente`) para
+`chore-overdue` y `service-overdue` — shipped en
+[PR #153](https://github.com/Xiza73/habit-sumaq-web/pull/153). Sigue siendo un
+llamado a la acción, así que conserva la intención de #136, pero no afirma una
+fecha que el subtítulo después contradice. Las tres filosofías quedan alineadas
+en una: **un ítem vencido nunca dice "hoy"**.
+
+Se descartaron: volver al pasado ("Atrasada: {name}"), que revertía #136 sin
+más; y ablandar el subtítulo, que dejaba la incoherencia de fondo intacta.
+
+Los tests de `AlertItem.test.tsx` que fijaban "Toca hoy" ahora fijan
+"Pendiente" **y además afirman que "hoy" no aparece**, igual que el de
+`service-past-due-day`. La contradicción no puede volver sin ponerse en rojo.
+
+##### F2 — validación del alcance backend
+
+La pregunta era si hace falta tocar backend. Medido contra el código:
+
+| Superficie                          | ¿Backend?            | Por qué                                                                                                                                                                                                                                            |
+| ----------------------------------- | -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Persistir qué módulos están activos | **Sí — una columna** | `user_settings` tiene solo columnas tipadas, no hay blob JSON. Agregar `disabledModules text[]` + migración + campo en el DTO.                                                                                                                     |
+| Ocultar en navegación               | No                   | `nav-registry.ts` filtra.                                                                                                                                                                                                                          |
+| Reportes                            | No                   | `finances-dashboard` y `routines-dashboard` devuelven secciones nombradas (`pendingDebts`, `topExpenseCategories`, …). El frontend no renderiza la sección del módulo apagado. El backend sigue computando — desperdicio inofensivo, cero trabajo. |
+| Alertas                             | No                   | `AlertType` está tipado por módulo (`SERVICE_*`, `CHORE_*`, `BUDGET_*`, …). Un filtro en el hook de alertas alcanza.                                                                                                                               |
+
+**Veredicto: backend sí, pero exactamente una columna.** Podría evitarse con
+`localStorage`, pero la app corre en web + PWA + desktop: apagar un módulo en
+la laptop y encontrarlo vivo en el teléfono es peor que la migración. Además
+hay precedente — `favoriteKeys` y `monthlyServicesGroupBy` ya viven ahí.
+
+> **Trampa a cubrir en F2:** un favorito que apunta a un módulo deshabilitado.
+> El filtro actual (`isFavoriteKey`) solo descarta keys _desconocidas_; la de un
+> módulo apagado es _conocida pero inactiva_. Sin extender ese filtro, F2
+> reintroduce exactamente el soft-lock de F8.
+
+##### F7 — spec de shields
+
+Mecánica decidida:
+
+- **Aplicación manual.** El usuario ve que perdió la racha y decide gastar el
+  escudo. Menos mágico que el consumo automático y evita quemarlo en un hábito
+  que no le importa.
+- **Stock máximo: 2.**
+- **Se gana 1 por mes calendario**, condicionado a tener al menos un hábito con
+  racha ≥ 20 días. La condición se evalúa durante todo el mes: si el día 1 no
+  llega a 20, tiene el resto del mes para lograrlo y ganarlo.
+- **Ventana de rescate: el período siguiente completo.** Pasado, la racha se
+  pierde definitivamente.
+
+**La ventana se expresa en períodos, no en días.** `HabitFrequency` es
+`DAILY | WEEKLY`, y `StatsCalculator` ya cuenta la racha en esa misma unidad:
+`calculateDaily` camina día por día, `calculateWeekly` agrupa por **semana ISO**
+y camina semana por semana. La regla del escudo hereda esa unidad en vez de
+inventar una propia:
+
+| Frecuencia | Período    | Ventana de rescate           |
+| ---------- | ---------- | ---------------------------- |
+| `DAILY`    | Día        | Todo el día siguiente        |
+| `WEEKLY`   | Semana ISO | Toda la semana ISO siguiente |
+
+Una sola regla — "el escudo rescata el último período perdido y vive durante
+todo el período siguiente" — en vez de dos casos especiales que hay que
+mantener sincronizados. Si algún día aparece una frecuencia nueva, la regla ya
+la cubre.
+
+> **Reusar, no reimplementar:** la ventana debe derivarse del mismo helper de
+> límites de período que use `StatsCalculator` (`toWeekKey` / `toWeekStart`).
+> Dos definiciones de "semana" en el mismo dominio es un bug esperando su turno.
+
+##### F7 — el mecanismo (hallazgo que define el diseño)
+
+**La racha no está almacenada en ningún lado.** No hay columna de streak ni en
+`habits` ni en `habit_logs`: `StatsCalculator` la deriva en cada lectura,
+caminando hacia atrás sobre las fechas completadas hasta encontrar un hueco.
+
+Por eso "rescatar una racha" no puede ser `streak = N` — no hay dónde ponerlo.
+Tiene que significar **que el cálculo trate el período perdido como cumplido**,
+y eso deja dos caminos:
+
+| Camino                                           | Problema                                                                                                                                                                                      |
+| ------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Escribir un log sintético en el día perdido      | **Corrompe la historia.** El completion rate lo cuenta como hecho, el calendario muestra un día que no se hizo, el longest streak se infla. Se compra una racha con una mentira en los datos. |
+| Tabla aparte de rescates que el cálculo consulta | Los logs quedan intactos. **Este.**                                                                                                                                                           |
+
+> **Consecuencia:** la auditoría por hábito **no es una política elegible, es el
+> mecanismo**. `habit_streak_rescues` con único en `(habitId, period)` tiene que
+> existir para que el feature funcione, y de paso hace imposible rescatar dos
+> veces el mismo período.
+
+##### F7 — decisiones cerradas
+
+| Pregunta                                        | Decisión                                    | Por qué                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| ----------------------------------------------- | ------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Escudo ganado con el stock lleno (2)            | **Se pierde**                               | El tope es lo que le da valor al escudo. Acumulando, en seis meses hay ocho y la mecánica pierde toda tensión.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| ¿El período rescatado cuenta para la **racha**? | **Sí**                                      | Es exactamente lo que el escudo existe para proteger.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| ¿Para el **longest streak**?                    | **Sí**                                      | Es la misma racha que se está salvando.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| ¿Para el **completion rate**?                   | **NO**                                      | La racha es motivación; el completion rate es honestidad. Si el escudo infla los dos, no queda ninguna métrica que no mienta.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| ¿Qué pasa si completas un período ya rescatado? | **Se libera el rescate y vuelve el escudo** | Caso que la spec nunca cubrió, encontrado validando en dev. La UI no decía que el día estaba protegido — un período rescatado no tiene log, así que se veía idéntico a uno perdido — y registrarlo encima quemaba el escudo sobre un período que ya no lo necesitaba, sin forma de recuperarlo. Ahora el `+` se reemplaza por un escudo que ofrece **liberar**: el rescate se borra y el escudo vuelve al inventario. Con el stock lleno (2) se pierde, la misma regla que al ganarlo lleno — y no es preferencia, `CK_user_settings_streak_shields_range` no admite un tercero, así que el diálogo lo avisa ANTES de confirmar. |
+
+**Cuándo se gana el escudo:** al **registrar** un hábito (`POST` de log), no al
+leer. Un `GET` que otorga escudos es un efecto secundario escondido en una
+lectura, y además la única forma de que una racha llegue a 20 días es
+registrando — que es justo donde el cálculo ya corre.
 
 ### 📈 Fase 2 — Killer feature + crecimiento (6-8 semanas)
 
@@ -72,7 +241,9 @@ salvo el que diga lo contrario.
 **Trabajo:**
 
 - [ ] **Coach personal con IA** (ver [coach-ia-feature.md](coach-ia-feature.md))
-- [ ] **Hábitos modo cronómetro** (ver [habit-timer-feature.md](habit-timer-feature.md)) — narrativa única para TikTok junto al Coach
+- [x] **Hábitos modo cronómetro** (ver [habit-timer-feature.md](habit-timer-feature.md)) —
+      shipped en [PR #113](https://github.com/Xiza73/habit-sumaq-web/pull/113)
+      (`feat/habits/focus-timer`). Queda pendiente explotarlo como narrativa de TikTok.
 - [ ] Vinculación Hábitos ↔ Finanzas (alimenta al Coach)
 - [ ] Presupuestos por categoría con alertas (ya en backlog técnico)
 - [ ] Export / import (free, generoso) — ver [pricing.md → Trust signals](pricing.md#trust-signals-qué-no-es-premium)
@@ -121,6 +292,7 @@ margen para reinvertir en growth).
 - GDPR-friendly
 
 **Comportamiento por ambiente:**
+
 - **Producción** (`NODE_ENV=production`) → init automático si hay `NEXT_PUBLIC_POSTHOG_KEY` seteada
 - **Desarrollo** (`pnpm dev`) → **NO** init por default. Eventos quedan no-op silencioso. Esto evita polución del dashboard de prod con eventos de testing + ruido en la consola.
 - **Override dev**: poner `NEXT_PUBLIC_POSTHOG_ENABLE_IN_DEV=true` en `.env.local` cuando quieras validar eventos end-to-end desde dev. Después borralo para no contaminar.
@@ -165,16 +337,16 @@ posthog.capture('subscription_canceled', { reason: '...' });
 
 ### KPIs a vigilar semanalmente
 
-| KPI                     | Meta             | Cómo se calcula                                                        |
-| ----------------------- | ---------------- | ---------------------------------------------------------------------- |
-| **D1 retention**        | >40%             | % de signups que vuelven al día siguiente                              |
-| **D7 retention**        | >25%             | % que vuelven al día 7                                                 |
-| **D30 retention**       | >15%             | % que vuelven al día 30                                                |
-| **Activation rate**     | >60%             | % de signups con ≥1 transacción + ≥1 hábito en semana 1                |
-| **WAU/MAU stickiness**  | >0.3             | Frecuencia de uso semanal                                              |
-| **MRR** (Fase 3+)       | $50 inicial      | Revenue mensual recurrente                                             |
-| **Conversión free→paid**| >5%              | % de free users que upgradean dentro de 30 días post-trial             |
-| **Churn mensual**       | <5%              | % de subscribers que cancelan cada mes                                 |
+| KPI                      | Meta        | Cómo se calcula                                            |
+| ------------------------ | ----------- | ---------------------------------------------------------- |
+| **D1 retention**         | >40%        | % de signups que vuelven al día siguiente                  |
+| **D7 retention**         | >25%        | % que vuelven al día 7                                     |
+| **D30 retention**        | >15%        | % que vuelven al día 30                                    |
+| **Activation rate**      | >60%        | % de signups con ≥1 transacción + ≥1 hábito en semana 1    |
+| **WAU/MAU stickiness**   | >0.3        | Frecuencia de uso semanal                                  |
+| **MRR** (Fase 3+)        | $50 inicial | Revenue mensual recurrente                                 |
+| **Conversión free→paid** | >5%         | % de free users que upgradean dentro de 30 días post-trial |
+| **Churn mensual**        | <5%         | % de subscribers que cancelan cada mes                     |
 
 > Con <50 MAU estos números son **ruido estadístico**. La meta de Fase 1 es
 > establecer la baseline para cuando crezcamos.
@@ -236,25 +408,28 @@ Feature técnico que potencia el loop viral:
 
 ## Costos operativos actuales
 
-| Item              | Costo mensual | Provider                                          |
-| ----------------- | ------------- | ------------------------------------------------- |
-| Hosting frontend  | $0            | Vercel free tier (alcanza para 200 MAU)           |
-| Hosting backend   | $10-20        | Railway (NestJS + Postgres)                       |
-| Dominio           | $1.25         | $15/año amortizado                                |
-| Posthog           | $0            | Free tier hasta 1M events/mes                     |
-| **Total**         | **~$15-25**   |                                                   |
+| Item             | Costo mensual | Provider                                |
+| ---------------- | ------------- | --------------------------------------- |
+| Hosting frontend | $0            | Vercel free tier (alcanza para 200 MAU) |
+| Hosting backend  | $10-20        | Railway (NestJS + Postgres)             |
+| Dominio          | $1.25         | $15/año amortizado                      |
+| Posthog          | $0            | Free tier hasta 1M events/mes           |
+| **Total**        | **~$15-25**   |                                         |
 
-| Item                      | Costo único | Notas                                             |
-| ------------------------- | ----------- | ------------------------------------------------- |
-| Play Store fee            | $25         | Una vez en la vida (cuando publiquemos APK)       |
-| Apple Developer (futuro)  | $99/año     | Solo si publicamos en App Store                   |
+| Item                     | Costo único | Notas                                       |
+| ------------------------ | ----------- | ------------------------------------------- |
+| Play Store fee           | $25         | Una vez en la vida (cuando publiquemos APK) |
+| Apple Developer (futuro) | $99/año     | Solo si publicamos en App Store             |
 
 ---
 
 ## Próximos pasos inmediatos
 
-1. ✅ Doc de pricing y growth-roadmap (este PR)
-2. ⏭️ Setup de Posthog + primeros eventos críticos (siguiente PR)
-3. ⏭️ Templates de onboarding (siguiente sprint)
-4. ⏭️ Shareable streak cards
-5. ⏭️ Empezar a postear contenido en TikTok
+1. ✅ Doc de pricing y growth-roadmap
+2. ✅ Setup de Posthog + primeros eventos críticos
+3. ✅ Templates de hábitos / categorías por arquetipo (PR #59)
+4. ✅ Shareable streak cards
+5. ⏭️ **Tanda 1 del backlog Sept 2026** (F3, F5, F8, F4a) — ver arriba
+6. ⏭️ Onboarding mejorado: tutorial post-login + datos demo opcionales
+7. ⏭️ Web Push notifications básicas
+8. ⏭️ Empezar a postear contenido en TikTok
