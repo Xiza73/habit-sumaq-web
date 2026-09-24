@@ -143,3 +143,37 @@ describe('HabitPipView timer', () => {
     expect(mockLogMutate).not.toHaveBeenCalled();
   });
 });
+
+describe('HabitPipView opacity', () => {
+  it('cycles through the dim levels and wraps around', () => {
+    // Tauri has no window-opacity API, so this is CSS alpha over a window
+    // created transparent. A cycling button beats a slider at 340px wide.
+    const { container } = render(<HabitPipView habitId="h1" />, { wrapper: TestProviders });
+    const root = container.firstElementChild as HTMLElement;
+    const button = screen.getByRole('button', { name: /opacidad/i });
+
+    expect(root.style.opacity).toBe('1');
+    fireEvent.click(button);
+    expect(root.style.opacity).toBe('0.7');
+    fireEvent.click(button);
+    expect(root.style.opacity).toBe('0.4');
+    fireEvent.click(button);
+    expect(root.style.opacity).toBe('1');
+  });
+
+  it('goes solid while the pointer is on it', () => {
+    // Dimming helps while the window is being ignored. Reaching for it means
+    // wanting to read and click it.
+    const { container } = render(<HabitPipView habitId="h1" />, { wrapper: TestProviders });
+    const root = container.firstElementChild as HTMLElement;
+
+    fireEvent.click(screen.getByRole('button', { name: /opacidad/i }));
+    expect(root.style.opacity).toBe('0.7');
+
+    fireEvent.mouseEnter(root);
+    expect(root.style.opacity).toBe('1');
+
+    fireEvent.mouseLeave(root);
+    expect(root.style.opacity).toBe('0.7');
+  });
+});

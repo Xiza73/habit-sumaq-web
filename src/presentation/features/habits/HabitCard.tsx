@@ -90,6 +90,13 @@ interface HabitCardProps {
    * refuses to start a drag from inside one.
    */
   disableDetailLink?: boolean;
+  /**
+   * Rendered in the top-right cluster, before the close button. A plain slot
+   * so the card stays ignorant of who is filling it — the floating window puts
+   * its opacity control here, and the card needs to know nothing about
+   * windows to host it.
+   */
+  headerActions?: React.ReactNode;
 }
 
 export function HabitCard({
@@ -110,6 +117,7 @@ export function HabitCard({
   onClosePip,
   className,
   disableDetailLink = false,
+  headerActions,
 }: HabitCardProps) {
   const t = useTranslations('habits');
   const tCommon = useTranslations('common');
@@ -128,6 +136,7 @@ export function HabitCard({
       )}
     >
       <div className="absolute right-3 top-3 flex items-center gap-1">
+        {headerActions}
         {/* Stays visible instead of appearing on hover like the menu: in the
             popup it is the only way out, and a close button you have to
             discover by hovering is not a close button. */}

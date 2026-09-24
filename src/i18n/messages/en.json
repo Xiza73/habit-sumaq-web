@@ -222,7 +222,8 @@
       "timer": "Timer",
       "timerHide": "Hide the timer",
       "unavailable": "Update the desktop app to use the floating window.",
-      "notFound": "We could not find this habit."
+      "notFound": "We could not find this habit.",
+      "opacity": "Window opacity"
     },
     "title": "Habits",
     "createHabit": "New habit",
