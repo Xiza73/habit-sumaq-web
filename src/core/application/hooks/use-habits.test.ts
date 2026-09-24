@@ -132,3 +132,64 @@ describe('useLogHabit — streak celebration', () => {
     expect(cached?.[0].currentStreak).toBe(30);
   });
 });
+
+/**
+ * A client seeded with BOTH caches and a request that never settles.
+ *
+ * `makeWrapper` cannot be reused here: its mock overwrites the daily cache when
+ * the call resolves, which is right for the celebration tests and fatal for
+ * these — the optimistic patch is precisely what exists only BEFORE the server
+ * answers.
+ */
+function makeOptimisticWrapper(date: string) {
+  const queryClient = new QueryClient({
+    defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
+  });
+  queryClient.setQueryData<HabitWithStats[]>(habitKeys.daily(date), [makeHabit(29)]);
+  queryClient.setQueryData<HabitWithStats>(habitKeys.detail(HABIT_ID), makeHabit(29));
+  vi.mocked(habitsApi.createLog).mockImplementation(() => new Promise(() => undefined));
+
+  function Wrapper({ children }: { children: ReactNode }) {
+    return createElement(QueryClientProvider, { client: queryClient }, children);
+  }
+  return { Wrapper, queryClient };
+}
+
+describe('useLogHabit - the optimistic patch reaches the detail query', () => {
+  it('patches the detail cache, not only the day list', async () => {
+    // The floating window and the habit page both read the detail query. Only
+    // the list was patched, so a check-in from either sat on the old count
+    // until the refetch landed — the lag that was reported.
+    const today = getTodayLocaleDate();
+    const { Wrapper, queryClient } = makeOptimisticWrapper(today);
+
+    const { result } = renderHook(() => useLogHabit(), { wrapper: Wrapper });
+    result.current.mutate({ habitId: HABIT_ID, data: { date: today, count: 1 } });
+
+    await waitFor(() => {
+      const detail = queryClient.getQueryData<HabitWithStats>(habitKeys.detail(HABIT_ID));
+      expect(detail?.periodCount).toBe(1);
+      expect(detail?.periodCompleted).toBe(true);
+    });
+  });
+
+  it('leaves the detail alone when back-filling a past day', async () => {
+    // The detail's `todayLog` means TODAY. Patching it from a back-fill would
+    // put an older day's count on today's card.
+    const past = '2026-01-05';
+    const { Wrapper, queryClient } = makeOptimisticWrapper(past);
+
+    const { result } = renderHook(() => useLogHabit(), { wrapper: Wrapper });
+    result.current.mutate({ habitId: HABIT_ID, data: { date: past, count: 1 } });
+
+    // The day's own list still moves — only the detail is held back.
+    await waitFor(() => {
+      expect(
+        queryClient.getQueryData<HabitWithStats[]>(habitKeys.daily(past))?.[0].periodCount,
+      ).toBe(1);
+    });
+    expect(queryClient.getQueryData<HabitWithStats>(habitKeys.detail(HABIT_ID))?.periodCount).toBe(
+      0,
+    );
+  });
+});
