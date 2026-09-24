@@ -87,6 +87,48 @@ versión**, y web + desktop quedan alineados.
 El tag `desktop-v*` sigue disponible para un rebuild **solo de escritorio**
 (cambios del shell nativo / íconos) entre releases web.
 
+## Ventanas flotantes (picture-in-picture de hábitos)
+
+Cada hábito se puede abrir en una **ventana propia, siempre al frente**, que
+flota sobre el navegador, el editor o lo que sea. Es desktop y nada más: un
+navegador no puede poner nada encima de otras aplicaciones, así que el botón
+no se renderiza ahí (`canUsePip()` → `isTauri()`).
+
+La ventana carga `/pip/habits/<id>` y renderiza **el mismo `HabitCard`** de la
+lista, con el botón de abrir cambiado por uno de cerrar. No hay un segundo
+componente parecido: dos copias del mismo card divergen la primera vez que se
+toca cualquiera de las dos.
+
+### Lo que hay que saber antes de tocarlo
+
+**1. Una capability aplica solo a las etiquetas de ventana que lista.** Por eso
+existe `capabilities/pip.json` con `"windows": ["pip-*"]`. Sin ese archivo una
+ventana creada en runtime nace **sin permisos**, ni siquiera para cerrarse a sí
+misma. Y `default.json` necesita `core:webview:allow-create-webview-window`
+porque la creación la inicia la ventana principal.
+
+**2. Cada ventana es un webview aparte** — otro contexto JS, otro store de
+Zustand, otro caché de TanStack Query. Dos consecuencias:
+
+- La sesión se re-establece sola porque el access token viaja en **cookie** del
+  mismo origen. Si algún día el token vuelve a memoria, el popup deja de
+  autenticarse.
+- Marcar en el popup invalida solo SU caché. Sin sincronización, la lista de
+  atrás sigue mostrando el conteo viejo — dos números del mismo hábito en
+  pantalla al mismo tiempo. Lo resuelve el evento `habits:changed` de Tauri:
+  `notifyHabitsChanged()` emite tras cada mutación y `useHabitsWindowSync()`
+  escucha e invalida. La ventana principal lo monta vía
+  `<HabitsWindowSync />` en el layout del dashboard.
+
+**3. Los permisos de Tauri viajan en el INSTALADOR, no en el deploy.** El shell
+carga `https://habit-sumaq-web.vercel.app`, así que el código web llega a todos
+con el deploy de Vercel, pero `capabilities/` y el Rust solo llegan a quien
+instale una versión nueva. Un usuario con el instalador viejo va a ver el botón
+y la creación de ventana le va a fallar.
+
+Por eso `openHabitPip()` devuelve `false` en vez de tirar, y la UI muestra
+_"Actualiza la app de escritorio"_. **Este feature necesita un release de
+escritorio** (tag `v*` o `desktop-v*`) para funcionar de verdad.
 ## Logs de la app instalada
 
 Desde v0.12.1 el build de **release** escribe logs a archivo. Antes solo lo hacía el build de
