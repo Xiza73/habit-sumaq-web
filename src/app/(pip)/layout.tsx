@@ -14,6 +14,14 @@ import { LocaleSync } from '@/presentation/providers/LocaleSync';
 export default function PipLayout({ children }: { children: React.ReactNode }) {
   return (
     <AuthProvider>
+      {/*
+        Next's dev overlay renders a floating button that, in a 340px window,
+        sits right on top of the card. There is no per-route switch for it —
+        but this window is its OWN document, so hiding it here leaves the main
+        window's overlay untouched. Dev-only markup; it is not emitted in a
+        production build.
+      */}
+      <style>{'nextjs-portal{display:none!important}'}</style>
       <LocaleSync />
       {children}
     </AuthProvider>
