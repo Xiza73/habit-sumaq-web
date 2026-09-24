@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
 
-import { Pause, Play, RotateCcw } from 'lucide-react';
+import { Blend, Pause, Play, RotateCcw } from 'lucide-react';
 import { toast } from 'sonner';
 
 import {
@@ -30,6 +30,18 @@ const HEIGHT_WITH_TIMER = 250;
 
 /** Must match the strip's CSS transition, or the two steps desynchronise. */
 const REVEAL_MS = 200;
+
+/**
+ * Dim levels the opacity button cycles through.
+ *
+ * A cycling button, not a slider: at 340px a slider is a hair-wide target, and
+ * three steps cover what the window is for — solid, see-through enough to read
+ * what is behind, and barely there.
+ *
+ * Tauri exposes no window-opacity API, so this is plain CSS alpha over a
+ * window created with `transparent: true`.
+ */
+const OPACITY_LEVELS = [1, 0.7, 0.4] as const;
 
 /**
  * Two digits, because the field is `mm:ss` and 999 would make it `mmm:ss`.
@@ -63,6 +75,10 @@ export function HabitPipView({ habitId }: { habitId: string }) {
   const [timerOpen, setTimerOpen] = useState(false);
   const { status, remaining, start, pause, resume, reset } = useCountdown(playBeep);
   const [minutes, setMinutes] = useState(10);
+  const [opacityStep, setOpacityStep] = useState(0);
+  // Dimming only helps while the window is being ignored. The moment the
+  // pointer arrives the user wants to READ and click it, so it goes solid.
+  const [hovered, setHovered] = useState(false);
   const [seconds, setSeconds] = useState(0);
 
   // The window resize and the strip's own animation have to be SEQUENCED, not
@@ -140,7 +156,10 @@ export function HabitPipView({ habitId }: { habitId: string }) {
     // 340px floating card filling the screen is nobody idea of a feature.
     <div
       data-tauri-drag-region="deep"
-      className="flex h-screen w-screen flex-col overflow-hidden bg-card"
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{ opacity: hovered ? 1 : OPACITY_LEVELS[opacityStep] }}
+      className="flex h-screen w-screen flex-col overflow-hidden bg-card transition-opacity duration-200"
     >
       <HabitCard
         habit={habit}
@@ -164,6 +183,17 @@ export function HabitPipView({ habitId }: { habitId: string }) {
         }
         releasePending={releaseMutation.isPending}
         onClosePip={() => void closeSelfPip()}
+        headerActions={
+          <button
+            type="button"
+            onClick={() => setOpacityStep((step) => (step + 1) % OPACITY_LEVELS.length)}
+            aria-label={t('pip.opacity')}
+            title={`${t('pip.opacity')} — ${Math.round(OPACITY_LEVELS[opacityStep] * 100)}%`}
+            className="rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+          >
+            <Blend className="size-4" />
+          </button>
+        }
       />
 
       {/*

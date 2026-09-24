@@ -222,7 +222,8 @@
       "timer": "Cronômetro",
       "timerHide": "Ocultar o cronômetro",
       "unavailable": "Atualize o app de desktop para usar a janela flutuante.",
-      "notFound": "Não encontramos este hábito."
+      "notFound": "Não encontramos este hábito.",
+      "opacity": "Opacidade da janela"
     },
     "title": "Hábitos",
     "createHabit": "Novo hábito",

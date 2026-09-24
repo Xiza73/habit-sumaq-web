@@ -65,6 +65,15 @@ export async function openHabitPip(habitId: string, locale: string): Promise<boo
       // No title bar: the card IS the window. The thick bottom strip and the
       // card's own header double as the drag handle.
       decorations: false,
+      // Transparent so the card can be dimmed with plain CSS alpha. Tauri has
+      // no window-opacity API at all — `setEffects` is blur, not alpha — so an
+      // opaque window can only ever be painted over, never seen through.
+      //
+      // On macOS this needs `macOSPrivateApi` in tauri.conf.json, which rules
+      // the app out of the Mac App Store. Distribution here is GitHub
+      // Releases, so that costs nothing.
+      transparent: true,
+      shadow: false,
       alwaysOnTop: true,
       skipTaskbar: true,
       title: 'Habit Sumaq',

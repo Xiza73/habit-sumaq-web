@@ -222,7 +222,8 @@
       "timer": "Cronómetro",
       "timerHide": "Ocultar cronómetro",
       "unavailable": "Actualiza la app de escritorio para usar la ventana flotante.",
-      "notFound": "No encontramos este hábito."
+      "notFound": "No encontramos este hábito.",
+      "opacity": "Opacidad de la ventana"
     },
     "title": "Hábitos",
     "createHabit": "Nuevo hábito",
