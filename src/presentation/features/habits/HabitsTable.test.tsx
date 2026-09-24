@@ -264,3 +264,25 @@ describe('HabitsTable — a rescued period', () => {
     expect(onCheckIn).not.toHaveBeenCalled();
   });
 });
+
+describe('HabitsTable - floating window button', () => {
+  it('offers the popup exactly like the card does', async () => {
+    // Parity again: an action the card has and the table does not is an
+    // action that disappears when the user switches view mode.
+    const user = userEvent.setup();
+    const onOpenPip = vi.fn();
+    const habit = makeHabit();
+
+    renderTable([habit], { onOpenPip });
+    await user.click(screen.getByRole('button', { name: /abrir en ventana flotante/i }));
+
+    expect(onOpenPip).toHaveBeenCalledWith(habit);
+  });
+
+  it('omits it when the handler is absent', () => {
+    renderTable([makeHabit()]);
+    expect(
+      screen.queryByRole('button', { name: /abrir en ventana flotante/i }),
+    ).not.toBeInTheDocument();
+  });
+});

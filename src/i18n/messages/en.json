@@ -216,6 +216,14 @@
       "doneTitle": "Time's up!",
       "close": "Close"
     },
+    "pip": {
+      "open": "Open in a floating window",
+      "close": "Close the floating window",
+      "timer": "Timer",
+      "timerHide": "Hide the timer",
+      "unavailable": "Update the desktop app to use the floating window.",
+      "notFound": "We could not find this habit."
+    },
     "title": "Habits",
     "createHabit": "New habit",
     "editHabit": "Edit habit",
