@@ -245,3 +245,37 @@ describe('HabitCard — a rescued period', () => {
     ).not.toBeInTheDocument();
   });
 });
+
+describe('HabitCard - floating window button', () => {
+  it('offers to open the popup when the handler is given', async () => {
+    const user = userEvent.setup();
+    const onOpenPip = vi.fn();
+    renderCard(mockHabit, { onOpenPip });
+
+    await user.click(screen.getByRole('button', { name: /abrir en ventana flotante/i }));
+
+    expect(onOpenPip).toHaveBeenCalledWith(mockHabit);
+  });
+
+  it('shows a CLOSE button instead when rendered inside the popup', async () => {
+    // Same card, one button swapped. That is the entire difference between
+    // the list card and the floating one, and it is why there is no second
+    // component to drift from this one.
+    const user = userEvent.setup();
+    const onClosePip = vi.fn();
+    renderCard(mockHabit, { onClosePip });
+
+    expect(
+      screen.queryByRole('button', { name: /abrir en ventana flotante/i }),
+    ).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: /cerrar ventana flotante/i }));
+    expect(onClosePip).toHaveBeenCalled();
+  });
+
+  it('renders neither button in the browser, where no handler is passed', () => {
+    renderCard(mockHabit);
+
+    expect(screen.queryByRole('button', { name: /ventana flotante/i })).not.toBeInTheDocument();
+  });
+});

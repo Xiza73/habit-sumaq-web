@@ -12,10 +12,12 @@ import {
   Minus,
   MoreVertical,
   Pencil,
+  PictureInPicture2,
   Plus,
   Shield,
   Target,
   Trash2,
+  X,
 } from 'lucide-react';
 
 import { type HabitWithStats } from '@/core/domain/entities/habit';
@@ -57,6 +59,17 @@ interface HabitCardProps {
    */
   onReleaseRescue?: (habit: HabitWithStats) => void;
   releasePending?: boolean;
+  /**
+   * Opens this habit in a floating always-on-top window. Only passed on
+   * desktop — the browser has no equivalent, so the button simply is not
+   * rendered there rather than rendered broken.
+   */
+  onOpenPip?: (habit: HabitWithStats) => void;
+  /**
+   * Closes the floating window. The popup renders the SAME card with this in
+   * place of `onOpenPip`, which is the whole difference between the two.
+   */
+  onClosePip?: () => void;
 }
 
 export function HabitCard({
@@ -73,6 +86,8 @@ export function HabitCard({
   targetPending = false,
   onReleaseRescue,
   releasePending = false,
+  onOpenPip,
+  onClosePip,
 }: HabitCardProps) {
   const t = useTranslations('habits');
   const tCommon = useTranslations('common');
@@ -88,7 +103,31 @@ export function HabitCard({
         streakStyle.cardClass || 'border-border',
       )}
     >
-      <div className="absolute right-3 top-3">
+      <div className="absolute right-3 top-3 flex items-center gap-1">
+        {/* Stays visible instead of appearing on hover like the menu: in the
+            popup it is the only way out, and a close button you have to
+            discover by hovering is not a close button. */}
+        {onClosePip ? (
+          <button
+            type="button"
+            onClick={onClosePip}
+            className="rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            aria-label={t('pip.close')}
+            title={t('pip.close')}
+          >
+            <X className="size-4" />
+          </button>
+        ) : onOpenPip ? (
+          <button
+            type="button"
+            onClick={() => onOpenPip(habit)}
+            className="rounded-lg p-1.5 text-muted-foreground opacity-0 transition-opacity hover:bg-muted group-hover:opacity-100"
+            aria-label={t('pip.open')}
+            title={t('pip.open')}
+          >
+            <PictureInPicture2 className="size-4" />
+          </button>
+        ) : null}
         <button
           type="button"
           onClick={() => setMenuOpen(!menuOpen)}

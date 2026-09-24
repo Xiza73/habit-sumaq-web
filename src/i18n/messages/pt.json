@@ -216,6 +216,14 @@
       "doneTitle": "Acabou o tempo!",
       "close": "Fechar"
     },
+    "pip": {
+      "open": "Abrir em janela flutuante",
+      "close": "Fechar a janela flutuante",
+      "timer": "Cronômetro",
+      "timerHide": "Ocultar o cronômetro",
+      "unavailable": "Atualize o app de desktop para usar a janela flutuante.",
+      "notFound": "Não encontramos este hábito."
+    },
     "title": "Hábitos",
     "createHabit": "Novo hábito",
     "editHabit": "Editar hábito",

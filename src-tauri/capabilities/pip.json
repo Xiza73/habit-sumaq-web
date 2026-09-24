@@ -1,0 +1,19 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "pip",
+  "description": "Permissions for the floating habit windows. A capability applies only to the window labels it lists, so without this file a window created at runtime has NO permissions at all — not even the ability to close itself.",
+  "windows": ["pip-*"],
+  "remote": {
+    "urls": ["https://habit-sumaq-web.vercel.app"]
+  },
+  "permissions": [
+    "core:default",
+    "core:window:allow-close",
+    "core:window:allow-destroy",
+    "core:window:allow-set-always-on-top",
+    "core:window:allow-set-size",
+    "core:window:allow-start-dragging",
+    "core:event:allow-emit",
+    "core:event:allow-listen"
+  ]
+}
