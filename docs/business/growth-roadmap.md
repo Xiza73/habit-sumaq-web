@@ -241,9 +241,15 @@ registrando — que es justo donde el cálculo ya corre.
 **Trabajo:**
 
 - [ ] **Coach personal con IA** (ver [coach-ia-feature.md](coach-ia-feature.md))
-- [x] **Hábitos modo cronómetro** (ver [habit-timer-feature.md](habit-timer-feature.md)) —
-      shipped en [PR #113](https://github.com/Xiza73/habit-sumaq-web/pull/113)
-      (`feat/habits/focus-timer`). Queda pendiente explotarlo como narrativa de TikTok.
+- ❌ **Hábitos modo cronómetro** — **descartado** (ver
+  [habit-timer-feature.md](habit-timer-feature.md)). Lo que se shipeó en
+  [PR #113](https://github.com/Xiza73/habit-sumaq-web/pull/113) era un
+  pomodoro que marcaba el hábito como hecho al llegar a cero, y eso se
+  quitó: que el reloj llegue a cero no es evidencia de que hiciste nada, y
+  un cronómetro que escribe convierte la completion rate en una métrica que
+  ya no dice "lo que realmente hice". El cronómetro queda como herramienta
+  suelta. La narrativa de "cuántas horas dedicaste" necesitaría time-tracking
+  de verdad — otra feature, otro modelo de datos.
 - [ ] Vinculación Hábitos ↔ Finanzas (alimenta al Coach)
 - [ ] Presupuestos por categoría con alertas (ya en backlog técnico)
 - [ ] Export / import (free, generoso) — ver [pricing.md → Trust signals](pricing.md#trust-signals-qué-no-es-premium)

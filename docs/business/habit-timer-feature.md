@@ -1,10 +1,21 @@
 # Habit Timer — Feature Spec
 
-> **Status:** BORRADOR — _feature de Fase 2 del growth roadmap, junto al Coach
-> con IA. No implementar hasta completar Fase 1 (bugs + onboarding +
-> shareable cards)._
-> **Pitch:** _"Esta app cronometra cuánto leés y cuánto entrenás cada día. Al
-> final del mes te dice cuántas horas dedicaste a cada hábito"._
+> **Status:** ❌ **DESCARTADO** (2026-09-24). Se baja de la Fase 2 del roadmap.
+>
+> El pitch original — _"al final del mes te dice cuántas horas dedicaste a cada
+> hábito"_ — depende de que el cronómetro esté **atado a un hábito**. Esa
+> atadura se quitó: el cronómetro es una herramienta suelta que no registra ni
+> completa nada.
+>
+> Medir tiempo dedicado y cronometrar un rato de foco son dos features distintas
+> aunque las dos cuenten segundos. La primera necesita su propio modelo de datos
+> (sesiones con inicio, fin y hábito) y una decisión sobre qué hacer cuando el
+> usuario se olvida de parar el reloj. Meterla dentro de un pomodoro fue lo que
+> hizo que "se acabó el tiempo" y "lo hice" fueran el mismo evento, y no lo son.
+>
+> **Nada de lo que sigue está implementado.** El documento queda como registro de
+> por qué se decidió así. Si el time-tracking vuelve algún día, vuelve como
+> feature propia — no reviviendo esta.
 
 ## Por qué este feature
 

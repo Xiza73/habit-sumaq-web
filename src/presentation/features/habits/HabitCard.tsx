@@ -12,10 +12,12 @@ import {
   Minus,
   MoreVertical,
   Pencil,
+  PictureInPicture2,
   Plus,
   Shield,
   Target,
   Trash2,
+  X,
 } from 'lucide-react';
 
 import { type HabitWithStats } from '@/core/domain/entities/habit';
@@ -30,9 +32,14 @@ interface HabitCardProps {
   habit: HabitWithStats;
   onCheckIn: (habit: HabitWithStats) => void;
   onUndo: (habit: HabitWithStats) => void;
-  onEdit: (habit: HabitWithStats) => void;
-  onArchive: (habit: HabitWithStats) => void;
-  onDelete: (habit: HabitWithStats) => void;
+  /**
+   * Administrative actions. Optional as a set: with none of them given the
+   * overflow menu is not rendered at all, which is what the floating window
+   * wants — a menu whose every item is a no-op is worse than no menu.
+   */
+  onEdit?: (habit: HabitWithStats) => void;
+  onArchive?: (habit: HabitWithStats) => void;
+  onDelete?: (habit: HabitWithStats) => void;
   /**
    * Sets the target for the day being shown. Omitted, the denominator renders
    * as plain text — the list passes it, read-only surfaces do not.
@@ -57,6 +64,32 @@ interface HabitCardProps {
    */
   onReleaseRescue?: (habit: HabitWithStats) => void;
   releasePending?: boolean;
+  /**
+   * Opens this habit in a floating always-on-top window. Only passed on
+   * desktop — the browser has no equivalent, so the button simply is not
+   * rendered there rather than rendered broken.
+   */
+  onOpenPip?: (habit: HabitWithStats) => void;
+  /**
+   * Closes the floating window. The popup renders the SAME card with this in
+   * place of `onOpenPip`, which is the whole difference between the two.
+   */
+  onClosePip?: () => void;
+  /**
+   * Extra classes for the card's own container. The floating window uses it to
+   * drop the rounding and the border so the card IS the window instead of
+   * sitting inside a frame.
+   */
+  className?: string;
+  /**
+   * Drops the link to the habit detail. The floating window uses it: the whole
+   * card is a link, so clicking it navigates a 340px chrome-less popup to a
+   * full detail page with no way back.
+   *
+   * It also unblocks window dragging — Tauri treats an `<a>` as clickable and
+   * refuses to start a drag from inside one.
+   */
+  disableDetailLink?: boolean;
 }
 
 export function HabitCard({
@@ -73,10 +106,15 @@ export function HabitCard({
   targetPending = false,
   onReleaseRescue,
   releasePending = false,
+  onOpenPip,
+  onClosePip,
+  className,
+  disableDetailLink = false,
 }: HabitCardProps) {
   const t = useTranslations('habits');
   const tCommon = useTranslations('common');
   const [menuOpen, setMenuOpen] = useState(false);
+  const hasMenu = !!onEdit || !!onArchive || !!onDelete;
 
   const { todayCount, periodCount, isCompleted, progress } = getHabitProgress(habit);
   const streakStyle = getStreakStyle(habit.currentStreak);
@@ -86,79 +124,108 @@ export function HabitCard({
       className={cn(
         'group relative rounded-xl border bg-card p-5 transition-shadow hover:shadow-md',
         streakStyle.cardClass || 'border-border',
+        className,
       )}
     >
-      <div className="absolute right-3 top-3">
-        <button
-          type="button"
-          onClick={() => setMenuOpen(!menuOpen)}
-          className="rounded-lg p-1.5 text-muted-foreground opacity-0 transition-opacity hover:bg-muted group-hover:opacity-100"
-          aria-label="Habit actions"
-        >
-          <MoreVertical className="size-4" />
-        </button>
-
-        {menuOpen && (
+      <div className="absolute right-3 top-3 flex items-center gap-1">
+        {/* Stays visible instead of appearing on hover like the menu: in the
+            popup it is the only way out, and a close button you have to
+            discover by hovering is not a close button. */}
+        {onClosePip ? (
+          <button
+            type="button"
+            onClick={onClosePip}
+            className="rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            aria-label={t('pip.close')}
+            title={t('pip.close')}
+          >
+            <X className="size-4" />
+          </button>
+        ) : onOpenPip ? (
+          <button
+            type="button"
+            onClick={() => onOpenPip(habit)}
+            className="rounded-lg p-1.5 text-muted-foreground opacity-0 transition-opacity hover:bg-muted group-hover:opacity-100"
+            aria-label={t('pip.open')}
+            title={t('pip.open')}
+          >
+            <PictureInPicture2 className="size-4" />
+          </button>
+        ) : null}
+        {hasMenu && (
           <>
-            <div
-              className="fixed inset-0 z-10"
-              onClick={() => setMenuOpen(false)}
-              onKeyDown={(e) => {
-                if (e.key === 'Escape') setMenuOpen(false);
-              }}
-              role="button"
-              tabIndex={0}
-              aria-label="Close menu"
-            />
-            <div className="absolute right-0 top-full z-20 mt-1 w-44 rounded-lg border border-border bg-popover py-1 shadow-lg">
-              <button
-                type="button"
-                onClick={() => {
-                  setMenuOpen(false);
-                  onEdit(habit);
-                }}
-                className="flex w-full items-center gap-2 px-3 py-2 text-sm hover:bg-muted"
-              >
-                <Pencil className="size-4" />
-                {t('editHabit')}
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setMenuOpen(false);
-                  onArchive(habit);
-                }}
-                className="flex w-full items-center gap-2 px-3 py-2 text-sm hover:bg-muted"
-              >
-                {habit.isArchived ? (
-                  <>
-                    <ArchiveRestore className="size-4" />
-                    {tCommon('unarchive')}
-                  </>
-                ) : (
-                  <>
-                    <Archive className="size-4" />
-                    {tCommon('archive')}
-                  </>
-                )}
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setMenuOpen(false);
-                  onDelete(habit);
-                }}
-                className="flex w-full items-center gap-2 px-3 py-2 text-sm text-destructive hover:bg-muted"
-              >
-                <Trash2 className="size-4" />
-                {t('deleteHabit')}
-              </button>
-            </div>
+            <button
+              type="button"
+              onClick={() => setMenuOpen(!menuOpen)}
+              className="rounded-lg p-1.5 text-muted-foreground opacity-0 transition-opacity hover:bg-muted group-hover:opacity-100"
+              aria-label="Habit actions"
+            >
+              <MoreVertical className="size-4" />
+            </button>
+
+            {menuOpen && (
+              <>
+                <div
+                  className="fixed inset-0 z-10"
+                  onClick={() => setMenuOpen(false)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Escape') setMenuOpen(false);
+                  }}
+                  role="button"
+                  tabIndex={0}
+                  aria-label="Close menu"
+                />
+                <div className="absolute right-0 top-full z-20 mt-1 w-44 rounded-lg border border-border bg-popover py-1 shadow-lg">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMenuOpen(false);
+                      onEdit?.(habit);
+                    }}
+                    className="flex w-full items-center gap-2 px-3 py-2 text-sm hover:bg-muted"
+                  >
+                    <Pencil className="size-4" />
+                    {t('editHabit')}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMenuOpen(false);
+                      onArchive?.(habit);
+                    }}
+                    className="flex w-full items-center gap-2 px-3 py-2 text-sm hover:bg-muted"
+                  >
+                    {habit.isArchived ? (
+                      <>
+                        <ArchiveRestore className="size-4" />
+                        {tCommon('unarchive')}
+                      </>
+                    ) : (
+                      <>
+                        <Archive className="size-4" />
+                        {tCommon('archive')}
+                      </>
+                    )}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMenuOpen(false);
+                      onDelete?.(habit);
+                    }}
+                    className="flex w-full items-center gap-2 px-3 py-2 text-sm text-destructive hover:bg-muted"
+                  >
+                    <Trash2 className="size-4" />
+                    {t('deleteHabit')}
+                  </button>
+                </div>
+              </>
+            )}
           </>
         )}
       </div>
 
-      <Link href={`/habits/${habit.id}`} className="block">
+      <CardBody href={disableDetailLink ? null : `/habits/${habit.id}`} className="block">
         <div className="flex items-center gap-3">
           <div
             className="flex size-10 items-center justify-center rounded-lg"
@@ -171,7 +238,7 @@ export function HabitCard({
             <p className="text-xs text-muted-foreground">{t(`frequencies.${habit.frequency}`)}</p>
           </div>
         </div>
-      </Link>
+      </CardBody>
 
       <div className="mt-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
@@ -308,5 +375,27 @@ export function HabitCard({
         </div>
       )}
     </div>
+  );
+}
+
+/**
+ * The card's top half: a link to the detail, or a plain block when there is
+ * nowhere to go. Kept as one component so both branches wrap exactly the same
+ * markup — duplicating the children is how the two drift apart.
+ */
+function CardBody({
+  href,
+  className,
+  children,
+}: {
+  href: string | null;
+  className?: string;
+  children: React.ReactNode;
+}) {
+  if (!href) return <div className={className}>{children}</div>;
+  return (
+    <Link href={href} className={className}>
+      {children}
+    </Link>
   );
 }

@@ -205,9 +205,8 @@
   "habits": {
     "timer": {
       "title": "Focus timer",
-      "habit": "Habit",
-      "habitPlaceholder": "Pick a habit",
       "duration": "Duration",
+      "hint": "It logs nothing — it just keeps time while you do the thing.",
       "minutes": "min",
       "seconds": "sec",
       "start": "Start",
@@ -215,11 +214,15 @@
       "resume": "Resume",
       "cancel": "Cancel",
       "doneTitle": "Time's up!",
-      "markDone": "Mark as done",
-      "close": "Close",
-      "logged": "+1 on {habit}!",
-      "logError": "Couldn't log the habit",
-      "noHabits": "You have no habits to time"
+      "close": "Close"
+    },
+    "pip": {
+      "open": "Open in a floating window",
+      "close": "Close the floating window",
+      "timer": "Timer",
+      "timerHide": "Hide the timer",
+      "unavailable": "Update the desktop app to use the floating window.",
+      "notFound": "We could not find this habit."
     },
     "title": "Habits",
     "createHabit": "New habit",

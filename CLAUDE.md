@@ -48,7 +48,7 @@ Estos docs no son contrato técnico — son la memoria estratégica del proyecto
 | Pricing & Tiering     | [pricing.md](docs/business/pricing.md)                         | BORRADOR    |
 | Growth roadmap        | [growth-roadmap.md](docs/business/growth-roadmap.md)           | ACTIVO      |
 | Coach IA (feature)    | [coach-ia-feature.md](docs/business/coach-ia-feature.md)       | BORRADOR    |
-| Habit Timer (feature) | [habit-timer-feature.md](docs/business/habit-timer-feature.md) | BORRADOR    |
+| Habit Timer (feature) | [habit-timer-feature.md](docs/business/habit-timer-feature.md) | DESCARTADO  |
 | TWA deployment        | [twa-deployment.md](docs/business/twa-deployment.md)           | OPERACIONAL |
 | Desktop deployment    | [desktop-deployment.md](docs/business/desktop-deployment.md)   | OPERACIONAL |
 

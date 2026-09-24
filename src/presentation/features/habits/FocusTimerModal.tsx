@@ -3,25 +3,18 @@
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 
-import { Check, Minus, Pause, Play, Plus, RotateCcw } from 'lucide-react';
-import { toast } from 'sonner';
-
-import { useLogHabit } from '@/core/application/hooks/use-habits';
-import { type HabitWithStats } from '@/core/domain/entities/habit';
+import { Minus, Pause, Play, Plus, RotateCcw } from 'lucide-react';
 
 import { Modal } from '@/presentation/components/ui/Modal';
-import { Select } from '@/presentation/components/ui/Select';
 
 import { playBeep } from '@/lib/beep';
-import { getTodayLocaleDate } from '@/lib/format';
 import { cn } from '@/lib/utils';
 
 import { useCountdown } from './useCountdown';
 
-interface HabitTimerModalProps {
+interface FocusTimerModalProps {
   open: boolean;
   onClose: () => void;
-  habits: HabitWithStats[];
 }
 
 const MAX_MINUTES = 999;
@@ -37,27 +30,28 @@ function formatMMSS(totalSeconds: number): string {
 }
 
 /**
- * A focus timer: pick a habit, build a countdown (quick-add +5/+10/+30, unit
- * steppers, or type it), run it, and when it hits zero mark the habit as done
- * (+1 to today's count). Frontend-only — it just logs a normal count. One timer
- * at a time, scoped to this modal.
+ * A plain countdown: build a duration (quick-add +5/+10/+30, unit steppers, or
+ * type it), run it, and it beeps at zero.
+ *
+ * It is attached to NOTHING. It used to require picking a habit and marked that
+ * habit done when it hit zero, which made "the timer ran out" and "I did the
+ * thing" the same event — they are not. A timer that logs turns a stopwatch
+ * into a data source, and the completion rate stops meaning "what I actually
+ * did". It lives in the habits header because that is where it gets used, not
+ * because it writes anything there.
  */
-export function HabitTimerModal({ open, onClose, habits }: HabitTimerModalProps) {
+export function FocusTimerModal({ open, onClose }: FocusTimerModalProps) {
   const t = useTranslations('habits.timer');
-  const logMutation = useLogHabit();
   const { status, remaining, start, pause, resume, reset } = useCountdown(playBeep);
 
-  const [habitId, setHabitId] = useState('');
   const [minutes, setMinutes] = useState(10);
   const [seconds, setSeconds] = useState(0);
 
-  const selectedHabit = habits.find((h) => h.id === habitId) ?? null;
   const totalSeconds = minutes * 60 + seconds;
 
   // Reset everything on close so the modal reopens clean.
   function handleClose() {
     reset();
-    setHabitId('');
     setMinutes(10);
     setSeconds(0);
     onClose();
@@ -76,50 +70,14 @@ export function HabitTimerModal({ open, onClose, habits }: HabitTimerModalProps)
     });
   }
 
-  function handleStart() {
-    if (!habitId || totalSeconds <= 0) return;
-    start(totalSeconds);
-  }
-
-  function handleMarkDone() {
-    if (!selectedHabit) return;
-    const nextCount = (selectedHabit.todayLog?.count ?? 0) + 1;
-    logMutation.mutate(
-      { habitId: selectedHabit.id, data: { date: getTodayLocaleDate(), count: nextCount } },
-      {
-        onSuccess: () => {
-          toast.success(t('logged', { habit: selectedHabit.name }));
-          handleClose();
-        },
-        onError: () => toast.error(t('logError')),
-      },
-    );
-  }
-
   const isSetup = status === 'idle';
   const isRunning = status === 'running' || status === 'paused';
   const isDone = status === 'done';
 
   return (
     <Modal open={open} onClose={handleClose} title={t('title')}>
-      {habits.length === 0 ? (
-        <p className="py-6 text-center text-sm text-muted-foreground">{t('noHabits')}</p>
-      ) : isSetup ? (
+      {isSetup ? (
         <div className="space-y-5">
-          <div className="space-y-2">
-            <label htmlFor="timer-habit" className="text-sm font-medium">
-              {t('habit')}
-            </label>
-            <Select id="timer-habit" value={habitId} onChange={(e) => setHabitId(e.target.value)}>
-              <option value="">{t('habitPlaceholder')}</option>
-              {habits.map((h) => (
-                <option key={h.id} value={h.id}>
-                  {h.name}
-                </option>
-              ))}
-            </Select>
-          </div>
-
           <div className="space-y-2">
             <span className="text-sm font-medium">{t('duration')}</span>
 
@@ -157,10 +115,14 @@ export function HabitTimerModal({ open, onClose, habits }: HabitTimerModalProps)
             </div>
           </div>
 
+          {/* Said out loud, because the previous version DID log a habit and a
+              returning user would reasonably expect it still does. */}
+          <p className="text-center text-xs text-muted-foreground">{t('hint')}</p>
+
           <button
             type="button"
-            onClick={handleStart}
-            disabled={!habitId || totalSeconds <= 0}
+            onClick={() => start(totalSeconds)}
+            disabled={totalSeconds <= 0}
             className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-lg bg-primary text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-50"
           >
             <Play className="size-4" />
@@ -169,8 +131,6 @@ export function HabitTimerModal({ open, onClose, habits }: HabitTimerModalProps)
         </div>
       ) : (
         <div className="space-y-6 py-2 text-center">
-          <p className="text-sm text-muted-foreground">{selectedHabit?.name}</p>
-
           <div
             className={cn(
               'font-mono text-6xl font-bold tabular-nums',
@@ -213,16 +173,8 @@ export function HabitTimerModal({ open, onClose, habits }: HabitTimerModalProps)
               <p className="text-sm font-medium">{t('doneTitle')}</p>
               <button
                 type="button"
-                onClick={handleMarkDone}
-                disabled={logMutation.isPending}
-                className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-lg bg-primary text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50"
-              >
-                <Check className="size-4" /> {t('markDone')}
-              </button>
-              <button
-                type="button"
                 onClick={handleClose}
-                className="inline-flex h-10 w-full items-center justify-center rounded-lg text-sm text-muted-foreground transition-colors hover:bg-muted"
+                className="inline-flex h-11 w-full items-center justify-center rounded-lg bg-primary text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
               >
                 {t('close')}
               </button>

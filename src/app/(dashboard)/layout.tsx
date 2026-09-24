@@ -1,6 +1,7 @@
 import { DashboardShell } from '@/presentation/components/layout/DashboardShell';
 import { CelebrationModal } from '@/presentation/features/habits/CelebrationModal';
 import { AuthProvider } from '@/presentation/providers/AuthProvider';
+import { HabitsWindowSync } from '@/presentation/providers/HabitsWindowSync';
 import { LocaleSync } from '@/presentation/providers/LocaleSync';
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -8,6 +9,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     <AuthProvider>
       {/* Sync the rendered locale to the user's saved language setting. */}
       <LocaleSync />
+      <HabitsWindowSync />
       <DashboardShell>{children}</DashboardShell>
       {/* Global celebration modal — pops when useLogHabit crosses a big
           milestone (month, century). Mounted at layout level so it shows

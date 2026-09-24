@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 
 import { ChevronLeft, ChevronRight, Clock, Eye, EyeOff, Plus, Timer } from 'lucide-react';
 import { toast } from 'sonner';
@@ -25,13 +25,14 @@ import { ConfirmDialog } from '@/presentation/components/feedback/ConfirmDialog'
 import { ViewModeToggle } from '@/presentation/components/ui/ViewModeToggle';
 
 import { formatDate, getTodayLocaleDate } from '@/lib/format';
+import { canUsePip, openHabitPip } from '@/lib/pip-window';
 import { cn } from '@/lib/utils';
 
+import { FocusTimerModal } from './FocusTimerModal';
 import { HabitCard } from './HabitCard';
 import { HabitCardSkeleton } from './HabitCardSkeleton';
 import { HabitForm } from './HabitForm';
 import { HabitsTable } from './HabitsTable';
-import { HabitTimerModal } from './HabitTimerModal';
 
 function LiveClock() {
   const [currentTime, setCurrentTime] = useState(() => new Date().toLocaleTimeString());
@@ -89,6 +90,10 @@ export function HabitList() {
   const releaseMutation = useReleaseRescue();
   const [releasingHabit, setReleasingHabit] = useState<HabitWithStats | null>(null);
   const streakShields = useStreakShields();
+  const locale = useLocale();
+  // Evaluated once: the shell cannot become a browser mid-session, and
+  // re-checking per card would just be noise.
+  const [pipAvailable] = useState(canUsePip);
 
   const habits = showArchived ? allHabits : dailyHabits;
   const isLoading = showArchived ? isAllLoading : isDailyLoading;
@@ -167,6 +172,19 @@ export function HabitList() {
         },
       },
     );
+  }
+
+  /**
+   * Opens the habit in a floating always-on-top window.
+   *
+   * The failure branch is real, not defensive padding: the desktop shell loads
+   * the DEPLOYED site, so a user still on an older installer runs this code
+   * against a Tauri build whose capabilities do not allow creating windows.
+   * Telling them to update beats a button that silently does nothing.
+   */
+  async function handleOpenPip(habit: HabitWithStats) {
+    const opened = await openHabitPip(habit.id, locale);
+    if (!opened) toast.error(t('pip.unavailable'));
   }
 
   function handleCheckIn(habit: HabitWithStats) {
@@ -386,6 +404,7 @@ export function HabitList() {
           rescuePending={rescueMutation.isPending}
           onReleaseRescue={setReleasingHabit}
           releasePending={releaseMutation.isPending}
+          onOpenPip={pipAvailable ? (h) => void handleOpenPip(h) : undefined}
         />
       ) : (
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -405,6 +424,7 @@ export function HabitList() {
               rescuePending={rescueMutation.isPending}
               onReleaseRescue={setReleasingHabit}
               releasePending={releaseMutation.isPending}
+              onOpenPip={pipAvailable ? (h) => void handleOpenPip(h) : undefined}
             />
           ))}
         </div>
@@ -412,11 +432,7 @@ export function HabitList() {
 
       <HabitForm open={formOpen} habit={editingHabit} onClose={handleCloseForm} />
 
-      <HabitTimerModal
-        open={timerOpen}
-        onClose={() => setTimerOpen(false)}
-        habits={dailyHabits ?? []}
-      />
+      <FocusTimerModal open={timerOpen} onClose={() => setTimerOpen(false)} />
 
       <ConfirmDialog
         open={!!releasingHabit}

@@ -10,6 +10,7 @@ import {
   Eye,
   Minus,
   Pencil,
+  PictureInPicture2,
   Plus,
   Shield,
   Target,
@@ -47,6 +48,8 @@ interface HabitsTableProps {
   /** Drops the rescue covering the period in view. See `HabitCard`. */
   onReleaseRescue?: (habit: HabitWithStats) => void;
   releasePending?: boolean;
+  /** Opens the habit in a floating window. Desktop only — see `HabitCard`. */
+  onOpenPip?: (habit: HabitWithStats) => void;
 }
 
 const ICON_BUTTON_CLASS =
@@ -79,6 +82,7 @@ export function HabitsTable({
   rescuePending = false,
   onReleaseRescue,
   releasePending = false,
+  onOpenPip,
 }: HabitsTableProps) {
   const t = useTranslations('habits');
   const tCommon = useTranslations('common');
@@ -165,6 +169,19 @@ export function HabitsTable({
         const { todayCount, isCompleted } = getHabitProgress(habit);
         return (
           <div className="flex items-center justify-end gap-1">
+            {/* Same action the card offers, in the same place in the row. The
+                two views must not disagree about what you can do to a habit. */}
+            {onOpenPip && (
+              <button
+                type="button"
+                onClick={() => onOpenPip(habit)}
+                aria-label={t('pip.open')}
+                title={t('pip.open')}
+                className={ICON_BUTTON_CLASS}
+              >
+                <PictureInPicture2 className="size-3.5" aria-hidden />
+              </button>
+            )}
             <Link
               href={`/habits/${habit.id}`}
               aria-label={t('viewDetail')}
