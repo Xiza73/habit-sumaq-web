@@ -205,9 +205,8 @@
   "habits": {
     "timer": {
       "title": "Cronómetro de foco",
-      "habit": "Hábito",
-      "habitPlaceholder": "Elegí un hábito",
       "duration": "Duración",
+      "hint": "No registra nada: es solo para acompañarte mientras lo haces.",
       "minutes": "min",
       "seconds": "seg",
       "start": "Iniciar",
@@ -215,11 +214,7 @@
       "resume": "Reanudar",
       "cancel": "Cancelar",
       "doneTitle": "¡Se acabó el tiempo!",
-      "markDone": "Marcar como listo",
-      "close": "Cerrar",
-      "logged": "¡+1 en {habit}!",
-      "logError": "No pudimos registrar el hábito",
-      "noHabits": "No tenés hábitos para cronometrar"
+      "close": "Cerrar"
     },
     "title": "Hábitos",
     "createHabit": "Nuevo hábito",

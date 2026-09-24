@@ -27,11 +27,11 @@ import { ViewModeToggle } from '@/presentation/components/ui/ViewModeToggle';
 import { formatDate, getTodayLocaleDate } from '@/lib/format';
 import { cn } from '@/lib/utils';
 
+import { FocusTimerModal } from './FocusTimerModal';
 import { HabitCard } from './HabitCard';
 import { HabitCardSkeleton } from './HabitCardSkeleton';
 import { HabitForm } from './HabitForm';
 import { HabitsTable } from './HabitsTable';
-import { HabitTimerModal } from './HabitTimerModal';
 
 function LiveClock() {
   const [currentTime, setCurrentTime] = useState(() => new Date().toLocaleTimeString());
@@ -412,11 +412,7 @@ export function HabitList() {
 
       <HabitForm open={formOpen} habit={editingHabit} onClose={handleCloseForm} />
 
-      <HabitTimerModal
-        open={timerOpen}
-        onClose={() => setTimerOpen(false)}
-        habits={dailyHabits ?? []}
-      />
+      <FocusTimerModal open={timerOpen} onClose={() => setTimerOpen(false)} />
 
       <ConfirmDialog
         open={!!releasingHabit}
