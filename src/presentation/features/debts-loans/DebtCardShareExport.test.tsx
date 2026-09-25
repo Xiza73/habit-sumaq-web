@@ -227,7 +227,7 @@ describe('DebtLoanDetailModal — share image export', () => {
     expect(node.textContent).toContain('Libro prestado');
     // …followed by a labeled Total reflecting the group's net (you owe Juan).
     expect(node.textContent).toContain('Total');
-    expect(node.textContent).toContain('Debés');
+    expect(node.textContent).toContain('Debes');
   });
 
   it('shows an error toast when the image cannot be generated', async () => {

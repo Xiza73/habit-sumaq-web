@@ -47,7 +47,7 @@ describe('RemindersList', () => {
 
   it('shows the empty state when there is nothing', () => {
     render(<RemindersList />, { wrapper: TestProviders });
-    expect(screen.getByText(/No tenés recordatorios/i)).toBeInTheDocument();
+    expect(screen.getByText(/No tienes recordatorios/i)).toBeInTheDocument();
   });
 
   it('labels an undated reminder as such rather than as overdue', () => {

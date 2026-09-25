@@ -50,7 +50,7 @@
   "settings": {
     "autostart": {
       "title": "Iniciar con el equipo",
-      "subtitle": "Abrí Habit Sumaq automáticamente cuando prendés la computadora.",
+      "subtitle": "Abre Habit Sumaq automáticamente cuando prendes la computadora.",
       "label": "Iniciar al encender la PC",
       "hint": "Solo disponible en la app de escritorio.",
       "error": "No pudimos cambiar el inicio automático."
@@ -104,7 +104,7 @@
     },
     "modules": {
       "title": "Módulos",
-      "subtitle": "Apagá los que no uses. Desaparecen del menú, de los reportes y de las alertas.",
+      "subtitle": "Apaga los que no uses. Desaparecen del menú, de los reportes y de las alertas.",
       "on": "Activo",
       "off": "Apagado",
       "dataKeptHint": "Apagar un módulo no borra nada: tus datos quedan intactos y vuelven al encenderlo.",
@@ -112,15 +112,15 @@
     },
     "favorites": {
       "title": "Favoritos del menú",
-      "subtitle": "Elegí hasta {max} módulos para acceso rápido. Settings siempre está disponible.",
-      "maxReached": "Llegaste al máximo de {max}. Sacá uno para agregar otro.",
+      "subtitle": "Elige hasta {max} módulos para acceso rápido. Settings siempre está disponible.",
+      "maxReached": "Llegaste al máximo de {max}. Quita uno para agregar otro.",
       "saveSuccess": "Favoritos guardados",
       "saveError": "No pudimos guardar tus favoritos. Intenta de nuevo.",
       "rightClickHint": "Click derecho sobre un módulo para marcarlo como favorito"
     }
   },
   "mobileNav": {
-    "longPressHint": "Mantené presionado un ícono para cambiarlo"
+    "longPressHint": "Mantén presionado un ícono para cambiarlo"
   },
   "favoritePicker": {
     "title": "Cambiar favorito",
@@ -186,15 +186,15 @@
     "TSK_007": "El título de la tarea es demasiado largo.",
     "TSK_008": "La descripción de la tarea es demasiado larga.",
     "TSK_009": "Algunas tareas no existen, no te pertenecen, o no están en esta sección.",
-    "DBT_002": "No tenés permisos para modificar este pago.",
+    "DBT_002": "No tienes permisos para modificar este pago.",
     "DBT_006": "El monto excede el saldo de la deuda.",
     "DBT_008": "El pago ya fue borrado.",
-    "DBT_009": "Debés modificar al menos un campo.",
+    "DBT_009": "Debes modificar al menos un campo.",
     "DBT_010": "El monto excede el saldo de la deuda.",
     "DBT_011": "No hay operaciones pendientes de ese tipo con esta persona.",
     "generic": "Ocurrió un error inesperado. Intenta de nuevo.",
     "RMDR_001": "Recordatorio no encontrado.",
-    "RMDR_002": "No tenés acceso a este recordatorio.",
+    "RMDR_002": "No tienes acceso a este recordatorio.",
     "RMDR_003": "El título es obligatorio.",
     "RMDR_004": "El título es demasiado largo.",
     "RMDR_005": "El detalle es demasiado largo.",
@@ -396,7 +396,7 @@
       "estimatedLabel": "Estimado",
       "ofEstimated": "de {estimated}",
       "missingEstimate": "{count, plural, one {# servicio sin estimado} other {# servicios sin estimado}}",
-      "noServicesHint": "Cuando tengas servicios activos para este mes, vas a ver el total acá."
+      "noServicesHint": "Cuando tengas servicios activos para este mes, vas a ver el total aquí."
     },
     "fields": {
       "name": "Nombre",
@@ -476,7 +476,7 @@
       "createHint": "Los participantes se guardan junto con el servicio al presionar \"Crear\".",
       "referenceRequired": "La referencia es obligatoria.",
       "amountInvalid": "El monto debe ser mayor a 0.",
-      "serverErrorHint": "Revisá los montos y referencias de los participantes."
+      "serverErrorHint": "Revisa los montos y referencias de los participantes."
     },
     "linkedDebts": {
       "badge": "{count, plural, one {# préstamo pendiente} other {# préstamos pendientes}} · {amount}",
@@ -658,7 +658,7 @@
     "nextDue": "Próxima: {date}",
     "doneForm": {
       "title": "Marcar como hecha",
-      "description": "Registrá cuándo hiciste \"{name}\". Si es hoy, dejá la fecha por defecto.",
+      "description": "Registra cuándo hiciste \"{name}\". Si es hoy, deja la fecha por defecto.",
       "doneAt": "Fecha",
       "note": "Nota",
       "notePlaceholder": "(Opcional) qué hiciste, dónde, etc.",
@@ -813,7 +813,7 @@
     "titlePlaceholder": "Ej: Comprar leche",
     "titleRequired": "El título es obligatorio",
     "description": "Descripción",
-    "descriptionPlaceholder": "Agrega detalles en **Markdown** si lo necesitás…",
+    "descriptionPlaceholder": "Agrega detalles en **Markdown** si lo necesitas…",
     "descriptionPreviewEmpty": "Sin descripción",
     "descriptionModeEdit": "Editar",
     "descriptionModePreview": "Vista previa",
@@ -923,8 +923,8 @@
       },
       "habitsMidday": {
         "title": "{count, plural, one {Te falta # hábito} other {Te faltan # hábitos}}",
-        "subtitleOne": "Empezá por {first}",
-        "subtitleMany": "Empezá por {first} y {rest} más"
+        "subtitleOne": "Empieza por {first}",
+        "subtitleMany": "Empieza por {first} y {rest} más"
       },
       "budgetUnlogged": {
         "title": "¿Olvidaste registrar un gasto?",
@@ -936,7 +936,7 @@
       },
       "choreDueToday": {
         "title": "Toca hoy: {name}",
-        "subtitle": "La tenés programada para hoy"
+        "subtitle": "La tienes programada para hoy"
       },
       "reminderDue": {
         "title": "Recordatorio: {title}",
@@ -954,15 +954,15 @@
   "debts": {
     "title": "Deudas y préstamos",
     "subtitle": "Agrupados por persona y moneda",
-    "empty": "No tenés deudas ni préstamos registrados.",
-    "emptyPending": "No tenés nada pendiente. Bien ahí.",
+    "empty": "No tienes deudas ni préstamos registrados.",
+    "emptyPending": "No tienes nada pendiente. Todo en orden.",
     "statusFilter": {
       "pending": "Pendientes",
       "all": "Todos",
       "settled": "Liquidados"
     },
     "summary": {
-      "youOwe": "Debés",
+      "youOwe": "Debes",
       "theyOweYou": "Te deben",
       "allSettled": "Todo saldado.",
       "net": "Neto",
@@ -978,7 +978,7 @@
     },
     "settle": {
       "title": "Liquidar con {name}",
-      "direction": "¿Qué querés liquidar?",
+      "direction": "¿Qué quieres liquidar?",
       "directionDebt": "Pagar lo que debo",
       "directionLoan": "Cobrar lo que me deben",
       "pendingTotal": "Pendiente: {amount}",
@@ -987,7 +987,7 @@
       "fifoNote": "Se aplica primero a las operaciones más antiguas.",
       "nothingToSettle": "No hay nada pendiente para liquidar con esta persona.",
       "invalidAmount": "El monto debe ser mayor a 0 y no puede superar el pendiente.",
-      "mode": "¿Cómo lo cerrás?",
+      "mode": "¿Cómo lo cierras?",
       "real": "Pago real",
       "realHint": "Mueve el balance interno de {currency}.",
       "informal": "Cierre informal",
@@ -1099,15 +1099,15 @@
     "createReminder": "Nuevo recordatorio",
     "editReminder": "Editar recordatorio",
     "deleteReminder": "Eliminar recordatorio",
-    "deleteConfirm": "¿Seguro que querés eliminar este recordatorio?",
-    "emptyState": "No tenés recordatorios. Anotá algo que no querés olvidar.",
+    "deleteConfirm": "¿Seguro que quieres eliminar este recordatorio?",
+    "emptyState": "No tienes recordatorios. Anota algo que no quieres olvidar.",
     "titleLabel": "Qué hay que recordar",
     "titlePlaceholder": "Llamar al dentista",
     "notesLabel": "Detalle (opcional)",
     "notesPlaceholder": "Preguntar por el presupuesto de la limpieza",
     "dateLabel": "Fecha (opcional)",
     "timeLabel": "Hora (opcional)",
-    "timeNeedsDate": "Elegí una fecha para poder fijar la hora",
+    "timeNeedsDate": "Elige una fecha para poder fijar la hora",
     "markDone": "Marcar como hecho",
     "markPending": "Marcar como pendiente",
     "status": {
