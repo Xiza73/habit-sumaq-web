@@ -1,9 +1,6 @@
 'use client';
 
-import { useState } from 'react';
 import { useTranslations } from 'next-intl';
-
-import { Blend } from 'lucide-react';
 
 import {
   choreKeys,
@@ -13,15 +10,11 @@ import {
 } from '@/core/application/hooks/use-chores';
 import { usePipWindowSync } from '@/core/application/hooks/use-pip-window-sync';
 
+import { PipOpacityButton, usePipOpacity } from '@/presentation/features/pip/PipOpacity';
+
 import { closeSelfPip } from '@/lib/pip-window';
 
 import { ChoreCard } from './ChoreCard';
-
-/**
- * Dim levels the opacity button cycles through. Same three steps as the habit
- * window — solid, see-through enough to read what is behind, barely there.
- */
-const OPACITY_LEVELS = [1, 0.7, 0.4] as const;
 
 /** What this window shows, and therefore what it refetches on a broadcast. */
 const WATCHED_KEYS = [choreKeys.all];
@@ -41,10 +34,7 @@ export function ChorePipView({ choreId }: { choreId: string }) {
   const markDone = useMarkChoreDone();
   const skipCycle = useSkipChoreCycle();
 
-  const [opacityStep, setOpacityStep] = useState(0);
-  // Dimming only helps while the window is being ignored. The moment the
-  // pointer arrives the user wants to READ and click it, so it goes solid.
-  const [hovered, setHovered] = useState(false);
+  const opacity = usePipOpacity();
 
   if (isLoading) {
     return <div className="h-screen w-screen animate-pulse bg-card" />;
@@ -67,9 +57,9 @@ export function ChorePipView({ choreId }: { choreId: string }) {
     // every control keeps working and only empty space moves the window.
     <div
       data-tauri-drag-region="deep"
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      style={{ opacity: hovered ? 1 : OPACITY_LEVELS[opacityStep] }}
+      onMouseEnter={opacity.onMouseEnter}
+      onMouseLeave={opacity.onMouseLeave}
+      style={{ opacity: opacity.value }}
       className="flex h-screen w-screen flex-col overflow-hidden bg-card transition-opacity duration-200"
     >
       <ChoreCard
@@ -85,17 +75,7 @@ export function ChorePipView({ choreId }: { choreId: string }) {
         // place. Administering a chore from a chrome-less always-on-top window
         // is one misclick from destructive, and the main window is right there.
         onClosePip={() => void closeSelfPip()}
-        headerActions={
-          <button
-            type="button"
-            onClick={() => setOpacityStep((step) => (step + 1) % OPACITY_LEVELS.length)}
-            aria-label={tPip('opacity')}
-            title={`${tPip('opacity')} — ${Math.round(OPACITY_LEVELS[opacityStep] * 100)}%`}
-            className="rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-          >
-            <Blend className="size-4" />
-          </button>
-        }
+        headerActions={<PipOpacityButton level={opacity.level} onClick={opacity.cycle} />}
         // Edge to edge: no rounding, no border, filling whatever height is
         // left. Leftover space would otherwise show as a slab of background
         // under the card.
