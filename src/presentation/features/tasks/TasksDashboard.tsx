@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 
 import {
   closestCenter,
@@ -33,6 +33,8 @@ import { ApiError } from '@/infrastructure/api/api-error';
 
 import { ConfirmDialog } from '@/presentation/components/feedback/ConfirmDialog';
 
+import { canUsePip, openPipWindow } from '@/lib/pip-window';
+
 import { SectionColumn } from './SectionColumn';
 import { SectionForm } from './SectionForm';
 import { TaskForm } from './TaskForm';
@@ -51,6 +53,22 @@ import { TaskForm } from './TaskForm';
  */
 export function TasksDashboard() {
   const t = useTranslations('tasks');
+  const tPip = useTranslations('pip');
+  const locale = useLocale();
+  // Evaluated once: the shell cannot become a browser mid-session.
+  const [pipAvailable] = useState(canUsePip);
+
+  /**
+   * Opens the task in a floating always-on-top window.
+   *
+   * The failure branch is real: the desktop shell loads the DEPLOYED site,
+   * so a user on an older installer runs this against a Tauri build whose
+   * capabilities do not allow creating windows.
+   */
+  async function handleOpenTaskPip(task: Task) {
+    const opened = await openPipWindow({ module: 'tasks', id: task.id, locale });
+    if (!opened) toast.error(tPip('unavailable'));
+  }
   const tErrors = useTranslations('errors');
 
   const { data: sections = [], isLoading: sectionsLoading } = useSections();
@@ -231,6 +249,7 @@ export function TasksDashboard() {
                     onEditSection={openEditSection}
                     onDeleteSection={setPendingDeleteSection}
                     onEditTask={openEditTask}
+                    onOpenTaskPip={pipAvailable ? (t2) => void handleOpenTaskPip(t2) : undefined}
                   />
                 );
               })}

@@ -9,6 +9,8 @@ import {
 
 import { tasksApi } from '@/infrastructure/api/tasks.api';
 
+import { notifyPipChanged } from './use-pip-window-sync';
+
 export const tasksKeys = {
   all: ['tasks'] as const,
   list: () => [...tasksKeys.all, 'list'] as const,
@@ -27,6 +29,7 @@ export function useCreateTask() {
     mutationFn: (data: CreateTaskInput) => tasksApi.create(data),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: tasksKeys.all });
+      notifyPipChanged();
     },
   });
 }
@@ -74,6 +77,7 @@ export function useUpdateTask() {
     },
     onSettled: () => {
       void queryClient.invalidateQueries({ queryKey: tasksKeys.all });
+      notifyPipChanged();
     },
   });
 }
@@ -103,6 +107,7 @@ export function useDeleteTask() {
     },
     onSettled: () => {
       void queryClient.invalidateQueries({ queryKey: tasksKeys.all });
+      notifyPipChanged();
     },
   });
 }
@@ -144,6 +149,7 @@ export function useReorderTasks() {
     },
     onSettled: () => {
       void queryClient.invalidateQueries({ queryKey: tasksKeys.all });
+      notifyPipChanged();
     },
   });
 }
