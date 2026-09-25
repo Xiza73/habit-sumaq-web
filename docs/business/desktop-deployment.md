@@ -87,17 +87,29 @@ versión**, y web + desktop quedan alineados.
 El tag `desktop-v*` sigue disponible para un rebuild **solo de escritorio**
 (cambios del shell nativo / íconos) entre releases web.
 
-## Ventanas flotantes (picture-in-picture de hábitos)
+## Ventanas flotantes (picture-in-picture)
 
-Cada hábito se puede abrir en una **ventana propia, siempre al frente**, que
+Varios módulos se pueden abrir en una **ventana propia, siempre al frente**, que
 flota sobre el navegador, el editor o lo que sea. Es desktop y nada más: un
 navegador no puede poner nada encima de otras aplicaciones, así que el botón
 no se renderiza ahí (`canUsePip()` → `isTauri()`).
 
-La ventana carga `/pip/habits/<id>` y renderiza **el mismo `HabitCard`** de la
-lista, con el botón de abrir cambiado por uno de cerrar. No hay un segundo
-componente parecido: dos copias del mismo card divergen la primera vez que se
-toca cualquiera de las dos.
+Dos formas, y la maquinaria no distingue entre ellas — solo cambia si se pasa
+un `id`:
+
+| Forma | Módulos | Ruta |
+| --- | --- | --- |
+| Una ventana por ítem | `habits`, `chores`, `tasks` | `/pip/<módulo>/<id>` |
+| Una ventana con la lista | `priorities`, `reminders` | `/pip/<módulo>` |
+
+La etiqueta de ventana (`pip-<módulo>[-<id>]`) es lo que hace que un segundo
+click **enfoque** la ventana existente en vez de abrir una duplicada. Y tiene que
+empezar con `pip-` sí o sí: la capability concede permisos a `pip-*` y a nada más.
+
+Cada ventana renderiza **el mismo componente** que la lista — el de hábitos usa
+`HabitCard` con el botón de abrir cambiado por uno de cerrar. No se hace un
+segundo componente parecido: dos copias divergen la primera vez que se toca
+cualquiera de las dos.
 
 ### Lo que hay que saber antes de tocarlo
 
@@ -113,12 +125,18 @@ Zustand, otro caché de TanStack Query. Dos consecuencias:
 - La sesión se re-establece sola porque el access token viaja en **cookie** del
   mismo origen. Si algún día el token vuelve a memoria, el popup deja de
   autenticarse.
-- Marcar en el popup invalida solo SU caché. Sin sincronización, la lista de
-  atrás sigue mostrando el conteo viejo — dos números del mismo hábito en
-  pantalla al mismo tiempo. Lo resuelve el evento `habits:changed` de Tauri:
-  `notifyHabitsChanged()` emite tras cada mutación y `useHabitsWindowSync()`
-  escucha e invalida. La ventana principal lo monta vía
-  `<HabitsWindowSync />` en el layout del dashboard.
+- Actuar desde el popup invalida solo SU caché. Sin sincronización, la lista de
+  atrás sigue mostrando el estado viejo — dos versiones de la misma fila en
+  pantalla al mismo tiempo. Lo resuelve el evento `pip:changed` de Tauri:
+  `notifyPipChanged()` emite tras cada mutación y `usePipWindowSync(keys)`
+  escucha e invalida las queries que esa ventana muestra. La ventana principal
+  lo monta vía `<PipWindowSync />` en el layout del dashboard.
+
+  **El evento es UNO SOLO y no lleva payload**, a propósito. Eventos por módulo
+  ahorrarían algún refetch en una ventana cuyos datos no cambiaron, y lo
+  comprarían con una clase entera de bugs de "nadie emitió para el módulo X".
+  Con un puñado de ventanas abiertas como mucho, ese refetch es gratis y el bug
+  es imposible.
 
 **3. Los permisos de Tauri viajan en el INSTALADOR, no en el deploy.** El shell
 carga `https://habit-sumaq-web.vercel.app`, así que el código web llega a todos
