@@ -1,8 +1,9 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
 
+import { useQueryClient } from '@tanstack/react-query';
 import { Pause, Play, RotateCcw } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -14,13 +15,13 @@ import {
   useRescueStreak,
 } from '@/core/application/hooks/use-habits';
 import { usePipWindowSync } from '@/core/application/hooks/use-pip-window-sync';
+import { useTodayLocaleDate } from '@/core/application/hooks/use-today-locale-date';
 import { userSettingsKeys, useStreakShields } from '@/core/application/hooks/use-user-settings';
 import { type HabitWithStats } from '@/core/domain/entities/habit';
 
 import { PipOpacityButton, usePipOpacity } from '@/presentation/features/pip/PipOpacity';
 
 import { playBeep } from '@/lib/beep';
-import { getTodayLocaleDate } from '@/lib/format';
 import { closeSelfPip, resizeSelfPip } from '@/lib/pip-window';
 import { cn } from '@/lib/utils';
 
@@ -61,11 +62,30 @@ export function HabitPipView({ habitId }: { habitId: string }) {
   const tPip = useTranslations('pip');
   usePipWindowSync(WATCHED_KEYS);
 
+  const queryClient = useQueryClient();
+  const today = useTodayLocaleDate();
+
   const { data: habit, isLoading } = useHabit(habitId);
   const logMutation = useLogHabit();
   const rescueMutation = useRescueStreak();
   const releaseMutation = useReleaseRescue();
   const streakShields = useStreakShields();
+
+  // The card's numbers come from the server computed for ITS today, and
+  // nothing invalidates them when the local day turns over. A window left open
+  // overnight keeps showing yesterday, so a tap would add to yesterday's count
+  // on today's date — `count` is absolute, not an increment, so one tap could
+  // land as four.
+  //
+  // `refetchOnWindowFocus` does not save this: clicking the button focuses the
+  // window and starts a refetch, but the handler has already read the count
+  // from the render that is on screen.
+  const previousDay = useRef(today);
+  useEffect(() => {
+    if (previousDay.current === today) return;
+    previousDay.current = today;
+    void queryClient.invalidateQueries({ queryKey: habitKeys.all });
+  }, [today, queryClient]);
 
   const [timerOpen, setTimerOpen] = useState(false);
   const { status, remaining, start, pause, resume, reset } = useCountdown(playBeep);
@@ -103,7 +123,7 @@ export function HabitPipView({ habitId }: { habitId: string }) {
     const currentCount = target.todayLog?.count ?? 0;
     if (currentCount >= target.periodTarget) return;
     logMutation.mutate(
-      { habitId: target.id, data: { date: getTodayLocaleDate(), count: currentCount + 1 } },
+      { habitId: target.id, data: { date: today, count: currentCount + 1 } },
       { onError: () => toast.error(tPip('notFound')) },
     );
   }
@@ -113,7 +133,7 @@ export function HabitPipView({ habitId }: { habitId: string }) {
     if (currentCount <= 0) return;
     logMutation.mutate({
       habitId: target.id,
-      data: { date: getTodayLocaleDate(), count: currentCount - 1 },
+      data: { date: today, count: currentCount - 1 },
     });
   }
 
@@ -170,9 +190,7 @@ export function HabitPipView({ habitId }: { habitId: string }) {
         onRescueStreak={(h) => rescueMutation.mutate(h.id)}
         streakShields={streakShields}
         rescuePending={rescueMutation.isPending}
-        onReleaseRescue={(h) =>
-          releaseMutation.mutate({ habitId: h.id, date: getTodayLocaleDate() })
-        }
+        onReleaseRescue={(h) => releaseMutation.mutate({ habitId: h.id, date: today })}
         releasePending={releaseMutation.isPending}
         onClosePip={() => void closeSelfPip()}
         headerActions={<PipOpacityButton level={opacity.level} onClick={opacity.cycle} />}
