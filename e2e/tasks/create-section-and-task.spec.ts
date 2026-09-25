@@ -4,7 +4,7 @@ import { deleteSection, listSections } from '../helpers/tasks-api';
 test.describe('Tasks — create section and first task', () => {
   /**
    * First-time-user flow:
-   *  1. Visit /tasks with no sections → empty CTA "Empezá creando tu primera sección".
+   *  1. Visit /tasks with no sections → empty CTA "Empieza creando tu primera sección".
    *  2. "Nueva tarea" header button is disabled (decision firmada — needs a section first).
    *  3. Create section via the CTA / SectionForm.
    *  4. The empty state goes away; section header renders.
