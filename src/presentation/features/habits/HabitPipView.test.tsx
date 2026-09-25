@@ -33,20 +33,23 @@ const habit = {
 
 const mockLogMutate = vi.fn();
 vi.mock('@/core/application/hooks/use-habits', () => ({
+  habitKeys: { all: ['habits'] },
   useHabit: () => ({ data: habit, isLoading: false }),
   useLogHabit: () => ({ mutate: mockLogMutate, isPending: false }),
   useRescueStreak: () => ({ mutate: vi.fn(), isPending: false }),
   useReleaseRescue: () => ({ mutate: vi.fn(), isPending: false }),
 }));
-vi.mock('@/core/application/hooks/use-habits-window-sync', () => ({
-  useHabitsWindowSync: () => undefined,
+vi.mock('@/core/application/hooks/use-pip-window-sync', () => ({
+  usePipWindowSync: () => undefined,
 }));
 vi.mock('@/core/application/hooks/use-user-settings', () => ({
+  userSettingsKeys: { all: ['user-settings'] },
   useStreakShields: () => 1,
   useDateFormat: () => 'DD/MM/YYYY',
 }));
 // Tauri is not present in jsdom; these are the window calls the view makes.
 vi.mock('@/lib/pip-window', () => ({
+  PIP_CHANGED_EVENT: 'pip:changed',
   closeSelfPip: vi.fn(),
   resizeSelfPip: vi.fn(),
   canUsePip: () => false,

@@ -20,7 +20,7 @@ import { detectMilestoneCrossed } from '@/lib/streak-milestones';
 import { useCelebrationStore } from '../stores/celebration.store';
 
 import { alertKeys } from './use-alerts';
-import { notifyHabitsChanged } from './use-habits-window-sync';
+import { notifyPipChanged } from './use-pip-window-sync';
 import { userSettingsKeys } from './use-user-settings';
 
 export const habitKeys = {
@@ -65,7 +65,7 @@ export function useCreateHabit() {
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: habitKeys.lists() });
       void queryClient.invalidateQueries({ queryKey: habitKeys.dailyAll() });
-      notifyHabitsChanged();
+      notifyPipChanged();
       void queryClient.invalidateQueries({ queryKey: alertKeys.lists() });
     },
   });
@@ -80,7 +80,7 @@ export function useUpdateHabit() {
     onSuccess: (_, { id }) => {
       void queryClient.invalidateQueries({ queryKey: habitKeys.lists() });
       void queryClient.invalidateQueries({ queryKey: habitKeys.dailyAll() });
-      notifyHabitsChanged();
+      notifyPipChanged();
       void queryClient.invalidateQueries({ queryKey: habitKeys.detail(id) });
       void queryClient.invalidateQueries({ queryKey: alertKeys.lists() });
     },
@@ -95,7 +95,7 @@ export function useArchiveHabit() {
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: habitKeys.lists() });
       void queryClient.invalidateQueries({ queryKey: habitKeys.dailyAll() });
-      notifyHabitsChanged();
+      notifyPipChanged();
       void queryClient.invalidateQueries({ queryKey: alertKeys.lists() });
     },
   });
@@ -109,7 +109,7 @@ export function useDeleteHabit() {
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: habitKeys.lists() });
       void queryClient.invalidateQueries({ queryKey: habitKeys.dailyAll() });
-      notifyHabitsChanged();
+      notifyPipChanged();
       void queryClient.invalidateQueries({ queryKey: alertKeys.lists() });
     },
   });
@@ -156,7 +156,7 @@ export function useRescueStreak() {
     mutationFn: (habitId: string) => habitsApi.rescueStreak(habitId),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: habitKeys.all });
-      notifyHabitsChanged();
+      notifyPipChanged();
       void queryClient.invalidateQueries({ queryKey: userSettingsKeys.all });
     },
   });
@@ -178,7 +178,7 @@ export function useReleaseRescue() {
       habitsApi.releaseRescue(habitId, date),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: habitKeys.all });
-      notifyHabitsChanged();
+      notifyPipChanged();
       void queryClient.invalidateQueries({ queryKey: userSettingsKeys.all });
     },
   });
@@ -386,7 +386,7 @@ export function useLogHabit() {
       // rest here so they refetch on next access.
       void queryClient.invalidateQueries({ queryKey: habitKeys.lists() });
       void queryClient.invalidateQueries({ queryKey: habitKeys.logs(habitId) });
-      notifyHabitsChanged();
+      notifyPipChanged();
       // Logging a habit can resolve the `habits-midday` alert (when it was
       // the last unlogged DAILY for today). Invalidate so the bell drops.
       void queryClient.invalidateQueries({ queryKey: alertKeys.lists() });

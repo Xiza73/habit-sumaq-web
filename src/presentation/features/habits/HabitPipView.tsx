@@ -7,13 +7,14 @@ import { Blend, Pause, Play, RotateCcw } from 'lucide-react';
 import { toast } from 'sonner';
 
 import {
+  habitKeys,
   useHabit,
   useLogHabit,
   useReleaseRescue,
   useRescueStreak,
 } from '@/core/application/hooks/use-habits';
-import { useHabitsWindowSync } from '@/core/application/hooks/use-habits-window-sync';
-import { useStreakShields } from '@/core/application/hooks/use-user-settings';
+import { usePipWindowSync } from '@/core/application/hooks/use-pip-window-sync';
+import { userSettingsKeys, useStreakShields } from '@/core/application/hooks/use-user-settings';
 import { type HabitWithStats } from '@/core/domain/entities/habit';
 
 import { playBeep } from '@/lib/beep';
@@ -25,8 +26,11 @@ import { HabitCard } from './HabitCard';
 import { useCountdown } from './useCountdown';
 
 /** Window heights, card-only and card-plus-timer. Kept next to the strip. */
-const HEIGHT_CARD = 190;
-const HEIGHT_WITH_TIMER = 250;
+const CARD_SIZE = { width: 340, height: 190 } as const;
+const TIMER_SIZE = { width: 340, height: 250 } as const;
+
+/** What this window shows, and therefore what it refetches on a broadcast. */
+const WATCHED_KEYS = [habitKeys.all, userSettingsKeys.all];
 
 /** Must match the strip's CSS transition, or the two steps desynchronise. */
 const REVEAL_MS = 200;
@@ -64,7 +68,7 @@ function pad(n: number): string {
  */
 export function HabitPipView({ habitId }: { habitId: string }) {
   const t = useTranslations('habits');
-  useHabitsWindowSync();
+  usePipWindowSync(WATCHED_KEYS);
 
   const { data: habit, isLoading } = useHabit(habitId);
   const logMutation = useLogHabit();
@@ -89,11 +93,11 @@ export function HabitPipView({ habitId }: { habitId: string }) {
   useEffect(() => {
     if (timerOpen) {
       // Room first, then the strip eases into space that already exists.
-      void resizeSelfPip(HEIGHT_WITH_TIMER);
+      void resizeSelfPip(TIMER_SIZE);
       return;
     }
     // Fold first, shrink after — otherwise the last frames are cut off.
-    const id = setTimeout(() => void resizeSelfPip(HEIGHT_CARD), REVEAL_MS);
+    const id = setTimeout(() => void resizeSelfPip(CARD_SIZE), REVEAL_MS);
     return () => clearTimeout(id);
   }, [timerOpen]);
 
