@@ -32,6 +32,12 @@ export interface PipSize {
 const DEFAULT_SIZE: PipSize = { width: 340, height: 190 };
 
 /**
+ * Size for the popups that show a whole list instead of one item. Same width —
+ * the rows are the same rows — with room for a handful of them.
+ */
+export const PIP_LIST_SIZE: PipSize = { width: 340, height: 420 };
+
+/**
  * Broadcast after any write that a floating window might be showing.
  *
  * Deliberately ONE event with no payload. Each window is its own webview and

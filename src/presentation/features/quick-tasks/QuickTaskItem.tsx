@@ -22,9 +22,21 @@ interface QuickTaskItemProps {
   /** True when this item belongs to the sortable pending set. */
   sortable?: boolean;
   onEdit: (task: QuickTask) => void;
+  /**
+   * Drops the edit/delete cluster. The floating window sets it: delete lives
+   * INSIDE this component with its own mutation, so withholding a handler
+   * would not reach it — and deleting from a chrome-less always-on-top window
+   * is one misclick from destructive.
+   */
+  hideAdminActions?: boolean;
 }
 
-export function QuickTaskItem({ task, sortable = false, onEdit }: QuickTaskItemProps) {
+export function QuickTaskItem({
+  task,
+  sortable = false,
+  onEdit,
+  hideAdminActions = false,
+}: QuickTaskItemProps) {
   const t = useTranslations('quickTasks');
   const tCommon = useTranslations('common');
 
@@ -149,30 +161,32 @@ export function QuickTaskItem({ task, sortable = false, onEdit }: QuickTaskItemP
           {/* Edit/delete are always visible — no hover-reveal. Hover reveal
               was unreachable on touch devices, and even on desktop it hid
               the primary affordances behind a gesture. */}
-          <div className="flex shrink-0 items-center gap-1">
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                onEdit(task);
-              }}
-              aria-label={t('editTask')}
-              className="rounded p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-            >
-              <Pencil className="size-3.5" />
-            </button>
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                setConfirmingDelete(true);
-              }}
-              aria-label={t('deleteTask')}
-              className="rounded p-1.5 text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
-            >
-              <Trash2 className="size-3.5" />
-            </button>
-          </div>
+          {!hideAdminActions && (
+            <div className="flex shrink-0 items-center gap-1">
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onEdit(task);
+                }}
+                aria-label={t('editTask')}
+                className="rounded p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+              >
+                <Pencil className="size-3.5" />
+              </button>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setConfirmingDelete(true);
+                }}
+                aria-label={t('deleteTask')}
+                className="rounded p-1.5 text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
+              >
+                <Trash2 className="size-3.5" />
+              </button>
+            </div>
+          )}
         </div>
 
         {hasDescription && expanded && (

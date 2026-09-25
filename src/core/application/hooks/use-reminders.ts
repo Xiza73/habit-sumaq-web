@@ -9,6 +9,7 @@ import {
 import { remindersApi } from '@/infrastructure/api/reminders.api';
 
 import { alertKeys } from './use-alerts';
+import { notifyPipChanged } from './use-pip-window-sync';
 
 export const remindersKeys = {
   all: ['reminders'] as const,
@@ -29,6 +30,7 @@ export function useCreateReminder() {
     mutationFn: (data: CreateReminderInput) => remindersApi.create(data),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: remindersKeys.all });
+      notifyPipChanged();
       // A reminder created for today (or earlier) is due the moment it exists.
       void queryClient.invalidateQueries({ queryKey: alertKeys.lists() });
     },
@@ -71,6 +73,7 @@ export function useUpdateReminder() {
     },
     onSettled: () => {
       void queryClient.invalidateQueries({ queryKey: remindersKeys.all });
+      notifyPipChanged();
       // Completing a reminder resolves its alert; changing its date can create
       // or clear one.
       void queryClient.invalidateQueries({ queryKey: alertKeys.lists() });
@@ -85,6 +88,7 @@ export function useDeleteReminder() {
     mutationFn: (id: string) => remindersApi.delete(id),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: remindersKeys.all });
+      notifyPipChanged();
       void queryClient.invalidateQueries({ queryKey: alertKeys.lists() });
     },
   });
