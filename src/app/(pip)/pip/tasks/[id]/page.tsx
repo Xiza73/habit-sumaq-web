@@ -1,6 +1,6 @@
-import { TaskPipView } from '@/presentation/features/tasks/TaskPipView';
+import { SectionPipView } from '@/presentation/features/tasks/SectionPipView';
 
-export default async function TaskPipPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function TasksPipPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  return <TaskPipView taskId={id} />;
+  return <SectionPipView sectionId={id} />;
 }

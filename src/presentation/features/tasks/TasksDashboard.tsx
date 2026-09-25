@@ -33,7 +33,7 @@ import { ApiError } from '@/infrastructure/api/api-error';
 
 import { ConfirmDialog } from '@/presentation/components/feedback/ConfirmDialog';
 
-import { canUsePip, openPipWindow } from '@/lib/pip-window';
+import { canUsePip, openPipWindow, PIP_LIST_SIZE } from '@/lib/pip-window';
 
 import { SectionColumn } from './SectionColumn';
 import { SectionForm } from './SectionForm';
@@ -65,8 +65,15 @@ export function TasksDashboard() {
    * so a user on an older installer runs this against a Tauri build whose
    * capabilities do not allow creating windows.
    */
-  async function handleOpenTaskPip(task: Task) {
-    const opened = await openPipWindow({ module: 'tasks', id: task.id, locale });
+  // One window per SECTION, not per task: a task is a title and a status,
+  // while the section is the list you actually work through.
+  async function handleOpenSectionPip(section: Section) {
+    const opened = await openPipWindow({
+      module: 'tasks',
+      id: section.id,
+      locale,
+      size: PIP_LIST_SIZE,
+    });
     if (!opened) toast.error(tPip('unavailable'));
   }
   const tErrors = useTranslations('errors');
@@ -249,7 +256,7 @@ export function TasksDashboard() {
                     onEditSection={openEditSection}
                     onDeleteSection={setPendingDeleteSection}
                     onEditTask={openEditTask}
-                    onOpenTaskPip={pipAvailable ? (t2) => void handleOpenTaskPip(t2) : undefined}
+                    onOpenPip={pipAvailable ? (s2) => void handleOpenSectionPip(s2) : undefined}
                   />
                 );
               })}
