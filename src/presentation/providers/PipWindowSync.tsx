@@ -1,5 +1,6 @@
 'use client';
 
+import { choreKeys } from '@/core/application/hooks/use-chores';
 import { habitKeys } from '@/core/application/hooks/use-habits';
 import { usePipWindowSync } from '@/core/application/hooks/use-pip-window-sync';
 import { userSettingsKeys } from '@/core/application/hooks/use-user-settings';
@@ -13,7 +14,7 @@ import { userSettingsKeys } from '@/core/application/hooks/use-user-settings';
  * As modules gain popups, their keys join this list — the popups themselves
  * subscribe to their own.
  */
-const WATCHED_KEYS = [habitKeys.all, userSettingsKeys.all];
+const WATCHED_KEYS = [habitKeys.all, choreKeys.all, userSettingsKeys.all];
 
 export function PipWindowSync() {
   usePipWindowSync(WATCHED_KEYS);

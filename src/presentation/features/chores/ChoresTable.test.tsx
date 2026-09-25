@@ -140,3 +140,25 @@ describe('ChoresTable', () => {
     expect(onDelete).toHaveBeenCalledWith(chore);
   });
 });
+
+describe('ChoresTable - floating window', () => {
+  it('offers the popup exactly like the card does', async () => {
+    // Parity: an action the card has and the table does not is an action that
+    // disappears when the user switches view mode.
+    const user = userEvent.setup();
+    const onOpenPip = vi.fn();
+    const chore = makeChore();
+
+    renderTable([chore], { onOpenPip });
+    await user.click(screen.getByRole('button', { name: /abrir en ventana flotante/i }));
+
+    expect(onOpenPip).toHaveBeenCalledWith(chore);
+  });
+
+  it('omits it when the handler is absent', () => {
+    renderTable([makeChore()]);
+    expect(
+      screen.queryByRole('button', { name: /abrir en ventana flotante/i }),
+    ).not.toBeInTheDocument();
+  });
+});

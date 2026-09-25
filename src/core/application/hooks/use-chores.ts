@@ -9,6 +9,7 @@ import {
 import { choresApi } from '@/infrastructure/api/chores.api';
 
 import { alertKeys } from './use-alerts';
+import { notifyPipChanged } from './use-pip-window-sync';
 
 export const choreKeys = {
   all: ['chores'] as const,
@@ -55,6 +56,7 @@ export function useCreateChore() {
     mutationFn: (data: CreateChoreInput) => choresApi.create(data),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: choreKeys.lists() });
+      notifyPipChanged();
       void queryClient.invalidateQueries({ queryKey: alertKeys.lists() });
     },
   });
@@ -68,6 +70,7 @@ export function useUpdateChore() {
       choresApi.update(id, data),
     onSuccess: (_, { id }) => {
       void queryClient.invalidateQueries({ queryKey: choreKeys.lists() });
+      notifyPipChanged();
       void queryClient.invalidateQueries({ queryKey: choreKeys.detail(id) });
       void queryClient.invalidateQueries({ queryKey: alertKeys.lists() });
     },
@@ -88,6 +91,7 @@ export function useMarkChoreDone() {
       choresApi.markDone(id, data),
     onSuccess: (_, { id }) => {
       void queryClient.invalidateQueries({ queryKey: choreKeys.lists() });
+      notifyPipChanged();
       void queryClient.invalidateQueries({ queryKey: choreKeys.detail(id) });
       void queryClient.invalidateQueries({ queryKey: choreKeys.logs(id) });
       void queryClient.invalidateQueries({ queryKey: alertKeys.lists() });
@@ -109,6 +113,7 @@ export function useRevertLastChoreDone() {
     mutationFn: (id: string) => choresApi.revertLastDone(id),
     onSuccess: (_, id) => {
       void queryClient.invalidateQueries({ queryKey: choreKeys.lists() });
+      notifyPipChanged();
       void queryClient.invalidateQueries({ queryKey: choreKeys.detail(id) });
       void queryClient.invalidateQueries({ queryKey: choreKeys.logs(id) });
       void queryClient.invalidateQueries({ queryKey: alertKeys.lists() });
@@ -123,6 +128,7 @@ export function useSkipChoreCycle() {
     mutationFn: (id: string) => choresApi.skip(id),
     onSuccess: (_, id) => {
       void queryClient.invalidateQueries({ queryKey: choreKeys.lists() });
+      notifyPipChanged();
       void queryClient.invalidateQueries({ queryKey: choreKeys.detail(id) });
       // Skip advances `nextDueDate` past today → resolves chore-overdue.
       void queryClient.invalidateQueries({ queryKey: alertKeys.lists() });
@@ -137,6 +143,7 @@ export function useArchiveChore() {
     mutationFn: (id: string) => choresApi.toggleArchive(id),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: choreKeys.lists() });
+      notifyPipChanged();
       void queryClient.invalidateQueries({ queryKey: alertKeys.lists() });
     },
   });
@@ -149,6 +156,7 @@ export function useDeleteChore() {
     mutationFn: (id: string) => choresApi.delete(id),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: choreKeys.lists() });
+      notifyPipChanged();
       void queryClient.invalidateQueries({ queryKey: alertKeys.lists() });
     },
   });
