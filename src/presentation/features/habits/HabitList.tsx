@@ -64,6 +64,7 @@ function shiftDate(dateStr: string, days: number): string {
 
 export function HabitList() {
   const t = useTranslations('habits');
+  const tPip = useTranslations('pip');
   const tErrors = useTranslations('errors');
   const tRescue = useTranslations('habits.rescueStreak');
   const tRelease = useTranslations('habits.releaseRescue');
@@ -184,7 +185,7 @@ export function HabitList() {
    */
   async function handleOpenPip(habit: HabitWithStats) {
     const opened = await openPipWindow({ module: 'habits', id: habit.id, locale });
-    if (!opened) toast.error(t('pip.unavailable'));
+    if (!opened) toast.error(tPip('unavailable'));
   }
 
   function handleCheckIn(habit: HabitWithStats) {

@@ -216,15 +216,6 @@
       "doneTitle": "¡Se acabó el tiempo!",
       "close": "Cerrar"
     },
-    "pip": {
-      "open": "Abrir en ventana flotante",
-      "close": "Cerrar ventana flotante",
-      "timer": "Cronómetro",
-      "timerHide": "Ocultar cronómetro",
-      "unavailable": "Actualiza la app de escritorio para usar la ventana flotante.",
-      "notFound": "No encontramos este hábito.",
-      "opacity": "Opacidad de la ventana"
-    },
     "title": "Hábitos",
     "createHabit": "Nuevo hábito",
     "editHabit": "Editar hábito",
@@ -342,6 +333,15 @@
     "heatmap": {
       "rescued": "Protegido con un escudo"
     }
+  },
+  "pip": {
+    "open": "Abrir en ventana flotante",
+    "close": "Cerrar ventana flotante",
+    "timer": "Cronómetro",
+    "timerHide": "Ocultar cronómetro",
+    "unavailable": "Actualiza la app de escritorio para usar la ventana flotante.",
+    "notFound": "No encontramos este hábito.",
+    "opacity": "Opacidad de la ventana"
   },
   "monthlyServices": {
     "title": "Servicios mensuales",
