@@ -25,7 +25,7 @@ import { ConfirmDialog } from '@/presentation/components/feedback/ConfirmDialog'
 import { ViewModeToggle } from '@/presentation/components/ui/ViewModeToggle';
 
 import { formatDate, getTodayLocaleDate } from '@/lib/format';
-import { canUsePip, openHabitPip } from '@/lib/pip-window';
+import { canUsePip, openPipWindow } from '@/lib/pip-window';
 import { cn } from '@/lib/utils';
 
 import { FocusTimerModal } from './FocusTimerModal';
@@ -183,7 +183,7 @@ export function HabitList() {
    * Telling them to update beats a button that silently does nothing.
    */
   async function handleOpenPip(habit: HabitWithStats) {
-    const opened = await openHabitPip(habit.id, locale);
+    const opened = await openPipWindow({ module: 'habits', id: habit.id, locale });
     if (!opened) toast.error(t('pip.unavailable'));
   }
 

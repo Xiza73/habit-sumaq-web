@@ -1,55 +1,88 @@
 import { isTauri } from '@tauri-apps/api/core';
 
 /**
- * Floating always-on-top windows for a single habit — the desktop-only
- * "picture in picture".
+ * Floating always-on-top windows — the desktop-only "picture in picture".
  *
- * Browser-only concepts do not apply here: this is a real OS window, so it
- * survives the main window being minimised or covered, which is the entire
+ * Browser-only concepts do not apply here: these are real OS windows, so they
+ * survive the main window being minimised or covered, which is the entire
  * point. `isTauri()` gates every entry point, so the web build simply never
  * offers it.
  */
 
+/**
+ * Modules that can be popped out.
+ *
+ * Some open one window per item (`habits`, `chores`, `tasks`); others open a
+ * single window showing the whole list (`priorities`, `reminders`). The
+ * difference is just whether an `id` is passed — the window machinery does not
+ * care either way.
+ */
+export const PIP_MODULES = ['habits', 'chores', 'tasks', 'priorities', 'reminders'] as const;
+
+export type PipModule = (typeof PIP_MODULES)[number];
+
 /** Label prefix. The `pip` capability grants permissions to `pip-*` ONLY. */
 const LABEL_PREFIX = 'pip-';
 
-/** Card width plus the window chrome we removed; tuned to the card at p-5. */
-const WIDTH = 340;
-const HEIGHT = 260;
+export interface PipSize {
+  width: number;
+  height: number;
+}
+
+const DEFAULT_SIZE: PipSize = { width: 340, height: 190 };
 
 /**
- * Broadcast after any habit write, in either direction.
+ * Broadcast after any write that a floating window might be showing.
  *
- * Each window is its own webview, which means its own TanStack Query cache.
- * Checking in from the popup would otherwise leave the main window showing a
- * count the server no longer agrees with — and the user staring at two numbers
- * for the same habit.
+ * Deliberately ONE event with no payload. Each window is its own webview and
+ * therefore its own TanStack cache, so a check-in in the popup would otherwise
+ * leave the main window on a stale count — two numbers for the same row, both
+ * on screen.
+ *
+ * Per-module events would save the odd refetch in a window whose data did not
+ * change, and would buy that with a whole class of "nobody emitted for module
+ * X" bugs. With a handful of windows open at most, the refetch is free and the
+ * bug is impossible.
  */
-export const HABITS_CHANGED_EVENT = 'habits:changed';
+export const PIP_CHANGED_EVENT = 'pip:changed';
 
-export function pipLabelFor(habitId: string): string {
+export function pipLabelFor(module: PipModule, id?: string): string {
   // Tauri window labels allow only alphanumerics, `-`, `/`, `:` and `_`.
-  return `${LABEL_PREFIX}${habitId.replace(/[^a-zA-Z0-9\-_]/g, '')}`;
+  const suffix = id ? `-${id.replace(/[^a-zA-Z0-9\-_]/g, '')}` : '';
+  return `${LABEL_PREFIX}${module}${suffix}`;
 }
 
 export function canUsePip(): boolean {
   return isTauri();
 }
 
+interface OpenPipOptions {
+  module: PipModule;
+  /** Omitted by the modules whose popup shows the whole list. */
+  id?: string;
+  locale: string;
+  size?: PipSize;
+}
+
 /**
- * Opens (or focuses, if already open) the floating window for a habit.
+ * Opens (or focuses, if already open) a floating window.
  *
  * Returns false when the window could not be created. That is not a
  * theoretical branch: the desktop shell loads the deployed site, so a user on
  * an older installer gets this code with a Tauri build whose capabilities do
  * not allow creating windows. Failing loudly beats a button that does nothing.
  */
-export async function openHabitPip(habitId: string, locale: string): Promise<boolean> {
+export async function openPipWindow({
+  module,
+  id,
+  locale,
+  size = DEFAULT_SIZE,
+}: OpenPipOptions): Promise<boolean> {
   if (!canUsePip()) return false;
 
   try {
     const { WebviewWindow } = await import('@tauri-apps/api/webviewWindow');
-    const label = pipLabelFor(habitId);
+    const label = pipLabelFor(module, id);
 
     const existing = await WebviewWindow.getByLabel(label);
     if (existing) {
@@ -57,25 +90,26 @@ export async function openHabitPip(habitId: string, locale: string): Promise<boo
       return true;
     }
 
+    const path = id ? `/pip/${module}/${id}` : `/pip/${module}`;
     const win = new WebviewWindow(label, {
-      url: `/pip/habits/${habitId}?locale=${encodeURIComponent(locale)}`,
-      width: WIDTH,
-      height: HEIGHT,
+      url: `${path}?locale=${encodeURIComponent(locale)}`,
+      width: size.width,
+      height: size.height,
       resizable: false,
-      // No title bar: the card IS the window. The thick bottom strip and the
-      // card's own header double as the drag handle.
+      // No title bar: the content IS the window. The whole surface is a drag
+      // region instead.
       decorations: false,
-      // Transparent so the card can be dimmed with plain CSS alpha. Tauri has
-      // no window-opacity API at all — `setEffects` is blur, not alpha — so an
-      // opaque window can only ever be painted over, never seen through.
+      alwaysOnTop: true,
+      skipTaskbar: true,
+      // Transparent so the content can be dimmed with plain CSS alpha. Tauri
+      // has no window-opacity API at all — `setEffects` is blur, not alpha —
+      // so an opaque window can only ever be painted over, never seen through.
       //
       // On macOS this needs `macOSPrivateApi` in tauri.conf.json, which rules
       // the app out of the Mac App Store. Distribution here is GitHub
       // Releases, so that costs nothing.
       transparent: true,
       shadow: false,
-      alwaysOnTop: true,
-      skipTaskbar: true,
       title: 'Habit Sumaq',
     });
 
@@ -91,27 +125,27 @@ export async function openHabitPip(habitId: string, locale: string): Promise<boo
 }
 
 /**
- * Grows or shrinks THIS window to a new height, keeping the width.
+ * Grows or shrinks THIS window.
  *
- * The popup opens sized to the card. Revealing the timer strip without this
- * would render it past the bottom edge of a non-resizable window — present in
- * the DOM, invisible on screen.
+ * A popup opens sized to its collapsed content. Revealing anything below it
+ * without this would render past the bottom edge of a non-resizable window —
+ * present in the DOM, invisible on screen.
  */
-export async function resizeSelfPip(height: number): Promise<void> {
+export async function resizeSelfPip(size: PipSize): Promise<void> {
   if (!canUsePip()) return;
   try {
     const [{ getCurrentWebviewWindow }, { LogicalSize }] = await Promise.all([
       import('@tauri-apps/api/webviewWindow'),
       import('@tauri-apps/api/dpi'),
     ]);
-    await getCurrentWebviewWindow().setSize(new LogicalSize(WIDTH, height));
+    await getCurrentWebviewWindow().setSize(new LogicalSize(size.width, size.height));
   } catch {
     // A window that will not resize is a cosmetic problem; throwing here would
     // take the whole popup down over it.
   }
 }
 
-/** Closes the window this code is running in. Used by the popup's own X. */
+/** Closes the window this code is running in. Used by a popup's own X. */
 export async function closeSelfPip(): Promise<void> {
   if (!canUsePip()) return;
   const { getCurrentWebviewWindow } = await import('@tauri-apps/api/webviewWindow');
