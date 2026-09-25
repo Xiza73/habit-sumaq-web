@@ -2,7 +2,7 @@ import { AuthProvider } from '@/presentation/providers/AuthProvider';
 import { LocaleSync } from '@/presentation/providers/LocaleSync';
 
 /**
- * Chrome-free shell for the floating habit windows.
+ * Chrome-free shell for every floating window.
  *
  * Deliberately NOT the dashboard layout: no sidebar, no header, no celebration
  * modal. The window is the size of one card, and a confetti modal firing in an
