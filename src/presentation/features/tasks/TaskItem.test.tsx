@@ -32,7 +32,13 @@ const baseTask: Task = {
 };
 
 function renderItem(
-  overrides: { task?: Partial<Task>; sortable?: boolean; onEdit?: () => void } = {},
+  overrides: {
+    task?: Partial<Task>;
+    sortable?: boolean;
+    onEdit?: () => void;
+    hideAdminActions?: boolean;
+    onOpenPip?: (task: Task) => void;
+  } = {},
 ) {
   const task: Task = { ...baseTask, ...overrides.task };
   const onEdit = overrides.onEdit ?? vi.fn();
@@ -41,7 +47,13 @@ function renderItem(
     ...render(
       <DndContext>
         <SortableContext items={[task.id]} strategy={verticalListSortingStrategy}>
-          <TaskItem task={task} sortable={overrides.sortable} onEdit={onEdit} />
+          <TaskItem
+            task={task}
+            sortable={overrides.sortable}
+            onEdit={onEdit}
+            hideAdminActions={overrides.hideAdminActions}
+            onOpenPip={overrides.onOpenPip}
+          />
         </SortableContext>
       </DndContext>,
       { wrapper: TestProviders },
@@ -194,5 +206,31 @@ describe('TaskItem', () => {
       </DndContext>,
     );
     expect(screen.queryByRole('button', { name: /arrastrar tarea/i })).not.toBeInTheDocument();
+  });
+});
+
+describe('TaskItem - floating window', () => {
+  it('offers to open the popup when the handler is given', async () => {
+    const user = userEvent.setup();
+    const onOpenPip = vi.fn();
+    const { task } = renderItem({ onOpenPip });
+
+    await user.click(screen.getByRole('button', { name: /abrir en ventana flotante/i }));
+
+    expect(onOpenPip).toHaveBeenCalledWith(task);
+  });
+
+  it('hides edit, delete AND the popup launcher inside the popup', () => {
+    // Delete lives inside this component with its own mutation, so the card
+    // trick of withholding a handler does not reach it — hence one explicit
+    // flag. And the launcher goes too: the window already has its own close
+    // button, and opening a second copy of itself is nonsense.
+    renderItem({ hideAdminActions: true, onOpenPip: vi.fn() });
+
+    expect(screen.queryByRole('button', { name: /editar/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /eliminar/i })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: /abrir en ventana flotante/i }),
+    ).not.toBeInTheDocument();
   });
 });

@@ -5,7 +5,7 @@ import { useTranslations } from 'next-intl';
 
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { ChevronDown, GripVertical, Pencil, Trash2 } from 'lucide-react';
+import { ChevronDown, GripVertical, Pencil, PictureInPicture2, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { useDeleteTask, useUpdateTask } from '@/core/application/hooks/use-tasks';
@@ -35,6 +35,18 @@ interface TaskItemProps {
   /** Pending tasks are sortable (drag handle). Completed tasks are not. */
   sortable?: boolean;
   onEdit: (task: Task) => void;
+  /**
+   * Hides the edit and delete buttons.
+   *
+   * Set by the floating window: administering a task from a 340px
+   * always-on-top window with no chrome is one misclick from destructive, and
+   * the board is right there. Delete lives inside this component with its own
+   * mutation, so withholding a handler — the way the card surfaces do it —
+   * would not reach it.
+   */
+  hideAdminActions?: boolean;
+  /** Opens this task in a floating always-on-top window. Desktop only. */
+  onOpenPip?: (task: Task) => void;
 }
 
 /**
@@ -44,8 +56,15 @@ interface TaskItemProps {
  * - Reuses the markdown renderer from quick-tasks (single source of truth).
  * - The toggle uses `useUpdateTask` which lives under the `tasks` namespace.
  */
-export function TaskItem({ task, sortable = false, onEdit }: TaskItemProps) {
+export function TaskItem({
+  task,
+  sortable = false,
+  onEdit,
+  hideAdminActions = false,
+  onOpenPip,
+}: TaskItemProps) {
   const t = useTranslations('tasks');
+  const tPip = useTranslations('pip');
   const tCommon = useTranslations('common');
 
   const updateMutation = useUpdateTask();
@@ -168,30 +187,46 @@ export function TaskItem({ task, sortable = false, onEdit }: TaskItemProps) {
             />
           )}
 
-          <div className="flex shrink-0 items-center gap-1">
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                onEdit(task);
-              }}
-              aria-label={t('task.edit')}
-              className="rounded p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-            >
-              <Pencil className="size-3.5" />
-            </button>
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                setConfirmingDelete(true);
-              }}
-              aria-label={t('task.delete')}
-              className="rounded p-1.5 text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
-            >
-              <Trash2 className="size-3.5" />
-            </button>
-          </div>
+          {!hideAdminActions && (
+            <div className="flex shrink-0 items-center gap-1">
+              {onOpenPip && (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onOpenPip(task);
+                  }}
+                  aria-label={tPip('open')}
+                  title={tPip('open')}
+                  className="rounded p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                >
+                  <PictureInPicture2 className="size-3.5" />
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onEdit(task);
+                }}
+                aria-label={t('task.edit')}
+                className="rounded p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+              >
+                <Pencil className="size-3.5" />
+              </button>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setConfirmingDelete(true);
+                }}
+                aria-label={t('task.delete')}
+                className="rounded p-1.5 text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
+              >
+                <Trash2 className="size-3.5" />
+              </button>
+            </div>
+          )}
         </div>
 
         {hasDescription && expanded && (

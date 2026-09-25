@@ -41,6 +41,8 @@ interface SectionColumnProps {
   onEditSection: (section: Section) => void;
   onDeleteSection: (section: Section) => void;
   onEditTask: (task: Task) => void;
+  /** Opens a task in a floating window. Desktop only — see `TaskItem`. */
+  onOpenTaskPip?: (task: Task) => void;
 }
 
 /**
@@ -71,6 +73,7 @@ export function SectionColumn({
   onEditSection,
   onDeleteSection,
   onEditTask,
+  onOpenTaskPip,
 }: SectionColumnProps) {
   const t = useTranslations('tasks');
   const tErrors = useTranslations('errors');
@@ -273,7 +276,13 @@ export function SectionColumn({
                   >
                     <div className="space-y-2">
                       {pendingTasks.map((task) => (
-                        <TaskItem key={task.id} task={task} sortable onEdit={onEditTask} />
+                        <TaskItem
+                          key={task.id}
+                          task={task}
+                          sortable
+                          onEdit={onEditTask}
+                          onOpenPip={onOpenTaskPip}
+                        />
                       ))}
                     </div>
                   </SortableContext>
@@ -293,7 +302,12 @@ export function SectionColumn({
                   </p>
                   <div className="space-y-2">
                     {inReviewTasks.map((task) => (
-                      <TaskItem key={task.id} task={task} onEdit={onEditTask} />
+                      <TaskItem
+                        key={task.id}
+                        task={task}
+                        onEdit={onEditTask}
+                        onOpenPip={onOpenTaskPip}
+                      />
                     ))}
                   </div>
                 </>
@@ -306,7 +320,12 @@ export function SectionColumn({
                   )}
                   <div className="space-y-2">
                     {completedTasks.map((task) => (
-                      <TaskItem key={task.id} task={task} onEdit={onEditTask} />
+                      <TaskItem
+                        key={task.id}
+                        task={task}
+                        onEdit={onEditTask}
+                        onOpenPip={onOpenTaskPip}
+                      />
                     ))}
                   </div>
                 </>
