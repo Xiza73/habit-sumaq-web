@@ -5,7 +5,7 @@ import { useTranslations } from 'next-intl';
 
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { ChevronDown, GripVertical, Pencil, PictureInPicture2, Trash2 } from 'lucide-react';
+import { ChevronDown, GripVertical, Pencil, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { useDeleteTask, useUpdateTask } from '@/core/application/hooks/use-tasks';
@@ -46,7 +46,6 @@ interface TaskItemProps {
    */
   hideAdminActions?: boolean;
   /** Opens this task in a floating always-on-top window. Desktop only. */
-  onOpenPip?: (task: Task) => void;
 }
 
 /**
@@ -61,10 +60,8 @@ export function TaskItem({
   sortable = false,
   onEdit,
   hideAdminActions = false,
-  onOpenPip,
 }: TaskItemProps) {
   const t = useTranslations('tasks');
-  const tPip = useTranslations('pip');
   const tCommon = useTranslations('common');
 
   const updateMutation = useUpdateTask();
@@ -189,20 +186,6 @@ export function TaskItem({
 
           {!hideAdminActions && (
             <div className="flex shrink-0 items-center gap-1">
-              {onOpenPip && (
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onOpenPip(task);
-                  }}
-                  aria-label={tPip('open')}
-                  title={tPip('open')}
-                  className="rounded p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-                >
-                  <PictureInPicture2 className="size-3.5" />
-                </button>
-              )}
               <button
                 type="button"
                 onClick={(e) => {

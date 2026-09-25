@@ -18,7 +18,7 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { ChevronDown, GripVertical, Pencil, Plus, Trash2 } from 'lucide-react';
+import { ChevronDown, GripVertical, Pencil, PictureInPicture2, Plus, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { useUpdateSection } from '@/core/application/hooks/use-sections';
@@ -41,8 +41,8 @@ interface SectionColumnProps {
   onEditSection: (section: Section) => void;
   onDeleteSection: (section: Section) => void;
   onEditTask: (task: Task) => void;
-  /** Opens a task in a floating window. Desktop only — see `TaskItem`. */
-  onOpenTaskPip?: (task: Task) => void;
+  /** Opens this SECTION in a floating window. Desktop only. */
+  onOpenPip?: (section: Section) => void;
 }
 
 /**
@@ -73,10 +73,11 @@ export function SectionColumn({
   onEditSection,
   onDeleteSection,
   onEditTask,
-  onOpenTaskPip,
+  onOpenPip,
 }: SectionColumnProps) {
   const t = useTranslations('tasks');
   const tErrors = useTranslations('errors');
+  const tPip = useTranslations('pip');
 
   const reorderMutation = useReorderTasks();
   const updateSectionMutation = useUpdateSection();
@@ -218,6 +219,20 @@ export function SectionColumn({
           {completedTasks.length > 0 && ` · ${completedTasks.length} ✓`}
         </span>
         <div className="flex items-center gap-1">
+          {onOpenPip && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                onOpenPip(section);
+              }}
+              aria-label={tPip('open')}
+              title={tPip('open')}
+              className="rounded p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            >
+              <PictureInPicture2 className="size-3.5" />
+            </button>
+          )}
           <button
             type="button"
             onClick={(e) => {
@@ -276,13 +291,7 @@ export function SectionColumn({
                   >
                     <div className="space-y-2">
                       {pendingTasks.map((task) => (
-                        <TaskItem
-                          key={task.id}
-                          task={task}
-                          sortable
-                          onEdit={onEditTask}
-                          onOpenPip={onOpenTaskPip}
-                        />
+                        <TaskItem key={task.id} task={task} sortable onEdit={onEditTask} />
                       ))}
                     </div>
                   </SortableContext>
@@ -302,12 +311,7 @@ export function SectionColumn({
                   </p>
                   <div className="space-y-2">
                     {inReviewTasks.map((task) => (
-                      <TaskItem
-                        key={task.id}
-                        task={task}
-                        onEdit={onEditTask}
-                        onOpenPip={onOpenTaskPip}
-                      />
+                      <TaskItem key={task.id} task={task} onEdit={onEditTask} />
                     ))}
                   </div>
                 </>
@@ -320,12 +324,7 @@ export function SectionColumn({
                   )}
                   <div className="space-y-2">
                     {completedTasks.map((task) => (
-                      <TaskItem
-                        key={task.id}
-                        task={task}
-                        onEdit={onEditTask}
-                        onOpenPip={onOpenTaskPip}
-                      />
+                      <TaskItem key={task.id} task={task} onEdit={onEditTask} />
                     ))}
                   </div>
                 </>
