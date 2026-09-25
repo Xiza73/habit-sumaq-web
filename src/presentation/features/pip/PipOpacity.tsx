@@ -23,21 +23,22 @@ const OPACITY_LEVELS = [1, 0.7, 0.4] as const;
  * Lives here rather than in each popup because all five of them dim the same
  * way, and the previous copy-per-popup is the exact shape of bug the chore
  * status colours already cost us once.
+ *
+ * The chosen level applies whether or not the pointer is on the window. It
+ * used to snap back to solid on hover, which reads as a broken control: the
+ * pointer is ON the window exactly when you click the button, so the click
+ * changed the level and nothing moved. A window that is too dim to read is one
+ * click from solid again — that is what the control is for.
  */
 export function usePipOpacity() {
   const [step, setStep] = useState(0);
-  // Dimming only helps while the window is being ignored. The moment the
-  // pointer arrives the user wants to READ and click it, so it goes solid.
-  const [hovered, setHovered] = useState(false);
 
   return {
-    /** What to put on `style.opacity` — hover wins over the chosen level. */
-    value: hovered ? 1 : OPACITY_LEVELS[step],
+    /** What to put on `style.opacity`. */
+    value: OPACITY_LEVELS[step],
     /** The chosen level, for the button's label. */
     level: OPACITY_LEVELS[step],
     cycle: () => setStep((current) => (current + 1) % OPACITY_LEVELS.length),
-    onMouseEnter: () => setHovered(true),
-    onMouseLeave: () => setHovered(false),
   };
 }
 

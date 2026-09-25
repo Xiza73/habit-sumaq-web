@@ -37,12 +37,12 @@ export function ChorePipView({ choreId }: { choreId: string }) {
   const opacity = usePipOpacity();
 
   if (isLoading) {
-    return <div className="h-screen w-screen animate-pulse bg-card" />;
+    return <div className="h-screen w-screen rounded-xl bg-card animate-pulse" />;
   }
 
   if (!chore) {
     return (
-      <div className="flex h-screen w-screen items-center justify-center bg-card p-4 text-center text-sm text-muted-foreground">
+      <div className="flex h-screen w-screen items-center justify-center rounded-xl bg-card p-4 text-center text-sm text-muted-foreground">
         {tPip('notFound')}
       </div>
     );
@@ -57,10 +57,8 @@ export function ChorePipView({ choreId }: { choreId: string }) {
     // every control keeps working and only empty space moves the window.
     <div
       data-tauri-drag-region="deep"
-      onMouseEnter={opacity.onMouseEnter}
-      onMouseLeave={opacity.onMouseLeave}
       style={{ opacity: opacity.value }}
-      className="flex h-screen w-screen flex-col overflow-hidden bg-card transition-opacity duration-200"
+      className="flex h-screen w-screen flex-col overflow-hidden rounded-xl bg-card transition-opacity duration-200"
     >
       <ChoreCard
         chore={chore}

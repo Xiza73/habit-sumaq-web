@@ -93,7 +93,10 @@ describe('QuickTasksPipView', () => {
     expect(root.style.opacity).toBe('1');
   });
 
-  it('goes solid while the pointer is on it', () => {
+  it('keeps the chosen level with the pointer on it', () => {
+    // It used to snap back to solid on hover, which made the button read as
+    // dead: the pointer is on the window exactly when you click it, so the
+    // level changed and nothing moved.
     const { container } = renderPip();
     const root = container.firstElementChild as HTMLElement;
 
@@ -101,9 +104,6 @@ describe('QuickTasksPipView', () => {
     expect(root.style.opacity).toBe('0.7');
 
     fireEvent.mouseEnter(root);
-    expect(root.style.opacity).toBe('1');
-
-    fireEvent.mouseLeave(root);
     expect(root.style.opacity).toBe('0.7');
   });
 });

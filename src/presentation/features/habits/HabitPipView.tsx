@@ -138,12 +138,12 @@ export function HabitPipView({ habitId }: { habitId: string }) {
   }
 
   if (isLoading) {
-    return <div className="h-screen w-screen animate-pulse bg-card" />;
+    return <div className="h-screen w-screen rounded-xl bg-card animate-pulse" />;
   }
 
   if (!habit) {
     return (
-      <div className="flex h-screen w-screen items-center justify-center bg-card p-4 text-center text-sm text-muted-foreground">
+      <div className="flex h-screen w-screen items-center justify-center rounded-xl bg-card p-4 text-center text-sm text-muted-foreground">
         {tPip('notFound')}
       </div>
     );
@@ -168,10 +168,8 @@ export function HabitPipView({ habitId }: { habitId: string }) {
     // 340px floating card filling the screen is nobody idea of a feature.
     <div
       data-tauri-drag-region="deep"
-      onMouseEnter={opacity.onMouseEnter}
-      onMouseLeave={opacity.onMouseLeave}
       style={{ opacity: opacity.value }}
-      className="flex h-screen w-screen flex-col overflow-hidden bg-card transition-opacity duration-200"
+      className="flex h-screen w-screen flex-col overflow-hidden rounded-xl bg-card transition-opacity duration-200"
     >
       <HabitCard
         habit={habit}

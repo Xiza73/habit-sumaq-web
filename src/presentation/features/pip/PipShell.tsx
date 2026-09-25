@@ -17,7 +17,17 @@ import { PipOpacityButton, usePipOpacity } from './PipOpacity';
  * where they actually live. The card popups pass their controls into the
  * card's own header slot instead.
  */
-export function PipShell({ children }: { children: React.ReactNode }) {
+interface PipShellProps {
+  /**
+   * What the window is showing. The popups that hold a whole LIST need it:
+   * five reminder rows on their own say nothing about which module they came
+   * from, and an undecorated window has no title bar to say it either.
+   */
+  title?: string;
+  children: React.ReactNode;
+}
+
+export function PipShell({ title, children }: PipShellProps) {
   const tPip = useTranslations('pip');
   const opacity = usePipOpacity();
 
@@ -27,12 +37,11 @@ export function PipShell({ children }: { children: React.ReactNode }) {
     // every control keeps working and only empty space moves the window.
     <div
       data-tauri-drag-region="deep"
-      onMouseEnter={opacity.onMouseEnter}
-      onMouseLeave={opacity.onMouseLeave}
       style={{ opacity: opacity.value }}
-      className="flex h-screen w-screen flex-col overflow-hidden bg-card transition-opacity duration-200"
+      className="flex h-screen w-screen flex-col overflow-hidden rounded-xl bg-card transition-opacity duration-200"
     >
-      <div className="flex shrink-0 items-center justify-end gap-1 px-2 pt-2">
+      <div className="flex shrink-0 items-center gap-1 px-2 pt-2">
+        <p className="min-w-0 flex-1 truncate pl-1 text-sm font-semibold">{title}</p>
         <PipOpacityButton level={opacity.level} onClick={opacity.cycle} />
         <button
           type="button"
