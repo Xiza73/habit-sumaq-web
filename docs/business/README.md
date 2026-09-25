@@ -1,7 +1,7 @@
 # Estrategia de negocio — Habit Sumaq
 
 Esta carpeta documenta las decisiones estratégicas y de producto que NO son
-contrato técnico (eso vive en [`docs/frontend/`](../frontend/)). Acá vive el
+contrato técnico (eso vive en [`docs/frontend/`](../frontend/)). Aquí vive el
 "por qué" y el "qué pensamos hacer", para que cuando llegue el momento de
 implementar no estemos improvisando.
 
@@ -33,6 +33,6 @@ pensar dos veces antes de cambiar de rumbo.
 
 ## Para nuevos contributors
 
-Empezá por [`growth-roadmap.md`](growth-roadmap.md) — te da el contexto del
+Empieza por [`growth-roadmap.md`](growth-roadmap.md) — te da el contexto del
 "dónde estamos" y "hacia dónde vamos". El resto de docs son referencia
 puntual cuando estás implementando algo del roadmap.

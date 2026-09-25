@@ -62,7 +62,7 @@ Estos tres documentos describen el **contrato** que el backend expone. Por eso v
 | Enums            | [enums.md](docs/frontend/enums.md)                 | [habit-sumaq-backend/docs/frontend/enums.md](https://github.com/Xiza73/habit-sumaq-backend/blob/master/docs/frontend/enums.md)                 |
 | Códigos de Error | [error-codes.md](docs/frontend/error-codes.md)     | [habit-sumaq-backend/docs/frontend/error-codes.md](https://github.com/Xiza73/habit-sumaq-backend/blob/master/docs/frontend/error-codes.md)     |
 
-Si trabajás local y tenés ambos repos clonados adyacentes, los paths relativos son `../../habit-sumaq-backend/docs/frontend/*.md`.
+Si trabajas local y tienes ambos repos clonados adyacentes, los paths relativos son `../../habit-sumaq-backend/docs/frontend/*.md`.
 
 ---
 
@@ -73,7 +73,7 @@ Si trabajás local y tenés ambos repos clonados adyacentes, los paths relativos
 - **Código** (variables, funciones, componentes, tipos): siempre en **inglés**.
 - **Textos de UI** (labels, mensajes, placeholders): siempre via **i18n**, nunca hardcodeados.
 - **Comentarios**: en inglés. Solo cuando el código no es autoexplicativo.
-- **Documentación del proyecto**: en español.
+- **Documentación del proyecto**: en español neutro — tuteo, nunca voseo, sin modismos de un solo país. Misma regla que el copy de UI, que tiene su test en `src/i18n/neutral-spanish.test.ts`.
 - **Commits**: en inglés, formato Conventional Commits (`feat:`, `fix:`, `refactor:`, etc.).
 
 ### TypeScript
@@ -255,6 +255,6 @@ Si el PR introduce un endpoint, módulo, variable de entorno, comando, schema de
 - Refactors internos sin cambio de API pública
 - Dependencias menores que no afecten al usuario
 
-> **Regla de dedo:** si dudás si documentar o no, **documentar igual**. Es más barato bajar una doc innecesaria que subir una que falta.
+> **Regla de dedo:** si dudas si documentar o no, **documentar igual**. Es más barato bajar una doc innecesaria que subir una que falta.
 
 Implementar siguiendo el orden definido en [implementation-plan.md](docs/frontend/implementation-plan.md).
