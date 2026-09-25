@@ -12,7 +12,7 @@ TL;DR de la decisión arquitectural (discutida en sesión de diseño):
 - TWA (Trusted Web Activity) wrappea la PWA en un APK nativo Android.
 - **Reuso 100% del código actual** — no hay codebase paralela.
 - Ideal para: presencia en Play Store, push notifications nativas, perceived
-  legitimacy ("descargá nuestra app").
+  legitimacy ("descarga nuestra app").
 
 **Cuándo migrar a RN / Flutter**: solo si la PWA + TWA no alcanza para
 features específicos (widgets, biometría profunda, Apple Watch). Hoy no es
@@ -22,21 +22,21 @@ el caso.
 
 ## Dos paths según necesidad
 
-Hay **dos caminos** para empaquetar la PWA. Elegí según el caso de uso:
+Hay **dos caminos** para empaquetar la PWA. Elige según el caso de uso:
 
 | Path | Caso de uso | Costo | Tiempo | Tooling local |
 | ---- | ----------- | ----- | ------ | -------------- |
 | **A — APK para compartir** | Alpha / friends & family / testing privado | $0 | ~10 min | Solo navegador |
 | **B — Play Store** | Lanzamiento público con presencia en store | $25 USD one-time | 1-2 días | Java + Android SDK + Bubblewrap |
 
-> Si dudás cuál usar: arrancá con A. Es revertible — el APK que genera Path A
+> Si dudas cuál usar: arranca con A. Es revertible — el APK que genera Path A
 > también sirve para subir a Play Store después si te gusta cómo se ve.
 
 ---
 
 ## Path A — APK para compartir (PWABuilder)
 
-Para cuando solo querés un `.apk` que mandás por WhatsApp/Telegram/email a
+Para cuando solo quieres un `.apk` que mandas por WhatsApp/Telegram/email a
 tus amigos para que prueben la app. **Sin Play Store, sin instalar nada
 local, sin cuenta de developer.**
 
@@ -47,7 +47,7 @@ local, sin cuenta de developer.**
 - [ ] El `manifest.json` apunta a íconos maskable correctos (ya está,
       [v0.1.1](https://github.com/Xiza73/habit-sumaq-web/releases/tag/v0.1.1)).
 - [ ] **Backup mental:** vas a recibir un `signing-key.keystore` —
-      guardalo en un lugar seguro (1Password, Drive privado). Lo necesitás
+      guárdalo en un lugar seguro (1Password, Drive privado). Lo necesitas
       para todas las versiones futuras del APK.
 
 ### Pasos
@@ -78,7 +78,7 @@ local, sin cuenta de developer.**
    - `app-release-bundle.aab` ← guardar para futuro Play Store
    - `assetlinks.json` ← su contenido ya está deployado en
      `public/.well-known/assetlinks.json` desde v0.2.2; sólo regenerar
-     si rotás keystore o cambia el `package_name`
+     si rotas keystore o cambia el `package_name`
    - **`signing-key.keystore`** ← **GUARDAR EN LUGAR SEGURO**
    - `signing-key-info.txt` ← password + alias del keystore (también guardar)
 
@@ -92,7 +92,7 @@ local, sin cuenta de developer.**
 3. Tap el APK → "Install".
 4. La app abre full-screen sin barra de URL — el verification de Asset
    Links ya está deployado contra el APK actual (ver §5 más abajo). Si
-   distribuís un APK firmado con OTRO keystore, sí va a aparecer la barra
+   distribuyes un APK firmado con OTRO keystore, sí va a aparecer la barra
    hasta que actualices `public/.well-known/assetlinks.json` con el
    SHA-256 nuevo.
 
@@ -104,9 +104,9 @@ local, sin cuenta de developer.**
 - ✅ Manifest icons / splash screen
 - ✅ Standalone mode sin barra de URL (Asset Links activo desde v0.2.2)
 
-### Lo que **NO funciona** vía Path A (necesitás Path B)
+### Lo que **NO funciona** vía Path A (necesitas Path B)
 
-- ❌ Distribución masiva (no podés subir a Play Store)
+- ❌ Distribución masiva (no puedes subir a Play Store)
 - ❌ Auto-updates (cada nueva versión del APK = nuevo APK + reenvío
   manual a beta-testers). Asset Links no resuelve esto — solo Play Store
   lo hace.
@@ -118,7 +118,7 @@ Para distribuir una nueva versión:
 
 1. Volver a PWABuilder → mismo flujo
 2. **IMPORTANTE: subir el mismo `signing-key.keystore`** del primer
-   build (en lugar de "Generate new"). Si generás uno nuevo, los
+   build (en lugar de "Generate new"). Si generas uno nuevo, los
    amigos no pueden actualizar — tienen que desinstalar + reinstalar.
 3. Bumpear `App version` (ej. `2`) y `Version name` (ej. `0.1.3`).
 4. Generate → mandar el nuevo APK.
@@ -128,7 +128,7 @@ Para distribuir una nueva versión:
 ## Path B — Play Store publication (Bubblewrap)
 
 > Esta sección es la guía completa de publicación a Play Store. Solo
-> hace falta cuando ya validaste el producto con Path A y querés
+> hace falta cuando ya validaste el producto con Path A y quieres
 > presencia oficial en la store. Trigger sugerido:
 > [Fase 3 del growth roadmap](growth-roadmap.md#-fase-3--monetización-3-4-semanas-recién-con-100-mau).
 
@@ -199,7 +199,7 @@ Bubblewrap te va a preguntar (los valores recomendados están en negrita):
 ### 3. Configurar el signing key
 
 Bubblewrap genera un keystore en `android.keystore`. **GUARDAR ESTO EN UN
-LUGAR SEGURO** — sin él **NO PODÉS actualizar la app**.
+LUGAR SEGURO** — sin él **NO PUEDES actualizar la app**.
 
 ```bash
 # Backup del keystore en lugar seguro (1Password, gestión de secretos, etc.)
@@ -208,7 +208,7 @@ cp android.keystore ~/safe-storage/habit-sumaq-keystore.jks
 
 Anotar también la password del keystore (no se puede recuperar si se pierde).
 
-> ⚠️ Si perdés el keystore, **tenés que crear una app nueva en Play Store**
+> ⚠️ Si pierdes el keystore, **tienes que crear una app nueva en Play Store**
 > con package name diferente, y pedirle a todos los usuarios que la
 > reinstalen. Es un infierno. **No lo pierdas.**
 
@@ -232,21 +232,21 @@ Output:
 > **Estado actual: ACTIVO desde v0.2.2.** El archivo
 > [`public/.well-known/assetlinks.json`](../../public/.well-known/assetlinks.json)
 > ya está deployado contra el APK actual de PWABuilder
-> (`app.vercel.habit_sumaq_web.twa`). Si **rotás el keystore** o **cambiás
-> el `package_name`**, actualizá el archivo (los pasos abajo siguen
+> (`app.vercel.habit_sumaq_web.twa`). Si **rotas el keystore** o **cambias
+> el `package_name`**, actualiza el archivo (los pasos abajo siguen
 > aplicando para el cambio).
 
 Para que el APK NO muestre la barra de URL de Chrome (verdadera experiencia
-"app"), tenés que probar que el dominio te pertenece:
+"app"), tienes que probar que el dominio te pertenece:
 
 1. Conseguir el SHA-256 fingerprint del keystore que firma el APK:
-   - **Desde PWABuilder.com**: cuando descargás el zip del APK, viene un
-     `assetlinks.json` adentro con el SHA-256 ya calculado — copialo
+   - **Desde PWABuilder.com**: cuando descargas el zip del APK, viene un
+     `assetlinks.json` adentro con el SHA-256 ya calculado — cópialo
      directo de ahí.
    - **Desde Bubblewrap**: corre `bubblewrap fingerprint` y copia la
      salida.
    - **Desde el keystore a mano**: `keytool -list -v -keystore signing.keystore -alias <alias>`
-     y mirá `SHA256:`.
+     y mira `SHA256:`.
 2. Crear/actualizar `public/.well-known/assetlinks.json` en el repo
    `habit-sumaq-web`:
 
@@ -363,7 +363,7 @@ Apple no soporta TWA. Las opciones para iOS son:
    sesión de diseño).
 
 **Recomendación corto plazo**: polish del PWA install flow en iOS (banner
-"Agregá a pantalla de inicio" para usuarios de Safari). Capacitor cuando
+"Agregar a pantalla de inicio" para usuarios de Safari). Capacitor cuando
 hayamos validado revenue en Android.
 
 ---
@@ -385,14 +385,14 @@ hayamos validado revenue en Android.
 **Mínimos para que valga la pena el upgrade A → B:**
 
 - [ ] La PWA pasa Lighthouse PWA audit con score > 90
-- [ ] Tenés privacy policy publicada y accesible (obligatoria para Play)
+- [ ] Tienes privacy policy publicada y accesible (obligatoria para Play)
 - [ ] Decidiste el `package_name` final (no se puede cambiar después —
       idealmente el mismo que usaste en Path A)
-- [ ] Tenés screenshots y feature graphic listos para el listing
+- [ ] Tienes screenshots y feature graphic listos para el listing
 
 **Trigger sugeridos:**
 
-- **Lanzamiento público**: cuando arrancás Fase 3 del growth roadmap
+- **Lanzamiento público**: cuando arrancas Fase 3 del growth roadmap
   (junto con el lanzamiento de paywall + Founder program). Es el
   momento de máxima atención mediática.
 

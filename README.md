@@ -41,9 +41,9 @@ cp .env.example .env.local
 pnpm dev
 ```
 
-Abrí [http://localhost:3001](http://localhost:3001).
+Abre [http://localhost:3001](http://localhost:3001).
 
-> La primera vez que entres con tu cuenta, el frontend detecta automáticamente tu IANA timezone vía `Intl.DateTimeFormat` y la guarda en user-settings. Podés cambiarla después en `/settings`.
+> La primera vez que entres con tu cuenta, el frontend detecta automáticamente tu IANA timezone vía `Intl.DateTimeFormat` y la guarda en user-settings. Puedes cambiarla después en `/settings`.
 
 ## Variables de entorno
 

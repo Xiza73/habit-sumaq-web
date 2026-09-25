@@ -6,4 +6,4 @@
 >
 > 📖 **GitHub**: [habit-sumaq-backend/docs/frontend/api-reference.md](https://github.com/Xiza73/habit-sumaq-backend/blob/master/docs/frontend/api-reference.md)
 >
-> 📁 **Local** (si tenés el repo hermano clonado adyacente): [`../../../habit-sumaq-backend/docs/frontend/api-reference.md`](../../../habit-sumaq-backend/docs/frontend/api-reference.md)
+> 📁 **Local** (si tienes el repo hermano clonado adyacente): [`../../../habit-sumaq-backend/docs/frontend/api-reference.md`](../../../habit-sumaq-backend/docs/frontend/api-reference.md)

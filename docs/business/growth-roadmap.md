@@ -301,7 +301,7 @@ margen para reinvertir en growth).
 
 - **Producción** (`NODE_ENV=production`) → init automático si hay `NEXT_PUBLIC_POSTHOG_KEY` seteada
 - **Desarrollo** (`pnpm dev`) → **NO** init por default. Eventos quedan no-op silencioso. Esto evita polución del dashboard de prod con eventos de testing + ruido en la consola.
-- **Override dev**: poner `NEXT_PUBLIC_POSTHOG_ENABLE_IN_DEV=true` en `.env.local` cuando quieras validar eventos end-to-end desde dev. Después borralo para no contaminar.
+- **Override dev**: poner `NEXT_PUBLIC_POSTHOG_ENABLE_IN_DEV=true` en `.env.local` cuando quieras validar eventos end-to-end desde dev. Después bórralo para no contaminar.
 
 ### Eventos a trackear
 
@@ -372,14 +372,14 @@ posthog.capture('subscription_canceled', { reason: '...' });
 ### Reglas que funcionan en finanzas/productividad LATAM
 
 1. **Hooks de dolor real, no features**:
-   - ❌ "Mirá las nuevas tablas de Habit Sumaq"
+   - ❌ "Mira las nuevas tablas de Habit Sumaq"
    - ✅ "Cómo dejé de perder $200/mes en gastos hormiga"
    - ✅ "Mi pareja y yo registramos cada compra desde hace 6 meses, esto descubrimos"
 
 2. **Antes/después visual**: caos del Excel vs pantalla de Habit Sumaq, en
    side-by-side de 5 segundos.
 
-3. **15-30 segundos MAX**. Si no captás en los primeros 3 seg, perdiste.
+3. **15-30 segundos MAX**. Si no captas en los primeros 3 seg, perdiste.
 
 4. **Engagement > vanity**: comentar en videos de creators del nicho
    ("Aprendamos Finanzas", "Sebastián De La Croix Finanzas", etc.) tiene
@@ -393,7 +393,7 @@ posthog.capture('subscription_canceled', { reason: '...' });
 4. "Cómo divido los gastos con mi pareja"
 5. "El error que cometía con mis presupuestos (y cómo lo arreglé)"
 6. "Mi rutina de revisión semanal de finanzas (3 minutos)"
-7. "¿Sabés cuánto gastás en delivery? Yo no, hasta que hice esto"
+7. "¿Sabes cuánto gastas en delivery? Yo no, hasta que hice esto"
 8. "POV: tu app de finanzas también te muestra tus hábitos"
 9. "El día que aprendí a separar gastos hormiga de gastos fijos"
 10. "Por qué dejé de usar Excel para mis finanzas"

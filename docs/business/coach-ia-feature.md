@@ -24,7 +24,7 @@ para cada usuario premium con:
 1. **Insights**: patrones detectados cruzando finanzas + hábitos + tareas.
 2. **Recomendaciones**: acciones concretas para el mes siguiente.
 3. **Logros**: rachas alcanzadas, mejoras vs mes anterior.
-4. **Proyecciones** (opcional): si seguís así, ¿qué pasa al fin de año?
+4. **Proyecciones** (opcional): si sigues así, ¿qué pasa al fin de año?
 
 ---
 
@@ -37,17 +37,17 @@ para cada usuario premium con:
 > - Gastaste **45% más** en delivery este mes ($420 vs $290 en septiembre).
 >   Coincide con que **fallaste 8 días tu hábito de "Cocinar en casa"**.
 > - Cuando registraste tu hábito de **ejercicio**, gastaste en promedio **18%
->   menos** en "Salidas" ese mismo día. Patrón consistente: cuando entrenás,
->   salís menos.
+>   menos** en "Salidas" ese mismo día. Patrón consistente: cuando entrenas,
+>   sales menos.
 > - **Tu mejor semana del mes** fue la del 8-14: cumpliste el 92% de hábitos
 >   Y tuviste el menor gasto discrecional ($85).
 >
 > 🎯 **Recomendaciones:**
 >
-> - Si recuperás el hábito "Cocinar en casa" en noviembre, proyectamos un
+> - Si recuperas el hábito "Cocinar en casa" en noviembre, proyectamos un
 >   ahorro de ~$130.
 > - Tu categoría "Salidas" superó el presupuesto el día 22 — antes de que
->   termine el mes próximo, configurá una alerta al 80%.
+>   termine el mes próximo, configura una alerta al 80%.
 >
 > 🏆 **Logro del mes:**
 >
@@ -163,7 +163,7 @@ para abaratar el costo. El user prompt cambia por usuario.
 #### Free vs Premium
 
 - **Free**: ven la pantalla `/coach` con un **reporte demo estático** y un
-  CTA _"Hacé que esto sea tuyo cada mes con Premium"_.
+  CTA _"Haz que esto sea tuyo cada mes con Premium"_.
 - **Premium**: ven sus reportes reales + histórico ilimitado.
 
 ---
@@ -227,7 +227,7 @@ A $5/mes de revenue por usuario premium = **margen ~99%**.
 | Prompt regression (modelo nuevo) | Suite de tests con fixtures de data + assertions sobre el output esperado.                       |
 | Costo escala con usuarios     | A 1000+ users, evaluar Haiku para insights simples y Sonnet solo para correlaciones complejas.      |
 | Privacidad                    | NUNCA mandamos a Claude IDs, nombres ni emails. Solo agregaciones numéricas. Documentar en privacy policy. |
-| Mes con poca data             | El prompt instruye a omitir secciones sin data. Fallback a un mensaje "todavía no tenemos suficiente para insights, seguí registrando!". |
+| Mes con poca data             | El prompt instruye a omitir secciones sin data. Fallback a un mensaje "todavía no tenemos suficiente para insights, sigue registrando!". |
 
 ---
 

@@ -29,7 +29,7 @@ agua", "3 series de flexiones"). Eso funciona para hábitos discretos pero
 - "Estudiar 2 horas"
 - "Hacer dibujo 30 minutos"
 
-Para estos, la UX correcta no es _"clickeá +30 veces"_ sino **un cronómetro**
+Para estos, la UX correcta no es _"haz clic +30 veces"_ sino **un cronómetro**
 que mide el tiempo real dedicado.
 
 ### Por qué importa para growth
@@ -122,7 +122,7 @@ Diseñar para "varios timers en paralelo" complica la UI sin agregar valor
 real para un solo usuario. Si el usuario intenta arrancar un segundo timer
 mientras hay uno activo, **mostramos un confirm**:
 
-> _"Hay un timer corriendo en 'Leer 30 min'. ¿Querés detenerlo y arrancar
+> _"Hay un timer corriendo en 'Leer 30 min'. ¿Quieres detenerlo y arrancar
 > uno nuevo?"_
 
 ---

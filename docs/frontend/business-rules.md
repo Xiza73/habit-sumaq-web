@@ -35,7 +35,7 @@ Reglas:
 4. **El modal no roba el contexto.** El `CategoryForm` se monta encima del form padre y al cerrarse el padre sigue intacto (con la nueva categoría seleccionada). No descartar el form padre cuando se abre el modal.
 5. **El i18n key vive en `categories.createNew`**, no en el namespace del form padre — es un componente genérico, no propiedad de transacciones.
 
-> Si vas a agregar un nuevo form que pickea categoría: usá `<CategorySelectField>` directamente. No copiar la lógica.
+> Si vas a agregar un nuevo form que pickea categoría: usa `<CategorySelectField>` directamente. No copiar la lógica.
 
 ---
 
@@ -255,7 +255,7 @@ mientras no haya fecha, y borrar la fecha borra la hora con ella.
 
 El estado de la lista es **solo por fecha**: `overdue` / `today` / `upcoming` / `undated` / `done`.
 La hora gatilla la **alerta**, no el estado — un recordatorio de las 23:00 sigue siendo algo
-que tenés que hacer hoy, y una lista que lo llamara "Próximo" hasta las 23:00 estaría mintiendo
+que tienes que hacer hoy, y una lista que lo llamara "Próximo" hasta las 23:00 estaría mintiendo
 sobre tu día.
 
 La hora aplica **solo el día para el que se fijó**. Pasado ese día el recordatorio está
@@ -265,7 +265,7 @@ escondería cada mañana y reaparecería a las 23:00 — que es exactamente cóm
 ### Orden de la lista
 
 Por accionabilidad: `overdue` → `today` → `upcoming` → `undated` → `done`. Dentro del bucket,
-por fecha ascendente, así que **el atrasado más viejo va primero** (el que más venís esquivando).
+por fecha ascendente, así que **el atrasado más viejo va primero** (el que más vienes esquivando).
 Los empates se rompen por hora, y los sin hora van antes porque vencen desde el arranque del día.
 
 ---
@@ -340,7 +340,7 @@ El número grande del dashboard de Budget es **"Disponible hoy"**, NO "Disponibl
 
 - **Hoy tiene un pool fijo** `A = (amount - spent_hasta_ayer) / daysRemainingIncludingToday`. Calculado al inicio del día calendario en la TZ del usuario y **bloqueado por todo el día**.
 - **"Disponible hoy" = `A - spent_hoy`**. Cambia con cada movimiento que loggees hoy.
-- **"Resto del mes" = `(amount - spent_hasta_ayer) - A`**. **NO cambia** cuando gastás hoy — eso es lo importante. El plan futuro no se re-spread en tiempo real.
+- **"Resto del mes" = `(amount - spent_hasta_ayer) - A`**. **NO cambia** cuando gastas hoy — eso es lo importante. El plan futuro no se re-spread en tiempo real.
 - **Al cruzar la medianoche** en TZ del usuario, `A` se recalcula con el nuevo `spent_hasta_ayer`. Si gastaste menos que `A` viejo, el `A` nuevo es mayor (carryforward implícito). Si gastaste más, es menor (eats into future).
 - **Overspend hoy** marca el headline en rojo pero NO recorta el plan futuro hasta mañana — es señal visual, no penalización inmediata.
 
@@ -402,7 +402,7 @@ Los favoritos manejan dos cosas:
 1. **Cap duro: 4 favoritos máximo.** Backend lo enforza con `@ArrayMaxSize(4)` + SQL `CHECK`. Frontend deshabilita el botón "marcar como favorito" cuando se llegó al máximo (el usuario tiene que sacar uno primero).
 2. **Settings NO es favoritable.** Está fijo en mobile (siempre como último slot) y en sidebar (siempre al pie). El registry de `nav-registry.ts` lo excluye explícitamente.
 3. **Array vacío es válido.** Si el usuario saca todos sus favoritos, la mobile nav queda solo con el slot de Settings + 4 placeholders. UX honesta — "no marcaste nada todavía".
-4. **Single source of truth:** `src/lib/nav-registry.ts`. Mapea cada `FavoriteKey` a su `{ href, labelKey, icon }`. Toda surface que renderice favoritos pasa por acá.
+4. **Single source of truth:** `src/lib/nav-registry.ts`. Mapea cada `FavoriteKey` a su `{ href, labelKey, icon }`. Toda surface que renderice favoritos pasa por aquí.
 5. **Forward-compat con renames/removes:** `getNavEntries(keys)` filtra silenciosamente las keys que no estén en el registry. Un usuario con un favorito "ancient" que ya no existe simplemente ve ese slot como placeholder hasta que reconfigure — nada crashea.
 6. **Persistencia:** `user_settings.favoriteKeys: string[]`. Sincroniza entre devices. Backend no valida el contenido contra un set conocido (las keys son free-form strings) — eso desacopla los repos. Si se agrega o renombra una ruta en frontend, no hace falta migration de backend.
 
