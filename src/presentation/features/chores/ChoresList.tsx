@@ -22,7 +22,7 @@ import { ConfirmDialog } from '@/presentation/components/feedback/ConfirmDialog'
 import { ViewModeToggle } from '@/presentation/components/ui/ViewModeToggle';
 
 import { formatDate } from '@/lib/format';
-import { canUsePip, openPipWindow } from '@/lib/pip-window';
+import { canUsePip, openPipWindow, PIP_CHORE_SIZE } from '@/lib/pip-window';
 import { cn } from '@/lib/utils';
 
 import { ChoreCard } from './ChoreCard';
@@ -120,7 +120,12 @@ export function ChoresList() {
    */
 
   async function handleOpenPip(chore: Chore) {
-    const opened = await openPipWindow({ module: 'chores', id: chore.id, locale });
+    const opened = await openPipWindow({
+      module: 'chores',
+      id: chore.id,
+      locale,
+      size: PIP_CHORE_SIZE,
+    });
 
     if (!opened) toast.error(tPip('unavailable'));
   }

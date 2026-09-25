@@ -38,6 +38,15 @@ const DEFAULT_SIZE: PipSize = { width: 340, height: 190 };
 export const PIP_LIST_SIZE: PipSize = { width: 340, height: 420 };
 
 /**
+ * Size for the chore popup. A chore card carries more rows than a habit one —
+ * cadence, next date, last done, notes — and then its action footer, which at
+ * the default height fell outside the window: the buttons rendered and were
+ * simply clipped, so the card looked like it would not let you mark anything
+ * done.
+ */
+export const PIP_CHORE_SIZE: PipSize = { width: 340, height: 320 };
+
+/**
  * Broadcast after any write that a floating window might be showing.
  *
  * Deliberately ONE event with no payload. Each window is its own webview and
