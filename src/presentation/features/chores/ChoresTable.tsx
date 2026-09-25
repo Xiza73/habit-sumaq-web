@@ -2,7 +2,16 @@
 
 import { useTranslations } from 'next-intl';
 
-import { Archive, ArchiveRestore, Check, History, Pencil, SkipForward, Trash2 } from 'lucide-react';
+import {
+  Archive,
+  ArchiveRestore,
+  Check,
+  History,
+  Pencil,
+  PictureInPicture2,
+  SkipForward,
+  Trash2,
+} from 'lucide-react';
 
 import { useDateFormat } from '@/core/application/hooks/use-user-settings';
 import { type Chore } from '@/core/domain/entities/chore';
@@ -29,6 +38,8 @@ interface ChoresTableProps {
   onArchive: (chore: Chore) => void;
   /** Delete a chore (same handler the cards use). */
   onDelete: (chore: Chore) => void;
+  /** Opens the chore in a floating window. Desktop only — see `ChoreCard`. */
+  onOpenPip?: (chore: Chore) => void;
 }
 
 /**
@@ -45,8 +56,10 @@ export function ChoresTable({
   onEdit,
   onArchive,
   onDelete,
+  onOpenPip,
 }: ChoresTableProps) {
   const t = useTranslations('chores');
+  const tPip = useTranslations('pip');
   const dateFormat = useDateFormat();
   const today = getTodayLocaleDate();
 
@@ -159,7 +172,24 @@ export function ChoresTable({
             destructive: true,
           },
         );
-        return <TableRowActions actions={actions} triggerLabel={t('table.actions')} />;
+        return (
+          <div className="flex items-center justify-end gap-1">
+            {/* Same action the card offers, in the same place in the row. The
+                two views must not disagree about what you can do to a chore. */}
+            {onOpenPip && (
+              <button
+                type="button"
+                onClick={() => onOpenPip(chore)}
+                aria-label={tPip('open')}
+                title={tPip('open')}
+                className="inline-flex size-7 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              >
+                <PictureInPicture2 className="size-3.5" aria-hidden />
+              </button>
+            )}
+            <TableRowActions actions={actions} triggerLabel={t('table.actions')} />
+          </div>
+        );
       },
     },
   ];

@@ -85,6 +85,7 @@ export function HabitsTable({
   onOpenPip,
 }: HabitsTableProps) {
   const t = useTranslations('habits');
+  const tPip = useTranslations('pip');
   const tCommon = useTranslations('common');
 
   const columns: DataTableColumn<HabitWithStats>[] = [
@@ -175,8 +176,8 @@ export function HabitsTable({
               <button
                 type="button"
                 onClick={() => onOpenPip(habit)}
-                aria-label={t('pip.open')}
-                title={t('pip.open')}
+                aria-label={tPip('open')}
+                title={tPip('open')}
                 className={ICON_BUTTON_CLASS}
               >
                 <PictureInPicture2 className="size-3.5" aria-hidden />

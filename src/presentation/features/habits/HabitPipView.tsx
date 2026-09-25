@@ -68,6 +68,7 @@ function pad(n: number): string {
  */
 export function HabitPipView({ habitId }: { habitId: string }) {
   const t = useTranslations('habits');
+  const tPip = useTranslations('pip');
   usePipWindowSync(WATCHED_KEYS);
 
   const { data: habit, isLoading } = useHabit(habitId);
@@ -116,7 +117,7 @@ export function HabitPipView({ habitId }: { habitId: string }) {
     if (currentCount >= target.periodTarget) return;
     logMutation.mutate(
       { habitId: target.id, data: { date: getTodayLocaleDate(), count: currentCount + 1 } },
-      { onError: () => toast.error(t('pip.notFound')) },
+      { onError: () => toast.error(tPip('notFound')) },
     );
   }
 
@@ -136,7 +137,7 @@ export function HabitPipView({ habitId }: { habitId: string }) {
   if (!habit) {
     return (
       <div className="flex h-screen w-screen items-center justify-center bg-card p-4 text-center text-sm text-muted-foreground">
-        {t('pip.notFound')}
+        {tPip('notFound')}
       </div>
     );
   }
@@ -191,8 +192,8 @@ export function HabitPipView({ habitId }: { habitId: string }) {
           <button
             type="button"
             onClick={() => setOpacityStep((step) => (step + 1) % OPACITY_LEVELS.length)}
-            aria-label={t('pip.opacity')}
-            title={`${t('pip.opacity')} — ${Math.round(OPACITY_LEVELS[opacityStep] * 100)}%`}
+            aria-label={tPip('opacity')}
+            title={`${tPip('opacity')} — ${Math.round(OPACITY_LEVELS[opacityStep] * 100)}%`}
             className="rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
           >
             <Blend className="size-4" />
@@ -208,8 +209,8 @@ export function HabitPipView({ habitId }: { habitId: string }) {
       <button
         type="button"
         onClick={() => setTimerOpen((v) => !v)}
-        aria-label={timerOpen ? t('pip.timerHide') : t('pip.timer')}
-        title={timerOpen ? t('pip.timerHide') : t('pip.timer')}
+        aria-label={timerOpen ? tPip('timerHide') : tPip('timer')}
+        title={timerOpen ? tPip('timerHide') : tPip('timer')}
         className={cn(
           'group/bar flex h-6 w-full shrink-0 items-center justify-center border-t transition-colors',
           timerOpen

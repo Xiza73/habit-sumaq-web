@@ -120,6 +120,7 @@ export function HabitCard({
   headerActions,
 }: HabitCardProps) {
   const t = useTranslations('habits');
+  const tPip = useTranslations('pip');
   const tCommon = useTranslations('common');
   const [menuOpen, setMenuOpen] = useState(false);
   const hasMenu = !!onEdit || !!onArchive || !!onDelete;
@@ -145,8 +146,8 @@ export function HabitCard({
             type="button"
             onClick={onClosePip}
             className="rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-            aria-label={t('pip.close')}
-            title={t('pip.close')}
+            aria-label={tPip('close')}
+            title={tPip('close')}
           >
             <X className="size-4" />
           </button>
@@ -155,8 +156,8 @@ export function HabitCard({
             type="button"
             onClick={() => onOpenPip(habit)}
             className="rounded-lg p-1.5 text-muted-foreground opacity-0 transition-opacity hover:bg-muted group-hover:opacity-100"
-            aria-label={t('pip.open')}
-            title={t('pip.open')}
+            aria-label={tPip('open')}
+            title={tPip('open')}
           >
             <PictureInPicture2 className="size-4" />
           </button>

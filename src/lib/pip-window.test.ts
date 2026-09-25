@@ -25,6 +25,12 @@ describe('pip-window', () => {
     expect(pipLabelFor('chores', 'a b/c.d')).toBe('pip-chores-abcd');
   });
 
+  it('keeps each module in its own window', () => {
+    // Same id in two modules must not collide: a chore and a habit sharing a
+    // uuid would otherwise focus each other's window instead of opening.
+    expect(pipLabelFor('habits', 'x')).not.toBe(pipLabelFor('chores', 'x'));
+  });
+
   it('labels the list popups by module alone', () => {
     // `priorities` and `reminders` show the whole list, so there is no id to
     // key on — and only one window each, which the label has to reflect or a

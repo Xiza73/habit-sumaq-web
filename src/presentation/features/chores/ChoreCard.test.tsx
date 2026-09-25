@@ -51,7 +51,10 @@ const baseChore: Chore = {
   isOverdue: false,
 };
 
-function renderCard(chore: Chore = baseChore) {
+function renderCard(
+  chore: Chore = baseChore,
+  overrides: Partial<Parameters<typeof ChoreCard>[0]> = {},
+) {
   const handlers = {
     onMarkDone: vi.fn(),
     onSkip: vi.fn(),
@@ -60,7 +63,7 @@ function renderCard(chore: Chore = baseChore) {
     onDelete: vi.fn(),
     onViewHistory: vi.fn(),
   };
-  render(<ChoreCard chore={chore} {...handlers} />, { wrapper: TestProviders });
+  render(<ChoreCard chore={chore} {...handlers} {...overrides} />, { wrapper: TestProviders });
   return handlers;
 }
 
@@ -193,5 +196,42 @@ describe('ChoreCard', () => {
     renderCard({ ...baseChore, nextDueDate: '2026-06-01' });
     expect(screen.queryByRole('button', { name: /^hecho$/i })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /^saltear$/i })).not.toBeInTheDocument();
+  });
+});
+
+describe('ChoreCard - floating window', () => {
+  it('offers to open the popup when the handler is given', async () => {
+    const user = userEvent.setup();
+    const onOpenPip = vi.fn();
+    const chore = baseChore;
+
+    renderCard(chore, { onOpenPip });
+    await user.click(screen.getByRole('button', { name: /abrir en ventana flotante/i }));
+
+    expect(onOpenPip).toHaveBeenCalledWith(chore);
+  });
+
+  it('shows a CLOSE button instead when rendered inside the popup', async () => {
+    const user = userEvent.setup();
+    const onClosePip = vi.fn();
+
+    renderCard(baseChore, { onClosePip });
+    await user.click(screen.getByRole('button', { name: /cerrar ventana flotante/i }));
+
+    expect(onClosePip).toHaveBeenCalled();
+  });
+
+  it('drops the overflow menu when there is nothing to put in it', () => {
+    // A menu whose every entry is a no-op is worse than no menu. The popup
+    // passes no administrative handlers, which leaves the close button alone
+    // in the corner the hand already goes to.
+    renderCard(baseChore, {
+      onEdit: undefined,
+      onArchive: undefined,
+      onDelete: undefined,
+      onViewHistory: undefined,
+    });
+
+    expect(screen.queryByRole('button', { name: /chore actions/i })).not.toBeInTheDocument();
   });
 });
