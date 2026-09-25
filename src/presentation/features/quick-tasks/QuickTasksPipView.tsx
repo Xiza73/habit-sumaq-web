@@ -44,7 +44,7 @@ export function QuickTasksPipView() {
   }
 
   return (
-    <PipShell>
+    <PipShell title={t('title')}>
       {tasks.length === 0 ? (
         <p className="py-6 text-center text-sm text-muted-foreground">{t('emptyState')}</p>
       ) : (

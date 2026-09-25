@@ -165,9 +165,10 @@ describe('HabitPipView opacity', () => {
     expect(root.style.opacity).toBe('1');
   });
 
-  it('goes solid while the pointer is on it', () => {
-    // Dimming helps while the window is being ignored. Reaching for it means
-    // wanting to read and click it.
+  it('keeps the chosen level with the pointer on it', () => {
+    // It used to snap back to solid on hover, which made the button read as
+    // dead: the pointer is on the window exactly when you click it, so the
+    // level changed and nothing moved.
     const { container } = render(<HabitPipView habitId="h1" />, { wrapper: TestProviders });
     const root = container.firstElementChild as HTMLElement;
 
@@ -175,9 +176,6 @@ describe('HabitPipView opacity', () => {
     expect(root.style.opacity).toBe('0.7');
 
     fireEvent.mouseEnter(root);
-    expect(root.style.opacity).toBe('1');
-
-    fireEvent.mouseLeave(root);
     expect(root.style.opacity).toBe('0.7');
   });
 });

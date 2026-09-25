@@ -51,7 +51,7 @@ export function RemindersPipView() {
   const ordered = [...(reminders ?? [])].sort((a, b) => compareReminders(a, b, today));
 
   return (
-    <PipShell>
+    <PipShell title={t('title')}>
       {ordered.length === 0 ? (
         <p className="py-6 text-center text-sm text-muted-foreground">{t('emptyState')}</p>
       ) : (
