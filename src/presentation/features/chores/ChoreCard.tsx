@@ -12,10 +12,12 @@ import {
   History,
   MoreVertical,
   Pencil,
+  PictureInPicture2,
   Repeat2,
   SkipForward,
   Tag,
   Trash2,
+  X,
 } from 'lucide-react';
 
 import { useDateFormat } from '@/core/application/hooks/use-user-settings';
@@ -29,10 +31,24 @@ interface ChoreCardProps {
   chore: Chore;
   onMarkDone: (chore: Chore) => void;
   onSkip: (chore: Chore) => void;
-  onEdit: (chore: Chore) => void;
-  onArchive: (chore: Chore) => void;
-  onDelete: (chore: Chore) => void;
-  onViewHistory: (chore: Chore) => void;
+  /**
+   * Administrative actions. Optional as a set: the overflow menu renders only
+   * when it would have something in it. The floating window passes none —
+   * editing or deleting from a 340px always-on-top window with no chrome is
+   * one misclick from destructive, and the main window is right there.
+   */
+  onEdit?: (chore: Chore) => void;
+  onArchive?: (chore: Chore) => void;
+  onDelete?: (chore: Chore) => void;
+  onViewHistory?: (chore: Chore) => void;
+  /** Opens this chore in a floating always-on-top window. Desktop only. */
+  onOpenPip?: (chore: Chore) => void;
+  /** Closes the floating window. The popup renders the SAME card with this. */
+  onClosePip?: () => void;
+  /** Rendered in the top-right cluster, before the close button. */
+  headerActions?: React.ReactNode;
+  /** Extra classes for the card container — the popup drops the frame. */
+  className?: string;
 }
 
 export function ChoreCard({
@@ -43,9 +59,14 @@ export function ChoreCard({
   onArchive,
   onDelete,
   onViewHistory,
+  onOpenPip,
+  onClosePip,
+  headerActions,
+  className,
 }: ChoreCardProps) {
   const t = useTranslations('chores');
   const dateFormat = useDateFormat();
+  const tPip = useTranslations('pip');
   const [menuOpen, setMenuOpen] = useState(false);
 
   const isArchived = !chore.isActive;
@@ -53,6 +74,16 @@ export function ChoreCard({
   // the backend `isOverdue` flag covers only the overdue case, but here
   // we need to surface "upcoming" / "horizon" as well.
   const status = getChoreStatus(chore.nextDueDate, getTodayLocaleDate(), chore);
+
+  // Done and skip live in the menu ONLY for horizon chores — for everything
+  // else they are in the footer. So an empty menu is possible, and rendering
+  // it anyway gives a button that opens nothing.
+  const hasMenuItems =
+    (!isArchived && status === 'horizon') ||
+    !!onEdit ||
+    !!onViewHistory ||
+    !!onArchive ||
+    !!onDelete;
 
   const intervalUnitLabel = t(`intervalUnit.${chore.intervalUnit}`, {
     value: chore.intervalValue,
@@ -62,6 +93,7 @@ export function ChoreCard({
     <div
       className={cn(
         'group relative flex flex-col gap-4 rounded-xl border border-border bg-card p-5 transition-shadow hover:shadow-md',
+        className,
         isArchived && 'opacity-60',
       )}
     >
@@ -104,15 +136,42 @@ export function ChoreCard({
           </span>
         </div>
 
-        <div className="relative">
-          <button
-            type="button"
-            onClick={() => setMenuOpen((v) => !v)}
-            className="rounded-lg p-1.5 text-muted-foreground opacity-0 transition-opacity hover:bg-muted group-hover:opacity-100"
-            aria-label="Chore actions"
-          >
-            <MoreVertical className="size-4" />
-          </button>
+        <div className="relative flex items-center gap-1">
+          {headerActions}
+          {/* Stays visible instead of appearing on hover like the menu: in the
+              popup it is the only way out, and a close button you have to
+              discover by hovering is not a close button. */}
+          {onClosePip ? (
+            <button
+              type="button"
+              onClick={onClosePip}
+              className="rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+              aria-label={tPip('close')}
+              title={tPip('close')}
+            >
+              <X className="size-4" />
+            </button>
+          ) : onOpenPip ? (
+            <button
+              type="button"
+              onClick={() => onOpenPip(chore)}
+              className="rounded-lg p-1.5 text-muted-foreground opacity-0 transition-opacity hover:bg-muted group-hover:opacity-100"
+              aria-label={tPip('open')}
+              title={tPip('open')}
+            >
+              <PictureInPicture2 className="size-4" />
+            </button>
+          ) : null}
+          {hasMenuItems && (
+            <button
+              type="button"
+              onClick={() => setMenuOpen((v) => !v)}
+              className="rounded-lg p-1.5 text-muted-foreground opacity-0 transition-opacity hover:bg-muted group-hover:opacity-100"
+              aria-label="Chore actions"
+            >
+              <MoreVertical className="size-4" />
+            </button>
+          )}
 
           {menuOpen && (
             <>
@@ -163,7 +222,7 @@ export function ChoreCard({
                     type="button"
                     onClick={() => {
                       setMenuOpen(false);
-                      onEdit(chore);
+                      onEdit?.(chore);
                     }}
                     className="flex w-full items-center gap-2 px-3 py-2 text-sm hover:bg-muted"
                   >
@@ -175,7 +234,7 @@ export function ChoreCard({
                   type="button"
                   onClick={() => {
                     setMenuOpen(false);
-                    onViewHistory(chore);
+                    onViewHistory?.(chore);
                   }}
                   className="flex w-full items-center gap-2 px-3 py-2 text-sm hover:bg-muted"
                 >
@@ -186,7 +245,7 @@ export function ChoreCard({
                   type="button"
                   onClick={() => {
                     setMenuOpen(false);
-                    onArchive(chore);
+                    onArchive?.(chore);
                   }}
                   className="flex w-full items-center gap-2 px-3 py-2 text-sm hover:bg-muted"
                 >
@@ -206,7 +265,7 @@ export function ChoreCard({
                   type="button"
                   onClick={() => {
                     setMenuOpen(false);
-                    onDelete(chore);
+                    onDelete?.(chore);
                   }}
                   className="flex w-full items-center gap-2 px-3 py-2 text-sm text-destructive hover:bg-muted"
                 >
@@ -250,7 +309,7 @@ export function ChoreCard({
         )}
       </dl>
 
-      {isArchived ? (
+      {isArchived && onArchive ? (
         <button
           type="button"
           onClick={() => onArchive(chore)}

@@ -32,7 +32,12 @@ const baseTask: Task = {
 };
 
 function renderItem(
-  overrides: { task?: Partial<Task>; sortable?: boolean; onEdit?: () => void } = {},
+  overrides: {
+    task?: Partial<Task>;
+    sortable?: boolean;
+    onEdit?: () => void;
+    hideAdminActions?: boolean;
+  } = {},
 ) {
   const task: Task = { ...baseTask, ...overrides.task };
   const onEdit = overrides.onEdit ?? vi.fn();
@@ -41,7 +46,12 @@ function renderItem(
     ...render(
       <DndContext>
         <SortableContext items={[task.id]} strategy={verticalListSortingStrategy}>
-          <TaskItem task={task} sortable={overrides.sortable} onEdit={onEdit} />
+          <TaskItem
+            task={task}
+            sortable={overrides.sortable}
+            onEdit={onEdit}
+            hideAdminActions={overrides.hideAdminActions}
+          />
         </SortableContext>
       </DndContext>,
       { wrapper: TestProviders },
@@ -194,5 +204,18 @@ describe('TaskItem', () => {
       </DndContext>,
     );
     expect(screen.queryByRole('button', { name: /arrastrar tarea/i })).not.toBeInTheDocument();
+  });
+});
+
+describe('TaskItem - inside a floating window', () => {
+  it('hides edit and delete', () => {
+    // Delete lives inside this component with its own mutation, so the card
+    // trick of withholding a handler does not reach it — hence one explicit
+    // flag. The launcher is not here at all any more: a window is opened per
+    // SECTION, from the section header.
+    renderItem({ hideAdminActions: true });
+
+    expect(screen.queryByRole('button', { name: /editar/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /eliminar/i })).not.toBeInTheDocument();
   });
 });

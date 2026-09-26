@@ -13,6 +13,21 @@ import { useAuthStore } from '@/core/application/stores/auth.store';
 import { ApiError } from './api-error';
 import { httpClient } from './http-client';
 
+/**
+ * A call counter on `clearAuth` that starts at zero.
+ *
+ * `mockClear` is not belt and braces here. Zustand's `set` replaces the state
+ * OBJECT, so a spy installed in an earlier test is restored onto the object it
+ * was installed on while the current one keeps the wrapper — and `vi.spyOn`
+ * over an existing mock hands back that mock, call history and all. Without
+ * this, a test reads another test's logout.
+ */
+function clearAuthSpy() {
+  const spy = vi.spyOn(useAuthStore.getState(), 'clearAuth');
+  spy.mockClear();
+  return spy;
+}
+
 /** Builds a `fetch`-compatible response mock from a status + optional body. */
 function mockResponse(status: number, body?: unknown): Response {
   const init: ResponseInit = { status };
@@ -34,12 +49,16 @@ describe('httpClient', () => {
   beforeEach(() => {
     vi.stubGlobal('fetch', fetchMock);
     fetchMock.mockReset();
-    // Ensure every test starts from a clean auth slate.
+    // Ensure every test starts from a clean auth slate. The cookie matters as
+    // much as the store now: it is how windows hand each other a token, and
+    // jsdom keeps it between tests in a file.
     useAuthStore.setState({ accessToken: null, user: null });
+    document.cookie = 'access_token=; path=/; max-age=0';
   });
 
   afterEach(() => {
     vi.unstubAllGlobals();
+    vi.restoreAllMocks();
   });
 
   describe('successful responses', () => {
@@ -181,8 +200,10 @@ describe('httpClient', () => {
 
   describe('401 handling', () => {
     it('clears auth and throws Session expired when refresh fails', async () => {
+      // The genuine-expiry path: no window can refresh, so nothing ever shows
+      // up in the shared cookie and the adoption window simply runs out.
       useAuthStore.setState({ accessToken: 'stale-token', user: null });
-      const clearSpy = vi.spyOn(useAuthStore.getState(), 'clearAuth');
+      const clearSpy = clearAuthSpy();
 
       fetchMock
         .mockResolvedValueOnce(mockResponse(401)) // original request unauthorized
@@ -222,6 +243,62 @@ describe('httpClient', () => {
       expect(result).toEqual({ id: 'me' });
       expect(useAuthStore.getState().accessToken).toBe('fresh');
       expect(fetchMock).toHaveBeenCalledTimes(3);
+    });
+  });
+
+  describe('losing the rotation race to another window', () => {
+    it('adopts the token the winning window published instead of logging out', async () => {
+      // The reported bug: three habit popups open, you check one in, and the
+      // others drop to the login screen while the one you acted in is fine.
+      //
+      // Every window refetches in the same instant, all present the same
+      // refresh token, and the backend revokes it on first use — so all but
+      // one are handed a dead token. The loser does not need a rotation of its
+      // own: the winner already published the new access token to the cookie
+      // every window shares.
+      useAuthStore.setState({ accessToken: 'stale', user: null });
+      const clearSpy = clearAuthSpy();
+
+      fetchMock
+        .mockResolvedValueOnce(mockResponse(401)) // original → unauthorized
+        .mockImplementationOnce(() => {
+          // We lost: by the time our rotation is rejected, the window that
+          // won has already written its new token.
+          document.cookie = 'access_token=won-by-another-window; path=/';
+          return Promise.resolve(mockResponse(401));
+        })
+        .mockResolvedValueOnce(
+          mockResponse(200, { success: true, data: { id: 'me' }, message: 'ok', error: null }),
+        ); // retried original → success
+
+      const result = await httpClient.get<{ id: string }>('/me');
+
+      expect(result).toEqual({ id: 'me' });
+      expect(clearSpy).not.toHaveBeenCalled();
+      expect(useAuthStore.getState().accessToken).toBe('won-by-another-window');
+      // The retry has to actually carry the adopted token — recovering the
+      // token and then replaying the request with the dead one would loop.
+      const retryHeaders = fetchMock.mock.calls[2][1]?.headers as Record<string, string>;
+      expect(retryHeaders.Authorization).toBe('Bearer won-by-another-window');
+    });
+
+    it('does not mistake the token it already had for a newly published one', async () => {
+      // The cookie still holding what we just sent means nobody rotated.
+      // Treating that as a recovery would replay the request against the same
+      // dead token instead of ending the session.
+      useAuthStore.setState({ accessToken: 'stale', user: null });
+      document.cookie = 'access_token=stale; path=/';
+
+      fetchMock
+        .mockResolvedValueOnce(mockResponse(401)) // original → unauthorized
+        .mockResolvedValueOnce(mockResponse(401)); // refresh rejected, nobody won
+
+      await expect(httpClient.get('/me')).rejects.toMatchObject({
+        name: 'ApiError',
+        code: 'AUT_001',
+      });
+
+      expect(fetchMock).toHaveBeenCalledTimes(2);
     });
   });
 });

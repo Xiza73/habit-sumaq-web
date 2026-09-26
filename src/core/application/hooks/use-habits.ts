@@ -20,7 +20,7 @@ import { detectMilestoneCrossed } from '@/lib/streak-milestones';
 import { useCelebrationStore } from '../stores/celebration.store';
 
 import { alertKeys } from './use-alerts';
-import { notifyHabitsChanged } from './use-habits-window-sync';
+import { notifyPipChanged } from './use-pip-window-sync';
 import { userSettingsKeys } from './use-user-settings';
 
 export const habitKeys = {
@@ -65,7 +65,7 @@ export function useCreateHabit() {
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: habitKeys.lists() });
       void queryClient.invalidateQueries({ queryKey: habitKeys.dailyAll() });
-      notifyHabitsChanged();
+      notifyPipChanged();
       void queryClient.invalidateQueries({ queryKey: alertKeys.lists() });
     },
   });
@@ -80,7 +80,7 @@ export function useUpdateHabit() {
     onSuccess: (_, { id }) => {
       void queryClient.invalidateQueries({ queryKey: habitKeys.lists() });
       void queryClient.invalidateQueries({ queryKey: habitKeys.dailyAll() });
-      notifyHabitsChanged();
+      notifyPipChanged();
       void queryClient.invalidateQueries({ queryKey: habitKeys.detail(id) });
       void queryClient.invalidateQueries({ queryKey: alertKeys.lists() });
     },
@@ -95,7 +95,7 @@ export function useArchiveHabit() {
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: habitKeys.lists() });
       void queryClient.invalidateQueries({ queryKey: habitKeys.dailyAll() });
-      notifyHabitsChanged();
+      notifyPipChanged();
       void queryClient.invalidateQueries({ queryKey: alertKeys.lists() });
     },
   });
@@ -109,7 +109,7 @@ export function useDeleteHabit() {
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: habitKeys.lists() });
       void queryClient.invalidateQueries({ queryKey: habitKeys.dailyAll() });
-      notifyHabitsChanged();
+      notifyPipChanged();
       void queryClient.invalidateQueries({ queryKey: alertKeys.lists() });
     },
   });
@@ -156,7 +156,7 @@ export function useRescueStreak() {
     mutationFn: (habitId: string) => habitsApi.rescueStreak(habitId),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: habitKeys.all });
-      notifyHabitsChanged();
+      notifyPipChanged();
       void queryClient.invalidateQueries({ queryKey: userSettingsKeys.all });
     },
   });
@@ -178,10 +178,54 @@ export function useReleaseRescue() {
       habitsApi.releaseRescue(habitId, date),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: habitKeys.all });
-      notifyHabitsChanged();
+      notifyPipChanged();
       void queryClient.invalidateQueries({ queryKey: userSettingsKeys.all });
     },
   });
+}
+
+/**
+ * How a habit looks the instant a log is sent, before the server answers.
+ *
+ * Extracted because the SAME patch has to land on two cached queries: the
+ * day's list and the habit's detail. Only the list was being patched, so the
+ * floating window and the detail page — both of which read the detail — sat
+ * on the old count until the refetch came back, and the check-in felt laggy
+ * in exactly the places the list did not.
+ *
+ * Inlining it twice is how the two end up disagreeing about the same habit.
+ */
+function applyOptimisticLog(habit: HabitWithStats, data: HabitLogInput): HabitWithStats {
+  // Mirrors the server's resolution order: an explicit target for this call,
+  // else the day's existing one, else the habit default. Measuring against
+  // `habit.targetCount` here would make the optimistic row disagree with the
+  // row that comes back.
+  const target = data.targetCount ?? habit.todayLog?.targetCount ?? habit.periodTarget;
+  // The server caps the count at the target, so lowering a day's target
+  // truncates its count. Cap here too, or the row flashes an impossible
+  // "6/4" until the refetch lands.
+  const newCount = Math.min(data.count, target);
+  const completed = newCount >= target;
+
+  return {
+    ...habit,
+    periodCount: habit.periodCount - (habit.todayLog?.count ?? 0) + newCount,
+    periodCompleted: completed,
+    periodTarget: target,
+    todayLog: habit.todayLog
+      ? { ...habit.todayLog, count: newCount, completed, targetCount: target }
+      : {
+          id: 'optimistic',
+          habitId: habit.id,
+          date: data.date,
+          count: newCount,
+          completed,
+          targetCount: target,
+          note: data.note ?? null,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        },
+  };
 }
 
 export function useLogHabit() {
@@ -209,48 +253,41 @@ export function useLogHabit() {
 
       if (previousDaily) {
         queryClient.setQueryData<HabitWithStats[]>(dailyKey, (old) =>
-          old?.map((habit) => {
-            if (habit.id !== habitId) return habit;
-
-            // Mirrors the server's resolution order: an explicit target for
-            // this call, else the day's existing one, else the habit default.
-            // Measuring against `habit.targetCount` here would make the
-            // optimistic row disagree with the row that comes back.
-            const target = data.targetCount ?? habit.todayLog?.targetCount ?? habit.periodTarget;
-            // The server caps the count at the target, so lowering a day's
-            // target truncates its count. Cap here too, or the row flashes an
-            // impossible "6/4" until the refetch lands.
-            const newCount = Math.min(data.count, target);
-            const completed = newCount >= target;
-
-            return {
-              ...habit,
-              periodCount: habit.periodCount - (habit.todayLog?.count ?? 0) + newCount,
-              periodCompleted: completed,
-              periodTarget: target,
-              todayLog: habit.todayLog
-                ? { ...habit.todayLog, count: newCount, completed, targetCount: target }
-                : {
-                    id: 'optimistic',
-                    habitId,
-                    date: data.date,
-                    count: newCount,
-                    completed,
-                    targetCount: target,
-                    note: data.note ?? null,
-                    createdAt: new Date().toISOString(),
-                    updatedAt: new Date().toISOString(),
-                  },
-            };
-          }),
+          old?.map((habit) => (habit.id === habitId ? applyOptimisticLog(habit, data) : habit)),
         );
       }
 
-      return { previousDaily, dailyKey, prevStreak, habitName };
+      // The detail query is what the floating window and the habit page read,
+      // and it was left untouched — hence the lag there while the list felt
+      // instant.
+      //
+      // Only when the log is for TODAY: the detail's `todayLog` means today,
+      // and `HabitList` can log any past date from its picker. Patching it on
+      // a back-fill would put yesterday's count on today's card.
+      const detailKey = habitKeys.detail(habitId);
+      const previousDetail =
+        data.date === getTodayLocaleDate()
+          ? queryClient.getQueryData<HabitWithStats>(detailKey)
+          : undefined;
+
+      if (previousDetail) {
+        await queryClient.cancelQueries({ queryKey: detailKey });
+        queryClient.setQueryData<HabitWithStats>(
+          detailKey,
+          applyOptimisticLog(previousDetail, data),
+        );
+      }
+
+      return { previousDaily, dailyKey, previousDetail, detailKey, prevStreak, habitName };
     },
     onError: (_, __, context) => {
       if (context?.previousDaily) {
         queryClient.setQueryData(context.dailyKey, context.previousDaily);
+      }
+      // Both patches roll back, or the window keeps showing a count the
+      // request never managed to save.
+      if (context?.previousDetail) {
+        queryClient.setQueryData(context.detailKey, context.previousDetail);
       }
     },
     onSuccess: async (_, { habitId, data }, context) => {
@@ -349,7 +386,7 @@ export function useLogHabit() {
       // rest here so they refetch on next access.
       void queryClient.invalidateQueries({ queryKey: habitKeys.lists() });
       void queryClient.invalidateQueries({ queryKey: habitKeys.logs(habitId) });
-      notifyHabitsChanged();
+      notifyPipChanged();
       // Logging a habit can resolve the `habits-midday` alert (when it was
       // the last unlogged DAILY for today). Invalidate so the bell drops.
       void queryClient.invalidateQueries({ queryKey: alertKeys.lists() });

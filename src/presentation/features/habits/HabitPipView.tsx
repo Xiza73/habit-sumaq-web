@@ -1,23 +1,27 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
 
+import { useQueryClient } from '@tanstack/react-query';
 import { Pause, Play, RotateCcw } from 'lucide-react';
 import { toast } from 'sonner';
 
 import {
+  habitKeys,
   useHabit,
   useLogHabit,
   useReleaseRescue,
   useRescueStreak,
 } from '@/core/application/hooks/use-habits';
-import { useHabitsWindowSync } from '@/core/application/hooks/use-habits-window-sync';
-import { useStreakShields } from '@/core/application/hooks/use-user-settings';
+import { usePipWindowSync } from '@/core/application/hooks/use-pip-window-sync';
+import { useTodayLocaleDate } from '@/core/application/hooks/use-today-locale-date';
+import { userSettingsKeys, useStreakShields } from '@/core/application/hooks/use-user-settings';
 import { type HabitWithStats } from '@/core/domain/entities/habit';
 
+import { PipOpacityButton, usePipOpacity } from '@/presentation/features/pip/PipOpacity';
+
 import { playBeep } from '@/lib/beep';
-import { getTodayLocaleDate } from '@/lib/format';
 import { closeSelfPip, resizeSelfPip } from '@/lib/pip-window';
 import { cn } from '@/lib/utils';
 
@@ -25,8 +29,11 @@ import { HabitCard } from './HabitCard';
 import { useCountdown } from './useCountdown';
 
 /** Window heights, card-only and card-plus-timer. Kept next to the strip. */
-const HEIGHT_CARD = 190;
-const HEIGHT_WITH_TIMER = 250;
+const CARD_SIZE = { width: 340, height: 190 } as const;
+const TIMER_SIZE = { width: 340, height: 250 } as const;
+
+/** What this window shows, and therefore what it refetches on a broadcast. */
+const WATCHED_KEYS = [habitKeys.all, userSettingsKeys.all];
 
 /** Must match the strip's CSS transition, or the two steps desynchronise. */
 const REVEAL_MS = 200;
@@ -52,7 +59,11 @@ function pad(n: number): string {
  */
 export function HabitPipView({ habitId }: { habitId: string }) {
   const t = useTranslations('habits');
-  useHabitsWindowSync();
+  const tPip = useTranslations('pip');
+  usePipWindowSync(WATCHED_KEYS);
+
+  const queryClient = useQueryClient();
+  const today = useTodayLocaleDate();
 
   const { data: habit, isLoading } = useHabit(habitId);
   const logMutation = useLogHabit();
@@ -60,9 +71,26 @@ export function HabitPipView({ habitId }: { habitId: string }) {
   const releaseMutation = useReleaseRescue();
   const streakShields = useStreakShields();
 
+  // The card's numbers come from the server computed for ITS today, and
+  // nothing invalidates them when the local day turns over. A window left open
+  // overnight keeps showing yesterday, so a tap would add to yesterday's count
+  // on today's date — `count` is absolute, not an increment, so one tap could
+  // land as four.
+  //
+  // `refetchOnWindowFocus` does not save this: clicking the button focuses the
+  // window and starts a refetch, but the handler has already read the count
+  // from the render that is on screen.
+  const previousDay = useRef(today);
+  useEffect(() => {
+    if (previousDay.current === today) return;
+    previousDay.current = today;
+    void queryClient.invalidateQueries({ queryKey: habitKeys.all });
+  }, [today, queryClient]);
+
   const [timerOpen, setTimerOpen] = useState(false);
   const { status, remaining, start, pause, resume, reset } = useCountdown(playBeep);
   const [minutes, setMinutes] = useState(10);
+  const opacity = usePipOpacity();
   const [seconds, setSeconds] = useState(0);
 
   // The window resize and the strip's own animation have to be SEQUENCED, not
@@ -73,11 +101,11 @@ export function HabitPipView({ habitId }: { habitId: string }) {
   useEffect(() => {
     if (timerOpen) {
       // Room first, then the strip eases into space that already exists.
-      void resizeSelfPip(HEIGHT_WITH_TIMER);
+      void resizeSelfPip(TIMER_SIZE);
       return;
     }
     // Fold first, shrink after — otherwise the last frames are cut off.
-    const id = setTimeout(() => void resizeSelfPip(HEIGHT_CARD), REVEAL_MS);
+    const id = setTimeout(() => void resizeSelfPip(CARD_SIZE), REVEAL_MS);
     return () => clearTimeout(id);
   }, [timerOpen]);
 
@@ -95,8 +123,8 @@ export function HabitPipView({ habitId }: { habitId: string }) {
     const currentCount = target.todayLog?.count ?? 0;
     if (currentCount >= target.periodTarget) return;
     logMutation.mutate(
-      { habitId: target.id, data: { date: getTodayLocaleDate(), count: currentCount + 1 } },
-      { onError: () => toast.error(t('pip.notFound')) },
+      { habitId: target.id, data: { date: today, count: currentCount + 1 } },
+      { onError: () => toast.error(tPip('notFound')) },
     );
   }
 
@@ -105,18 +133,18 @@ export function HabitPipView({ habitId }: { habitId: string }) {
     if (currentCount <= 0) return;
     logMutation.mutate({
       habitId: target.id,
-      data: { date: getTodayLocaleDate(), count: currentCount - 1 },
+      data: { date: today, count: currentCount - 1 },
     });
   }
 
   if (isLoading) {
-    return <div className="h-screen w-screen animate-pulse bg-card" />;
+    return <div className="h-screen w-screen rounded-xl bg-card animate-pulse" />;
   }
 
   if (!habit) {
     return (
-      <div className="flex h-screen w-screen items-center justify-center bg-card p-4 text-center text-sm text-muted-foreground">
-        {t('pip.notFound')}
+      <div className="flex h-screen w-screen items-center justify-center rounded-xl bg-card p-4 text-center text-sm text-muted-foreground">
+        {tPip('notFound')}
       </div>
     );
   }
@@ -140,7 +168,8 @@ export function HabitPipView({ habitId }: { habitId: string }) {
     // 340px floating card filling the screen is nobody idea of a feature.
     <div
       data-tauri-drag-region="deep"
-      className="flex h-screen w-screen flex-col overflow-hidden bg-card"
+      style={{ opacity: opacity.value }}
+      className="flex h-screen w-screen flex-col overflow-hidden rounded-xl bg-card transition-opacity duration-200"
     >
       <HabitCard
         habit={habit}
@@ -159,11 +188,10 @@ export function HabitPipView({ habitId }: { habitId: string }) {
         onRescueStreak={(h) => rescueMutation.mutate(h.id)}
         streakShields={streakShields}
         rescuePending={rescueMutation.isPending}
-        onReleaseRescue={(h) =>
-          releaseMutation.mutate({ habitId: h.id, date: getTodayLocaleDate() })
-        }
+        onReleaseRescue={(h) => releaseMutation.mutate({ habitId: h.id, date: today })}
         releasePending={releaseMutation.isPending}
         onClosePip={() => void closeSelfPip()}
+        headerActions={<PipOpacityButton level={opacity.level} onClick={opacity.cycle} />}
       />
 
       {/*
@@ -174,8 +202,8 @@ export function HabitPipView({ habitId }: { habitId: string }) {
       <button
         type="button"
         onClick={() => setTimerOpen((v) => !v)}
-        aria-label={timerOpen ? t('pip.timerHide') : t('pip.timer')}
-        title={timerOpen ? t('pip.timerHide') : t('pip.timer')}
+        aria-label={timerOpen ? tPip('timerHide') : tPip('timer')}
+        title={timerOpen ? tPip('timerHide') : tPip('timer')}
         className={cn(
           'group/bar flex h-6 w-full shrink-0 items-center justify-center border-t transition-colors',
           timerOpen

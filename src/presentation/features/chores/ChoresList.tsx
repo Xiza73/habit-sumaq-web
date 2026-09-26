@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 
 import { Plus } from 'lucide-react';
 import { toast } from 'sonner';
@@ -22,6 +22,7 @@ import { ConfirmDialog } from '@/presentation/components/feedback/ConfirmDialog'
 import { ViewModeToggle } from '@/presentation/components/ui/ViewModeToggle';
 
 import { formatDate } from '@/lib/format';
+import { canUsePip, openPipWindow, PIP_CHORE_SIZE } from '@/lib/pip-window';
 import { cn } from '@/lib/utils';
 
 import { ChoreCard } from './ChoreCard';
@@ -53,10 +54,17 @@ type Tab = 'active' | 'archived';
 
 export function ChoresList() {
   const t = useTranslations('chores');
+  const tPip = useTranslations('pip');
   const tErrors = useTranslations('errors');
   const dateFormat = useDateFormat();
 
   const [tab, setTab] = useState<Tab>('active');
+
+  const locale = useLocale();
+
+  // Evaluated once: the shell cannot become a browser mid-session.
+
+  const [pipAvailable] = useState(canUsePip);
   const showArchived = tab === 'archived';
   const [formOpen, setFormOpen] = useState(false);
   const [editingChore, setEditingChore] = useState<Chore | null>(null);
@@ -94,6 +102,33 @@ export function ChoresList() {
       .filter((c) => (showArchived ? !c.isActive : c.isActive))
       .sort((a, b) => a.nextDueDate.localeCompare(b.nextDueDate));
   }, [chores, showArchived]);
+
+  /**
+
+   * Opens the chore in a floating always-on-top window.
+
+   *
+
+   * The failure branch is real: the desktop shell loads the DEPLOYED site,
+
+   * so a user on an older installer runs this against a Tauri build whose
+
+   * capabilities do not allow creating windows. Telling them to update
+
+   * beats a button that silently does nothing.
+
+   */
+
+  async function handleOpenPip(chore: Chore) {
+    const opened = await openPipWindow({
+      module: 'chores',
+      id: chore.id,
+      locale,
+      size: PIP_CHORE_SIZE,
+    });
+
+    if (!opened) toast.error(tPip('unavailable'));
+  }
 
   function handleOpenCreate() {
     setEditingChore(null);
@@ -239,6 +274,7 @@ export function ChoresList() {
           onEdit={handleEdit}
           onArchive={handleArchive}
           onDelete={setDeleteTarget}
+          onOpenPip={pipAvailable ? (c) => void handleOpenPip(c) : undefined}
         />
       ) : (
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -252,6 +288,7 @@ export function ChoresList() {
               onArchive={handleArchive}
               onDelete={setDeleteTarget}
               onViewHistory={setHistoryTarget}
+              onOpenPip={pipAvailable ? (c) => void handleOpenPip(c) : undefined}
             />
           ))}
         </div>

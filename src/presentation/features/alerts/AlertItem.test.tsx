@@ -221,7 +221,7 @@ describe('AlertItem', () => {
           payload: { missingCount: 1, firstHabitName: 'Tomar agua' },
         }),
       );
-      expect(screen.getByText('Empezá por Tomar agua')).toBeInTheDocument();
+      expect(screen.getByText('Empieza por Tomar agua')).toBeInTheDocument();
 
       rerender(
         <TestProviders>
@@ -235,7 +235,7 @@ describe('AlertItem', () => {
         </TestProviders>,
       );
       // 3 missing → 2 left after the "first" name.
-      expect(screen.getByText('Empezá por Tomar agua y 2 más')).toBeInTheDocument();
+      expect(screen.getByText('Empieza por Tomar agua y 2 más')).toBeInTheDocument();
     });
 
     it('renders budget-unlogged with the day streak + currency', () => {

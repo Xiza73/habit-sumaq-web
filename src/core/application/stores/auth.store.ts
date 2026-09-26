@@ -15,7 +15,14 @@ function removeToken() {
   document.cookie = `${TOKEN_COOKIE}=; path=/; max-age=0`;
 }
 
-function readToken(): string | null {
+/**
+ * Reads the access token every window of this app shares.
+ *
+ * Exported because the HTTP client needs to see what ANOTHER window published:
+ * each desktop window is its own webview with its own store, but they all
+ * write to this one cookie.
+ */
+export function readAccessTokenCookie(): string | null {
   if (typeof document === 'undefined') return null;
   const match = document.cookie.match(new RegExp(`(?:^|; )${TOKEN_COOKIE}=([^;]*)`));
   return match ? match[1] : null;
@@ -51,7 +58,7 @@ export const useAuthStore = create<AuthState>((set) => ({
   },
   setUser: (user) => set({ user }),
   hydrateToken: () => {
-    const token = readToken();
+    const token = readAccessTokenCookie();
     if (token) set({ accessToken: token });
   },
 }));

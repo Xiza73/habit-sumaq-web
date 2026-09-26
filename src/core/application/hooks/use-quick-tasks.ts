@@ -9,6 +9,8 @@ import {
 
 import { quickTasksApi } from '@/infrastructure/api/quick-tasks.api';
 
+import { notifyPipChanged } from './use-pip-window-sync';
+
 export const quickTasksKeys = {
   all: ['quick-tasks'] as const,
   list: () => [...quickTasksKeys.all, 'list'] as const,
@@ -28,6 +30,7 @@ export function useCreateQuickTask() {
     mutationFn: (data: CreateQuickTaskInput) => quickTasksApi.create(data),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: quickTasksKeys.all });
+      notifyPipChanged();
     },
   });
 }
@@ -71,6 +74,7 @@ export function useUpdateQuickTask() {
     },
     onSettled: () => {
       void queryClient.invalidateQueries({ queryKey: quickTasksKeys.all });
+      notifyPipChanged();
     },
   });
 }
@@ -102,6 +106,7 @@ export function useDeleteQuickTask() {
     },
     onSettled: () => {
       void queryClient.invalidateQueries({ queryKey: quickTasksKeys.all });
+      notifyPipChanged();
     },
   });
 }
@@ -141,6 +146,7 @@ export function useReorderQuickTasks() {
     },
     onSettled: () => {
       void queryClient.invalidateQueries({ queryKey: quickTasksKeys.all });
+      notifyPipChanged();
     },
   });
 }

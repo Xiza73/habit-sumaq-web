@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 
 import {
   closestCenter,
@@ -17,12 +17,13 @@ import {
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
-import { Loader2, Plus } from 'lucide-react';
+import { Loader2, PictureInPicture2, Plus } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { useQuickTasks, useReorderQuickTasks } from '@/core/application/hooks/use-quick-tasks';
 import { type QuickTask } from '@/core/domain/entities/quick-task';
 
+import { canUsePip, openPipWindow, PIP_LIST_SIZE } from '@/lib/pip-window';
 import { cn } from '@/lib/utils';
 
 import { QuickTaskForm } from './QuickTaskForm';
@@ -31,12 +32,16 @@ import { QuickTaskItem } from './QuickTaskItem';
 export function QuickTasksList() {
   const t = useTranslations('quickTasks');
   const tErrors = useTranslations('errors');
+  const tPip = useTranslations('pip');
+  const locale = useLocale();
 
   const { data: tasks = [], isLoading } = useQuickTasks();
   const reorderMutation = useReorderQuickTasks();
 
   const [formOpen, setFormOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<QuickTask | null>(null);
+  // Read once: whether this is the desktop shell cannot change mid-session.
+  const [pipAvailable] = useState(canUsePip);
 
   const { pending, completed } = useMemo(() => {
     const pendingList = tasks.filter((t) => !t.completed);
@@ -86,6 +91,13 @@ export function QuickTasksList() {
     setEditingTask(null);
   }
 
+  // One window for the whole list, not one per priority: a priority is a line
+  // with a checkbox, so five windows would be five ways to read five lines.
+  async function handleOpenPip() {
+    const opened = await openPipWindow({ module: 'priorities', locale, size: PIP_LIST_SIZE });
+    if (!opened) toast.error(tPip('unavailable'));
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between gap-4">
@@ -93,14 +105,27 @@ export function QuickTasksList() {
           <h1 className="text-2xl font-bold">{t('title')}</h1>
           <p className="text-sm text-muted-foreground">{t('subtitle')}</p>
         </div>
-        <button
-          type="button"
-          onClick={openCreateForm}
-          className="inline-flex items-center gap-2 rounded-md bg-primary px-3 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-        >
-          <Plus className="size-4" />
-          <span className="hidden sm:inline">{t('createTask')}</span>
-        </button>
+        <div className="flex items-center gap-2">
+          {pipAvailable && (
+            <button
+              type="button"
+              onClick={() => void handleOpenPip()}
+              aria-label={tPip('open')}
+              title={tPip('open')}
+              className="rounded-md border border-border p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            >
+              <PictureInPicture2 className="size-4" />
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={openCreateForm}
+            className="inline-flex items-center gap-2 rounded-md bg-primary px-3 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+          >
+            <Plus className="size-4" />
+            <span className="hidden sm:inline">{t('createTask')}</span>
+          </button>
+        </div>
       </div>
 
       {isLoading ? (

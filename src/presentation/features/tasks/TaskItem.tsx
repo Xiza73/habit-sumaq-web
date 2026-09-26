@@ -35,6 +35,17 @@ interface TaskItemProps {
   /** Pending tasks are sortable (drag handle). Completed tasks are not. */
   sortable?: boolean;
   onEdit: (task: Task) => void;
+  /**
+   * Hides the edit and delete buttons.
+   *
+   * Set by the floating window: administering a task from a 340px
+   * always-on-top window with no chrome is one misclick from destructive, and
+   * the board is right there. Delete lives inside this component with its own
+   * mutation, so withholding a handler — the way the card surfaces do it —
+   * would not reach it.
+   */
+  hideAdminActions?: boolean;
+  /** Opens this task in a floating always-on-top window. Desktop only. */
 }
 
 /**
@@ -44,7 +55,12 @@ interface TaskItemProps {
  * - Reuses the markdown renderer from quick-tasks (single source of truth).
  * - The toggle uses `useUpdateTask` which lives under the `tasks` namespace.
  */
-export function TaskItem({ task, sortable = false, onEdit }: TaskItemProps) {
+export function TaskItem({
+  task,
+  sortable = false,
+  onEdit,
+  hideAdminActions = false,
+}: TaskItemProps) {
   const t = useTranslations('tasks');
   const tCommon = useTranslations('common');
 
@@ -168,30 +184,32 @@ export function TaskItem({ task, sortable = false, onEdit }: TaskItemProps) {
             />
           )}
 
-          <div className="flex shrink-0 items-center gap-1">
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                onEdit(task);
-              }}
-              aria-label={t('task.edit')}
-              className="rounded p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-            >
-              <Pencil className="size-3.5" />
-            </button>
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                setConfirmingDelete(true);
-              }}
-              aria-label={t('task.delete')}
-              className="rounded p-1.5 text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
-            >
-              <Trash2 className="size-3.5" />
-            </button>
-          </div>
+          {!hideAdminActions && (
+            <div className="flex shrink-0 items-center gap-1">
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onEdit(task);
+                }}
+                aria-label={t('task.edit')}
+                className="rounded p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+              >
+                <Pencil className="size-3.5" />
+              </button>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setConfirmingDelete(true);
+                }}
+                aria-label={t('task.delete')}
+                className="rounded p-1.5 text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
+              >
+                <Trash2 className="size-3.5" />
+              </button>
+            </div>
+          )}
         </div>
 
         {hasDescription && expanded && (

@@ -90,6 +90,13 @@ interface HabitCardProps {
    * refuses to start a drag from inside one.
    */
   disableDetailLink?: boolean;
+  /**
+   * Rendered in the top-right cluster, before the close button. A plain slot
+   * so the card stays ignorant of who is filling it — the floating window puts
+   * its opacity control here, and the card needs to know nothing about
+   * windows to host it.
+   */
+  headerActions?: React.ReactNode;
 }
 
 export function HabitCard({
@@ -110,8 +117,10 @@ export function HabitCard({
   onClosePip,
   className,
   disableDetailLink = false,
+  headerActions,
 }: HabitCardProps) {
   const t = useTranslations('habits');
+  const tPip = useTranslations('pip');
   const tCommon = useTranslations('common');
   const [menuOpen, setMenuOpen] = useState(false);
   const hasMenu = !!onEdit || !!onArchive || !!onDelete;
@@ -128,6 +137,7 @@ export function HabitCard({
       )}
     >
       <div className="absolute right-3 top-3 flex items-center gap-1">
+        {headerActions}
         {/* Stays visible instead of appearing on hover like the menu: in the
             popup it is the only way out, and a close button you have to
             discover by hovering is not a close button. */}
@@ -136,8 +146,8 @@ export function HabitCard({
             type="button"
             onClick={onClosePip}
             className="rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-            aria-label={t('pip.close')}
-            title={t('pip.close')}
+            aria-label={tPip('close')}
+            title={tPip('close')}
           >
             <X className="size-4" />
           </button>
@@ -146,8 +156,8 @@ export function HabitCard({
             type="button"
             onClick={() => onOpenPip(habit)}
             className="rounded-lg p-1.5 text-muted-foreground opacity-0 transition-opacity hover:bg-muted group-hover:opacity-100"
-            aria-label={t('pip.open')}
-            title={t('pip.open')}
+            aria-label={tPip('open')}
+            title={tPip('open')}
           >
             <PictureInPicture2 className="size-4" />
           </button>
